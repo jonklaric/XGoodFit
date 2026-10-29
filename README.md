@@ -9,8 +9,9 @@ The goal is the same application, looking and behaving the same, running nativel
 **Windows, macOS and Linux**, and reading and writing the same `.bestfit` project files.
 
 > [!NOTE]
-> XGoodFit is in early development (Phase 0: groundwork and de-risking) and is not usable yet.
-> The [migration plan](docs/migration-plan.md) describes the approach and roadmap.
+> XGoodFit is in early development and is not usable yet. The groundwork is in place and the UI port
+> has begun with the VS2013 theme (Light, Blue and Dark). The [migration plan](docs/migration-plan.md)
+> describes the approach and roadmap.
 
 ## Approach
 
@@ -31,6 +32,9 @@ needed to build is in this repository:
 git clone https://github.com/jonklaric/XGoodFit.git
 cd XGoodFit
 dotnet build XGoodFit.slnx
+
+# See the ported theme so far: palettes and controls, with a Light/Blue/Dark switcher.
+dotnet run --project tools/ThemeGallery
 ```
 
 To check that this machine gives the same results as the other platforms, you also need bash (on

@@ -501,6 +501,13 @@ Sizes are relative, for one developer with AI-assisted porting: S ≈ ≤2 wk, M
 
 **Exit:** each control has a demo page, screenshot parity, and behaviour tests (grid copy/paste and add-row in particular).
 
+**Progress (2026-10-30):** 4 of the 27 `Themes` control themes are ported: Button (with ToggleButton and StackPanelToggleButtonStyle), CheckBox, RadioButton and TextBox. `Button.axaml` records the conversion rules:
+- WPF styles with templates become ControlThemes that also set the defaults WPF took from the system style underneath.
+- Triggers become pseudo-class selectors.
+- `TargetName` setters become `/template/` selectors.
+
+The theme gallery shows each ported control in all three themes.
+
 ### Phase 4: Plotting (L)
 - OxyPlot.Avalonia vendored, with the fork's additions mirrored: probability axes plus any modified series and annotations.
 - `Serialization` port with **golden XML fixtures captured from WPF**. Deserialize then re-serialize must give byte-identical XML, including the legacy-format fallback.
