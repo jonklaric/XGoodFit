@@ -1,0 +1,89 @@
+<!-- Ported from upstream/WPF-Framework/src/Themes/Resources/Controls/TextBox.xaml. Conversion rules: Button.axaml. -->
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!--This Dictionary is taken from the Gemini project https://github.com/tgjones/gemini-->
+
+    <!--
+    XGoodFit port notes:
+    - Template: WPF hosts the text in a ScrollViewer named PART_ContentHost. Avalonia needs a
+      TextPresenter (PART_TextPresenter) inside a ScrollViewer (PART_ScrollViewer), bound as in
+      Avalonia's own TextBox theme. DataValidationErrors shows binding errors, as WPF's validation
+      adorner does. WPF's TextBox has no placeholder text, so none is shown.
+    - Padding="2,0" stands in for the 2-pixel text inset WPF's text view adds; the parity harness will
+      confirm it.
+    - The context menu is created per text box (Template), with the commands WPF's
+      ApplicationCommands provide and their usual names and shortcuts.
+    - Not ported: ScrollViewer.PanningMode and Stylus.IsFlicksEnabled (WPF touch and pen settings), and
+      the inactive-selection trigger (IsInactiveSelectionHighlightEnabled, off by default in WPF).
+    -->
+    <ControlTheme x:Key="{x:Type TextBox}" TargetType="TextBox">
+        <Setter Property="Background" Value="{DynamicResource TextBox.Static.Background}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource TextBox.Static.Border}"/>
+        <Setter Property="Foreground" Value="{DynamicResource EnvironmentToolWindowText}"/>
+        <Setter Property="SelectionBrush" Value="{DynamicResource TextBox.Selection.Background}"/>
+        <Setter Property="CaretBrush" Value="{DynamicResource TextBox.Caret}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Padding" Value="2,0"/>
+        <Setter Property="KeyboardNavigation.TabNavigation" Value="None"/>
+        <Setter Property="HorizontalContentAlignment" Value="Left"/>
+        <Setter Property="FocusAdorner" Value="{x:Null}"/>
+        <Setter Property="DragDrop.AllowDrop" Value="True"/>
+        <Setter Property="ContextMenu">
+            <Template>
+                <ContextMenu Theme="{DynamicResource MetroContextMenu}">
+                    <MenuItem Header="Cut" InputGesture="Ctrl+X" Command="{Binding $parent[TextBox].Cut}" IsEnabled="{Binding $parent[TextBox].CanCut}"/>
+                    <MenuItem Header="Copy" InputGesture="Ctrl+C" Command="{Binding $parent[TextBox].Copy}" IsEnabled="{Binding $parent[TextBox].CanCopy}"/>
+                    <MenuItem Header="Paste" InputGesture="Ctrl+V" Command="{Binding $parent[TextBox].Paste}" IsEnabled="{Binding $parent[TextBox].CanPaste}"/>
+                    <Separator/>
+                    <MenuItem Header="Select All" InputGesture="Ctrl+A" Command="{Binding $parent[TextBox].SelectAll}"/>
+                </ContextMenu>
+            </Template>
+        </Setter>
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border x:Name="border" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}">
+                    <DataValidationErrors>
+                        <ScrollViewer Name="PART_ScrollViewer"
+                                      Focusable="False"
+                                      HorizontalScrollBarVisibility="Hidden"
+                                      VerticalScrollBarVisibility="Hidden"
+                                      Margin="{TemplateBinding Padding}">
+                            <TextPresenter Name="PART_TextPresenter"
+                                           HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                           VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                           CaretBlinkInterval="{TemplateBinding CaretBlinkInterval}"
+                                           CaretBrush="{TemplateBinding CaretBrush}"
+                                           CaretIndex="{TemplateBinding CaretIndex}"
+                                           LineHeight="{TemplateBinding LineHeight}"
+                                           LetterSpacing="{TemplateBinding LetterSpacing}"
+                                           PasswordChar="{TemplateBinding PasswordChar}"
+                                           RevealPassword="{TemplateBinding RevealPassword}"
+                                           SelectionBrush="{TemplateBinding SelectionBrush}"
+                                           SelectionEnd="{TemplateBinding SelectionEnd}"
+                                           SelectionForegroundBrush="{TemplateBinding SelectionForegroundBrush}"
+                                           SelectionStart="{TemplateBinding SelectionStart}"
+                                           Text="{TemplateBinding Text, Mode=TwoWay}"
+                                           TextAlignment="{TemplateBinding TextAlignment}"
+                                           TextWrapping="{TemplateBinding TextWrapping}"/>
+                            <ScrollViewer.Styles>
+                                <Style Selector="ScrollContentPresenter#PART_ContentPresenter">
+                                    <Setter Property="Cursor" Value="IBeam"/>
+                                </Style>
+                            </ScrollViewer.Styles>
+                        </ScrollViewer>
+                    </DataValidationErrors>
+                </Border>
+            </ControlTemplate>
+        </Setter>
+
+        <Style Selector="^:disabled /template/ Border#border">
+            <Setter Property="Opacity" Value="0.56"/>
+        </Style>
+        <Style Selector="^:pointerover /template/ Border#border">
+            <Setter Property="BorderBrush" Value="{DynamicResource TextBox.MouseOver.Border}"/>
+        </Style>
+        <Style Selector="^:focus /template/ Border#border">
+            <Setter Property="BorderBrush" Value="{DynamicResource TextBox.Focus.Border}"/>
+        </Style>
+    </ControlTheme>
+</ResourceDictionary>

@@ -1,0 +1,78 @@
+<!-- Ported from upstream/WPF-Framework/src/Themes/Resources/Controls/RadioButton.xaml. Conversion rules: Button.axaml. -->
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!--
+    Themed RadioButton Style
+    Uses the same OptionMark brush keys as CheckBox for consistent theming.
+    Based on the WPF default RadioButton template adapted for VS2013 dark/light themes.
+
+    XGoodFit port: as in CheckBox.axaml, the HasContent padding is set unconditionally and the
+    content presenter is hidden when there is no content.
+    -->
+    <ControlTheme x:Key="{x:Type RadioButton}" TargetType="RadioButton">
+        <Setter Property="FocusAdorner" Value="{DynamicResource GeminiFocusVisual}"/>
+        <Setter Property="Background" Value="{DynamicResource OptionMark.Static.Background}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource OptionMark.Static.Border}"/>
+        <Setter Property="Foreground" Value="{DynamicResource EnvironmentToolWindowText}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Padding" Value="4,-1,0,0"/>
+        <Setter Property="HorizontalContentAlignment" Value="Left"/>
+        <Setter Property="VerticalContentAlignment" Value="Top"/>
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Grid x:Name="templateRoot" Background="Transparent" ColumnDefinitions="Auto,*">
+                    <Grid x:Name="markGrid" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" Margin="1">
+                        <Ellipse x:Name="outerEllipse"
+                                 Width="14" Height="14"
+                                 Fill="{TemplateBinding Background}"
+                                 Stroke="{TemplateBinding BorderBrush}"
+                                 StrokeThickness="1"/>
+                        <Ellipse x:Name="checkGlyph"
+                                 Width="6" Height="6"
+                                 Fill="{DynamicResource OptionMark.Static.Glyph}"
+                                 Opacity="0"/>
+                    </Grid>
+                    <ContentPresenter x:Name="PART_ContentPresenter" Grid.Column="1" Focusable="False"
+                                      Content="{TemplateBinding Content}"
+                                      ContentTemplate="{TemplateBinding ContentTemplate}"
+                                      IsVisible="{TemplateBinding Content, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                      HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" RecognizesAccessKey="True" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                </Grid>
+            </ControlTemplate>
+        </Setter>
+
+        <Style Selector="^:pointerover">
+            <Style Selector="^ /template/ Ellipse#outerEllipse">
+                <Setter Property="Fill" Value="{DynamicResource OptionMark.MouseOver.Background}"/>
+                <Setter Property="Stroke" Value="{DynamicResource OptionMark.MouseOver.Border}"/>
+            </Style>
+            <Style Selector="^ /template/ Ellipse#checkGlyph">
+                <Setter Property="Fill" Value="{DynamicResource OptionMark.MouseOver.Glyph}"/>
+            </Style>
+        </Style>
+        <Style Selector="^:disabled">
+            <Style Selector="^ /template/ Ellipse#outerEllipse">
+                <Setter Property="Fill" Value="{DynamicResource OptionMark.Disabled.Background}"/>
+                <Setter Property="Stroke" Value="{DynamicResource OptionMark.Disabled.Border}"/>
+            </Style>
+            <Style Selector="^ /template/ Ellipse#checkGlyph">
+                <Setter Property="Fill" Value="{DynamicResource OptionMark.Disabled.Glyph}"/>
+            </Style>
+        </Style>
+        <Style Selector="^:pressed">
+            <Style Selector="^ /template/ Ellipse#outerEllipse">
+                <Setter Property="Fill" Value="{DynamicResource OptionMark.Pressed.Background}"/>
+                <Setter Property="Stroke" Value="{DynamicResource OptionMark.Pressed.Border}"/>
+            </Style>
+            <Style Selector="^ /template/ Ellipse#checkGlyph">
+                <Setter Property="Fill" Value="{DynamicResource OptionMark.Pressed.Glyph}"/>
+            </Style>
+        </Style>
+        <Style Selector="^:checked /template/ Ellipse#checkGlyph">
+            <Setter Property="Opacity" Value="1"/>
+        </Style>
+        <Style Selector="^:indeterminate /template/ Ellipse#checkGlyph">
+            <Setter Property="Opacity" Value="0.56"/>
+        </Style>
+    </ControlTheme>
+</ResourceDictionary>

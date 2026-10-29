@@ -1,0 +1,95 @@
+<!-- Ported from upstream/WPF-Framework/src/Themes/Resources/Controls/CheckBox.xaml. Conversion rules: Button.axaml. -->
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!--This Dictionary is taken from the Gemini project https://github.com/tgjones/gemini-->
+
+    <FocusAdornerTemplate x:Key="OptionMarkFocusVisual">
+        <Rectangle Margin="14,0,0,0" Stroke="{DynamicResource FocusStyle.Brush}" StrokeThickness="1" StrokeDashArray="1,2"/>
+    </FocusAdornerTemplate>
+
+    <!--
+    XGoodFit port: WPF's HasContent trigger has no Avalonia pseudo-class. The content padding is set
+    unconditionally and the content presenter is hidden when there is no content, which gives the same
+    layout; the content focus visual is likewise always used.
+    -->
+    <ControlTheme x:Key="{x:Type CheckBox}" TargetType="CheckBox">
+        <Setter Property="FocusAdorner" Value="{DynamicResource OptionMarkFocusVisual}"/>
+        <Setter Property="Background" Value="{DynamicResource OptionMark.Static.Background}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource OptionMark.Static.Border}"/>
+        <Setter Property="Foreground" Value="{DynamicResource EnvironmentToolWindowText}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Padding" Value="4,-1,0,0"/>
+        <Setter Property="HorizontalContentAlignment" Value="Left"/>
+        <Setter Property="VerticalContentAlignment" Value="Top"/>
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Grid x:Name="templateRoot" Background="Transparent" ColumnDefinitions="Auto,*">
+                    <Border x:Name="checkBoxBorder" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="1" VerticalAlignment="{TemplateBinding VerticalContentAlignment}">
+                        <Grid x:Name="markGrid">
+                            <Path x:Name="optionMark" Data="F1 M 9.97498,1.22334L 4.6983,9.09834L 4.52164,9.09834L 0,5.19331L 1.27664,3.52165L 4.255,6.08833L 8.33331,1.52588e-005L 9.97498,1.22334 Z " Fill="{DynamicResource OptionMark.Static.Glyph}" Margin="1" Opacity="0" Stretch="None"/>
+                            <Rectangle x:Name="indeterminateMark" Fill="{DynamicResource OptionMark.Static.Glyph}" Margin="2" Opacity="0"/>
+                        </Grid>
+                    </Border>
+                    <ContentPresenter x:Name="PART_ContentPresenter" Grid.Column="1" Focusable="False"
+                                      Content="{TemplateBinding Content}"
+                                      ContentTemplate="{TemplateBinding ContentTemplate}"
+                                      IsVisible="{TemplateBinding Content, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                      HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" RecognizesAccessKey="True" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                </Grid>
+            </ControlTemplate>
+        </Setter>
+
+        <Style Selector="^:pointerover">
+            <Style Selector="^ /template/ Border#checkBoxBorder">
+                <Setter Property="Background" Value="{DynamicResource OptionMark.MouseOver.Background}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource OptionMark.MouseOver.Border}"/>
+            </Style>
+            <Style Selector="^ /template/ Path#optionMark">
+                <Setter Property="Fill" Value="{DynamicResource OptionMark.MouseOver.Glyph}"/>
+            </Style>
+            <Style Selector="^ /template/ Rectangle#indeterminateMark">
+                <Setter Property="Fill" Value="{DynamicResource OptionMark.MouseOver.Glyph}"/>
+            </Style>
+        </Style>
+        <Style Selector="^:disabled">
+            <Style Selector="^ /template/ Border#checkBoxBorder">
+                <Setter Property="Background" Value="{DynamicResource OptionMark.Disabled.Background}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource OptionMark.Disabled.Border}"/>
+            </Style>
+            <Style Selector="^ /template/ Path#optionMark">
+                <Setter Property="Fill" Value="{DynamicResource OptionMark.Disabled.Glyph}"/>
+            </Style>
+            <Style Selector="^ /template/ Rectangle#indeterminateMark">
+                <Setter Property="Fill" Value="{DynamicResource OptionMark.Disabled.Glyph}"/>
+            </Style>
+        </Style>
+        <Style Selector="^:pressed">
+            <Style Selector="^ /template/ Border#checkBoxBorder">
+                <Setter Property="Background" Value="{DynamicResource OptionMark.Pressed.Background}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource OptionMark.Pressed.Border}"/>
+            </Style>
+            <Style Selector="^ /template/ Path#optionMark">
+                <Setter Property="Fill" Value="{DynamicResource OptionMark.Pressed.Glyph}"/>
+            </Style>
+            <Style Selector="^ /template/ Rectangle#indeterminateMark">
+                <Setter Property="Fill" Value="{DynamicResource OptionMark.Pressed.Glyph}"/>
+            </Style>
+        </Style>
+        <Style Selector="^:checked">
+            <Style Selector="^ /template/ Path#optionMark">
+                <Setter Property="Opacity" Value="1"/>
+            </Style>
+            <Style Selector="^ /template/ Rectangle#indeterminateMark">
+                <Setter Property="Opacity" Value="0"/>
+            </Style>
+        </Style>
+        <Style Selector="^:indeterminate">
+            <Style Selector="^ /template/ Path#optionMark">
+                <Setter Property="Opacity" Value="0"/>
+            </Style>
+            <Style Selector="^ /template/ Rectangle#indeterminateMark">
+                <Setter Property="Opacity" Value="1"/>
+            </Style>
+        </Style>
+    </ControlTheme>
+</ResourceDictionary>
