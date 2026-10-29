@@ -1,0 +1,43 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="clr-namespace:Themes">
+
+    <!--
+    Themed RichTextBox Style
+
+    Applies theme-aware colors to RichTextBox controls.
+    Unlike TextBox, we do NOT replace the ControlTemplate because
+    RichTextBox has a complex internal template for FlowDocument
+    rendering and context menus that must be preserved.
+    Only visual properties are set via DynamicResource bindings.
+    -->
+    <Style TargetType="{x:Type RichTextBox}">
+        <Setter Property="Background" Value="{DynamicResource TextBox.Static.Background}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource TextBox.Static.Border}"/>
+        <Setter Property="Foreground" Value="{DynamicResource EnvironmentToolWindowText}"/>
+        <Setter Property="SelectionBrush" Value="{DynamicResource TextBox.Selection.Background}"/>
+        <Setter Property="CaretBrush" Value="{DynamicResource TextBox.Caret}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="ContextMenu">
+            <Setter.Value>
+                <ContextMenu Style="{DynamicResource MetroContextMenu}">
+                    <MenuItem Command="ApplicationCommands.Cut" />
+                    <MenuItem Command="ApplicationCommands.Copy" />
+                    <MenuItem Command="ApplicationCommands.Paste" />
+                    <Separator />
+                    <MenuItem Command="ApplicationCommands.SelectAll" />
+                </ContextMenu>
+            </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+            <MultiTrigger>
+                <MultiTrigger.Conditions>
+                    <Condition Property="IsInactiveSelectionHighlightEnabled" Value="true"/>
+                    <Condition Property="IsSelectionActive" Value="false"/>
+                </MultiTrigger.Conditions>
+                <Setter Property="SelectionBrush" Value="{DynamicResource TextBox.Selection.InactiveBackground}"/>
+            </MultiTrigger>
+        </Style.Triggers>
+    </Style>
+
+</ResourceDictionary>

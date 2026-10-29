@@ -1,0 +1,21 @@
+<Graph Scale="0.3">
+  <Nodes>
+    <Node Name="Sample Node" NodeGuid="97b5c360-7384-45d4-8542-0aceb55abc16" MySpecialNumber="1" Left_Position="576.31602341558164" Top_Position="210.76450292694767" />
+    <Node Name="Sample Node" NodeGuid="09a82fca-08e5-4390-9d8d-ef4724a833ba" MySpecialNumber="1" Left_Position="348.61602341558137" Top_Position="194.86450292694758" />
+    <Node Name="Sample Node" NodeGuid="cc76568a-76bb-43b1-b657-6a313d84c887" MySpecialNumber="1" Left_Position="421.51602341558169" Top_Position="205.96450292694772" />
+    <Node Name="Sample Node" NodeGuid="8daefa15-d16b-4277-a4f4-87604469830d" MySpecialNumber="1" Left_Position="500.41602341558132" Top_Position="186.76450292694767" />
+    <Node Name="Sample Node" NodeGuid="533903e0-f0e5-4d74-bdd2-ce44701b49d0" MySpecialNumber="1" Left_Position="194.71602341558128" Top_Position="205.96450292694772" />
+    <Node Name="Sample Node" NodeGuid="158f1b05-e072-49b2-8fd8-f5756f2b0d00" MySpecialNumber="1" Left_Position="327.01602341558123" Top_Position="323.56450292694774" />
+    <Node Name="Sample Node" NodeGuid="ef0efa64-c002-4a1e-a7c5-0f1666a2040f" MySpecialNumber="1" Left_Position="499.51602341558123" Top_Position="262.96450292694766" />
+    <Node Name="Sample Node" NodeGuid="189f0052-d6f3-4202-aa67-cb47f83d5b76" MySpecialNumber="1" Left_Position="285.61602341558114" Top_Position="278.26450292694767" />
+    <Node Name="Sample Node" NodeGuid="3a6b8520-9420-4980-9ace-bc27fe9c1cb2" MySpecialNumber="1" Left_Position="500.11602341558137" Top_Position="318.46450292694766" />
+  </Nodes>
+  <Connections>
+    <Connection From_Node="533903e0-f0e5-4d74-bdd2-ce44701b49d0" From_Connector="Output 1" To_Node="09a82fca-08e5-4390-9d8d-ef4724a833ba" To_Connector="Input 1" />
+    <Connection From_Node="09a82fca-08e5-4390-9d8d-ef4724a833ba" From_Connector="Output 1" To_Node="cc76568a-76bb-43b1-b657-6a313d84c887" To_Connector="Input 1" />
+    <Connection From_Node="cc76568a-76bb-43b1-b657-6a313d84c887" From_Connector="Output 1" To_Node="8daefa15-d16b-4277-a4f4-87604469830d" To_Connector="Input 1" />
+    <Connection From_Node="8daefa15-d16b-4277-a4f4-87604469830d" From_Connector="Output 1" To_Node="97b5c360-7384-45d4-8542-0aceb55abc16" To_Connector="Input 1" />
+    <Connection From_Node="189f0052-d6f3-4202-aa67-cb47f83d5b76" From_Connector="Output 1" To_Node="ef0efa64-c002-4a1e-a7c5-0f1666a2040f" To_Connector="Input 1" />
+    <Connection From_Node="158f1b05-e072-49b2-8fd8-f5756f2b0d00" From_Connector="Output 1" To_Node="3a6b8520-9420-4980-9ace-bc27fe9c1cb2" To_Connector="Input 1" />
+  </Connections>
+</Graph>

@@ -1,0 +1,65 @@
+﻿<UserControl x:Class="FrameworkUI.ProjectExplorer.NodeHeader"
+             x:Name="NodeHeaderControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:FrameworkUI"
+             xmlns:cntrls="clr-namespace:GenericControls;assembly=GenericControls"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800"
+             DataContext="{Binding RelativeSource={RelativeSource Self}}">
+    <UserControl.Resources>
+        <cntrls:BooleanToVisibilityConverter x:Key="BoolToVisConverter" TrueValue="Visible" FalseValue="Collapsed"/>
+        <cntrls:BooleanToVisibilityConverter x:Key="ReverseBoolToVisConverter" TrueValue="Collapsed" FalseValue="Visible"/>
+    </UserControl.Resources>
+    <Grid x:Name="MainGrid" VerticalAlignment="Center">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <CheckBox x:Name="HeaderCheckBox" Grid.Column="0" Width="16" Height="16" Margin="1" VerticalAlignment="Center"
+                  Visibility="{Binding IsCheckBox, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource BoolToVisConverter}}" 
+                  IsChecked="{Binding Path=IsChecked, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"/>
+
+        <Image x:Name="HeaderImage" Grid.Column="1" Width="16" Height="16" Margin="1" Stretch="Fill" UseLayoutRounding="True" VerticalAlignment="Center"
+               Visibility="{Binding Path=ImageVisibility}">
+            <Image.Style>
+                <Style TargetType="{x:Type Image}">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding Path=IsExpanded}" Value="True">
+                            <Setter Property="Source" Value="{Binding Path=ExpandedImage}"/>
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding Path=IsExpanded}" Value="False">
+                            <Setter Property="Source" Value="{Binding  Path=StaticImage}"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Image.Style>
+        </Image>
+        
+        <TextBlock x:Name="HeaderTextBlock" Grid.Column="2" Margin="2,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Center" Visibility="{Binding Path=ShowRenameTextBox, Converter={StaticResource ReverseBoolToVisConverter}}"
+                   FontWeight="{Binding Path=HeaderFontWeight}"
+                   FontSize="{Binding Path=HeaderFontSize}"
+                   Foreground="{DynamicResource EnvironmentWindowText}"
+                   Text="{Binding Path=HeaderText}">
+        </TextBlock>
+        
+        <cntrls:NameTextBox x:Name="RenameTextBox" Grid.Column="2" HorizontalAlignment="Left" Margin="2,0,0,0" VerticalAlignment="Stretch" CharacterLimit="50" CanBeBlank="False" Focusable="True"
+                            Visibility="{Binding Path=ShowRenameTextBox, Converter={StaticResource BoolToVisConverter}}"
+                            TextChanged="RenameTextBox_TextChanged" Text="{Binding Path=RenameText, Mode=TwoWay}"/>
+
+        <TextBlock x:Name="AsteriskBlock" Grid.Column="3" FontWeight="{Binding Path=HeaderFontWeight}" FontSize="{Binding Path=HeaderFontSize}" Foreground="{DynamicResource EnvironmentWindowText}" Text="*" HorizontalAlignment="Left" VerticalAlignment="Center" Visibility="{Binding Path=ShowAsterisk, Converter={StaticResource BoolToVisConverter}, UpdateSourceTrigger=PropertyChanged}"/>
+        <Grid.ToolTip>
+            <ToolTip Visibility="{Binding Path=ShowToolTip, Converter={StaticResource BoolToVisConverter}}">
+                <StackPanel>
+                    <TextBlock FontWeight="Bold" FontSize="12" Margin="0,0,0,5" Text="{Binding Path=HeaderText}"/>
+                    <TextBlock FontWeight="Normal" FontSize="11" Text="{Binding Path=HeaderDescription}" TextWrapping="WrapWithOverflow" />
+                </StackPanel>
+            </ToolTip>
+        </Grid.ToolTip>
+    </Grid>
+</UserControl>

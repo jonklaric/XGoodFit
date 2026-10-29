@@ -1,0 +1,282 @@
+﻿using System;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Numerics.Distributions;
+
+namespace Distributions.Univariate
+{
+    /// <summary>
+    /// Testing the Chi-Squared distribution algorithm.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    ///     <b> Authors: </b>
+    ///     <list type="bullet">
+    ///     <item> Haden Smith, USACE Risk Management Center, cole.h.smith@usace.army.mil </item>
+    ///     <item> Tiki Gonzalez, USACE Risk Management Center, julian.t.gonzalez@usace.army.mil</item>
+    ///     </list> 
+    /// </para>
+    /// <para>
+    /// <b> References: </b>
+    /// </para>
+    /// <para>
+    /// <see href = "https://github.com/mathnet/mathnet-numerics/blob/master/src/Numerics.Tests/DistributionTests" />
+    /// </para>
+    /// </remarks>
+    /// 
+    [TestClass]
+    public class Test_ChiSquared
+    {
+        /// <summary>
+        /// Verified using Accord.Net
+        /// </summary>
+        [TestMethod()]
+        public void Test_ChiSquaredDist()
+        {
+            double true_mean = 7d;
+            double true_median = 6.345811195595612d;
+            double true_stdDev = Math.Sqrt(14d);
+            double true_pdf = 0.11388708001184455d;
+            double true_cdf = 0.49139966433823956d;
+            double true_icdf = 6.27d;
+            var CHI = new ChiSquared(7);
+            Assert.AreEqual(true_mean, CHI.Mean, 0.0001d);
+            Assert.AreEqual(true_median, CHI.Median, 0.0001d);
+            Assert.AreEqual(true_stdDev, CHI.StandardDeviation, 0.0001d);
+            Assert.AreEqual(true_pdf, CHI.PDF(6.27d), 0.0001d);
+            Assert.AreEqual(true_cdf, CHI.CDF(6.27d), 0.0001d);
+            Assert.AreEqual(true_icdf, CHI.InverseCDF(true_cdf), 0.0001d);
+        }
+
+        /// <summary>
+        /// Verified using MathNet-Numerics testing. See if chi squared is being created.
+        /// </summary>
+        [TestMethod()]
+        public void Test_Construction()
+        {
+            var x = new ChiSquared(1);
+            Assert.AreEqual(1, x.DegreesOfFreedom);
+
+            var x2 = new ChiSquared(3);
+            Assert.AreEqual(3, x2.DegreesOfFreedom);
+        }
+
+        /// <summary>
+        /// Verifying where Chi Squared fails.
+        /// </summary>
+        [TestMethod()]
+        public void Test_InvalidParameters()
+        {
+            var x = new ChiSquared(0);
+            Assert.IsFalse(x.ParametersValid);
+
+            var x2 = new ChiSquared(-1);
+            Assert.IsFalse(x2.ParametersValid);
+
+            var x3 = new ChiSquared(-100);
+            Assert.IsFalse(x3.ParametersValid);
+        }
+
+        /// <summary>
+        /// Verifying the parameters are being converted to string.
+        /// </summary>
+        [TestMethod()]
+        public void Test_ParametersToString()
+        {
+            var x = new ChiSquared(1);
+            Assert.AreEqual("Degrees of Freedom (ν)", x.ParametersToString[0,0]);
+            Assert.AreEqual("1", x.ParametersToString[0,1]);
+        }
+
+        /// <summary>
+        /// Compare analytical moments against numerical integration.
+        /// </summary>
+        [TestMethod()]
+        public void Test_Moments()
+        {
+            var dist = new ChiSquared(2);
+            var mom = dist.CentralMoments(1E-8);
+            Assert.AreEqual(dist.Mean, mom[0], 1E-2);
+            Assert.AreEqual(dist.StandardDeviation, mom[1], 1E-2);
+            Assert.AreEqual(dist.Skewness, mom[2], 1E-2);
+            Assert.AreEqual(dist.Kurtosis, mom[3], 1E-2);
+        }
+
+        /// <summary>
+        /// Checking mean is equal to the degrees of freedom.
+        /// </summary>
+        [TestMethod()]
+        public void Test_Mean()
+        {
+            var x = new ChiSquared(1);
+            Assert.AreEqual(1, x.Mean);
+
+            var x2 = new ChiSquared(2);
+            Assert.AreEqual(2, x2.Mean);
+        }
+
+        /// <summary>
+        /// Validating the median function.
+        /// </summary>
+        [TestMethod()]
+        public void Test_Median()
+        {
+            var x = new ChiSquared(2);
+            var approx_median = x.DegreesOfFreedom * Math.Pow(1d - 2d / (9d * x.DegreesOfFreedom), 3d);
+            Assert.AreEqual(approx_median, x.Median, 1E-1);
+        }
+
+        /// <summary>
+        /// Validating the mode function.
+        /// </summary>
+        [TestMethod()]
+        public void Test_Mode()
+        {
+            var x = new ChiSquared(1);
+            Assert.AreEqual(0, x.Mode);
+
+            var x2 = new ChiSquared(5);
+            Assert.AreEqual(3, x2.Mode);
+        }
+
+        /// <summary>
+        /// Validating standard deviation function.
+        /// </summary>
+        [TestMethod()]
+        public void Test_StandardDeviation()
+        {
+            var x = new ChiSquared(1);
+            Assert.AreEqual(Math.Sqrt(2), x.StandardDeviation);
+
+            var x2 = new ChiSquared(2);
+            Assert.AreEqual(2,x2.StandardDeviation);
+        }
+
+        /// <summary>
+        /// Validating the skew function.
+        /// </summary>
+        [TestMethod()]
+        public void Test_Skewness()
+        {
+            var x = new ChiSquared(2);
+            Assert.AreEqual(2, x.Skewness);
+
+            var x2 = new ChiSquared(8);
+            Assert.AreEqual(1, x2.Skewness);
+
+            var x3 = new ChiSquared(32);
+            Assert.AreEqual(0.5, x3.Skewness);
+        }
+
+        /// <summary>
+        /// Validating Kurtosis function.
+        /// </summary>
+        [TestMethod()]
+        public void Test_Kurtosis()
+        {
+            var x = new ChiSquared(1);
+            Assert.AreEqual(15, x.Kurtosis);
+
+            var x2 = new ChiSquared(3);
+            Assert.AreEqual(7,x2.Kurtosis);
+        }
+
+        /// <summary>
+        /// Checking minimum of Chi-Squared Distribution.
+        /// </summary>
+        [TestMethod()]
+        public void Test_Minimum()
+        {
+            var x = new ChiSquared(1);
+            Assert.AreEqual(0, x.Minimum);
+        }
+
+        /// <summary>
+        /// Checking maximum of Chi-Squared Distribution.
+        /// </summary>
+        [TestMethod()]
+        public void Test_Maximum()
+        {
+            var x = new ChiSquared(1);
+            Assert.AreEqual(double.PositiveInfinity, x.Maximum);
+        }
+
+        /// <summary>
+        /// Checking PDF function.
+        /// </summary>
+        [TestMethod()]
+        public void Test_PDF()
+        {
+            var x = new ChiSquared(1);
+            Assert.AreEqual(1.2000389,x.PDF(0.1),1e-04);
+            Assert.AreEqual(0.2419707, x.PDF(1), 1e-04);
+            Assert.AreEqual(0.0108747, x.PDF(5.5), 1e-04);
+            Assert.AreEqual(0, x.PDF(double.PositiveInfinity));
+
+            var x2 = new ChiSquared(2);
+            Assert.AreEqual(0.5,x2.PDF(0));
+            Assert.AreEqual(0.4756147, x2.PDF(0.1), 1e-04);
+            Assert.AreEqual(0.3032653, x2.PDF(1), 1e-04);
+            Assert.AreEqual(0.0319639, x2.PDF(5.5), 1e-04);
+        }
+
+        /// <summary>
+        /// Validating CDF function.
+        /// </summary>
+        [TestMethod()]
+        public void Test_CDF()
+        {
+            var x = new ChiSquared(1);
+            Assert.AreEqual(0.2481703, x.CDF(0.1), 1e-04);
+            Assert.AreEqual(0.682689, x.CDF(1), 1e-04);
+            Assert.AreEqual(0.9809835, x.CDF(5.5), 1e-04);
+            Assert.AreEqual(1, x.CDF(110.1));
+
+            var x2 = new ChiSquared(2);
+            Assert.AreEqual(0, x2.CDF(0));
+            Assert.AreEqual(0.04877057, x2.CDF(0.1), 1e-04);
+            Assert.AreEqual(0.3934693, x2.CDF(1), 1e-04);
+            Assert.AreEqual(0.9360721, x2.CDF(5.5), 1e-04);
+        }
+
+        /// <summary>
+        /// Validating Inverse CDF function.
+        /// </summary>
+        [TestMethod()]
+        public void Test_InverseCDF()
+        {
+            var x = new ChiSquared(1);
+            Assert.AreEqual(0.09999, x.InverseCDF(0.24817036595415071751), 1e-04);
+            Assert.AreEqual(1, x.InverseCDF(0.68268949213708589717), 1e-04);
+            Assert.AreEqual(5.5, x.InverseCDF(0.9809835), 1e-04);
+
+            var x2 = new ChiSquared(2);
+            Assert.AreEqual(0,x2.InverseCDF(0));
+            Assert.AreEqual(0.1, x2.InverseCDF(0.04877057),1e-04);
+            Assert.AreEqual(1, x2.InverseCDF(0.3934693),1e-04);
+            Assert.AreEqual(5.5, x2.InverseCDF(0.9360721), 1e-04);
+        }
+
+        /// <summary>
+        /// Verify ChiSquared PDF does not overflow for large degrees of freedom.
+        /// Reference: scipy.stats.chi2.pdf(x, v)
+        /// </summary>
+        [TestMethod()]
+        public void Test_PDF_LargeDoF()
+        {
+            // chi2(100).pdf(100) = 0.028162503163
+            var x100 = new ChiSquared(100);
+            Assert.AreEqual(0.028162503163, x100.PDF(100), 1E-6);
+
+            // chi2(500).pdf(500) = 0.012611458093
+            var x500 = new ChiSquared(500);
+            Assert.AreEqual(0.012611458093, x500.PDF(500), 1E-6);
+
+            // chi2(1000).pdf(1000) = 0.008919133935 (should NOT be NaN or Infinity)
+            var x1000 = new ChiSquared(1000);
+            double pdf1000 = x1000.PDF(1000);
+            Assert.AreEqual(0.008919133935, pdf1000, 1E-6);
+            Assert.IsFalse(double.IsNaN(pdf1000), "PDF should not be NaN for large DoF.");
+            Assert.IsFalse(double.IsInfinity(pdf1000), "PDF should not be Infinity for large DoF.");
+        }
+    }
+}

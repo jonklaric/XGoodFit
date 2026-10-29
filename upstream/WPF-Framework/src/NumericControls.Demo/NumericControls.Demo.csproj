@@ -1,0 +1,29 @@
+<!-- NumericControls.Demo - Demo application for NumericControls -->
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <RootNamespace>NumericControls.Demo</RootNamespace>
+    <AssemblyName>NumericControls.Demo</AssemblyName>
+    <Nullable>disable</Nullable>
+    <UseWPF>true</UseWPF>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\NumericControls\NumericControls.csproj" />
+    <ProjectReference Include="..\Themes\Themes.csproj" />
+    <ProjectReference Include="..\GenericControls\GenericControls.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="RMC.Numerics" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="USGS_01134500.xml" />
+  </ItemGroup>
+
+</Project>

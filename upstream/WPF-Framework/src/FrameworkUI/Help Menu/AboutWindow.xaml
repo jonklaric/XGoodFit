@@ -1,0 +1,76 @@
+<cntrls:MetroWindow x:Class="FrameworkUI.AboutWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:cntrls="clr-namespace:GenericControls;assembly=GenericControls"
+        mc:Ignorable="d"
+        Title="{Binding WindowTitle, RelativeSource={RelativeSource Self}}"
+        ResizeMode="NoResize"
+        ShowInTaskbar="True"
+        WindowStartupLocation="CenterScreen"
+        SizeToContent="WidthAndHeight"
+        Style="{DynamicResource MetroWindowStyle}"
+        Background="{DynamicResource EnvironmentWindowBackground}"
+        Foreground="{DynamicResource EnvironmentWindowText}"
+        DataContext="{Binding RelativeSource={RelativeSource Self}}"
+        >
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="100"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="100"/>
+            <ColumnDefinition x:Name="NameColumn" Width="250"/>
+        </Grid.ColumnDefinitions>
+
+        <!--Software Icon-->
+        <Image Grid.Row="0" Grid.Column="0" Source="{Binding SoftwareImage}" Margin="10"
+               Stretch="UniformToFill" RenderOptions.EdgeMode="Aliased" RenderOptions.BitmapScalingMode="HighQuality"/>
+
+        <!--Software Name and Version-->
+        <Grid Grid.Row="0" Grid.Column="1" HorizontalAlignment="Left">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="50"/>
+                <RowDefinition Height="25"/>
+                <RowDefinition Height="25"/>
+            </Grid.RowDefinitions>
+            <TextBlock Text="{Binding SoftwareName}" Grid.Row="0" FontSize="32" FontWeight="Bold" HorizontalAlignment="Left" VerticalAlignment="Bottom" TextAlignment="Left"/>
+            <TextBlock Grid.Row="1" FontSize="16" FontWeight="Bold" HorizontalAlignment="Left" VerticalAlignment="Top" TextAlignment="Left">
+                <TextBlock.Text>
+                    <MultiBinding StringFormat="Version {0}">
+                        <Binding Path="SoftwareVersion"/>
+                    </MultiBinding>
+                </TextBlock.Text>
+            </TextBlock>
+            <TextBlock Text="{Binding SoftwareVersionDate}" Grid.Row="2" FontSize="12" HorizontalAlignment="Left" VerticalAlignment="Top" TextAlignment="Left"/>
+        </Grid>
+
+        <!--Software Description-->
+        <TextBlock Text="{Binding SoftwareDescription}"
+               Margin="6" Grid.Row="1" Grid.ColumnSpan="2" FontSize="12" FontWeight="Regular"
+               HorizontalAlignment="Stretch" VerticalAlignment="Top" TextAlignment="Left" TextWrapping="Wrap" />
+
+        <!--Organization Info-->
+        <Grid Grid.Row="2" Grid.ColumnSpan="2" Visibility="{Binding OrganizationVisibility}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="100"/>
+            </Grid.ColumnDefinitions>
+            <DockPanel Margin="6" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Left">
+                <TextBlock Text="{Binding OrganizationName}" DockPanel.Dock="Top" FontWeight="Bold" FontSize="12" TextAlignment="Left" />
+                <TextBlock Text="{Binding OrganizationDetails}" DockPanel.Dock="Top" FontSize="12" TextAlignment="Left" />
+            </DockPanel>
+            <Image Grid.Column="1" Source="{Binding OrganizationImage}" Margin="10" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
+               Stretch="UniformToFill" RenderOptions.EdgeMode="Aliased" RenderOptions.BitmapScalingMode="HighQuality"/>
+        </Grid>
+
+        <!--Copyright-->
+        <TextBlock Text="{Binding SoftwareCopyright}"
+               Margin="6" Grid.Row="3" Grid.ColumnSpan="2" FontSize="10"
+               HorizontalAlignment="Left" VerticalAlignment="Center" TextAlignment="Left" />
+    </Grid>
+</cntrls:MetroWindow>

@@ -1,0 +1,177 @@
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Numerics.Distributions;
+
+namespace Distributions.Univariate
+{
+    /// <summary>
+    /// Testing the general Truncated distribution class.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    ///     <b> Authors: </b>
+    ///     <list type="bullet">
+    ///     <item> Haden Smith, USACE Risk Management Center, cole.h.smith@usace.army.mil </item>
+    ///     </list> 
+    /// </para>
+    /// </remarks>
+    [TestClass]
+    public class Test_TruncatedDistribution
+    {
+
+        /// <summary>
+        /// This method was verified against the R package "truncnorm"
+        /// </summary>
+        [TestMethod]
+        public void Test_TruncatedNormalDist()
+        {
+            var tn = new TruncatedDistribution(new Normal(2, 1), 1.10, 2.11);
+            var d = tn.PDF(1.5);
+            var p = tn.CDF(1.5);
+            var q = tn.InverseCDF(p);
+
+            Assert.AreEqual(0.9786791, d, 1E-5);
+            Assert.AreEqual(0.3460251, p, 1E-5);
+            Assert.AreEqual(1.5, q, 1E-5);
+
+            tn = new TruncatedDistribution(new Normal(10, 3), 8, 25);
+            d = tn.PDF(12.75);
+            p = tn.CDF(12.75);
+            q = tn.InverseCDF(p);
+
+            Assert.AreEqual(0.1168717, d, 1E-5);
+            Assert.AreEqual(0.7596566, p, 1E-5);
+            Assert.AreEqual(12.75, q, 1E-5);
+
+            tn = new TruncatedDistribution(new Normal(0, 3), 0, 9);
+            d = tn.PDF(4.5);
+            p = tn.CDF(4.5);
+            q = tn.InverseCDF(p);
+
+            Assert.AreEqual(0.08657881, d, 1E-5);
+            Assert.AreEqual(0.868731, p, 1E-5);
+            Assert.AreEqual(4.5, q, 1E-5);
+
+        }
+
+        /// <summary>
+        /// Verifying input parameters can create distribution.
+        /// </summary>
+        [TestMethod()]
+        public void Test_Construction()
+        {
+            var tn = new TruncatedDistribution(new Normal(0.5, 0.2), 0, 1);
+            Assert.AreEqual(0.5, ((Normal)tn.BaseDistribution).Mu);
+            Assert.AreEqual(0.2, ((Normal)tn.BaseDistribution).Sigma);
+            Assert.AreEqual(0, tn.Min);
+            Assert.AreEqual(1, tn.Max);
+
+            var tn2 = new TruncatedDistribution(new Normal(1, 1), 1, 2);
+            Assert.AreEqual(1, ((Normal)tn2.BaseDistribution).Mu);
+            Assert.AreEqual(1, ((Normal)tn2.BaseDistribution).Sigma);
+            Assert.AreEqual(1, tn2.Min);
+            Assert.AreEqual(2, tn2.Max);
+        }
+
+        /// <summary>
+        /// Testing parameters to string.
+        /// </summary>
+        [TestMethod()]
+        public void Test_ParametersToString()
+        {
+            var tn = new TruncatedDistribution(new Normal(0.5, 0.2), 0, 1);
+            Assert.AreEqual("Mean (µ)", tn.ParametersToString[0, 0]);
+            Assert.AreEqual("Std Dev (σ)", tn.ParametersToString[1, 0]);
+            Assert.AreEqual("Min", tn.ParametersToString[2, 0]);
+            Assert.AreEqual("Max", tn.ParametersToString[3, 0]);
+            Assert.AreEqual("0.5", tn.ParametersToString[0, 1]);
+            Assert.AreEqual("0.2", tn.ParametersToString[1, 1]);
+            Assert.AreEqual("0", tn.ParametersToString[2, 1]);
+            Assert.AreEqual("1", tn.ParametersToString[3, 1]);
+        }
+
+        /// <summary>
+        /// Compare analytical moments against numerical integration.
+        /// </summary>
+        [TestMethod()]
+        public void Test_Moments()
+        {
+            var dist = new TruncatedDistribution(new Normal(10, 3), 8, 25);
+            var mom = dist.CentralMoments(1E-8);
+            Assert.AreEqual(mom[0], dist.Mean, 1E-2);
+            Assert.AreEqual(mom[1], dist.StandardDeviation, 1E-2);
+            Assert.AreEqual(mom[2], dist.Skewness, 1E-2);
+            Assert.AreEqual(mom[3], dist.Kurtosis, 1E-2);
+        }
+
+        /// <summary>
+        /// Testing mean.
+        /// </summary>
+        [TestMethod()]
+        public void Test_Mean()
+        {
+            var tn = new TruncatedDistribution(new Normal(0.5, 0.2), 0, 1);
+            Assert.AreEqual(0.5, tn.Mean, 1e-4);
+        }
+
+        /// <summary>
+        /// Testing median.
+        /// </summary>
+        [TestMethod()]
+        public void Test_Median()
+        {
+            var tn = new TruncatedDistribution(new Normal(0.5, 0.2), 0, 1);
+            Assert.AreEqual(0.5, tn.Median, 1e-4);
+        }
+
+        /// <summary>
+        /// Testing mode
+        /// </summary>
+        [TestMethod()]
+        public void Test_Mode()
+        {
+            var tn = new TruncatedDistribution(new Normal(0.5, 0.2), 0, 1);
+            Assert.AreEqual(0.5, tn.Mode, 1e-4);
+        }
+
+        /// <summary>
+        /// Testing standard deviation.
+        /// </summary>
+        [TestMethod()]
+        public void Test_StandardDeviation()
+        {
+            var tn = new TruncatedDistribution(new Normal(0.5, 0.2), 0, 1);
+            Assert.AreEqual(0.19091, tn.StandardDeviation, 1e-4);
+        }
+
+        /// <summary>
+        /// Testing skew.
+        /// </summary>
+        [TestMethod()]
+        public void Test_Skewness()
+        {
+            var tn = new TruncatedDistribution(new Normal(0.5, 0.2), 0, 1);
+            Assert.AreEqual(0, tn.Skewness, 1E-4);
+        }
+
+        /// <summary>
+        /// Testing Kurtosis.
+        /// </summary>
+        [TestMethod()]
+        public void Test_Kurtosis()
+        {
+            var tn = new TruncatedDistribution(new Normal(0.5, 0.2), 0, 1);
+            Assert.AreEqual(2.62422, tn.Kurtosis, 1e-04);
+        }
+
+        /// <summary>
+        /// Testing minimum and maximum functions.
+        /// </summary>
+        [TestMethod()]
+        public void Test_MinMax()
+        {
+            var tn = new TruncatedDistribution(new Normal(0.5, 0.2), 0, 1);
+            Assert.AreEqual(0, tn.Minimum);
+            Assert.AreEqual(1, tn.Maximum);
+        }
+    }
+}

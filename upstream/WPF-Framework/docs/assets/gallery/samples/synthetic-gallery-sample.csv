@@ -1,0 +1,13 @@
+Sample ID,Category,Value,Units,Source
+DEMO-001,Group A,12.5,example units,Synthetic
+DEMO-002,Group A,18,example units,Synthetic
+DEMO-003,Group A,23.5,example units,Synthetic
+DEMO-004,Group A,31,example units,Synthetic
+DEMO-005,Group B,15,example units,Synthetic
+DEMO-006,Group B,21.5,example units,Synthetic
+DEMO-007,Group B,28,example units,Synthetic
+DEMO-008,Group B,36.5,example units,Synthetic
+DEMO-009,Group C,10,example units,Synthetic
+DEMO-010,Group C,17.5,example units,Synthetic
+DEMO-011,Group C,26,example units,Synthetic
+DEMO-012,Group C,34.5,example units,Synthetic

@@ -1,0 +1,1808 @@
+using Numerics.Data;
+using Numerics.Data.Statistics;
+using Numerics.Distributions;
+using Numerics.Mathematics.Optimization;
+using Numerics.Sampling;
+using Numerics.Sampling.MCMC;
+using RMC.BestFit.Analyses;
+using RMC.BestFit.Estimation;
+using RMC.BestFit.Models;
+using RMC.BestFit.Models.SpatialExtremes;
+using RMC.BestFit.Models.TrendFunctions;
+using System.Xml.Linq;
+
+namespace RMC.BestFit.Tests.SpatialExtremes;
+
+/// <summary>
+/// Programmatic unit tests for the <c>SpatialGEVAnalysis</c> wrapper class.
+/// </summary>
+/// <remarks>
+/// <para>
+/// These tests cover constructors, XML serialization, validation, ClearResults state
+/// transitions, property-change events, cancellation guards, parameter validation
+/// (pre-estimation), probability-ordinate handling, site-weight handling, and
+/// configuration of Bayesian analysis settings. Estimation-driven tests (any test
+/// invoking <c>RunAsync()</c>, including event-raise checks and parameter-recovery
+/// runs) live in <c>RMC.BestFit.Verification</c>.
+/// </para>
+/// <para>
+/// Inline deterministic fixtures (small homogeneous spatial GEV samples) are used so
+/// this file does not depend on the Verification project's shared
+/// <c>SyntheticSpatialGEVData</c> helper. Sample sizes are small (3-5 sites x 30
+/// years) so the suite stays in the fast PR gate.
+/// </para>
+/// </remarks>
+[TestClass]
+public class SpatialGEVAnalysisTests
+{
+    #region Inline test fixtures
+
+    /// <summary>
+    /// Creates standard inline at-site data (30 observations x 5 sites) drawn from a homogeneous
+    /// GEV(10000, 2500, 0) distribution via inverse-CDF sampling with a fixed seed.
+    /// </summary>
+    private static double[,] CreateTestAtSiteData()
+    {
+        var data = new double[30, 5];
+        var rng = new Random(12345);
+        var gev = new GeneralizedExtremeValue(10000, 2500, 0.0);
+
+        for (int site = 0; site < 5; site++)
+        {
+            for (int year = 0; year < 30; year++)
+            {
+                data[year, site] = gev.InverseCDF(rng.NextDouble());
+            }
+        }
+
+        return data;
+    }
+
+    /// <summary>
+    /// Creates inline test site coordinates for a 5-site network spread along a roughly
+    /// linear river path.
+    /// </summary>
+    private static double[,] CreateTestCoordinates()
+    {
+        return new double[,]
+        {
+            { 0.0, 0.0 },
+            { 10.0, 5.0 },
+            { 22.0, 8.0 },
+            { 35.0, 12.0 },
+            { 50.0, 15.0 }
+        };
+    }
+
+    /// <summary>
+    /// Creates a minimal 2-site x 20-year fixture for edge-case testing.
+    /// </summary>
+    private static (double[,] Data, double[,] Coordinates) CreateMinimalTestData()
+    {
+        var data = new double[20, 2];
+        var rng = new Random(54321);
+        var gev = new GeneralizedExtremeValue(6000, 1500, 0.0);
+
+        for (int i = 0; i < 20; i++)
+        {
+            data[i, 0] = gev.InverseCDF(rng.NextDouble());
+            data[i, 1] = gev.InverseCDF(rng.NextDouble());
+        }
+
+        var coords = new double[,]
+        {
+            { 0.0, 0.0 },
+            { 10.0, 0.0 }
+        };
+
+        return (data, coords);
+    }
+
+    /// <summary>
+    /// Creates the standard fixture and inserts NaN values at five distinct (year, site) cells.
+    /// </summary>
+    private static double[,] CreateDataWithMissingValues()
+    {
+        var data = CreateTestAtSiteData();
+        data[5, 2] = double.NaN;
+        data[10, 0] = double.NaN;
+        data[15, 4] = double.NaN;
+        data[20, 1] = double.NaN;
+        data[25, 3] = double.NaN;
+        return data;
+    }
+
+    /// <summary>
+    /// Creates a default-configured <c>SpatialGEV</c> with intercept-only trends and 5 sites.
+    /// </summary>
+    private static SpatialGEV CreateTestSpatialGEV()
+    {
+        var data = CreateTestAtSiteData();
+        var coords = CreateTestCoordinates();
+
+        var location = new GeneralLinearFunction("Location");
+        var scale = new GeneralLinearFunction("Scale");
+        var shape = new GeneralLinearFunction("Shape");
+
+        return new SpatialGEV(data, coords, location, scale, shape);
+    }
+
+    /// <summary>
+    /// Creates a minimal spatial GEV model with only 2 sites for edge-case coverage.
+    /// </summary>
+    private static SpatialGEV CreateMinimalSpatialGEV()
+    {
+        var (data, coords) = CreateMinimalTestData();
+
+        var location = new GeneralLinearFunction("Location");
+        var scale = new GeneralLinearFunction("Scale");
+        var shape = new GeneralLinearFunction("Shape");
+
+        return new SpatialGEV(data, coords, location, scale, shape);
+    }
+
+    /// <summary>
+    /// Creates a spatial GEV model whose data matrix contains NaN values at several site-year cells.
+    /// </summary>
+    private static SpatialGEV CreateSpatialGEVWithMissingData()
+    {
+        var data = CreateDataWithMissingValues();
+        var coords = CreateTestCoordinates();
+
+        var location = new GeneralLinearFunction("Location");
+        var scale = new GeneralLinearFunction("Scale");
+        var shape = new GeneralLinearFunction("Shape");
+
+        return new SpatialGEV(data, coords, location, scale, shape);
+    }
+
+    /// <summary>
+    /// Creates a test model with spatial regression errors enabled on location and scale, mirroring
+    /// <c>SpatialGEVTests.CreateModelWithSpatialErrors</c> so both test classes exercise the same
+    /// fixture shape.
+    /// </summary>
+    private static SpatialGEV CreateSpatialGEVWithSpatialErrors()
+    {
+        var model = CreateTestSpatialGEV();
+        model.LocationErrors = new SpatialRegressionErrors(model.Coordinates, CorrelationFunctionType.Exponential);
+        model.ScaleErrors = new SpatialRegressionErrors(model.Coordinates, CorrelationFunctionType.Exponential);
+        model.UseLocationErrors = true;
+        model.UseScaleErrors = true;
+        model.SetDefaultParameters();
+        return model;
+    }
+
+    #endregion
+
+    #region Constructor Tests
+
+    /// <summary>
+    /// Tests that the constructor properly initializes the analysis with a spatial GEV model.
+    /// </summary>
+    [TestMethod]
+    public void Constructor_WithSpatialGEV_InitializesCorrectly()
+    {
+        var spatialGEV = CreateTestSpatialGEV();
+
+        var analysis = new SpatialGEVAnalysis(spatialGEV);
+
+        Assert.IsNotNull(analysis.SpatialGEV, "SpatialGEV should not be null.");
+        Assert.IsNotNull(analysis.BayesianAnalysis, "BayesianAnalysis should not be null.");
+        Assert.IsNotNull(analysis.ProbabilityOrdinates, "ProbabilityOrdinates should not be null.");
+        Assert.IsFalse(analysis.IsEstimated, "IsEstimated should be false initially.");
+        Assert.IsNull(analysis.AnalysisResults, "AnalysisResults should be null initially.");
+        Assert.IsNull(analysis.SiteResults, "SiteResults should be null initially.");
+        Assert.IsNull(analysis.CrossValidationResults, "CrossValidationResults should be null initially.");
+    }
+
+    /// <summary>
+    /// Tests that the constructor throws <c>ArgumentNullException</c> when spatial GEV model is null.
+    /// </summary>
+    [TestMethod]
+    [ExpectedException(typeof(ArgumentNullException))]
+    public void Constructor_WithNullSpatialGEV_ThrowsArgumentNullException()
+    {
+        _ = new SpatialGEVAnalysis(null!);
+    }
+
+    /// <summary>
+    /// Tests that the BayesianAnalysis property references the correct model.
+    /// </summary>
+    [TestMethod]
+    public void Constructor_BayesianAnalysis_HasCorrectModel()
+    {
+        var spatialGEV = CreateTestSpatialGEV();
+
+        var analysis = new SpatialGEVAnalysis(spatialGEV);
+
+        Assert.AreSame(spatialGEV, analysis.BayesianAnalysis.Model,
+            "BayesianAnalysis.Model should reference the spatial GEV model.");
+    }
+
+    /// <summary>
+    /// Tests that the constructor initializes probability ordinates with default values.
+    /// </summary>
+    [TestMethod]
+    public void Constructor_InitializesDefaultProbabilityOrdinates()
+    {
+        var spatialGEV = CreateTestSpatialGEV();
+
+        var analysis = new SpatialGEVAnalysis(spatialGEV);
+
+        Assert.IsNotNull(analysis.ProbabilityOrdinates, "ProbabilityOrdinates should not be null.");
+        Assert.IsTrue(analysis.ProbabilityOrdinates.Count > 0,
+            "Default probability ordinates should have values.");
+    }
+
+    /// <summary>
+    /// Tests that the constructor works with minimal (2 site) configuration.
+    /// </summary>
+    [TestMethod]
+    public void Constructor_WithMinimalSites_InitializesCorrectly()
+    {
+        var spatialGEV = CreateMinimalSpatialGEV();
+
+        var analysis = new SpatialGEVAnalysis(spatialGEV);
+
+        Assert.IsNotNull(analysis, "Analysis should be created with minimal sites.");
+        Assert.AreEqual(2, analysis.SpatialGEV.Sites, "Model should have 2 sites.");
+    }
+
+    /// <summary>
+    /// Tests that the constructor works with data containing missing values.
+    /// </summary>
+    [TestMethod]
+    public void Constructor_WithMissingData_InitializesCorrectly()
+    {
+        var spatialGEV = CreateSpatialGEVWithMissingData();
+
+        var analysis = new SpatialGEVAnalysis(spatialGEV);
+
+        Assert.IsNotNull(analysis, "Analysis should handle missing data.");
+        Assert.AreEqual(5, analysis.SpatialGEV.Sites, "Model should have 5 sites.");
+    }
+
+    #endregion
+
+    #region XML Serialization Tests
+
+    /// <summary>
+    /// Tests that the analysis can be serialized to XML and restored.
+    /// </summary>
+    [TestMethod]
+    public void XmlSerialization_RoundTrip_PreservesConfiguration()
+    {
+        var spatialGEV = CreateTestSpatialGEV();
+        var analysis = new SpatialGEVAnalysis(spatialGEV);
+
+        analysis.ProbabilityOrdinates.Clear();
+        analysis.ProbabilityOrdinates.Add(0.5);
+        analysis.ProbabilityOrdinates.Add(0.1);
+        analysis.ProbabilityOrdinates.Add(0.01);
+
+        var xElement = analysis.ToXElement();
+        var restoredAnalysis = new SpatialGEVAnalysis(spatialGEV, xElement);
+
+        Assert.IsNotNull(restoredAnalysis, "Restored analysis should not be null.");
+        Assert.AreEqual(analysis.ProbabilityOrdinates.Count, restoredAnalysis.ProbabilityOrdinates.Count,
+            "Probability ordinates count should be preserved.");
+    }
+
+    /// <summary>
+    /// Tests that the constructor throws when XElement is null.
+    /// </summary>
+    [TestMethod]
+    [ExpectedException(typeof(ArgumentNullException))]
+    public void Constructor_WithNullXElement_ThrowsArgumentNullException()
+    {
+        var spatialGEV = CreateTestSpatialGEV();
+
+        _ = new SpatialGEVAnalysis(spatialGEV, null!);
+    }
+
+    /// <summary>
+    /// Tests that the constructor throws when spatial GEV is null in XML constructor.
+    /// </summary>
+    [TestMethod]
+    [ExpectedException(typeof(ArgumentNullException))]
+    public void Constructor_XmlWithNullSpatialGEV_ThrowsArgumentNullException()
+    {
+        var xElement = new XElement("SpatialGEVAnalysis");
+
+        _ = new SpatialGEVAnalysis(null!, xElement);
+    }
+
+    /// <summary>
+    /// Tests serialization with Bayesian analysis settings preserved.
+    /// </summary>
+    [TestMethod]
+    public void XmlSerialization_WithBayesianSettings_PreservesSettings()
+    {
+        var spatialGEV = CreateTestSpatialGEV();
+        var analysis = new SpatialGEVAnalysis(spatialGEV);
+        analysis.BayesianAnalysis.Iterations = 5000;
+        analysis.BayesianAnalysis.WarmupIterations = 1000;
+
+        var xElement = analysis.ToXElement();
+        var restoredAnalysis = new SpatialGEVAnalysis(spatialGEV, xElement);
+
+        Assert.AreEqual(5000, restoredAnalysis.BayesianAnalysis.Iterations,
+            "Iterations should be preserved.");
+        Assert.AreEqual(1000, restoredAnalysis.BayesianAnalysis.WarmupIterations,
+            "WarmupIterations should be preserved.");
+    }
+
+    /// <summary>
+    /// Tests that ToXElement creates valid XML structure.
+    /// </summary>
+    [TestMethod]
+    public void ToXElement_CreatesValidXmlStructure()
+    {
+        var spatialGEV = CreateTestSpatialGEV();
+        var analysis = new SpatialGEVAnalysis(spatialGEV);
+
+        var xElement = analysis.ToXElement();
+
+        Assert.IsNotNull(xElement, "XElement should not be null.");
+        Assert.AreEqual("SpatialGEVAnalysis", xElement.Name.LocalName,
+            "Root element should be SpatialGEVAnalysis.");
+        Assert.IsNotNull(xElement.Attribute("IsEstimated"),
+            "Should have IsEstimated attribute.");
+        Assert.IsNotNull(xElement.Element("ProbabilityOrdinates"),
+            "Should have ProbabilityOrdinates element.");
+    }
+
+    /// <summary>
+    /// Tests that IsEstimated attribute is properly serialized.
+    /// </summary>
+    [TestMethod]
+    public void XmlSerialization_PreservesIsEstimatedFlag()
+    {
+        var spatialGEV = CreateTestSpatialGEV();
+        var analysis = new SpatialGEVAnalysis(spatialGEV);
+
+        var xElement = analysis.ToXElement();
+        var isEstimatedAttr = xElement.Attribute("IsEstimated");
+
+        Assert.IsNotNull(isEstimatedAttr, "IsEstimated attribute should exist.");
+        // XLinq serializes booleans as lowercase "true"/"false" per XML convention
+        Assert.AreEqual("false", isEstimatedAttr.Value,
+            "IsEstimated should be false for unestimated analysis.");
+    }
+
+    #endregion
+
+    #region Validation Tests
+
+    /// <summary>
+    /// Tests that Validate returns valid for a properly configured analysis.
+    /// </summary>
+    [TestMethod]
+    public void Validate_WithValidConfiguration_ReturnsValid()
+    {
+        var spatialGEV = CreateTestSpatialGEV();
+        var analysis = new SpatialGEVAnalysis(spatialGEV);
+
+        var (isValid, messages) = analysis.Validate();
+
+        Assert.IsTrue(isValid, $"Validation should pass. Messages: {string.Join(", ", messages)}");
+    }
+
+    /// <summary>
+    /// Tests that Validate propagates validation from the underlying spatial GEV model.
+    /// </summary>
+    [TestMethod]
+    public void Validate_PropagatesModelValidation()
+    {
+        var spatialGEV = CreateTestSpatialGEV();
+        var analysis = new SpatialGEVAnalysis(spatialGEV);
+
+        var (isValid, _) = analysis.Validate();
+
+        Assert.IsTrue(isValid, "Validation should pass for valid model.");
+    }
+
+    /// <summary>
+    /// Tests validation with minimal configuration (2 sites).
+    /// </summary>
+    [TestMethod]
+    public void Validate_WithMinimalSites_ReturnsValid()
+    {
+        var spatialGEV = CreateMinimalSpatialGEV();
+        var analysis = new SpatialGEVAnalysis(spatialGEV);
+
+        var (isValid, messages) = analysis.Validate();
+
+        Assert.IsTrue(isValid, $"Validation should pass for 2 sites. Messages: {string.Join(", ", messages)}");
+    }
+
+    /// <summary>
+    /// Tests validation with missing data in the model.
+    /// </summary>
+    [TestMethod]
+    public void Validate_WithMissingData_ReturnsValid()
+    {
+        var spatialGEV = CreateSpatialGEVWithMissingData();
+        var analysis = new SpatialGEVAnalysis(spatialGEV);
+
+        var (isValid, messages) = analysis.Validate();
+
+        Assert.IsTrue(isValid, $"Validation should pass with missing data. Messages: {string.Join(", ", messages)}");
+    }
+
+    /// <summary>
+    /// Tests that Validate rejects <see cref="SpatialGEVUncertaintyMethod.GodambeSandwich"/> combined
+    /// with spatial regression errors. The Godambe sensitivity matrix is the Hessian of the
+    /// observation log likelihood alone, which excludes the latent errors' Gaussian-process prior
+    /// (<see cref="RMC.BestFit.Models.SpatialExtremes.SpatialGEV.PriorLogLikelihood"/>); every enabled
+    /// error family's per-site latent errors are then perfectly confounded with that family's trend
+    /// intercept in the data likelihood, so the sensitivity matrix is exactly singular and the run
+    /// always fails after the MCMC completes. Validate now rejects the combination up front.
+    /// </summary>
+    [TestMethod]
+    public void Validate_GodambeSandwichWithSpatialRegressionErrors_ReturnsInvalid()
+    {
+        var spatialGEV = CreateSpatialGEVWithSpatialErrors();
+        var analysis = new SpatialGEVAnalysis(spatialGEV)
+        {
+            UncertaintyMethod = SpatialGEVUncertaintyMethod.GodambeSandwich
+        };
+
+        var (isValid, messages) = analysis.Validate();
+
+        Assert.IsFalse(isValid);
+        Assert.IsTrue(messages.Contains(
+            "Error: The Godambe sandwich uncertainty method cannot be used with spatial regression errors. Choose Bayesian posterior, Bayesian inflated, or spatial bootstrap uncertainty, or remove the spatial regression errors."),
+            $"Messages: {string.Join(", ", messages)}");
+    }
+
+    /// <summary>
+    /// Tests that Validate does not report the Godambe/spatial-errors restriction when
+    /// <see cref="SpatialGEVUncertaintyMethod.GodambeSandwich"/> is selected but no spatial regression
+    /// errors are enabled: the intercept/latent-error confound does not exist without them.
+    /// </summary>
+    [TestMethod]
+    public void Validate_GodambeSandwichWithoutSpatialRegressionErrors_DoesNotReportRestriction()
+    {
+        var spatialGEV = CreateTestSpatialGEV();
+        var analysis = new SpatialGEVAnalysis(spatialGEV)
+        {
+            UncertaintyMethod = SpatialGEVUncertaintyMethod.GodambeSandwich
+        };
+
+        var (isValid, messages) = analysis.Validate();
+
+        Assert.IsTrue(isValid, $"Validation should pass. Messages: {string.Join(", ", messages)}");
+        Assert.IsFalse(messages.Any(m => m.Contains("Godambe sandwich uncertainty method cannot be used with spatial regression errors")));
+    }
+
+    /// <summary>
+    /// Tests that Validate does not report the Godambe/spatial-errors restriction when spatial
+    /// regression errors are enabled but the uncertainty method is
+    /// <see cref="SpatialGEVUncertaintyMethod.BayesianPosterior"/>: the restriction is specific to
+    /// <see cref="SpatialGEVUncertaintyMethod.GodambeSandwich"/>.
+    /// </summary>
+    [TestMethod]
+    public void Validate_BayesianPosteriorWithSpatialRegressionErrors_DoesNotReportRestriction()
+    {
+        var spatialGEV = CreateSpatialGEVWithSpatialErrors();
+        var analysis = new SpatialGEVAnalysis(spatialGEV)
+        {
+            UncertaintyMethod = SpatialGEVUncertaintyMethod.BayesianPosterior
+        };
+
+        var (isValid, messages) = analysis.Validate();
+
+        Assert.IsTrue(isValid, $"Validation should pass. Messages: {string.Join(", ", messages)}");
+        Assert.IsFalse(messages.Any(m => m.Contains("Godambe sandwich uncertainty method cannot be used with spatial regression errors")));
+    }
+
+    #endregion
+
+    #region ClearResults Tests
+
+    /// <summary>
+    /// Tests that ClearResults resets all analysis results.
+    /// </summary>
+    [TestMethod]
+    public void ClearResults_ResetsAllResults()
+    {
+        var spatialGEV = CreateTestSpatialGEV();
+        var analysis = new SpatialGEVAnalysis(spatialGEV);
+
+        analysis.ClearResults();
+
+        Assert.IsFalse(analysis.IsEstimated, "IsEstimated should be false after clearing.");
+        Assert.IsNull(analysis.AnalysisResults, "AnalysisResults should be null after clearing.");
+        Assert.IsNull(analysis.SiteResults, "SiteResults should be null after clearing.");
+        Assert.IsNull(analysis.CrossValidationResults, "CrossValidationResults should be null after clearing.");
+    }
+
+    /// <summary>
+    /// Tests that ClearResults also clears BayesianAnalysis results.
+    /// </summary>
+    [TestMethod]
+    public void ClearResults_ClearsBayesianAnalysisResults()
+    {
+        var spatialGEV = CreateTestSpatialGEV();
+        var analysis = new SpatialGEVAnalysis(spatialGEV);
+
+        analysis.ClearResults();
+
+        Assert.IsFalse(analysis.BayesianAnalysis.IsEstimated,
+            "BayesianAnalysis.IsEstimated should be false after clearing.");
+    }
+
+    /// <summary>
+    /// Tests that ClearResults raises PropertyChanged events.
+    /// </summary>
+    [TestMethod]
+    public void ClearResults_RaisesPropertyChangedEvents()
+    {
+        var spatialGEV = CreateTestSpatialGEV();
+        var analysis = new SpatialGEVAnalysis(spatialGEV);
+
+        var changedProperties = new List<string>();
+        analysis.PropertyChanged += (s, e) =>
+        {
+            if (e.PropertyName != null)
+                changedProperties.Add(e.PropertyName);
+        };
+
+        analysis.ClearResults();
+
+        Assert.IsTrue(changedProperties.Contains(nameof(SpatialGEVAnalysis.AnalysisResults)),
+            "Should raise PropertyChanged for AnalysisResults.");
+        Assert.IsTrue(changedProperties.Contains(nameof(SpatialGEVAnalysis.SiteResults)),
+            "Should raise PropertyChanged for SiteResults.");
+    }
+
+    #endregion
+
+    #region Property Change Tests
+
+    /// <summary>
+    /// Tests that ProbabilityOrdinates changes raise PropertyChanged.
+    /// </summary>
+    [TestMethod]
+    public void ProbabilityOrdinates_Change_ClearsResults()
+    {
+        var spatialGEV = CreateTestSpatialGEV();
+        var analysis = new SpatialGEVAnalysis(spatialGEV);
+
+        bool propertyChanged = false;
+        analysis.PropertyChanged += (s, e) =>
+        {
+            if (e.PropertyName == nameof(SpatialGEVAnalysis.ProbabilityOrdinates))
+                propertyChanged = true;
+        };
+
+        analysis.ProbabilityOrdinates = new ProbabilityOrdinates();
+
+        Assert.IsTrue(propertyChanged, "PropertyChanged should be raised for ProbabilityOrdinates.");
+    }
+
+    /// <summary>
+    /// Tests that model property changes propagate through the analysis.
+    /// </summary>
+    [TestMethod]
+    public void ModelPropertyChange_PropagatesPropertyChanged()
+    {
+        var spatialGEV = CreateTestSpatialGEV();
+        var analysis = new SpatialGEVAnalysis(spatialGEV);
+
+        bool propertyChanged = false;
+        analysis.PropertyChanged += (s, e) =>
+        {
+            propertyChanged = true;
+        };
+
+        // Modify site weights on the model and clear results
+        spatialGEV.SiteWeights[0] = 0.5;
+        analysis.ClearResults();
+
+        Assert.IsTrue(propertyChanged, "PropertyChanged should propagate from model changes.");
+    }
+
+    #endregion
+
+    #region CancelAnalysis Tests
+
+    /// <summary>
+    /// Tests that CancelAnalysis can be called without error when not running.
+    /// </summary>
+    [TestMethod]
+    public void CancelAnalysis_WhenNotRunning_DoesNotThrow()
+    {
+        var spatialGEV = CreateTestSpatialGEV();
+        var analysis = new SpatialGEVAnalysis(spatialGEV);
+
+        // Act & Assert - Should not throw
+        analysis.CancelAnalysis();
+    }
+
+    /// <summary>
+    /// Tests that CancelAnalysis propagates to BayesianAnalysis without error.
+    /// </summary>
+    [TestMethod]
+    public void CancelAnalysis_CancelsBayesianSimulation()
+    {
+        var spatialGEV = CreateTestSpatialGEV();
+        var analysis = new SpatialGEVAnalysis(spatialGEV);
+
+        // Act & Assert - Should not throw
+        analysis.CancelAnalysis();
+    }
+
+    #endregion
+
+    #region Pre-Estimation Method Guards
+
+    /// <summary>
+    /// Tests that GetSiteQuantiles throws when analysis is not estimated.
+    /// </summary>
+    [TestMethod]
+    [ExpectedException(typeof(InvalidOperationException))]
+    public void GetSiteQuantiles_WhenNotEstimated_ThrowsInvalidOperationException()
+    {
+        var spatialGEV = CreateTestSpatialGEV();
+        var analysis = new SpatialGEVAnalysis(spatialGEV);
+        var probs = new double[] { 0.5, 0.1, 0.01 };
+
+        analysis.GetSiteQuantiles(0, probs);
+    }
+
+    /// <summary>
+    /// Tests that GetSiteQuantiles validation precondition is observable via IsEstimated.
+    /// </summary>
+    [TestMethod]
+    public void GetSiteQuantiles_NotEstimated_StateObservable()
+    {
+        var spatialGEV = CreateTestSpatialGEV();
+        var analysis = new SpatialGEVAnalysis(spatialGEV);
+
+        Assert.IsFalse(analysis.IsEstimated, "Analysis should not be estimated initially.");
+    }
+
+    /// <summary>
+    /// Tests that PredictAtUngaugedLocation throws when analysis is not estimated.
+    /// </summary>
+    [TestMethod]
+    [ExpectedException(typeof(InvalidOperationException))]
+    public void PredictAtUngaugedLocation_WhenNotEstimated_ThrowsInvalidOperationException()
+    {
+        var spatialGEV = CreateTestSpatialGEV();
+        var analysis = new SpatialGEVAnalysis(spatialGEV);
+        var coords = new double[] { 25.0, 10.0 };
+        var probs = new double[] { 0.5, 0.1, 0.01 };
+
+        analysis.PredictAtUngaugedLocation(coords, null, probs);
+    }
+
+    /// <summary>
+    /// Tests that PredictAtUngaugedLocation validates coordinate access on the underlying model.
+    /// </summary>
+    [TestMethod]
+    public void PredictAtUngaugedLocation_HasAccessibleCoordinates()
+    {
+        var spatialGEV = CreateTestSpatialGEV();
+        var analysis = new SpatialGEVAnalysis(spatialGEV);
+
+        Assert.IsNotNull(analysis.SpatialGEV.Coordinates, "Coordinates should exist.");
+    }
+
+    /// <summary>
+    /// Tests that GetRegionalGrowthCurve throws when analysis is not estimated.
+    /// </summary>
+    [TestMethod]
+    [ExpectedException(typeof(InvalidOperationException))]
+    public void GetRegionalGrowthCurve_WhenNotEstimated_ThrowsInvalidOperationException()
+    {
+        var spatialGEV = CreateTestSpatialGEV();
+        var analysis = new SpatialGEVAnalysis(spatialGEV);
+        var probs = new double[] { 0.5, 0.2, 0.1, 0.04, 0.02, 0.01 };
+
+        analysis.GetRegionalGrowthCurve(probs);
+    }
+
+    #endregion
+
+    #region Probability Ordinates Tests
+
+    /// <summary>
+    /// Tests that probability ordinates can be modified.
+    /// </summary>
+    [TestMethod]
+    public void ProbabilityOrdinates_CanBeModified()
+    {
+        var spatialGEV = CreateTestSpatialGEV();
+        var analysis = new SpatialGEVAnalysis(spatialGEV);
+        analysis.ProbabilityOrdinates.Clear();
+
+        analysis.ProbabilityOrdinates.Add(0.5);
+        analysis.ProbabilityOrdinates.Add(0.1);
+        analysis.ProbabilityOrdinates.Add(0.01);
+
+        Assert.AreEqual(3, analysis.ProbabilityOrdinates.Count, "Should have 3 probability ordinates.");
+    }
+
+    /// <summary>
+    /// Tests that setting ProbabilityOrdinates to new object clears results.
+    /// </summary>
+    [TestMethod]
+    public void ProbabilityOrdinates_SetNewObject_ClearsResults()
+    {
+        var spatialGEV = CreateTestSpatialGEV();
+        var analysis = new SpatialGEVAnalysis(spatialGEV);
+
+        analysis.ProbabilityOrdinates = new ProbabilityOrdinates();
+
+        Assert.IsNull(analysis.AnalysisResults, "Results should be cleared when ordinates change.");
+    }
+
+    #endregion
+
+    #region Site Weights Tests
+
+    /// <summary>
+    /// Tests that site weights default to 1.0 for all sites.
+    /// </summary>
+    [TestMethod]
+    public void SiteWeights_DefaultToOne()
+    {
+        var spatialGEV = CreateTestSpatialGEV();
+
+        for (int i = 0; i < spatialGEV.Sites; i++)
+        {
+            Assert.AreEqual(1.0, spatialGEV.SiteWeights[i], 1e-10,
+                $"Site {i} weight should default to 1.0.");
+        }
+    }
+
+    /// <summary>
+    /// Tests that site weights can be modified.
+    /// </summary>
+    [TestMethod]
+    public void SiteWeights_CanBeModified()
+    {
+        var spatialGEV = CreateTestSpatialGEV();
+        _ = new SpatialGEVAnalysis(spatialGEV);
+
+        spatialGEV.SiteWeights[0] = 0.5;
+        spatialGEV.SiteWeights[2] = 2.0;
+
+        Assert.AreEqual(0.5, spatialGEV.SiteWeights[0], 1e-10, "Site 0 weight should be 0.5.");
+        Assert.AreEqual(2.0, spatialGEV.SiteWeights[2], 1e-10, "Site 2 weight should be 2.0.");
+    }
+
+    /// <summary>
+    /// Tests that setting a site weight to zero effectively excludes the site.
+    /// </summary>
+    [TestMethod]
+    public void SiteWeights_ZeroWeight_ExcludesSite()
+    {
+        var spatialGEV = CreateTestSpatialGEV();
+        _ = new SpatialGEVAnalysis(spatialGEV);
+
+        spatialGEV.SiteWeights[0] = 0.0;
+
+        Assert.AreEqual(0.0, spatialGEV.SiteWeights[0], 1e-10,
+            "Site 0 weight should be 0 (excluded).");
+    }
+
+    #endregion
+
+    #region Spatial Model Configuration Tests
+
+    /// <summary>
+    /// Tests that the spatial GEV model has correct number of sites.
+    /// </summary>
+    [TestMethod]
+    public void SpatialGEV_HasCorrectSiteCount()
+    {
+        var spatialGEV = CreateTestSpatialGEV();
+        var analysis = new SpatialGEVAnalysis(spatialGEV);
+
+        Assert.AreEqual(5, analysis.SpatialGEV.Sites, "Model should have 5 sites.");
+    }
+
+    /// <summary>
+    /// Tests that the spatial GEV model has correct observation count.
+    /// </summary>
+    [TestMethod]
+    public void SpatialGEV_HasCorrectObservationCount()
+    {
+        var spatialGEV = CreateTestSpatialGEV();
+        var analysis = new SpatialGEVAnalysis(spatialGEV);
+
+        Assert.AreEqual(30, analysis.SpatialGEV.Observations, "Model should have 30 observations.");
+    }
+
+    /// <summary>
+    /// Tests that the spatial GEV model coordinates are accessible.
+    /// </summary>
+    [TestMethod]
+    public void SpatialGEV_CoordinatesAccessible()
+    {
+        var spatialGEV = CreateTestSpatialGEV();
+        var analysis = new SpatialGEVAnalysis(spatialGEV);
+
+        Assert.IsNotNull(analysis.SpatialGEV.Coordinates, "Coordinates should not be null.");
+        Assert.AreEqual(5, analysis.SpatialGEV.Coordinates.GetLength(0),
+            "Should have coordinates for 5 sites.");
+        Assert.AreEqual(2, analysis.SpatialGEV.Coordinates.GetLength(1),
+            "Coordinates should be 2D (X, Y).");
+    }
+
+    /// <summary>
+    /// Tests that link functions can be configured.
+    /// </summary>
+    [TestMethod]
+    public void SpatialGEV_LinkFunctionsConfigurable()
+    {
+        var spatialGEV = CreateTestSpatialGEV();
+
+        Assert.IsTrue(spatialGEV.UseLogLinkForLocation, "Default should use log-link for location.");
+        Assert.IsTrue(spatialGEV.UseLogLinkForScale, "Default should use log-link for scale.");
+
+        spatialGEV.UseLogLinkForLocation = false;
+        spatialGEV.UseLogLinkForScale = false;
+
+        Assert.IsFalse(spatialGEV.UseLogLinkForLocation, "Should be identity link for location.");
+        Assert.IsFalse(spatialGEV.UseLogLinkForScale, "Should be identity link for scale.");
+    }
+
+    #endregion
+
+    #region Bayesian Analysis Configuration Tests
+
+    /// <summary>
+    /// Tests that Bayesian analysis settings can be configured.
+    /// </summary>
+    [TestMethod]
+    public void BayesianAnalysis_SettingsConfigurable()
+    {
+        var spatialGEV = CreateTestSpatialGEV();
+        var analysis = new SpatialGEVAnalysis(spatialGEV);
+
+        analysis.BayesianAnalysis.Iterations = 10000;
+        analysis.BayesianAnalysis.WarmupIterations = 2000;
+        analysis.BayesianAnalysis.ThinningInterval = 5;
+
+        Assert.AreEqual(10000, analysis.BayesianAnalysis.Iterations);
+        Assert.AreEqual(2000, analysis.BayesianAnalysis.WarmupIterations);
+        Assert.AreEqual(5, analysis.BayesianAnalysis.ThinningInterval);
+    }
+
+    /// <summary>
+    /// Tests that credible interval width can be configured.
+    /// </summary>
+    [TestMethod]
+    public void BayesianAnalysis_CredibleIntervalConfigurable()
+    {
+        var spatialGEV = CreateTestSpatialGEV();
+        var analysis = new SpatialGEVAnalysis(spatialGEV);
+
+        analysis.BayesianAnalysis.CredibleIntervalWidth = 0.90;
+
+        Assert.AreEqual(0.90, analysis.BayesianAnalysis.CredibleIntervalWidth, 1e-10,
+            "Credible interval width should be 0.90.");
+    }
+
+    /// <summary>
+    /// Tests that point estimator type can be configured.
+    /// </summary>
+    [TestMethod]
+    public void BayesianAnalysis_PointEstimatorConfigurable()
+    {
+        var spatialGEV = CreateTestSpatialGEV();
+        var analysis = new SpatialGEVAnalysis(spatialGEV);
+
+        analysis.BayesianAnalysis.PointEstimator = BayesianAnalysis.PointEstimateType.PosteriorMode;
+        Assert.AreEqual(BayesianAnalysis.PointEstimateType.PosteriorMode, analysis.BayesianAnalysis.PointEstimator);
+
+        analysis.BayesianAnalysis.PointEstimator = BayesianAnalysis.PointEstimateType.PosteriorMean;
+        Assert.AreEqual(BayesianAnalysis.PointEstimateType.PosteriorMean, analysis.BayesianAnalysis.PointEstimator);
+    }
+
+    #endregion
+
+    #region Edge Cases
+
+    /// <summary>
+    /// Tests analysis with minimum required sites (2 sites).
+    /// </summary>
+    [TestMethod]
+    public void Analysis_WithTwoSites_IsValid()
+    {
+        var spatialGEV = CreateMinimalSpatialGEV();
+        var analysis = new SpatialGEVAnalysis(spatialGEV);
+
+        var (isValid, messages) = analysis.Validate();
+
+        Assert.IsTrue(isValid, $"Analysis with 2 sites should be valid. Messages: {string.Join(", ", messages)}");
+    }
+
+    /// <summary>
+    /// Tests that model with copula dependence disabled validates.
+    /// </summary>
+    [TestMethod]
+    public void SpatialGEV_WithCopulaDisabled_ValidatesCorrectly()
+    {
+        var spatialGEV = CreateTestSpatialGEV();
+        spatialGEV.UseCopulaDependence = false;
+        var analysis = new SpatialGEVAnalysis(spatialGEV);
+
+        var (isValid, _) = analysis.Validate();
+
+        Assert.IsTrue(isValid, "Model without copula should validate.");
+    }
+
+    /// <summary>
+    /// Tests that model without spatial errors validates.
+    /// </summary>
+    [TestMethod]
+    public void SpatialGEV_WithoutSpatialErrors_ValidatesCorrectly()
+    {
+        var spatialGEV = CreateTestSpatialGEV();
+        spatialGEV.UseLocationErrors = false;
+        spatialGEV.UseScaleErrors = false;
+        spatialGEV.UseShapeErrors = false;
+        var analysis = new SpatialGEVAnalysis(spatialGEV);
+
+        var (isValid, _) = analysis.Validate();
+
+        Assert.IsTrue(isValid, "Model without spatial errors should validate.");
+    }
+
+    /// <summary>
+    /// Tests handling of coordinates at the origin.
+    /// </summary>
+    [TestMethod]
+    public void SpatialGEV_WithSiteAtOrigin_Validates()
+    {
+        var spatialGEV = CreateTestSpatialGEV();
+        var analysis = new SpatialGEVAnalysis(spatialGEV);
+
+        Assert.AreEqual(0.0, analysis.SpatialGEV.Coordinates[0, 0], 1e-10, "First site X should be 0.");
+        Assert.AreEqual(0.0, analysis.SpatialGEV.Coordinates[0, 1], 1e-10, "First site Y should be 0.");
+
+        var (isValid, _) = analysis.Validate();
+        Assert.IsTrue(isValid, "Model with site at origin should validate.");
+    }
+
+    #endregion
+
+    #region Integration Tests
+
+    /// <summary>
+    /// Tests that multiple analysis objects can be created for the same model.
+    /// </summary>
+    [TestMethod]
+    public void MultipleAnalysisObjects_CanBeCreated()
+    {
+        var spatialGEV = CreateTestSpatialGEV();
+
+        var analysis1 = new SpatialGEVAnalysis(spatialGEV);
+        var analysis2 = new SpatialGEVAnalysis(spatialGEV);
+
+        Assert.IsNotNull(analysis1);
+        Assert.IsNotNull(analysis2);
+        Assert.AreSame(spatialGEV, analysis1.SpatialGEV);
+        Assert.AreSame(spatialGEV, analysis2.SpatialGEV);
+    }
+
+    /// <summary>
+    /// Tests that analysis properly handles data variability across sites.
+    /// </summary>
+    [TestMethod]
+    public void Analysis_WithVariableData_InitializesCorrectly()
+    {
+        // Arrange - Create data with different scales at each site
+        var data = new double[20, 3];
+        var coords = new double[,]
+        {
+            { 0.0, 0.0 },
+            { 10.0, 0.0 },
+            { 20.0, 0.0 }
+        };
+
+        var rng = new Random(11111);
+        for (int i = 0; i < 20; i++)
+        {
+            data[i, 0] = 100 + rng.NextDouble() * 50;
+            data[i, 1] = 5000 + rng.NextDouble() * 2000;
+            data[i, 2] = 50000 + rng.NextDouble() * 20000;
+        }
+
+        var location = new GeneralLinearFunction("Location");
+        var scale = new GeneralLinearFunction("Scale");
+        var shape = new GeneralLinearFunction("Shape");
+
+        var spatialGEV = new SpatialGEV(data, coords, location, scale, shape);
+
+        var analysis = new SpatialGEVAnalysis(spatialGEV);
+        var (isValid, messages) = analysis.Validate();
+
+        Assert.IsTrue(isValid, $"Analysis with variable data should be valid. Messages: {string.Join(", ", messages)}");
+    }
+
+    /// <summary>
+    /// Tests that analysis interface (IBayesianAnalysis) is implemented.
+    /// </summary>
+    [TestMethod]
+    public void Analysis_ImplementsIBayesianAnalysis()
+    {
+        var spatialGEV = CreateTestSpatialGEV();
+        var analysis = new SpatialGEVAnalysis(spatialGEV);
+
+        Assert.IsInstanceOfType(analysis, typeof(IBayesianAnalysis),
+            "SpatialGEVAnalysis should implement IBayesianAnalysis.");
+    }
+
+    /// <summary>
+    /// Tests that the analysis inherits from AnalysisBase.
+    /// </summary>
+    [TestMethod]
+    public void Analysis_InheritsFromAnalysisBase()
+    {
+        var spatialGEV = CreateTestSpatialGEV();
+        var analysis = new SpatialGEVAnalysis(spatialGEV);
+
+        Assert.IsInstanceOfType(analysis, typeof(AnalysisBase),
+            "SpatialGEVAnalysis should inherit from AnalysisBase.");
+    }
+
+    #endregion
+
+    #region Cross-Validation Configuration Tests
+
+    /// <summary>
+    /// Tests that cross-validation results are initially null.
+    /// </summary>
+    [TestMethod]
+    public void CrossValidationResults_InitiallyNull()
+    {
+        var spatialGEV = CreateTestSpatialGEV();
+        var analysis = new SpatialGEVAnalysis(spatialGEV);
+
+        Assert.IsNull(analysis.CrossValidationResults, "CrossValidationResults should be null initially.");
+    }
+
+    /// <summary>
+    /// Tests that clearing results also clears cross-validation results.
+    /// </summary>
+    [TestMethod]
+    public void ClearResults_ClearsCrossValidationResults()
+    {
+        var spatialGEV = CreateTestSpatialGEV();
+        var analysis = new SpatialGEVAnalysis(spatialGEV);
+
+        analysis.ClearResults();
+
+        Assert.IsNull(analysis.CrossValidationResults, "CrossValidationResults should be null after clearing.");
+    }
+
+    #endregion
+
+    #region Regional Analysis Tests
+
+    /// <summary>
+    /// Tests that analysis can be configured for regional frequency analysis.
+    /// </summary>
+    [TestMethod]
+    public void RegionalAnalysis_CanBeConfigured()
+    {
+        var spatialGEV = CreateTestSpatialGEV();
+        var analysis = new SpatialGEVAnalysis(spatialGEV);
+
+        // Configure for regional analysis
+        analysis.ProbabilityOrdinates.Clear();
+        analysis.ProbabilityOrdinates.Add(0.5);    // 2-year
+        analysis.ProbabilityOrdinates.Add(0.1);    // 10-year
+        analysis.ProbabilityOrdinates.Add(0.04);   // 25-year
+        analysis.ProbabilityOrdinates.Add(0.02);   // 50-year
+        analysis.ProbabilityOrdinates.Add(0.01);   // 100-year
+        analysis.ProbabilityOrdinates.Add(0.002);  // 500-year
+
+        Assert.AreEqual(6, analysis.ProbabilityOrdinates.Count, "Should have 6 return period ordinates.");
+    }
+
+    /// <summary>
+    /// Tests that equal weights represent homogeneous regional pooling.
+    /// </summary>
+    [TestMethod]
+    public void EqualWeights_RepresentHomogeneousRegion()
+    {
+        var spatialGEV = CreateTestSpatialGEV();
+        _ = new SpatialGEVAnalysis(spatialGEV);
+
+        // All weights should be 1.0 by default
+        double sum = 0;
+        for (int i = 0; i < spatialGEV.Sites; i++)
+        {
+            sum += spatialGEV.SiteWeights[i];
+        }
+
+        Assert.AreEqual(5.0, sum, 1e-10, "Sum of weights should be 5 for 5 equal-weight sites.");
+    }
+
+    /// <summary>
+    /// Tests that unequal weights can be used for heterogeneous regions.
+    /// </summary>
+    [TestMethod]
+    public void UnequalWeights_ForHeterogeneousRegion()
+    {
+        var spatialGEV = CreateTestSpatialGEV();
+        _ = new SpatialGEVAnalysis(spatialGEV);
+
+        // Set weights based on hypothetical record lengths
+        spatialGEV.SiteWeights[0] = 30.0 / 100.0;
+        spatialGEV.SiteWeights[1] = 50.0 / 100.0;
+        spatialGEV.SiteWeights[2] = 20.0 / 100.0;
+        spatialGEV.SiteWeights[3] = 40.0 / 100.0;
+        spatialGEV.SiteWeights[4] = 60.0 / 100.0;
+
+        Assert.AreEqual(0.3, spatialGEV.SiteWeights[0], 1e-10);
+        Assert.AreEqual(0.6, spatialGEV.SiteWeights[4], 1e-10);
+    }
+
+    /// <summary>
+    /// Verifies that cancellation from the starting event is reflected in the
+    /// completion event without running an MCMC chain.
+    /// </summary>
+    [TestMethod]
+    public async Task RunAsync_WhenCanceled_ReportsCanceledAndUnsuccessful()
+    {
+        var analysis = new SpatialGEVAnalysis(CreateTestSpatialGEV());
+        bool cancelled = false;
+        bool succeeded = true;
+        analysis.AnalysisStarting += (_, args) => args.Cancel = true;
+        analysis.AnalysisCompleted += (_, args) =>
+        {
+            cancelled = args.Cancelled;
+            succeeded = args.Succeeded;
+        };
+
+        await analysis.RunAsync();
+
+        Assert.IsTrue(cancelled);
+        Assert.IsFalse(succeeded);
+    }
+
+    #endregion
+
+    #region Information Criteria and Godambe Covariance Tests
+
+    /// <summary>
+    /// Verifies that the spatial AIC/BIC helper uses the observation log likelihood and counts one nonempty
+    /// row/year block per BIC observation, excluding fully missing rows and not counting site cells (TR-055).
+    /// </summary>
+    [TestMethod]
+    public void ComputeInformationCriteria_UsesNonEmptyRowYearBlocks()
+    {
+        var data = CreateTestAtSiteData();
+        for (int j = 0; j < 5; j++)
+            data[4, j] = double.NaN;
+        data[10, 2] = double.NaN;
+        var coords = CreateTestCoordinates();
+        var model = new SpatialGEV(data, coords, new GeneralLinearFunction("Location"), new GeneralLinearFunction("Scale"), new GeneralLinearFunction("Shape"));
+        var parameters = model.Parameters.Select(p => p.Value).ToArray();
+        double logLikelihood = model.DataLogLikelihood(parameters);
+
+        var (aic, bic, blocks) = SpatialGEVAnalysis.ComputeInformationCriteria(model, parameters);
+
+        Assert.AreEqual(29, blocks, "Thirty rows less the fully missing row.");
+        Assert.AreEqual(GoodnessOfFit.AIC(model.NumberOfParameters, logLikelihood), aic, 1e-12);
+        Assert.AreEqual(GoodnessOfFit.BIC(29, model.NumberOfParameters, logLikelihood), bic, 1e-12);
+        Assert.AreNotEqual(GoodnessOfFit.BIC(30 * 5 - 6, model.NumberOfParameters, logLikelihood), bic, 1e-9, "Site cells are not the BIC sample unit.");
+    }
+
+    /// <summary>
+    /// Verifies that WAIC and PSIS-LOO consume the row/year pointwise terms: with injected posterior draws the
+    /// criteria equal hand computations from the per-row log-likelihood matrix (TR-055).
+    /// </summary>
+    [TestMethod]
+    public void PredictiveCriteria_FromInjectedDraws_UseRowYearPointwiseTerms()
+    {
+        SpatialGEV model = CreateTestSpatialGEV();
+        var analysis = new SpatialGEVAnalysis(model);
+        var defaults = model.Parameters.Select(p => p.Value).ToArray();
+        double[][] offsets =
+        {
+            new[] { 0.00, 0.00, 0.00 },
+            new[] { 0.02, -0.01, 0.03 },
+            new[] { -0.01, 0.02, -0.02 },
+            new[] { 0.03, 0.01, 0.01 },
+            new[] { -0.02, -0.02, 0.02 },
+            new[] { 0.01, 0.03, -0.03 },
+        };
+        var draws = new List<ParameterSet>();
+        foreach (double[] offset in offsets)
+        {
+            var values = (double[])defaults.Clone();
+            for (int k = 0; k < 3; k++)
+                values[k] += offset[k];
+            draws.Add(new ParameterSet(values, model.LogLikelihood(values)));
+        }
+        ParameterSet best = draws.OrderByDescending(d => d.Fitness).First();
+
+        analysis.BayesianAnalysis.SetCustomMCMCResults(new MCMCResults(new ParameterSet(best.Values, best.Fitness), draws, alpha: 0.1));
+
+        int rows = model.Observations;
+        int drawCount = draws.Count;
+        var matrix = new double[rows, drawCount];
+        for (int d = 0; d < drawCount; d++)
+        {
+            double[] pointwise = model.PointwiseDataLogLikelihood(draws[d].Values);
+            Assert.AreEqual(rows, pointwise.Length, "One pointwise term per row/year.");
+            for (int r = 0; r < rows; r++)
+                matrix[r, d] = pointwise[r];
+        }
+
+        double lppd = 0.0;
+        double pWaic = 0.0;
+        for (int r = 0; r < rows; r++)
+        {
+            double max = double.NegativeInfinity;
+            for (int d = 0; d < drawCount; d++)
+                max = Math.Max(max, matrix[r, d]);
+            double sumExp = 0.0;
+            double mean = 0.0;
+            for (int d = 0; d < drawCount; d++)
+            {
+                sumExp += Math.Exp(matrix[r, d] - max);
+                mean += matrix[r, d];
+            }
+            mean /= drawCount;
+            double variance = 0.0;
+            for (int d = 0; d < drawCount; d++)
+                variance += (matrix[r, d] - mean) * (matrix[r, d] - mean);
+            variance /= drawCount - 1;
+            lppd += max + Math.Log(sumExp) - Math.Log(drawCount);
+            pWaic += variance;
+        }
+
+        Assert.AreEqual(-2.0 * lppd + 2.0 * pWaic, analysis.BayesianAnalysis.WAIC, 1e-8, "WAIC from the row/year matrix.");
+        Assert.AreEqual(pWaic, analysis.BayesianAnalysis.WAIC_pD, 1e-8, "WAIC effective parameters from the row/year matrix.");
+        Assert.IsNotNull(analysis.BayesianAnalysis.ParetoK);
+        Assert.AreEqual(rows, analysis.BayesianAnalysis.ParetoK!.Length, "One Pareto k per row/year.");
+        Assert.IsFalse(double.IsNaN(analysis.BayesianAnalysis.LOOIC), "PSIS-LOO is computed from the same matrix.");
+    }
+
+    /// <summary>
+    /// Verifies that a singular sensitivity matrix (a regression coefficient on an identically zero covariate
+    /// column) is reported as a failure with a null covariance and no substitute matrix (TR-057).
+    /// </summary>
+    [TestMethod]
+    public void ComputeGodambeCovariance_SingularHessian_ReportsFailureWithoutSubstitute()
+    {
+        var data = CreateTestAtSiteData();
+        var coords = CreateTestCoordinates();
+        var zeroCovariate = new double[5, 1];
+        var model = new SpatialGEV(data, coords, new GeneralLinearFunction("Location", zeroCovariate), new GeneralLinearFunction("Scale"), new GeneralLinearFunction("Shape"));
+        var analysis = new SpatialGEVAnalysis(model);
+        var parameters = model.Parameters.Select(p => p.Value).ToArray();
+        Assert.AreEqual(4, parameters.Length, "Intercepts plus the zero-covariate coefficient.");
+
+        double[,]? covariance = analysis.ComputeGodambeCovariance(parameters);
+
+        Assert.IsNull(covariance, "No substitute matrix is returned.");
+        Assert.IsNull(analysis.GodambeCovariance);
+        Assert.AreEqual(CovarianceComputationStatus.Failed, analysis.GodambeCovarianceStatus);
+        StringAssert.Contains(analysis.GodambeCovarianceDiagnostic, "singular");
+    }
+
+    /// <summary>
+    /// Verifies that a well-conditioned intercept-only model yields an available, finite, symmetric sandwich
+    /// covariance with positive variances, and that <c>ClearResults</c> resets the Godambe state (TR-057).
+    /// </summary>
+    [TestMethod]
+    public void ComputeGodambeCovariance_WellConditioned_ReportsAvailableCovariance()
+    {
+        SpatialGEV model = CreateTestSpatialGEV();
+        var analysis = new SpatialGEVAnalysis(model);
+        var parameters = model.Parameters.Select(p => p.Value).ToArray();
+
+        double[,]? covariance = analysis.ComputeGodambeCovariance(parameters);
+
+        Assert.IsNotNull(covariance);
+        Assert.AreSame(covariance, analysis.GodambeCovariance);
+        Assert.AreEqual(CovarianceComputationStatus.Available, analysis.GodambeCovarianceStatus);
+        Assert.IsNull(analysis.GodambeCovarianceDiagnostic);
+        int n = parameters.Length;
+        Assert.AreEqual(n, covariance!.GetLength(0));
+        Assert.AreEqual(n, covariance.GetLength(1));
+        for (int i = 0; i < n; i++)
+        {
+            Assert.IsTrue(covariance[i, i] > 0 && double.IsFinite(covariance[i, i]), $"Variance {i + 1}.");
+            for (int j = 0; j < n; j++)
+            {
+                Assert.IsTrue(double.IsFinite(covariance[i, j]), $"Entry ({i + 1}, {j + 1}).");
+                Assert.AreEqual(covariance[i, j], covariance[j, i], 1e-10 * Math.Max(1.0, Math.Abs(covariance[i, j])), "Symmetry.");
+            }
+        }
+
+        analysis.ClearResults();
+
+        Assert.IsNull(analysis.GodambeCovariance);
+        Assert.AreEqual(CovarianceComputationStatus.NotComputed, analysis.GodambeCovarianceStatus);
+        Assert.IsNull(analysis.GodambeCovarianceDiagnostic);
+    }
+
+    /// <summary>
+    /// Verifies that a covariance rejected by Cholesky factorization is reported at the
+    /// Godambe parameter-draw boundary while preserving the numerical cause.
+    /// </summary>
+    [TestMethod]
+    public void FactorGodambeCovariance_RejectedMatrixReportsContextualFailure()
+    {
+        var covariance = new double[,]
+        {
+            { 1.0, 1.0 },
+            { 1.0, 1.0 },
+        };
+
+        var exception = Assert.ThrowsException<InvalidOperationException>(
+            () => SpatialGEVAnalysis.FactorGodambeCovariance(covariance));
+
+        StringAssert.Contains(exception.Message, "Godambe sandwich covariance");
+        Assert.IsNotNull(exception.InnerException);
+    }
+
+    /// <summary>
+    /// Verifies that a parameter vector of the wrong length is rejected.
+    /// </summary>
+    [TestMethod]
+    public void ComputeGodambeCovariance_WrongParameterCount_Throws()
+    {
+        var analysis = new SpatialGEVAnalysis(CreateTestSpatialGEV());
+
+        Assert.ThrowsException<ArgumentException>(() => analysis.ComputeGodambeCovariance(new[] { 1.0 }));
+        Assert.AreEqual(CovarianceComputationStatus.NotComputed, analysis.GodambeCovarianceStatus);
+    }
+
+    #endregion
+
+    #region Cross-Validation Mechanism Tests
+
+    /// <summary>
+    /// Documents why a zero site weight is not leave-one-site-out for a copula model: the held-out site's
+    /// observations stay in the copula vector, so the training likelihood still depends on them (TR-051).
+    /// </summary>
+    [TestMethod]
+    public void SiteWeightZero_WithCopula_DoesNotExcludeTheHeldOutSite()
+    {
+        var data = CreateTestAtSiteData();
+        var coords = CreateTestCoordinates();
+        var model = new SpatialGEV(data, coords, new GeneralLinearFunction("Location"), new GeneralLinearFunction("Scale"), new GeneralLinearFunction("Shape"));
+        model.SpatialDependence = new GaussianCopula(coords, CorrelationFunctionType.Exponential);
+        model.UseCopulaDependence = true;
+        model.SetDefaultParameters();
+        var parameters = model.Parameters.Select(p => p.Value).ToArray();
+        parameters[0] = 20.0;
+        model.SiteWeights[2] = 0.0;
+
+        double before = model.DataLogLikelihood(parameters);
+        for (int i = 0; i < model.Observations; i++)
+            model.AtSiteData[i, 2] *= 1.5;
+        double after = model.DataLogLikelihood(parameters);
+
+        Assert.AreNotEqual(before, after, 1e-6, "Changing the zero-weight site's data changes the likelihood through the copula term.");
+    }
+
+    /// <summary>
+    /// Documents why a zero site weight is not leave-one-site-out for a latent-error model: the held-out
+    /// site's latent error remains a sampled parameter with its Gaussian-process contribution (TR-051).
+    /// </summary>
+    [TestMethod]
+    public void SiteWeightZero_WithLatentErrors_KeepsTheHeldOutLatentError()
+    {
+        var data = CreateTestAtSiteData();
+        var coords = CreateTestCoordinates();
+        var model = new SpatialGEV(data, coords, new GeneralLinearFunction("Location"), new GeneralLinearFunction("Scale"), new GeneralLinearFunction("Shape"));
+        model.LocationErrors = new SpatialRegressionErrors(coords, CorrelationFunctionType.Exponential);
+        model.UseLocationErrors = true;
+        model.SetDefaultParameters();
+        int before = model.NumberOfParameters;
+
+        model.SiteWeights[2] = 0.0;
+        var parameters = model.Parameters.Select(p => p.Value).ToArray();
+        // Error block after the three intercepts: [σ, range, ε₁..ε₅]; use a moderate process scale so
+        // the Gaussian-process density is informative about the held-out latent error.
+        parameters[3] = 0.3;
+        parameters[4] = 30.0;
+        int heldOutErrorIndex = 3 + 2 + 2;
+        Assert.AreEqual("ε₃", model.Parameters[heldOutErrorIndex].Name);
+        double priorBefore = model.PriorLogLikelihood(parameters);
+        parameters[heldOutErrorIndex] += 0.5;
+        double priorAfter = model.PriorLogLikelihood(parameters);
+
+        Assert.AreEqual(before, model.NumberOfParameters, "The zero-weight site keeps its latent error parameter.");
+        Assert.IsTrue(Math.Abs(priorBefore - priorAfter) > 0.1, $"The held-out latent error still enters the Gaussian-process density ({priorBefore:G10} versus {priorAfter:G10}).");
+    }
+
+    /// <summary>
+    /// Verifies the TR-052 correction: a covariate trend evaluated without covariates throws instead of
+    /// silently returning the intercept, while the stored-row prediction and intercept-only trends are
+    /// unaffected.
+    /// </summary>
+    [TestMethod]
+    public void PredictWithCovariates_NullForCovariateTrend_Throws()
+    {
+        var covariates = new double[,] { { 1.0, 2.0 }, { 3.0, 4.0 }, { 5.0, 6.0 } };
+        var trend = new GeneralLinearFunction("Location", covariates);
+        trend.Parameters[0].Value = 1.5;
+        trend.Parameters[1].Value = 0.25;
+        trend.Parameters[2].Value = -0.1;
+
+        Assert.AreEqual(1.5 + 0.25 * 3.0 - 0.1 * 4.0, trend.Predict(1), 1e-12, "The stored row prediction uses the covariates.");
+        Assert.AreEqual(1.5 + 0.25 * 3.0 - 0.1 * 4.0, trend.PredictWithCovariates(new[] { 3.0, 4.0 }), 1e-12);
+        Assert.ThrowsException<ArgumentException>(() => trend.PredictWithCovariates(null), "Null covariates.");
+        Assert.ThrowsException<ArgumentException>(() => trend.PredictWithCovariates(Array.Empty<double>()), "Empty covariates.");
+        Assert.AreEqual(7.0, new GeneralLinearFunction("Scale") { Parameters = { [0] = { Value = 7.0 } } }.PredictWithCovariates(null), 1e-12, "An intercept-only trend accepts null.");
+    }
+
+    /// <summary>
+    /// Verifies the TR-053 policy without a sampler run: on a two-site network every fold's training model
+    /// has a single site and is invalid, so no fold succeeds, the run throws, and no result is reported.
+    /// </summary>
+    [TestMethod]
+    public async Task RunCrossValidationAsync_WhenNoFoldSucceeds_ThrowsAndReportsNothing()
+    {
+        var (data, coords) = CreateMinimalTestData();
+        var model = new SpatialGEV(data, coords, new GeneralLinearFunction("Location"), new GeneralLinearFunction("Scale"), new GeneralLinearFunction("Shape"));
+        var analysis = new SpatialGEVAnalysis(model);
+
+        var exception = await Assert.ThrowsExceptionAsync<InvalidOperationException>(() => analysis.RunCrossValidationAsync());
+
+        StringAssert.Contains(exception.Message, "no successful fold");
+        StringAssert.Contains(exception.Message, "FitFailed");
+        Assert.IsNull(analysis.CrossValidationResults, "An empty validation is never reported as a result.");
+        Assert.IsFalse(analysis.IsEstimated, "The analysis itself is untouched.");
+    }
+
+    /// <summary>
+    /// Verifies that finalizing successful cross-validation folds retains the supplied fold details,
+    /// publishes hand-calculated aggregate metrics, and leaves the analysis estimation state unchanged.
+    /// </summary>
+    [TestMethod]
+    public void CompleteCrossValidation_PublishesSuccessfulFoldAccountingWithoutChangingEstimateState()
+    {
+        var analysis = new SpatialGEVAnalysis(CreateTestSpatialGEV());
+        var results = new SpatialGEVCrossValidationResults
+        {
+            SitePredictionErrors = new[] { 2.0, double.NaN, -4.0, double.NaN, double.NaN },
+            SiteRMSE = new[] { 1.0, double.NaN, 2.0, double.NaN, double.NaN },
+            SiteBias = new[] { 0.25, double.NaN, -0.50, double.NaN, double.NaN },
+            SiteCRPS = new[] { 0.0, 0.0, 0.0, 0.0, 0.0 },
+            FoldStatus = new[]
+            {
+                SpatialGEVCrossValidationFoldStatus.Succeeded,
+                SpatialGEVCrossValidationFoldStatus.PredictionFailed,
+                SpatialGEVCrossValidationFoldStatus.Succeeded,
+                SpatialGEVCrossValidationFoldStatus.FitFailed,
+                SpatialGEVCrossValidationFoldStatus.NoObservations
+            },
+            FoldMessages = new[]
+            {
+                string.Empty,
+                "The held-out prediction failed.",
+                string.Empty,
+                "The reduced training model could not be fitted.",
+                "The held-out site has no finite observation."
+            },
+            TotalFolds = 5
+        };
+        int crossValidationNotificationCount = 0;
+        analysis.PropertyChanged += (_, eventArgs) =>
+        {
+            if (eventArgs.PropertyName == nameof(SpatialGEVAnalysis.CrossValidationResults))
+                crossValidationNotificationCount++;
+        };
+
+        analysis.CompleteCrossValidation(
+            results,
+            new List<double> { 2.0, -4.0 },
+            new List<double> { 0.25, -0.50 },
+            sites: 5,
+            progressReporter: null);
+
+        Assert.AreSame(results, analysis.CrossValidationResults, "The completed results must be retained.");
+        Assert.AreEqual(2, results.SuccessfulFolds, "Successful-fold count.");
+        Assert.AreEqual(3.0, results.MeanAbsoluteError, 1e-12, "MAE over successful folds.");
+        Assert.AreEqual(Math.Sqrt(10.0), results.RootMeanSquareError, 1e-12, "RMSE over successful folds.");
+        Assert.AreEqual(-0.125, results.MeanBias, 1e-12, "Mean bias over successful folds.");
+        CollectionAssert.AreEqual(
+            new[]
+            {
+                SpatialGEVCrossValidationFoldStatus.Succeeded,
+                SpatialGEVCrossValidationFoldStatus.PredictionFailed,
+                SpatialGEVCrossValidationFoldStatus.Succeeded,
+                SpatialGEVCrossValidationFoldStatus.FitFailed,
+                SpatialGEVCrossValidationFoldStatus.NoObservations
+            },
+            results.FoldStatus,
+            "Fold statuses must be preserved.");
+        CollectionAssert.AreEqual(
+            new[]
+            {
+                string.Empty,
+                "The held-out prediction failed.",
+                string.Empty,
+                "The reduced training model could not be fitted.",
+                "The held-out site has no finite observation."
+            },
+            results.FoldMessages,
+            "Fold messages must be preserved.");
+        Assert.AreEqual(1, crossValidationNotificationCount, "Publishing final results raises one property notification.");
+        Assert.IsFalse(analysis.IsEstimated, "Finalizing fold accounting must not estimate the analysis.");
+        Assert.IsFalse(analysis.BayesianAnalysis.IsEstimated, "Finalizing fold accounting must not estimate the Bayesian analysis.");
+        Assert.IsNull(analysis.AnalysisResults, "Finalizing fold accounting must not create analysis results.");
+    }
+
+    #endregion
+
+    #region Prediction, Regional Posterior, Dispatch, and Bootstrap Contracts
+
+    /// <summary>
+    /// Builds an analysis that reports itself estimated with an injected draw set (restore path plus
+    /// injected results), so the posterior post-processing can run without a sampler.
+    /// </summary>
+    /// <param name="model">The model.</param>
+    /// <param name="draws">The injected parameter draws.</param>
+    /// <returns>The estimated analysis.</returns>
+    private static SpatialGEVAnalysis CreateEstimatedAnalysis(SpatialGEV model, IReadOnlyList<double[]> draws)
+    {
+        var sets = draws.Select(values => new ParameterSet(values, model.LogLikelihood(values))).ToList();
+        ParameterSet best = sets.OrderByDescending(s => s.Fitness).First();
+        var results = new MCMCResults(new ParameterSet(best.Values, best.Fitness), sets, alpha: 0.1);
+
+        var seed = new SpatialGEVAnalysis(model);
+        seed.ProbabilityOrdinates = new ProbabilityOrdinates(new List<double> { 0.5, 0.1, 0.02 });
+        XElement xml = seed.ToXElement();
+        xml.SetAttributeValue("IsEstimated", true);
+        var analysis = new SpatialGEVAnalysis(model, xml);
+        analysis.BayesianAnalysis.SetCustomMCMCResults(results, skipInformationCriteria: true);
+        Assert.IsTrue(analysis.IsEstimated);
+        return analysis;
+    }
+
+    /// <summary>
+    /// Builds six parameter draws around the model defaults by perturbing the first three parameters.
+    /// </summary>
+    /// <param name="model">The model.</param>
+    /// <param name="locationIndex">The index of the first perturbed parameter.</param>
+    /// <returns>The draws.</returns>
+    private static List<double[]> CreateDraws(SpatialGEV model, int locationIndex)
+    {
+        var defaults = model.Parameters.Select(p => p.Value).ToArray();
+        double[][] offsets =
+        {
+            new[] { 0.00, 0.00, 0.00 },
+            new[] { 0.02, -0.01, 0.03 },
+            new[] { -0.01, 0.02, -0.02 },
+            new[] { 0.03, 0.01, 0.01 },
+            new[] { -0.02, -0.02, 0.02 },
+            new[] { 0.01, 0.03, -0.03 },
+        };
+        var draws = new List<double[]>();
+        foreach (double[] offset in offsets)
+        {
+            var values = (double[])defaults.Clone();
+            for (int k = 0; k < 3; k++)
+                values[locationIndex + k] += offset[k];
+            draws.Add(values);
+        }
+        return draws;
+    }
+
+    /// <summary>
+    /// Rebuilds the site and regional results from the injected posterior through the production
+    /// reprocessor (the same method the ordinate change invokes) and returns the regional results.
+    /// </summary>
+    /// <param name="analysis">The analysis.</param>
+    /// <returns>The regional results.</returns>
+    private static async Task<UncertaintyAnalysisResults> ReprocessAndWaitAsync(SpatialGEVAnalysis analysis)
+    {
+        await analysis.RebuildPosteriorResultsAsync();
+        Assert.IsNotNull(analysis.AnalysisResults, "The rebuild must publish regional results.");
+        return analysis.AnalysisResults!;
+    }
+
+    /// <summary>
+    /// Verifies TR-054 deterministically: with the conditional residual disabled, the ungauged-site
+    /// location equals the mean over the injected draws of the model-level conditional Gaussian-process
+    /// prediction; with the residual enabled the prediction is reproducible for the seed.
+    /// </summary>
+    [TestMethod]
+    public void PredictAtUngaugedLocation_UsesConditionalGaussianProcessPerDraw()
+    {
+        var data = CreateTestAtSiteData();
+        var coords = CreateTestCoordinates();
+        var model = new SpatialGEV(data, coords, new GeneralLinearFunction("Location"), new GeneralLinearFunction("Scale"), new GeneralLinearFunction("Shape"));
+        model.LocationErrors = new SpatialRegressionErrors(coords, CorrelationFunctionType.Exponential);
+        model.UseLocationErrors = true;
+        model.SetDefaultParameters();
+        List<double[]> draws = CreateDraws(model, 0);
+        double[] errors = { 0.05, -0.04, 0.02, 0.01, -0.03 };
+        foreach (double[] draw in draws)
+        {
+            draw[3] = 0.25;
+            draw[4] = 20.0;
+            for (int j = 0; j < 5; j++)
+                draw[5 + j] = errors[j] + 0.01 * draws.IndexOf(draw);
+        }
+        SpatialGEVAnalysis analysis = CreateEstimatedAnalysis(model, draws);
+        double[] target = { 12.0, 7.0 };
+        double[] probabilities = { 0.5, 0.1, 0.01 };
+
+        double expected = 0.0;
+        foreach (double[] draw in draws)
+        {
+            var clone = (SpatialGEV)model.Clone();
+            clone.SetParameterValues(draw);
+            expected += clone.PredictAtUngauged(target, null).GEVParams[0];
+        }
+        expected /= draws.Count;
+
+        analysis.SampleConditionalResidual = false;
+        SpatialGEVSiteResults deterministic = analysis.PredictAtUngaugedLocation(target, null, probabilities);
+        analysis.SampleConditionalResidual = true;
+        SpatialGEVSiteResults sampledA = analysis.PredictAtUngaugedLocation(target, null, probabilities);
+        SpatialGEVSiteResults sampledB = analysis.PredictAtUngaugedLocation(target, null, probabilities);
+
+        Assert.AreEqual(expected, deterministic.LocationMean, 1e-9 * expected, "Conditional mean per draw (TR-054).");
+        Assert.AreEqual(sampledA.LocationMean, sampledB.LocationMean, 0.0, "Seeded residuals are reproducible.");
+        Assert.AreNotEqual(deterministic.LocationMean, sampledA.LocationMean, "The residual draws change the prediction.");
+        Assert.IsTrue(sampledA.LocationUpper - sampledA.LocationLower >= deterministic.LocationUpper - deterministic.LocationLower,
+            "Sampling the conditional residual widens (or keeps) the predictive interval.");
+    }
+
+    /// <summary>
+    /// Verifies TR-058 deterministically: with injected draws the regional bounds are the equal-tailed
+    /// quantiles of the per-draw regional mean quantile and the mean curve is its mean.
+    /// </summary>
+    [TestMethod]
+    public async Task RegionalCurve_FromInjectedDraws_IsPosteriorOfTheRegionalMean()
+    {
+        var data = CreateTestAtSiteData();
+        var coords = CreateTestCoordinates();
+        var covariates = new double[5, 2];
+        for (int j = 0; j < 5; j++)
+        {
+            covariates[j, 0] = coords[j, 0];
+            covariates[j, 1] = coords[j, 1];
+        }
+        var model = new SpatialGEV(data, coords, new GeneralLinearFunction("Location", covariates), new GeneralLinearFunction("Scale"), new GeneralLinearFunction("Shape"));
+        model.Parameters[1].Value = 0.004;
+        model.Parameters[2].Value = -0.003;
+        model.SetParameterValues(model.Parameters.Select(p => p.Value).ToArray());
+        List<double[]> draws = CreateDraws(model, 0);
+        SpatialGEVAnalysis analysis = CreateEstimatedAnalysis(model, draws);
+        double alpha = 1 - analysis.BayesianAnalysis.CredibleIntervalWidth;
+
+        UncertaintyAnalysisResults regional = await ReprocessAndWaitAsync(analysis);
+
+        double[] probabilities = { 0.5, 0.1, 0.02 };
+        for (int p = 0; p < probabilities.Length; p++)
+        {
+            var values = new double[draws.Count];
+            for (int d = 0; d < draws.Count; d++)
+            {
+                var clone = (SpatialGEV)model.Clone();
+                clone.SetParameterValues(draws[d]);
+                double sum = 0.0;
+                for (int j = 0; j < 5; j++)
+                    sum += clone.InverseCDF(1 - probabilities[p], j);
+                values[d] = sum / 5;
+            }
+            double mean = values.Average();
+            Array.Sort(values);
+            Assert.AreEqual(mean, regional.MeanCurve![p], 1e-9 * mean, $"Mean curve at p = {probabilities[p]}.");
+            Assert.AreEqual(Numerics.Data.Statistics.Statistics.Percentile(values, alpha / 2d, true), regional.ConfidenceIntervals![p, 1], 1e-9 * mean, $"Lower bound at p = {probabilities[p]} (TR-058).");
+            Assert.AreEqual(Numerics.Data.Statistics.Statistics.Percentile(values, 1 - alpha / 2d, true), regional.ConfidenceIntervals[p, 2], 1e-9 * mean, $"Upper bound at p = {probabilities[p]} (TR-058).");
+        }
+        Assert.IsTrue(analysis.SiteResults!.All(s => s.UncertaintyMethod == SpatialGEVUncertaintyMethod.BayesianPosterior));
+    }
+
+    /// <summary>
+    /// Verifies the TR-062 dispatch for the inflated and Godambe methods without a sampler: the applied
+    /// method is recorded on the analysis and every site, the inflated bounds widen by sqrt(VIF), and the
+    /// Godambe path rebuilds the site results from Gaussian draws around the MAP.
+    /// </summary>
+    [TestMethod]
+    public async Task ApplyUncertaintyMethod_RecordsTheAppliedMethod()
+    {
+        SpatialGEV model = CreateTestSpatialGEV();
+        List<double[]> draws = CreateDraws(model, 0);
+        SpatialGEVAnalysis analysis = CreateEstimatedAnalysis(model, draws);
+        UncertaintyAnalysisResults posterior = await ReprocessAndWaitAsync(analysis);
+        double posteriorWidth = posterior.ConfidenceIntervals![1, 2] - posterior.ConfidenceIntervals[1, 1];
+        double siteWidth = analysis.SiteResults![0].QuantileUpper[1] - analysis.SiteResults[0].QuantileLower[1];
+
+        analysis.UncertaintyMethod = SpatialGEVUncertaintyMethod.BayesianInflated;
+        await analysis.ApplyUncertaintyMethodAsync(null);
+
+        double sqrtVif = Math.Sqrt(analysis.VarianceInflationFactor);
+        Assert.AreEqual(SpatialGEVUncertaintyMethod.BayesianInflated, analysis.AppliedUncertaintyMethod);
+        Assert.IsTrue(analysis.SiteResults.All(s => s.UncertaintyMethod == SpatialGEVUncertaintyMethod.BayesianInflated));
+        Assert.AreEqual(siteWidth * sqrtVif, analysis.SiteResults[0].QuantileUpper[1] - analysis.SiteResults[0].QuantileLower[1], 1e-9 * siteWidth, "Site interval widened by sqrt(VIF).");
+        Assert.AreEqual(posteriorWidth * sqrtVif, analysis.AnalysisResults!.ConfidenceIntervals![1, 2] - analysis.AnalysisResults.ConfidenceIntervals[1, 1], 1e-9 * posteriorWidth, "Regional interval widened by sqrt(VIF).");
+
+        analysis.UncertaintyMethod = SpatialGEVUncertaintyMethod.GodambeSandwich;
+        await analysis.ApplyUncertaintyMethodAsync(null);
+
+        Assert.AreEqual(SpatialGEVUncertaintyMethod.GodambeSandwich, analysis.AppliedUncertaintyMethod);
+        Assert.AreEqual(CovarianceComputationStatus.Available, analysis.GodambeCovarianceStatus);
+        Assert.IsTrue(analysis.SiteResults.All(s => s.UncertaintyMethod == SpatialGEVUncertaintyMethod.GodambeSandwich));
+        foreach (var site in analysis.SiteResults)
+        {
+            Assert.IsTrue(double.IsFinite(site.LocationLower) && site.LocationLower <= site.LocationMean && site.LocationMean <= site.LocationUpper, "Finite ordered Godambe bounds.");
+            Assert.IsTrue(site.QuantileLower.Zip(site.QuantileUpper, (l, u) => l <= u).All(x => x));
+        }
+        Assert.IsTrue(double.IsFinite(analysis.AnalysisResults.ConfidenceIntervals[1, 1]));
+    }
+
+    /// <summary>
+    /// Verifies the temporal block-bootstrap row draw: the record length is preserved, every block is
+    /// contiguous with wrap-around, indices stay in range, and the draw is reproducible for a seed.
+    /// </summary>
+    [TestMethod]
+    public void BuildBlockBootstrapRows_DrawsContiguousWrappingBlocks()
+    {
+        int[] rows = SpatialGEVAnalysis.BuildBlockBootstrapRows(30, 4, new MersenneTwister(12345));
+        int[] again = SpatialGEVAnalysis.BuildBlockBootstrapRows(30, 4, new MersenneTwister(12345));
+
+        Assert.AreEqual(30, rows.Length);
+        CollectionAssert.AreEqual(rows, again, "Seeded draw is reproducible.");
+        Assert.IsTrue(rows.All(r => r >= 0 && r < 30));
+        for (int i = 0; i < rows.Length; i += 4)
+        {
+            for (int k = 1; k < 4 && i + k < rows.Length; k++)
+                Assert.AreEqual((rows[i] + k) % 30, rows[i + k], $"Block starting at position {i} is contiguous with wrap-around.");
+        }
+        int[] single = SpatialGEVAnalysis.BuildBlockBootstrapRows(10, 1, new MersenneTwister(1));
+        Assert.AreEqual(10, single.Length);
+    }
+
+    /// <summary>
+    /// Verifies the bootstrap settings validation and the serialization of the uncertainty settings.
+    /// </summary>
+    [TestMethod]
+    public void UncertaintySettings_ValidateAndRoundTrip()
+    {
+        var analysis = new SpatialGEVAnalysis(CreateTestSpatialGEV());
+        Assert.IsNull(analysis.AppliedUncertaintyMethod);
+        Assert.IsNull(analysis.BootstrapResults);
+        Assert.IsTrue(analysis.SampleConditionalResidual);
+        Assert.AreEqual(200, analysis.BootstrapReplicates);
+        Assert.AreEqual(0, analysis.BootstrapBlockSize);
+        Assert.ThrowsException<ArgumentOutOfRangeException>(() => analysis.BootstrapReplicates = 0);
+        Assert.ThrowsException<ArgumentOutOfRangeException>(() => analysis.BootstrapBlockSize = -1);
+
+        analysis.UncertaintyMethod = SpatialGEVUncertaintyMethod.SpatialBootstrap;
+        analysis.SampleConditionalResidual = false;
+        analysis.BootstrapReplicates = 50;
+        analysis.BootstrapBlockSize = 3;
+        XElement xml = analysis.ToXElement();
+        var restored = new SpatialGEVAnalysis(CreateTestSpatialGEV(), xml);
+
+        Assert.AreEqual(SpatialGEVUncertaintyMethod.SpatialBootstrap, restored.UncertaintyMethod);
+        Assert.IsFalse(restored.SampleConditionalResidual);
+        Assert.AreEqual(50, restored.BootstrapReplicates);
+        Assert.AreEqual(3, restored.BootstrapBlockSize);
+
+        XElement legacy = new SpatialGEVAnalysis(CreateTestSpatialGEV()).ToXElement();
+        legacy.Attribute(nameof(SpatialGEVAnalysis.UncertaintyMethod))!.Remove();
+        legacy.Attribute(nameof(SpatialGEVAnalysis.SampleConditionalResidual))!.Remove();
+        legacy.Attribute(nameof(SpatialGEVAnalysis.BootstrapReplicates))!.Remove();
+        legacy.Attribute(nameof(SpatialGEVAnalysis.BootstrapBlockSize))!.Remove();
+        var legacyRestored = new SpatialGEVAnalysis(CreateTestSpatialGEV(), legacy);
+        Assert.AreEqual(SpatialGEVUncertaintyMethod.BayesianPosterior, legacyRestored.UncertaintyMethod, "Legacy projects read the defaults.");
+        Assert.IsTrue(legacyRestored.SampleConditionalResidual);
+        Assert.AreEqual(200, legacyRestored.BootstrapReplicates);
+    }
+
+    #endregion
+}

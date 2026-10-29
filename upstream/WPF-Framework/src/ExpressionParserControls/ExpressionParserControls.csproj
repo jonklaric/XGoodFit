@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <Nullable>enable</Nullable>
+    <RootNamespace>ExpressionParserControls</RootNamespace>
+    <AssemblyName>ExpressionParserControls</AssemblyName>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+
+    <IsWpfFrameworkLibrary>true</IsWpfFrameworkLibrary>
+    <PackageId>RMC.ExpressionParserControls</PackageId>
+    <Title>ExpressionParserControls</Title>
+    <Description>WPF controls for the ExpressionParser library: a syntax-highlighted expression editor, calculator-style button panel, and browsable function reference.</Description>
+    <PackageTags>wpf; expression-parser; formula-editor; expression-editor; calculator; usace-rmc</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ExpressionParser\ExpressionParser.csproj" />
+  </ItemGroup>
+  
+</Project>

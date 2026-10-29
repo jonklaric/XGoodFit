@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <AssemblyName>OxyPlot.ExampleLibrary</AssemblyName>
+    <RootNamespace>ExampleLibrary</RootNamespace>
+    <Description>Example models for OxyPlot.</Description>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <LangVersion>11</LangVersion>
+    <NoWarn>$(NoWarn);CS0618</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\Bergensbanen.csv" />
+    <EmbeddedResource Include="Resources\DodgyContourData.tsv" />
+    <EmbeddedResource Include="Resources\OxyPlot.png" />
+    <EmbeddedResource Include="Resources\west0479.mtx" />
+    <EmbeddedResource Include="Resources\WorldPopulation.xml" />
+    <EmbeddedResource Include="Resources\X.txt" />
+    <EmbeddedResource Include="Resources\Y.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\OxyPlot\OxyPlot\OxyPlot.csproj" />
+  </ItemGroup>
+</Project>

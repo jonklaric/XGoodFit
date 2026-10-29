@@ -1,0 +1,374 @@
+using System;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Numerics.Distributions;
+
+namespace Distributions.Univariate
+{
+    /// <summary>
+    /// Testing the Normal distribution algorithm.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    ///     <b> Authors: </b>
+    ///     <list type="bullet">
+    ///     <item> Haden Smith, USACE Risk Management Center, cole.h.smith@usace.army.mil </item>
+    ///     <item> Tiki Gonzalez, USACE Risk Management Center, julian.t.gonzalez@usace.army.mil</item>
+    ///     </list>
+    /// </para>
+    /// <para>
+    /// <b> References: </b>
+    /// </para>
+    /// <para>
+    /// <see href = "https://github.com/mathnet/mathnet-numerics/blob/master/src/Numerics.Tests/DistributionTests" />
+    /// </para>
+    /// </remarks>
+    [TestClass]
+    public class Test_Normal
+    {
+
+        // Reference: "Flood Frequency Analysis", A.R. Rao & K.H. Hamed, CRC Press, 2000.
+        // Table 5.1.1 Tippecanoe River Near Delphi, Indiana (Station 43) Data
+        private double[] sample = new double[] { 6290d, 2700d, 13100d, 16900d, 14600d, 9600d, 7740d, 8490d, 8130d, 12000d, 17200d, 15000d, 12400d, 6960d, 6500d, 5840d, 10400d, 18800d, 21400d, 22600d, 14200d, 11000d, 12800d, 15700d, 4740d, 6950d, 11800d, 12100d, 20600d, 14600d, 14600d, 8900d, 10600d, 14200d, 14100d, 14100d, 12500d, 7530d, 13400d, 17600d, 13400d, 19200d, 16900d, 15500d, 14500d, 21900d, 10400d, 7460d };
+
+        /// <summary>
+        /// Verification of Normal Distribution fit with method of moments.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Reference: "Flood Frequency Analysis", A.R. Rao &amp; K.H. Hamed, CRC Press, 2000.
+        /// </para>
+        /// <para>
+        /// Example 5.1.1 page 88.
+        /// </para>
+        /// </remarks>
+        [TestMethod()]
+        public void Test_Normal_MOM_Fit()
+        {
+            var z = Normal.StandardZ(1 - 1E-16);
+
+            var norm = new Normal();
+            norm.Estimate(sample, ParameterEstimationMethod.MethodOfMoments);
+            double u1 = norm.Mu;
+            double u2 = norm.Sigma;
+            double true_u1 = 12665d;
+            double true_u2 = 4710d;
+            Assert.IsLessThan( 0.01d, (u1 - true_u1) / true_u1 );
+            Assert.IsLessThan( 0.01d, (u2 - true_u2) / true_u2 );
+
+        }
+
+        /// <summary>
+        /// Verification of Normal Distribution fit with method of linear moments.
+        /// </summary>
+        [TestMethod()]
+        public void Test_Normal_LMOM_Fit()
+        {
+            // Air quality - wind data from R
+            var data = new double[] { 7.4, 8, 12.6, 11.5, 14.3, 14.9, 8.6, 13.8, 20.1, 8.6, 6.9, 9.7, 9.2, 10.9, 13.2, 11.5, 12, 18.4, 11.5, 9.7, 9.7, 16.6, 9.7, 12, 16.6, 14.9, 8, 12, 14.9, 5.7, 7.4, 8.6, 9.7, 16.1, 9.2, 8.6, 14.3, 9.7, 6.9, 13.8, 11.5, 10.9, 9.2, 8, 13.8, 11.5, 14.9, 20.7, 9.2, 11.5, 10.3, 6.3, 1.7, 4.6, 6.3, 8, 8, 10.3, 11.5, 14.9, 8, 4.1, 9.2, 9.2, 10.9, 4.6, 10.9, 5.1, 6.3, 5.7, 7.4, 8.6, 14.3, 14.9, 14.9, 14.3, 6.9, 10.3, 6.3, 5.1, 11.5, 6.9, 9.7, 11.5, 8.6, 8, 8.6, 12, 7.4, 7.4, 7.4, 9.2, 6.9, 13.8, 7.4, 6.9, 7.4, 4.6, 4, 10.3, 8, 8.6, 11.5, 11.5, 11.5, 9.7, 11.5, 10.3, 6.3, 7.4, 10.9, 10.3, 15.5, 14.3, 12.6, 9.7, 3.4, 8, 5.7, 9.7, 2.3, 6.3, 6.3, 6.9, 5.1, 2.8, 4.6, 7.4, 15.5, 10.9, 10.3, 10.9, 9.7, 14.9, 15.5, 6.3, 10.9, 11.5, 6.9, 13.8, 10.3, 10.3, 8, 12.6, 9.2, 10.3, 10.3, 16.6, 6.9, 13.2, 14.3, 8, 11.5 };
+            var norm = new Normal();
+            norm.Estimate(data, ParameterEstimationMethod.MethodOfLinearMoments);
+            double u1 = norm.Mu;
+            double u2 = norm.Sigma;
+            double true_u1 = 9.957516d;
+            double true_u2 = 3.513431d;
+            Assert.AreEqual(true_u1, u1, 0.0001d);
+            Assert.AreEqual(true_u2, u2, 0.0001d);
+            var lmom = norm.LinearMomentsFromParameters(norm.GetParameters);
+            Assert.AreEqual(9.9575163d, lmom[0],  0.0001d);
+            Assert.AreEqual(1.9822411d, lmom[1], 0.0001d);
+            Assert.AreEqual(0.0000000d, lmom[2], 0.0001d);
+            Assert.AreEqual(0.1226017d, lmom[3], 0.0001d);
+        }
+
+        /// <summary>
+        /// Verification of Normal Distribution fit with method of maximum likelihood.
+        /// </summary>
+        /// <remarks>
+        /// Sigma should be the population standard deviation.
+        /// </remarks>
+        [TestMethod()]
+        public void Test_Normal_MLE_Fit()
+        {
+            var norm = new Normal();
+            norm.Estimate(sample, ParameterEstimationMethod.MaximumLikelihood);
+            double u1 = norm.Mu;
+            double u2 = norm.Sigma;
+            double true_u1 = 12665d;
+            double true_u2 = 4660d;
+            Assert.IsLessThan(0.01d, (u1 - true_u1) / true_u1);
+            Assert.IsLessThan(0.01d, (u2 - true_u2) / true_u2);
+
+            var lh = norm.LogLikelihood(sample);
+        }
+
+        /// <summary>
+        /// Test the quantile function for the Normal Distribution.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Reference: "Flood Frequency Analysis", A.R. Rao &amp; K.H. Hamed, CRC Press, 2000.
+        /// </para>
+        /// <para>
+        /// Example 5.1.2 page 91.
+        /// </para>
+        /// </remarks>
+        [TestMethod()]
+        public void Test_Normal_Quantile()
+        {
+            var N = new Normal(12665d, 4710d);
+            double q100 = N.InverseCDF(0.99d);
+            double true_q100 = 23624d;
+            Assert.IsLessThan(0.01d, (q100 - true_q100) / true_q100);
+            double p = N.CDF(q100);
+            double true_p = 0.99d;
+            Assert.IsLessThan(0.01d, (p - true_p) / true_p);
+        }
+
+        /// <summary>
+        /// Test the standard error for the Normal Distribution.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Reference: "Flood Frequency Analysis", A.R. Rao &amp; K.H. Hamed, CRC Press, 2000.
+        /// </para>
+        /// <para>
+        /// Example 5.1.3 page 94.
+        /// </para>
+        /// </remarks>
+        [TestMethod()]
+        public void Test_Normal_StandardError()
+        {
+            var z = Normal.StandardZ(1-double.Epsilon);
+
+            // Maximum Likelihood
+            var N = new Normal(12665d, 4710d);
+            double qVar99 = Math.Sqrt(N.QuantileVariance(0.99d, 48, ParameterEstimationMethod.MaximumLikelihood));
+            double true_qVar99 = 1309d;
+            Assert.IsLessThan(0.01d, (qVar99 - true_qVar99) / true_qVar99);
+        }
+
+        /// <summary>
+        /// Verifying that input parameters can create distribution.
+        /// </summary>
+        [TestMethod()]
+        public void Test_Construction()
+        {
+            var N = new Normal();
+            Assert.AreEqual(0,N.Mu);
+            Assert.AreEqual(1,N.Sigma);
+
+            var N2 = new Normal(1, 1);
+            Assert.AreEqual(1,N2.Mu);
+            Assert.AreEqual(1,N2.Sigma);
+        }
+
+        /// <summary>
+        /// Testing distribution with bad parameters.
+        /// </summary>
+        [TestMethod()]
+        public void Test_InvalidParameters()
+        {
+            var N = new Normal(double.NaN, 1);
+            Assert.IsFalse(N.ParametersValid);
+
+            var N2 = new Normal(1,double.NaN);
+            Assert.IsFalse(N2.ParametersValid);
+
+            var N3 = new Normal(double.PositiveInfinity, 1);
+            Assert.IsFalse(N3.ParametersValid);
+
+            var N4 = new Normal(1,double.PositiveInfinity);
+            Assert.IsFalse(N4.ParametersValid);
+        }
+
+        /// <summary>
+        /// Testing parameters to string.
+        /// </summary>
+        [TestMethod()]
+        public void Test_ParametersToString()
+        {
+            var N = new Normal();
+            Assert.AreEqual("Mean (µ)",N.ParametersToString[0, 0]);
+            Assert.AreEqual("Std Dev (σ)",N.ParametersToString[1, 0] );
+            Assert.AreEqual("0",N.ParametersToString[0, 1]);
+            Assert.AreEqual("1",N.ParametersToString[1,1] );
+        }
+
+        /// <summary>
+        /// Compare analytical moments against numerical integration.
+        /// </summary>
+        [TestMethod()]
+        public void Test_Moments()
+        {
+            var dist = new Normal(5, 9);
+            var mom = dist.CentralMoments(1E-8);
+            Assert.AreEqual(dist.Mean, mom[0], 1E-2);
+            Assert.AreEqual(dist.StandardDeviation, mom[1], 1E-2);
+            Assert.AreEqual(dist.Skewness, mom[2], 1E-2);
+            Assert.AreEqual(dist.Kurtosis, mom[3], 1E-2);
+        }
+
+        /// <summary>
+        /// Testing mean.
+        /// </summary>
+        [TestMethod()]
+        public void Test_Mean()
+        {
+            var N = new Normal();
+            Assert.AreEqual(0,N.Mean);
+
+            var N2 = new Normal(5, 9);
+            Assert.AreEqual(5, N2.Mean);
+        }
+
+        /// <summary>
+        /// Testing median.
+        /// </summary>
+        [TestMethod()]
+        public void Test_Median()
+        {
+            var N = new Normal();
+            Assert.AreEqual(0, N.Median);
+
+            var N2 = new Normal(5, 9);
+            Assert.AreEqual(5, N2.Median);
+        }
+
+        /// <summary>
+        /// Testing mode.
+        /// </summary>
+        [TestMethod()]
+        public void Test_Mode()
+        {
+            var N = new Normal();
+            Assert.AreEqual(0, N.Mode);
+
+            var N2 = new Normal(5, 9);
+            Assert.AreEqual(5, N2.Mode);
+        }
+
+        /// <summary>
+        /// Testing standard deviation.
+        /// </summary>
+        [TestMethod()]
+        public void Test_StandardDeviation()
+        {
+            var N = new Normal();
+            Assert.AreEqual(1, N.StandardDeviation);
+
+            var N2 = new Normal(5, 9);
+            Assert.AreEqual(9, N2.StandardDeviation);
+        }
+
+        /// <summary>
+        /// Testing skew.
+        /// </summary>
+        [TestMethod()]
+        public void Test_Skewness()
+        {
+            var N = new Normal();
+            Assert.AreEqual(0, N.Skewness);
+
+            var N2 = new Normal(5, 9);
+            Assert.AreEqual(0, N2.Skewness);
+        }
+
+        /// <summary>
+        /// Testing Kurtosis.
+        /// </summary>
+        [TestMethod()]
+        public void Test_Kurtosis()
+        {
+            var N = new Normal();
+            Assert.AreEqual(3, N.Kurtosis);
+
+            var N2 = new Normal(5, 9);
+            Assert.AreEqual(3, N2.Kurtosis);
+        }
+
+        /// <summary>
+        /// Testing minimum and maximum functions.
+        /// </summary>
+        [TestMethod()]
+        public void Test_MinMax()
+        {
+            var N = new Normal();
+            Assert.AreEqual(double.NegativeInfinity,N.Minimum);
+            Assert.AreEqual(double.PositiveInfinity, N.Maximum);
+
+            var N2 = new Normal(5, 9);
+            Assert.AreEqual(double.NegativeInfinity, N2.Minimum);
+            Assert.AreEqual(double.PositiveInfinity, N2.Maximum);
+        }
+
+        /// <summary>
+        /// Testing PDF method.
+        /// </summary>
+        [TestMethod()]
+        public void Test_PDF()
+        {
+            var N = new Normal();
+            Assert.AreEqual(0.39894, N.PDF(0),  1e-04);
+            Assert.AreEqual(0.24197, N.PDF(1), 1e-04);
+
+            var N2 = new Normal(5, 9);
+            Assert.AreEqual(0.03549, N2.PDF(-1), 1e-04);
+        }
+
+        /// <summary>
+        /// Verifies standard normal quantiles retain their bitwise values across approximation branches and tails.
+        /// </summary>
+        /// <param name="probability">The nonexceedance probability.</param>
+        /// <param name="expectedBits">The IEEE 754 bits of the existing quantile result.</param>
+        /// <remarks>Compatibility values were captured from the pre-refactor c0d67b9 implementation.</remarks>
+        [TestMethod]
+        [DataRow(0d, -4592761413495173886L)]
+        [DataRow(double.Epsilon, -4592761413495173886L)]
+        [DataRow(1e-300, -4592961304261246354L)]
+        [DataRow(1e-20, -4601968184877893045L)]
+        [DataRow(1e-12, -4603765893743795414L)]
+        [DataRow(0.075d, -4614210144286022365L)]
+        [DataRow(0.5d, 0L)]
+        [DataRow(0.925d, 4609161892568753444L)]
+        [DataRow(0.999999999999d, 4619606146584096420L)]
+        [DataRow(0.9999999999999999d, 4620811176048912977L)]
+        [DataRow(1d, 9218868437227405312L)]
+        public void Test_StandardZ_PreservesBranchAndTailValues(double probability, long expectedBits)
+        {
+            Assert.AreEqual(expectedBits, BitConverter.DoubleToInt64Bits(Normal.StandardZ(probability)));
+        }
+
+        /// <summary>
+        /// Verifies distribution quantile endpoints and the existing NaN and invalid-probability contracts.
+        /// </summary>
+        [TestMethod]
+        public void Test_Quantiles_ProbabilityEdges()
+        {
+            var normal = new Normal();
+            Assert.AreEqual(double.NegativeInfinity, normal.InverseCDF(0d));
+            Assert.AreEqual(double.PositiveInfinity, normal.InverseCDF(1d));
+            Assert.IsTrue(double.IsNaN(normal.InverseCDF(double.NaN)));
+            Assert.IsTrue(double.IsNaN(Normal.StandardZ(double.NaN)));
+
+            foreach (double probability in new[] { -1d, 2d, double.NegativeInfinity, double.PositiveInfinity })
+            {
+                var distributionError = Assert.Throws<ArgumentOutOfRangeException>(() => normal.InverseCDF(probability));
+                var standardError = Assert.Throws<ArgumentOutOfRangeException>(() => Normal.StandardZ(probability));
+                Assert.AreEqual("probability", distributionError.ParamName);
+                Assert.AreEqual("probability", standardError.ParamName);
+            }
+        }
+
+        /// <summary>
+        /// Testing CDF method.
+        /// </summary>
+        [TestMethod()]
+        public void Test_CDF()
+        {
+            var N = new Normal(5,2);
+            Assert.AreEqual(0.006209, N.CDF(0),  1e-04);
+            Assert.AreEqual(0.30853, N.CDF(4),  1e-04);
+            Assert.AreEqual(0.5, N.CDF(5));
+        }
+    }
+}

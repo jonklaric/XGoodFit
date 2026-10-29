@@ -1,0 +1,368 @@
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Numerics.Mathematics.Optimization;
+
+namespace Mathematics.Optimization
+{
+    /// <summary>
+    /// Unit tests for the Differential Evolution optimization algorithm
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    ///     <b> Authors: </b>
+    ///     <list type="bullet"> 
+    ///     <item> Haden Smith, USACE Risk Management Center, cole.h.smith@usace.army.mil </item>
+    /// </list>
+    /// </para>
+    /// </remarks>
+    [TestClass]
+    public class Test_DifferentialEvolution
+    {
+        /// <summary>
+        /// Test the DE algorithm with a simple 3-dimensional test function.
+        /// </summary>
+        [TestMethod]
+        public void Test_FXYZ()
+        {
+            var lower = new double[] { 0d, 0d, 0d };
+            var upper = new double[] { 1d, 1d, 1d };
+            var solver = new DifferentialEvolution(TestFunctions.FXYZ, 3, lower, upper);
+            solver.Minimize();
+            double F = solver.BestParameterSet.Fitness;
+            double trueF = 0.0;
+            Assert.AreEqual(F, trueF, 1E-4);
+            var solution = solver.BestParameterSet.Values;
+            double x = solution[0];
+            double y = solution[1];
+            double z = solution[2];
+            double validX = 0.125d;
+            double validY = 0.2d;
+            double validZ = 0.35d;
+            Assert.AreEqual(x, validX, 1E-4);
+            Assert.AreEqual(y, validY, 1E-4);
+            Assert.AreEqual(z, validZ, 1E-4);
+        }
+
+        /// <summary>
+        /// Test the DE algorithm with the De Jong Function in 5-D.
+        /// </summary>
+        [TestMethod]
+        public void Test_DeJong()
+        {
+            var lower = new double[] { -5.12d, -5.12d, -5.12d, -5.12d, -5.12d };
+            var upper = new double[] { 5.12d, 5.12d, 5.12d, 5.12d, 5.12d };
+            var solver = new DifferentialEvolution(TestFunctions.DeJong, 5, lower, upper);
+            solver.Minimize();
+            double F = solver.BestParameterSet.Fitness;
+            double trueF = 0.0;
+            Assert.AreEqual(F, trueF, 1E-4);
+            var solution = solver.BestParameterSet.Values;
+            var valid = new double[] { 0.0d, 0.0d, 0.0d, 0.0d, 0.0d };
+            for (int i = 0; i < valid.Length; i++)
+                Assert.AreEqual(solution[i], valid[i], 1E-4);
+        }
+
+        /// <summary>
+        /// Test the DE algorithm with the Sum of Power functions in 3-D.
+        /// </summary>
+        [TestMethod]
+        public void Test_SumOfPowerFunctions()
+        {
+            var lower = new double[] { -1d, -1d, -1d };
+            var upper = new double[] { 1d, 1d, 1d };
+            var solver = new DifferentialEvolution(TestFunctions.SumOfPowerFunctions, 3, lower, upper);
+            solver.Minimize();
+            double F = solver.BestParameterSet.Fitness;
+            double trueF = 0.0;
+            Assert.AreEqual(F, trueF, 1E-4);
+            var solution = solver.BestParameterSet.Values;
+            var valid = new double[] { 0.0d, 0.0d, 0.0d };
+            // This one is challenging to get great precision on the parameters.
+            for (int i = 0; i < valid.Length; i++)
+                Assert.AreEqual(solution[i], valid[i], 1E-2);
+        }
+
+        /// <summary>
+        /// Test the DE algorithm with the Rosenbrock Function in 5-D.
+        /// </summary>
+        [TestMethod]
+        public void Test_Rosenbrock()
+        {
+            var lower = new double[] { -2.048, -2.048, -2.048, -2.048, -2.048 };
+            var upper = new double[] { 2.048, 2.048, 2.048, 2.048, 2.048 };
+            var solver = new DifferentialEvolution(TestFunctions.Rosenbrock, 5, lower, upper);
+            solver.Minimize();
+            double F = solver.BestParameterSet.Fitness;
+            double trueF = 0.0;
+            Assert.AreEqual(F, trueF, 1E-4);
+            var solution = solver.BestParameterSet.Values;
+            var valid = new double[] { 1.0, 1.0, 1.0, 1.0, 1.0 };
+            for (int i = 0; i < valid.Length; i++)
+                Assert.AreEqual(solution[i], valid[i], 1E-4);
+        }
+
+        /// <summary>
+        /// Test the DE algorithm with the Booth Function
+        /// </summary>
+        [TestMethod]
+        public void Test_Booth()
+        {
+            var lower = new double[] { -10d, -10d };
+            var upper = new double[] { 10d, 10d };
+            var solver = new DifferentialEvolution(TestFunctions.Booth, 2, lower, upper);
+            solver.Minimize();
+            double F = solver.BestParameterSet.Fitness;
+            double trueF = 0.0;
+            Assert.AreEqual(F, trueF, 1E-4);
+            var solution = solver.BestParameterSet.Values;
+            var x = solution[0];
+            var y = solution[1];
+            var validX = 1.0d;
+            var validY = 3.0d;
+            Assert.AreEqual(x, validX, 1E-4);
+            Assert.AreEqual(y, validY, 1E-4);
+        }
+
+        /// <summary>
+        /// Test the DE algorithm with the Matyas Function
+        /// </summary>
+        [TestMethod]
+        public void Test_Matyas()
+        {
+            var lower = new double[] { -10d, -10d };
+            var upper = new double[] { 10d, 10d };
+            var solver = new DifferentialEvolution(TestFunctions.Matyas, 2, lower, upper);
+            solver.Minimize();
+            double F = solver.BestParameterSet.Fitness;
+            double trueF = 0.0;
+            Assert.AreEqual(F, trueF, 1E-4);
+            var solution = solver.BestParameterSet.Values;
+            var x = solution[0];
+            var y = solution[1];
+            var validX = 0.0d;
+            var validY = 0.0d;
+            Assert.AreEqual(x, validX, 1E-3);
+            Assert.AreEqual(y, validY, 1E-3);
+        }
+
+        /// <summary>
+        /// Test the DE algorithm with the McCormick Function
+        /// </summary>
+        [TestMethod]
+        public void Test_McCormick()
+        {
+            var lower = new double[] { -1.5d, -3d };
+            var upper = new double[] { 4d, 4d };
+            var solver = new DifferentialEvolution(TestFunctions.McCormick, 2, lower, upper);
+            solver.Minimize();
+            double F = solver.BestParameterSet.Fitness;
+            double trueF = -1.9133;
+            Assert.AreEqual(F, trueF, 1E-4);
+            var solution = solver.BestParameterSet.Values;
+            var x = solution[0];
+            var y = solution[1];
+            var validX = -0.54719d;
+            var validY = -1.54719d;
+            Assert.AreEqual(x, validX, 1E-4);
+            Assert.AreEqual(y, validY, 1E-4);
+        }
+
+        /// <summary>
+        /// Test the DE algorithm with the Beale Function
+        /// </summary>
+        [TestMethod]
+        public void Test_Beale()
+        {
+            var lower = new double[] { -4.5d, -4.5d };
+            var upper = new double[] { 4.5d, 4.5d };
+            var solver = new DifferentialEvolution(TestFunctions.Beale, 2, lower, upper);
+            solver.Minimize();
+            double F = solver.BestParameterSet.Fitness;
+            double trueF = 0.0;
+            Assert.AreEqual(F, trueF, 1E-4);
+            var solution = solver.BestParameterSet.Values;
+            var x = solution[0];
+            var y = solution[1];
+            var validX = 3.0d;
+            var validY = 0.5d;
+            Assert.AreEqual(x, validX, 1E-4);
+            Assert.AreEqual(y, validY, 1E-4);
+        }
+
+        /// <summary>
+        /// Test the DE algorithm with the Goldstein-Price Function
+        /// </summary>
+        [TestMethod]
+        public void Test_GoldsteinPrice()
+        {
+            var lower = new double[] { -2d, -2d };
+            var upper = new double[] { 2d, 2d };
+            var solver = new DifferentialEvolution(TestFunctions.GoldsteinPrice, 2, lower, upper);
+            solver.Minimize();
+            double F = solver.BestParameterSet.Fitness;
+            double trueF = 3.0;
+            Assert.AreEqual(F, trueF, 1E-4);
+            var solution = solver.BestParameterSet.Values;
+            var x = solution[0];
+            var y = solution[1];
+            var validX = 0.0d;
+            var validY = -1.0d;
+            Assert.AreEqual(x, validX, 1E-4);
+            Assert.AreEqual(y, validY, 1E-4);
+        }
+
+        /// <summary>
+        /// Test the DE algorithm with the Rastrigin Function in 5-D.
+        /// </summary>
+        [TestMethod]
+        public void Test_Rastrigin()
+        {
+            var lower = new double[] { -5.12, -5.12, -5.12, -5.12, -5.12 };
+            var upper = new double[] { 5.12, 5.12, 5.12, 5.12, 5.12 };
+            var solver = new DifferentialEvolution(TestFunctions.Rastrigin, 5, lower, upper);
+            solver.Minimize();
+            double F = solver.BestParameterSet.Fitness;
+            double trueF = 0.0;
+            Assert.AreEqual(F, trueF, 1E-4);
+            var solution = solver.BestParameterSet.Values;
+            var valid = new double[] { 0.0, 0.0, 0.0, 0.0, 0.0 };
+            for (int i = 0; i < valid.Length; i++)
+                Assert.AreEqual(solution[i], valid[i], 1E-4);
+        }
+
+        /// <summary>
+        /// Test the DE algorithm with the Ackley Function
+        /// </summary>
+        [TestMethod]
+        public void Test_Ackley()
+        {
+            var lower = new double[] { -5d, -5d };
+            var upper = new double[] { 5d, 5d };
+            var solver = new DifferentialEvolution(TestFunctions.Ackley, 2, lower, upper);
+            solver.Minimize();
+            double F = solver.BestParameterSet.Fitness;
+            double trueF = 0.0;
+            Assert.AreEqual(F, trueF, 1E-4);
+            var solution = solver.BestParameterSet.Values;
+            var x = solution[0];
+            var y = solution[1];
+            var validX = 0.0d;
+            var validY = 0.0d;
+            Assert.AreEqual(x, validX, 1E-4);
+            Assert.AreEqual(y, validY, 1E-4);
+        }
+
+        /// <summary>
+        /// Test the DE algorithm with the three hump camel Function
+        /// </summary>
+        [TestMethod]
+        public void Test_ThreeHumpCamel()
+        {
+            var lower = new double[] { -5d, -5d };
+            var upper = new double[] { 5, 5d };
+            var solver = new DifferentialEvolution(TestFunctions.ThreeHumpCamel, 2, lower, upper);
+            solver.Minimize();
+            double F = solver.BestParameterSet.Fitness;
+            double trueF = 0.0;
+            Assert.AreEqual(F, trueF, 1E-4);
+            var solution = solver.BestParameterSet.Values;
+            var x = solution[0];
+            var y = solution[1];
+            var validX = 0.0d;
+            var validY = 0.0d;
+            Assert.AreEqual(x, validX, 1E-4);
+            Assert.AreEqual(y, validY, 1E-4);
+        }
+
+        /// <summary>
+        /// Test the DE algorithm with the Eggholder Function
+        /// </summary>
+        [TestMethod]
+        public void Test_Eggholder()
+        {
+            var lower = new double[] { -512d, -512d };
+            var upper = new double[] { 512d, 512d };
+            var solver = new DifferentialEvolution(TestFunctions.Eggholder, 2, lower, upper);
+            solver.Minimize();
+            double F = solver.BestParameterSet.Fitness;
+            double trueF = -959.6407;
+            Assert.AreEqual(F, trueF, 1E-4);
+            var solution = solver.BestParameterSet.Values;
+            var x = solution[0];
+            var y = solution[1];
+            var validX = 512d;
+            var validY = 404.2319d;
+            Assert.AreEqual(x, validX, 1E-4);
+            Assert.AreEqual(y, validY, 1E-3);
+        }
+
+        /// <summary>
+        /// Test the DE algorithm with the tp2 Function
+        /// </summary>
+        [TestMethod]
+        public void Test_TP2()
+        {
+            var lower = new double[] { 0d, 0d };
+            var upper = new double[] { 2d, 2d };
+            var solver = new DifferentialEvolution(TestFunctions.tp2, 2, lower, upper);
+            solver.Minimize();
+            double F = solver.BestParameterSet.Fitness;
+            double trueF = 0.0;
+            Assert.AreEqual(F, trueF, 1E-4);
+            var solution = solver.BestParameterSet.Values;
+            var x = solution[0];
+            var y = solution[1];
+            var validX = 1d;
+            var validY = 0.666667d;
+
+            bool match1 = Math.Abs(x - validX) < 1E-4 && Math.Abs(y - validY) < 1E-4;
+            bool match2 = Math.Abs(x - validY) < 1E-4 && Math.Abs(y - validX) < 1E-4;
+            Assert.IsTrue(match1 || match2);
+        }
+
+        /// <summary>
+        /// Verifies infeasible trial coordinates are repaired halfway toward the target instead of clamped to a boundary.
+        /// </summary>
+        /// <param name="seed">The deterministic pseudo-random seed used for the differential-evolution run.</param>
+        /// <param name="expectedFirstTrial">The independently derived midpoint repair for the first trial vector.</param>
+        [TestMethod]
+        [DataRow(1, 0.8196490542613901d)]
+        [DataRow(2, 0.7595016034028959d)]
+        [DataRow(3, 0.7520687940414064d)]
+        [DataRow(4, 0.48277057497762144d)]
+        [DataRow(5, 0.8296836465888191d)]
+        [DataRow(12345, 0.1893519861914683d)]
+        public void Test_InfeasibleTrialCoordinates_AreRepairedHalfwayToTarget(int seed, double expectedFirstTrial)
+        {
+            var evaluatedCoordinates = new List<double>();
+            double Objective(double[] values)
+            {
+                evaluatedCoordinates.Add(values[0]);
+                double difference = values[0] - 0.5d;
+                return difference * difference;
+            }
+
+            var solver = new DifferentialEvolution(Objective, 1, new double[] { 0d }, new double[] { 1d })
+            {
+                PopulationSize = 4,
+                PRNGSeed = seed,
+                Mutation = 2d,
+                DitherRate = 0d,
+                CrossoverProbability = 1d,
+                MaxIterations = 11,
+                ComputeHessian = false,
+                ReportFailure = false
+            };
+
+            solver.Minimize();
+
+            Assert.IsGreaterThan(solver.PopulationSize, evaluatedCoordinates.Count);
+            Assert.AreEqual(expectedFirstTrial, evaluatedCoordinates[solver.PopulationSize], 1E-15);
+            foreach (double coordinate in evaluatedCoordinates.Skip(solver.PopulationSize))
+            {
+                Assert.IsTrue(
+                    coordinate > 0d && coordinate < 1d,
+                    $"Expected an interior repaired coordinate, but evaluated {coordinate:R}.");
+            }
+        }
+    }
+}

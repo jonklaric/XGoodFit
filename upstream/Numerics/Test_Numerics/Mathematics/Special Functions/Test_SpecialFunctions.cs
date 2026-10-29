@@ -1,0 +1,433 @@
+﻿using System;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Numerics.Mathematics.SpecialFunctions;
+
+namespace Mathematics.SpecialFunctions
+{
+    /// <summary>
+    /// Unit tests for Special Functions, outside of the Beta and Gamma Class.
+    /// </summary>
+    /// <remarks>
+    ///      <b> Authors: </b>
+    /// <list type="bullet">
+    /// <item><description>
+    ///     Haden Smith, USACE Risk Management Center, cole.h.smith@usace.army.mil
+    /// </description></item>
+    /// <item><description>
+    ///     Sadie Niblett, USACE Risk Management Center, sadie.s.niblett@usace.army.mil
+    /// </description></item>
+    /// </list>
+    /// <b> Description: </b>
+    /// Some of these special functions are tested directly with MS Excel and with values provided by:
+    /// "Numerical Recipes, Routines and Examples in Basic", J.C. Sprott, Cambridge University Press, 1991.
+    /// Others must be tested indirectly through the continuous distribution classes.
+    /// </remarks>
+    [TestClass]
+    public class Test_SpecialFunctions
+    {
+        /// <summary>
+        /// Test the error function
+        /// </summary>
+        [TestMethod]
+        public void Test_Erf()
+        {
+            var testX = new double[] { 0d, 0.1d, 0.2d, 0.3d, 0.4d, 0.5d, 0.6d, 0.7d, 0.8d, 0.9d, 1d, 1.1d, 1.2d, 1.3d, 1.4d, 1.5d, 1.6d, 1.7d, 1.8d, 1.9d };
+            var testValid = new double[] { 0d, 0.112462916018285d, 0.222702589210478d, 0.328626759459127d, 0.428392355046668d, 0.520499877813047d, 0.603856090847926d, 0.677801193837418d, 0.742100964707661d, 0.796908212422832d, 0.842700792949715d, 0.880205069574082d, 0.910313978229635d, 0.934007944940652d, 0.952285119762649d, 0.966105146475311d, 0.976348383344644d, 0.983790458590775d, 0.989090501635731d, 0.992790429235258d };
+            var testResults = new double[testValid.Length];
+
+            for (int i = 0; i < testValid.Length; i++)
+            {
+                testResults[i] = Erf.Function(testX[i]);
+                Assert.AreEqual(testResults[i], testValid[i], 1E-4);
+            }
+        }
+
+        /// <summary>
+        /// Test the error complement function
+        /// </summary>
+        [TestMethod]
+        public void Test_Erfc()
+        {
+            var testX = new double[] { 0d, 0.1d, 0.2d, 0.3d, 0.4d, 0.5d, 0.6d, 0.7d, 0.8d, 0.9d, 1d, 1.1d, 1.2d, 1.3d, 1.4d, 1.5d, 1.6d, 1.7d, 1.8d, 1.9d };
+            var testValid = new double[] { 1d, 0.887537083981715d, 0.777297410789522d, 0.671373240540873d, 0.571607644953332d, 0.479500122186953d, 0.396143909152074d, 0.322198806162582d, 0.257899035292339d, 0.203091787577168d, 0.157299207050285d, 0.119794930425918d, 0.0896860217703646d, 0.0659920550593475d, 0.0477148802373512d, 0.0338948535246893d, 0.023651616655356d, 0.0162095414092254d, 0.0109094983642693d, 0.00720957076474253d };
+            var testResults = new double[testValid.Length];
+
+            for (int i = 0; i < testValid.Length; i++)
+            {
+                testResults[i] = Erf.Erfc(testX[i]);
+                Assert.AreEqual(testResults[i], testValid[i], 1E-4);
+            }
+        }
+
+        /// <summary>
+        /// Test the inverse of the error function
+        /// </summary>
+        [TestMethod]
+        public void Test_InverseErf()
+        {
+            var testY = new double[] { 0d, 0.112462916018285d, 0.222702589210478d, 0.328626759459127d, 0.428392355046668d, 0.520499877813047d, 0.603856090847926d, 0.677801193837418d, 0.742100964707661d, 0.796908212422832d, 0.842700792949715d, 0.880205069574082d, 0.910313978229635d, 0.934007944940652d, 0.952285119762649d, 0.966105146475311d, 0.976348383344644d, 0.983790458590775d, 0.989090501635731d, 0.992790429235258d };
+            var testValid = new double[] { 0d, 0.1d, 0.2d, 0.3d, 0.4d, 0.5d, 0.6d, 0.7d, 0.8d, 0.9d, 1d, 1.1d, 1.2d, 1.3d, 1.4d, 1.5d, 1.6d, 1.7d, 1.8d, 1.9d };
+            var testResults = new double[testValid.Length];
+
+            for (int i = 0; i < testValid.Length; i++)
+            {
+                testResults[i] = Erf.InverseErf(testY[i]);
+                Assert.AreEqual(testResults[i], testValid[i], 1E-4);
+            }
+        }
+
+        /// <summary>
+        /// Test the inverse of the complemented error function
+        /// </summary>
+        [TestMethod]
+        public void Test_InverseErfc()
+        {
+            var testY = new double[] { 1d, 0.887537083981715d, 0.777297410789522d, 0.671373240540873d, 0.571607644953332d, 0.479500122186953d, 0.396143909152074d, 0.322198806162582d, 0.257899035292339d, 0.203091787577168d, 0.157299207050285d, 0.119794930425918d, 0.0896860217703646d, 0.0659920550593475d, 0.0477148802373512d, 0.0338948535246893d, 0.023651616655356d, 0.0162095414092254d, 0.0109094983642693d, 0.00720957076474253d };
+            var testValid = new double[] { 0d, 0.1d, 0.2d, 0.3d, 0.4d, 0.5d, 0.6d, 0.7d, 0.8d, 0.9d, 1d, 1.1d, 1.2d, 1.3d, 1.4d, 1.5d, 1.6d, 1.7d, 1.8d, 1.9d };
+            var testResults = new double[testValid.Length];
+
+            for (int i = 0; i < testValid.Length; i++)
+            {
+                testResults[i] = Erf.InverseErfc(testY[i]);
+                Assert.AreEqual(testResults[i], testValid[i], 1E-4);
+            }
+        }
+
+        /// <summary>
+        /// Test the Debye function
+        /// </summary>
+        [TestMethod]
+        public void Test_Debye()
+        {
+            var testX = new double[] { 0.1, 1.0, 2.8, 9.5, 10, 15, 25, 100 };
+            var testValid = new double[] { 0.9629999, 0.6744156, 0.3099952, 0.02241066, 0.01929577, 0.005771263, 0.001246836, 1.948182e-05 };
+            var testResults = new double[testValid.Length];
+
+            for (int i = 0; i < testValid.Length; i++)
+            {
+                testResults[i] = Debye.Function(testX[i]);
+                Assert.AreEqual(testResults[i], testValid[i], 1E-4);
+            }
+        }
+
+        /// <summary>
+        /// Test the order-1 Debye function against a high-precision reference.
+        /// </summary>
+        /// <remarks>
+        /// The reference values were computed with mpmath at 60 decimal digits by two independent routes that
+        /// agree to better than 1E-58: tanh-sinh quadrature of the defining integral D1(x) = (1/x) integral of
+        /// t / (e^t - 1) from 0 to x, and the polylogarithm closed form
+        /// D1(x) = pi^2 / (6x) + ln(1 - e^-x) - Li2(e^-x) / x. They are corroborated at the endpoints by the
+        /// asymptote D1(100) = pi^2 / 600 = 0.016449340668482264 and by the reflection D1(-1) = D1(1) + 0.5.
+        /// The relative tolerance of 1E-14 is well above the measured worst error of 3 ulp.
+        /// </remarks>
+        [TestMethod]
+        public void Test_DebyeOrderOne()
+        {
+            var testX = new double[] { -100d, -30d, -10d, -5d, -1d, -0.5, -0.001, 0.001, 0.01, 0.1, 0.5, 1d, 1.5, 2d, 5d, 10d, 30d, 100d };
+            var testValid = new double[]
+            {
+                50.01644934066848, 15.05483113556151, 5.164443465679946, 2.820876197700146,
+                1.2775046341122482, 1.1319271567906055, 1.0002500277777775, 0.9997500277777776,
+                0.997502777775, 0.9752777500047232, 0.8819271567906055, 0.7775046341122482,
+                0.686145310789402, 0.6069472846098101, 0.32087619770014614, 0.16444346567994603,
+                0.054831135561510855, 0.016449340668482266
+            };
+
+            for (int i = 0; i < testValid.Length; i++)
+            {
+                double result = Debye.FunctionOrderOne(testX[i]);
+                Assert.AreEqual(testValid[i], result, Math.Abs(testValid[i]) * 1E-14, $"The order-1 Debye function is out of tolerance at x = {testX[i]}.");
+            }
+
+            // The integrand tends to 1 as t tends to 0, so the removable limit is returned exactly.
+            Assert.AreEqual(1d, Debye.FunctionOrderOne(0d), 0d);
+
+            // D1(-x) - D1(x) = x / 2 for x > 0. The tolerance is scaled by the size of the values being
+            // subtracted rather than by the size of the difference: for a small x the two values are both near
+            // 1 and the subtraction itself costs about half an ulp of 1, which is far larger than half an ulp
+            // of x / 2. This is cancellation in the assertion, not error in the function.
+            foreach (double x in new[] { 0.001, 0.25, 1d, 1.75, 7.5, 40d })
+            {
+                double reflected = Debye.FunctionOrderOne(-x);
+                Assert.AreEqual(0.5 * x, reflected - Debye.FunctionOrderOne(x), Math.Abs(reflected) * 1E-15, $"The order-1 Debye reflection failed at x = {x}.");
+            }
+
+            // The order-3 function is a different function and must not be confused with this one.
+            Assert.AreNotEqual(Debye.Function(1d), Debye.FunctionOrderOne(1d));
+        }
+
+        /// <summary>
+        /// Test the factorial function
+        /// </summary>
+        [TestMethod]
+        public void Test_Factorial()
+        {
+            var testX = new int[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+            var testValid = new double[] { 1d, 2d, 6d, 24d, 120d, 720d, 5040d, 40320d, 362880d, 3628800d };
+            var testResults = new double[testValid.Length];
+
+            for (int i = 0; i < testResults.Length; i++)
+            {
+                testResults[i] = Factorial.Function(testX[i]);
+                Assert.AreEqual(testValid[i], testResults[i]);
+            }
+        }
+
+        /// <summary>
+        /// Test the log of the factorial functions
+        /// </summary>
+        [TestMethod]
+        public void Test_LogFactorial()
+        {
+            var testX = new int[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+            var testFact = new double[] { 1d, 2d, 6d, 24d, 120d, 720d, 5040d, 40320d, 362880d, 3628800d };
+            var testValid = new double[testX.Length];
+            for (int i = 0; i < testValid.Length; i++)
+            {
+                testValid[i] = Math.Log(testFact[i]);
+            }
+            var testResults = new double[testValid.Length];
+
+            for (int i = 0; i < testResults.Length; i++)
+            {
+                testResults[i] = Factorial.LogFactorial(testX[i]);
+                Assert.AreEqual(testValid[i], testResults[i]);
+            }
+        }
+
+        /// <summary>
+        /// Test the binomial coefficient calculation
+        /// </summary>
+        [TestMethod]
+        public void Test_BinomialCoefficient()
+        {
+            var testN = new int[] { 4, 4, 4, 6, 6, 6, 8, 8, 8, 10, 10, 10 };
+            var testK = new int[] { 1, 2, 3, 2, 3, 4, 2, 3, 4, 2, 3, 4 };
+            var testValid = new double[] { 4d, 6d, 4d, 15d, 20d, 15d, 28d, 56d, 70d, 45d, 120d, 210d };
+            var testResults = new double[testValid.Length];
+
+            for (int i = 0; i < testResults.Length; i++)
+            {
+                testResults[i] = Factorial.BinomialCoefficient(testN[i], testK[i]);
+                Assert.AreEqual(testValid[i], testResults[i]);
+            }
+        }
+
+        /// <summary>
+        /// Test the function that finds all combinations of m within n without replacement by validating the size of the outputs
+        /// </summary>
+        [TestMethod]
+        public void Test_CombinationsNum()
+        {
+            var cc = Factorial.AllCombinations(5);
+            // Total number of possible combinations
+            double possible = Math.Pow(2, 5) - 1;
+
+            var ccLen = cc.Length;
+            // Length of cc should be the possible number of combinations * the number of elements in each combination (5)
+            Assert.HasCount((int)possible * 5, cc);
+
+            // How many of subsets of combinations there should be
+            // For example, there are 5 ways to have only one #1 in the array, with the other 4 elements being #0
+            // This can be calculated from the binomial coefficient (i.e 5 choose 1)
+            var valid = new double[5];
+            for (int i = 0; i < 5; i++)
+            {
+                valid[i] = Factorial.BinomialCoefficient(5, i + 1);
+            }
+            // All of the subsets should add up to the total number of possible combinations
+            Assert.AreEqual(valid[0] + valid[1] + valid[2] + valid[3] + valid[4], possible);
+
+            // Check cc for the subsets
+            var counts = new double[5];
+            for (int i = 0; i < possible; i++)
+            {
+                int counter = 0;
+                for (int j = 0; j < 5; j++)
+                {
+                    if (cc[i, j] == 1)
+                    {
+                        counter++;
+                    }
+                }
+                counts[counter - 1]++;
+            }
+
+            // Validate that the number subsets found in cc match the calculated number
+            for (int i = 0; i < 5; i++)
+            {
+                Assert.AreEqual(valid[i], counts[i]);
+            }
+
+        }
+
+        /// <summary>
+        /// Test the function that finds all combinations of m within n without replacement by finding matches between the true int[,] and the output int[,]
+        /// </summary>
+        [TestMethod]
+        public void Test_Combinations()
+        {
+            int[,] valid = new int[7,3]
+                {
+                    { 1, 0 ,0 },
+                    { 0, 1, 0 },
+                    { 0, 0, 1 },
+                    { 1, 1, 0 },
+                    { 1, 0, 1 },
+                    { 0, 1, 1 },
+                    { 1, 1, 1 }
+                };
+
+            var actual = Factorial.AllCombinations(3);
+
+            int found = 0;
+            // Checking every row in valid against rows in actual to find a match
+            for(int i = 0; i < 7; i++)
+            {
+                for(int j = 0; j < 7; j++)
+                {
+                    if (valid[i,0] == actual[j, 0])
+                    {
+                        if (valid[i,1] == actual[j, 1])
+                        {
+                            if (valid[i,2] == actual[j, 2])
+                            {
+                                // Match found!
+                                found++;
+                            }
+                        }
+                    }
+                }
+            }
+
+            // There are 7 possible outcomes (2^n - 1)
+            Assert.AreEqual(7, found);
+        }
+
+        /// <summary>
+        /// Test the polynomial function
+        /// </summary>
+        [TestMethod]
+        public void Test_Polynomial()
+        {
+            var coeffs = new double[] { 3, 5, 7 };
+            double x = 4;
+
+            double valid = 3 + (5 * x) + (7 * x * x);
+            double actual = Evaluate.Polynomial(coeffs, x);
+            Assert.AreEqual(valid, actual);
+        }
+
+        /// <summary>
+        /// Test the polynomial function that takes the coefficients in the reverse order
+        /// </summary>
+        [TestMethod]
+        public void Test_PolynomialRev()
+        {
+            var coeffs = new double[] { 3, 5, 7 };
+            double x = 4;
+
+            // test without a given n
+            double valid = (3 * x * x) + (5 * x) + 7;
+            double actual = Evaluate.PolynomialRev(coeffs, x);
+            Assert.AreEqual(valid, actual);
+
+            // test with a given n
+            int n = 1;
+            double validN = (3 * x) + 5;
+            double actualN = Evaluate.PolynomialRev(coeffs, x, n);
+            Assert.AreEqual(validN, actualN);
+        }
+
+        /// <summary>
+        /// Test the polynomial function that takes the coefficients in reverse order, with the first coefficient automatically always 1
+        /// </summary>
+        [TestMethod]
+        public void Test_PolynomialRev_1()
+        {
+            var coeffs = new double[] { 3, 5, 7 };
+            double x = 4;
+
+            double valid = (x * x * x) + (3 * x * x) + (5 * x) + 7;
+            double actual = Evaluate.PolynomialRev_1(coeffs, x);
+            Assert.AreEqual(valid, actual);
+        }
+
+        /// <summary>
+        /// Test that NextCombination rejects null, empty, duplicated, out-of-range, and
+        /// negative-count tuples.
+        /// </summary>
+        [TestMethod]
+        public void Test_NextCombination_RejectsInvalidTuples()
+        {
+            Assert.Throws<ArgumentNullException>(() => Factorial.NextCombination(null!, 3));
+            Assert.Throws<ArgumentException>(() => Factorial.NextCombination(Array.Empty<int>(), 3));
+            Assert.Throws<ArgumentException>(() => Factorial.NextCombination(new[] { 0, 0 }, 3));
+            Assert.Throws<ArgumentException>(() => Factorial.NextCombination(new[] { 0, 3 }, 3));
+            Assert.Throws<ArgumentOutOfRangeException>(() => Factorial.NextCombination(new[] { 0 }, -1));
+        }
+        /// <summary>
+        /// The error function complement and its inverse hold relative accuracy deep in the tail,
+        /// where the complement of the error function itself rounds to zero.
+        /// </summary>
+        /// <remarks>
+        /// Reference values computed with Python mpmath 1.4.1 at 50 significant digits: erfc(x)
+        /// directly, and the inverse by root solving erfc(t) = y. Tolerances are measured relative
+        /// bounds of 1E-12 for the complement and 1E-9 for the inverse, which passes through the
+        /// AS241 quantile routine.
+        /// </remarks>
+        [TestMethod]
+        public void Test_Erfc_FarTail()
+        {
+            Assert.AreEqual(0.15729920705028513, Erf.Erfc(1.0), 0.15729920705028513 * 1E-12);
+            Assert.AreEqual(2.1519736712498913E-17, Erf.Erfc(6.0), 2.1519736712498913E-17 * 1E-12);
+            Assert.AreEqual(2.088487583762545E-45, Erf.Erfc(10.0), 2.088487583762545E-45 * 1E-12);
+            Assert.AreEqual(7.212994172451207E-100, Erf.Erfc(15.0), 7.212994172451207E-100 * 1E-12);
+            Assert.AreEqual(1.9999779095030015, Erf.Erfc(-3.0), 1.9999779095030015 * 1E-12);
+
+            Assert.AreEqual(0.4769362762044699, Erf.InverseErfc(0.5), Math.Abs(0.4769362762044699) * 1E-9);
+            Assert.AreEqual(6.062693998163568, Erf.InverseErfc(1E-17), 6.062693998163568 * 1E-9);
+            Assert.AreEqual(15.065574702592645, Erf.InverseErfc(1E-100), 15.065574702592645 * 1E-9);
+            Assert.AreEqual(-1.163087153676674, Erf.InverseErfc(1.9), Math.Abs(-1.163087153676674) * 1E-9);
+        }
+
+        /// <summary>
+        /// The normal distribution keeps relative accuracy in the far lower tail, where the error
+        /// function complement form loses the probability to rounding.
+        /// </summary>
+        /// <remarks>
+        /// Reference values computed with Python mpmath 1.4.1 ncdf at 50 significant digits. The
+        /// assertions demand 5E-12 relative accuracy through z = -37, near the underflow edge of
+        /// the double range.
+        /// </remarks>
+        [TestMethod]
+        public void Test_NormalCDF_FarTail()
+        {
+            var d = new Numerics.Distributions.Normal(0, 1);
+            Assert.AreEqual(2.866515718791939E-07, d.CDF(-5.0), 2.866515718791939E-07 * 5E-12);
+            Assert.AreEqual(2.2323931972880437E-17, d.CDF(-8.4), 2.2323931972880437E-17 * 5E-12);
+            Assert.AreEqual(1.776482112077679E-33, d.CDF(-12.0), 1.776482112077679E-33 * 5E-12);
+            Assert.AreEqual(2.7536241186062337E-89, d.CDF(-20.0), 2.7536241186062337E-89 * 5E-12);
+            Assert.AreEqual(5.725571222524577E-300, d.CDF(-37.0), 5.725571222524577E-300 * 5E-12);
+        }
+
+        /// <summary>
+        /// Pins the standard-normal CDF through its moderate range after routing it through the
+        /// MVNPHI implementation.
+        /// </summary>
+        /// <remarks>
+        /// Reference values were computed with Python mpmath 1.4.1 at 50 significant digits.
+        /// </remarks>
+        [TestMethod]
+        public void Test_NormalCDF_ModerateRange()
+        {
+            Assert.AreEqual(0.0013498980316300945d, Numerics.Distributions.Normal.StandardCDF(-3d), 5E-13d);
+            Assert.AreEqual(0.15865525393145707d, Numerics.Distributions.Normal.StandardCDF(-1d), 5E-13d);
+            Assert.AreEqual(0.5d, Numerics.Distributions.Normal.StandardCDF(0d), 5E-13d);
+            Assert.AreEqual(0.8413447460685429d, Numerics.Distributions.Normal.StandardCDF(1d), 5E-13d);
+            Assert.AreEqual(0.9986501019683699d, Numerics.Distributions.Normal.StandardCDF(3d), 5E-13d);
+        }
+
+    }
+}

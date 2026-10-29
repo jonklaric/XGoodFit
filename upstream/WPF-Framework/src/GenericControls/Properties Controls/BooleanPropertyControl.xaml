@@ -1,0 +1,37 @@
+﻿<UserControl x:Class="GenericControls.BooleanPropertyControl" x:Name="BooleanProperty"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:GenericControls"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="../Resources/ResourceDictionary.xaml"/>
+                <ResourceDictionary>
+                    <local:BooleanToVisibilityConverter x:Key="BoolToVisConverter" TrueValue="Visible" FalseValue="Collapsed"/>
+                </ResourceDictionary>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <Grid Height="22" Background="Transparent">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width=".001*"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+
+        <TextBlock Grid.Column="0" Style="{StaticResource TitleTextStyle}"
+                   Text="{Binding ElementName=BooleanProperty, Path=Title}" />
+
+        <Line Style="{StaticResource DotLeaderLineStyle}"
+              Visibility="{Binding ShowLeaderLine, ElementName=BooleanProperty, Converter={StaticResource BoolToVisConverter}}"/>
+        
+        <CheckBox Grid.Column="2" 
+                  VerticalAlignment="Bottom" HorizontalAlignment="Right" 
+                  IsChecked="{Binding ElementName=BooleanProperty, Path=IsSelected, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" 
+                  Checked="CheckBox_Checked" Unchecked="CheckBox_Unchecked"/>
+    </Grid>
+</UserControl>

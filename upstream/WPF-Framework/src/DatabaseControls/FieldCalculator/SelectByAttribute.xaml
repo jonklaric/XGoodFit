@@ -1,0 +1,85 @@
+<cntrls:MetroWindow x:Class="DatabaseControls.SelectByAttribute"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:parser="clr-namespace:ExpressionParserControls;assembly=ExpressionParserControls"
+    xmlns:local="clr-namespace:DatabaseControls"
+    xmlns:cntrls="clr-namespace:GenericControls;assembly=GenericControls"
+    Title="Select By Attribute" Height="606" Width="511" ResizeMode="NoResize"
+    WindowStartupLocation="CenterScreen"
+    Style="{DynamicResource MetroWindowStyle}"
+    Background="{DynamicResource EnvironmentWindowBackground}"
+    Foreground="{DynamicResource EnvironmentWindowText}">
+    <Grid x:Name="MAINGRID">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <!-- Help button placeholder (QuickHelp not yet ported) -->
+        <parser:CalculatorControl x:Name="ExpressionCalculator" Grid.Row="1"/>
+        <!--<Border Margin="5,22,5,0" Grid.Row="0" Name="LogicOperatorsBorder" HorizontalAlignment="Stretch" >
+            <Grid Name="ExpressionGrid" >
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="260"/>
+                    <RowDefinition Height="30"/>
+                    <RowDefinition Height="1*"/>
+                    <RowDefinition Height="23"/>
+                </Grid.RowDefinitions>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1*"/>
+                        <ColumnDefinition Width="1*"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0" Grid.Row="0" Orientation="Vertical" Margin="0,5,0,0">
+                        <Label Content="Available Fields:"  Name="AvailableFieldsLabel" Margin="0,0,0,0"/>
+                        <ListBox Height="225" Margin="0,0,0,0" Name="AvailableFields" Width="235" HorizontalAlignment="Left"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Grid.Row="0" Orientation="Vertical" Name="FunctionsPanel" Margin="5,5,0,0">
+                        <Label Content="Functions:"  Name="AvailableFunctionsLabel" Margin="0,0,0,0"/>
+                        <local:AvailableFunctionsTreeView x:Name="AvailableFunctions" Height="193"/>
+                        <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
+                            <Button Name="AddButton" Height="20" Width="20" Padding="0" SnapsToDevicePixels="True">
+                                <Image Width="16" Height="16" Source="pack://application:,,,/DatabaseControls;component/Resources/Plus.png"/>
+                            </Button>
+                            <Button Name="SubtractButton" Height="20" Width="20" Margin="3,0,0,0" Padding="0" SnapsToDevicePixels="True">
+                                <Image Width="16" Height="16" Source="pack://application:,,,/DatabaseControls;component/Resources/Minus.png"/>
+                            </Button>
+                            <Button Name="DivideButton" Height="20" Width="20" Margin="3,0,0,0" Padding="0" SnapsToDevicePixels="True">
+                                <Image  Width="16" Height="16" Source="pack://application:,,,/DatabaseControls;component/Resources/Divide.png"/>
+                            </Button>
+                            <Button Name="MultiplyButton" Height="20" Width="20" Margin="3,0,0,0" Padding="0" SnapsToDevicePixels="True">
+                                <Image Width="16" Height="16" Source="pack://application:,,,/DatabaseControls;component/Resources/Mult.png"/>
+                            </Button>
+                            <Button Name="ExponentButton" Height="20" Width="20" Margin="3,0,0,0" Padding="0" SnapsToDevicePixels="True">
+                                <Image Width="16" Height="16" Source="pack://application:,,,/DatabaseControls;component/Resources/Exponent.png"/>
+                            </Button>
+                            <Button Name="EQButton" Height="20" Width="20" Margin="3,0,0,0" Padding="0" SnapsToDevicePixels="True">
+                                <Image  Width="16" Height="16" Source="pack://application:,,,/DatabaseControls;component/Resources/Equals.png"/>
+                            </Button>
+                        </StackPanel>
+                    </StackPanel>
+                </Grid>
+
+                <Grid Grid.Row="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        --><!--<ColumnDefinition Width="120"/>--><!--
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="Select From star where:" Name="SelectedField" Margin="5,2,0,2" HorizontalAlignment="Left" VerticalAlignment="Bottom"/>
+                    <CheckBox Content="Case Sensitive" Grid.Column="1" Name="IsCaseSensitive" Margin="5,2,0,2" HorizontalAlignment="Left" VerticalAlignment="Bottom"/>
+                </Grid>
+
+
+                <local:ExpressionTextBox Grid.Row="2" HorizontalAlignment="Stretch" x:Name="ExpressionWindow" VerticalAlignment="Stretch"/>
+
+                <TextBlock Text="expression = result" Grid.Row="3" HorizontalAlignment="Left" Margin="0,0,0,0" Name="resulttextblock" VerticalAlignment="Center" />
+            </Grid>
+        </Border>-->
+        <StackPanel Grid.Row="2" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="5" Orientation="Horizontal">
+            <Button Content="Execute" x:Name="ExecuteButton" IsEnabled="False" IsDefault="True" Width="80" Height="24"/>
+        </StackPanel>
+    </Grid>
+</cntrls:MetroWindow>

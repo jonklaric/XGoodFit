@@ -1,0 +1,48 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <RootNamespace>GenericControls</RootNamespace>
+    <AssemblyName>GenericControls</AssemblyName>
+    <Nullable>disable</Nullable>
+    <UseWPF>true</UseWPF>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+
+    <IsWpfFrameworkLibrary>true</IsWpfFrameworkLibrary>
+    <PackageId>RMC.GenericControls</PackageId>
+    <Title>GenericControls</Title>
+    <Description>Reusable WPF control library for WPF Framework. Themed windows, data grids with copy/paste, numeric inputs, color picker, date/time controls, property editors, adorners, converters, and file management dialogs.</Description>
+    <PackageTags>wpf; controls; datagrid; numeric-textbox; color-picker; metro-window; property-editor; usace-rmc</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="GenericControls.Tests" />
+  </ItemGroup>
+
+
+  <ItemGroup>
+    <ProjectReference Include="..\Themes\Themes.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Resources\*.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,79 @@
+﻿<UserControl x:Class="GenericControls.DateAndTimeTextBoxControl" x:Name="DateAndTimeTextBoxSelector"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:GenericControls"
+             mc:Ignorable="d" 
+             d:DesignHeight="22"
+             d:DesignWidth="250">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="../Resources/ResourceDictionary.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+            <local:ReverseBooleanConverter x:Key="ReverseBoolConverter"/>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+        <!--Can update string format of textbox in binding (example: StringFormat='yyyy-MM-dd HH:mm:ss')-->
+        <TextBox
+            x:Name="DateTimeTextBox"
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Stretch"
+            VerticalContentAlignment="Center"
+            KeyUp="Textbox_KeyUp">
+            <TextBox.Style>
+                <Style TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding ElementName=DateAndTimeTextBoxSelector, Path=Is24Hour}" Value="False">
+                            <Setter Property="Text" Value="{Binding SelectedDateTime, ElementName=DateAndTimeTextBoxSelector, Mode=TwoWay, ValidatesOnDataErrors=True, StringFormat='MM/dd/yyyy hh:mm tt'}"/>
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding ElementName=DateAndTimeTextBoxSelector, Path=Is24Hour}" Value="True">
+                            <Setter Property="Text" Value="{Binding SelectedDateTime, ElementName=DateAndTimeTextBoxSelector, Mode=TwoWay, ValidatesOnDataErrors=True, StringFormat='MM/dd/yyyy HH:mm'}"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </TextBox.Style>
+        </TextBox>
+        
+        <RadioButton 
+            Width="{Binding ElementName=DateTimeTextBox, Path=ActualHeight}"
+            Height="{Binding ElementName=DateTimeTextBox, Path=ActualHeight}"
+            x:Name="DateTimeRadioButton" 
+            Grid.Column="1" 
+            Padding="0"
+            Style="{StaticResource {x:Static ToolBar.RadioButtonStyleKey}}" 
+            IsChecked="False" 
+            IsHitTestVisible="{Binding ElementName=DateTimePopup, Path=IsOpen, Converter={StaticResource ReverseBoolConverter}}">
+
+            <ContentControl Content="{StaticResource CalendarIcon}"
+                            Width="16" Height="16"/>
+        </RadioButton>
+        
+        <Popup
+            x:Name="DateTimePopup" 
+            IsOpen="{Binding ElementName=DateTimeRadioButton, Path=IsChecked, Mode=TwoWay}" 
+            StaysOpen="False" 
+            AllowsTransparency="True" 
+            Placement="Bottom" 
+            PlacementTarget="{Binding ElementName=DateTimeTextBox}">
+            
+            <Border BorderBrush="{DynamicResource Button.Static.Border}"
+                    BorderThickness="1"
+                    Background="{DynamicResource EnvironmentWindowBackground}">
+                <local:DateAndTimePickerControl
+                    x:Name="DateAndTimePicker"
+                    HasSeconds="False"
+                    SetToHoursOnLoad="True"
+                    Background="{DynamicResource EnvironmentWindowBackground}"
+                    DateAndTime="{Binding SelectedDateTime, ElementName=DateAndTimeTextBoxSelector, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                    Is24Hour="{Binding ElementName=DateAndTimeTextBoxSelector, Path=Is24Hour, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"/>
+            </Border>
+        </Popup>
+    </Grid>
+</UserControl>

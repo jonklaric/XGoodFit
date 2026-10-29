@@ -1,0 +1,59 @@
+<Project>
+
+  <!--
+    Shared properties and items that apply to any project opting in via
+    <IsWpfFrameworkLibrary>true</IsWpfFrameworkLibrary>. Vendored forks
+    (AvalonDock, upstream OxyPlot / OxyPlot.Wpf.Shared) and test / demo
+    projects do not opt in and are unaffected by this file.
+  -->
+
+  <PropertyGroup Condition="'$(IsWpfFrameworkLibrary)' == 'true'">
+    <Authors>C. Haden Smith, Woodrow L. Fields, Julian Gonzalez</Authors>
+    <Company>USACE-RMC</Company>
+    <Product>WPF Framework</Product>
+    <PackageProjectUrl>https://github.com/USACE-RMC/WPF-Framework</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/USACE-RMC/WPF-Framework</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <Version>1.0.5</Version>
+    <AssemblyVersion>1.0.5.0</AssemblyVersion>
+    <FileVersion>1.0.5.0</FileVersion>
+
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <IsPackable>false</IsPackable>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <DebugType>embedded</DebugType>
+
+    <PackageLicenseExpression>0BSD</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+
+    <!-- Public API XML documentation must be complete on packable RMC libraries. -->
+    <WarningsAsErrors>$(WarningsAsErrors);CS1591;CS1572;CS1573;CS1574;CS0419</WarningsAsErrors>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(EnforceXmlDocumentation)' == 'true'">
+    <!--
+      Release validation enables the full XML documentation warning set. Run
+      scripts\validate-code-xml-docs.ps1 to combine this compiler gate with the
+      private class and method scanner.
+    -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <WarningsAsErrors>$(WarningsAsErrors);CS0419;CS1570;CS1571;CS1572;CS1573;CS1574;CS1584;CS1587;CS1589;CS1591</WarningsAsErrors>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(IsWpfFrameworkLibrary)' == 'true'">
+    <None Include="$(MSBuildThisFileDirectory)README.md" Pack="true" PackagePath="\" Visible="false" />
+
+    <!-- Reproducible builds: https://github.com/dotnet/reproducible-builds -->
+    <PackageReference Include="DotNet.ReproducibleBuilds">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+
+    <!-- Source Link: https://github.com/dotnet/sourcelink -->
+    <PackageReference Include="Microsoft.SourceLink.GitHub">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+
+</Project>

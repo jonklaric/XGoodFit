@@ -1,0 +1,38 @@
+﻿<Canvas 
+    x:Class="DAGControls.FlowGraphCanvas" 
+    x:Name="GraphCanvas"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:PresentationOptions="http://schemas.microsoft.com/winfx/2006/xaml/presentation/options"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+    xmlns:local="clr-namespace:DAGControls" 
+    d:DataContext="{d:DesignInstance Type=local:FlowGraphCanvas}"
+    mc:Ignorable="d" 
+    ClipToBounds="True"
+    UseLayoutRounding="True"
+    TextOptions.TextFormattingMode="Ideal"
+    TextOptions.TextRenderingMode="ClearType"
+    MouseDown="GraphCanvas_MouseDown" 
+    MouseMove="GraphCanvas_MouseMove" 
+    MouseUp="GraphCanvas_MouseUp" 
+    MouseWheel="GraphCanvas_MouseWheel"
+    HorizontalAlignment="Stretch"
+    VerticalAlignment="Stretch"
+    d:DesignHeight="450" d:DesignWidth="800">
+
+    <Canvas.Background>
+        <VisualBrush TileMode="Tile" Viewport="0,0,40,40" ViewportUnits="Absolute" PresentationOptions:Freeze="True">
+            <VisualBrush.Visual>
+                <Grid>
+                    <Path Data="M 20 40 L 20 0" Stroke="#19000000" StrokeThickness=".5" />
+                    <Path Data="M 40 20 L 0 20" Stroke="#19000000" StrokeThickness=".5" />
+
+                    <Path Data="M 0 0 L 40 0" Stroke="#33000000" StrokeThickness="1" />
+                    <Path Data="M 0 0 L 0 40" Stroke="#33000000" StrokeThickness="1" />
+                </Grid>
+            </VisualBrush.Visual>
+        </VisualBrush>
+    </Canvas.Background>
+
+</Canvas>

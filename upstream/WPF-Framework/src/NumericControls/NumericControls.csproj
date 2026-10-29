@@ -1,0 +1,48 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <RootNamespace>NumericControls</RootNamespace>
+    <AssemblyName>NumericControls</AssemblyName>
+    <Nullable>disable</Nullable>
+    <UseWPF>true</UseWPF>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+
+    <IsWpfFrameworkLibrary>true</IsWpfFrameworkLibrary>
+    <PackageId>RMC.NumericControls</PackageId>
+    <Title>NumericControls</Title>
+    <Description>WPF controls for numeric data entry, statistical distributions, ordered curves, time series, uncertain data, probability ordinates, and stratified sampling. Built for engineering and risk analysis applications.</Description>
+    <PackageTags>wpf; numeric; distributions; curve-editor; time-series; statistics; uncertainty; usace-rmc</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\GenericControls\GenericControls.csproj" />
+    <ProjectReference Include="..\OxyPlotControls\OxyPlotControls.csproj" />
+    <ProjectReference Include="..\Themes\Themes.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="RMC.Numerics" />
+    <ProjectReference Include="..\OxyPlot\OxyPlot\OxyPlot.csproj" />
+    <ProjectReference Include="..\OxyPlot\OxyPlot.Wpf\OxyPlot.Wpf.csproj" />
+    <ProjectReference Include="..\OxyPlot\OxyPlot.Wpf.Shared\OxyPlot.Wpf.Shared.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Properties\Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Properties\Resources.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+
+</Project>

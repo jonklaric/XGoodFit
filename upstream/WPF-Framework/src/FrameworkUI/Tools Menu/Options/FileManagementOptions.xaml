@@ -1,0 +1,47 @@
+﻿<UserControl x:Class="FrameworkUI.FileManagementOptions"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:cntrls="clr-namespace:GenericControls;assembly=GenericControls"
+             mc:Ignorable="d"
+             d:DesignHeight="300" d:DesignWidth="400"
+             Background="{DynamicResource EnvironmentWindowBackground}"
+             Foreground="{DynamicResource EnvironmentWindowText}"
+             DataContext="{Binding RelativeSource={RelativeSource Self}}">
+    <Grid x:Name="MainGrid">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <!--File Size Management-->
+        <cntrls:SeparatorWithHeader Header="File Size Management" Grid.Row="0" LeftSeparatorWidth="10" Margin="4"/>
+        <Grid Grid.Row="1" Margin="10,0,0,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <CheckBox x:Name="CompressCheckBox" Grid.Row="0" Content="Compact &amp; optimize project file on close" Margin="4" VerticalAlignment="Center" IsChecked="{Binding CompressProjectFileOnClose, Mode=TwoWay}"/>
+        </Grid>
+        <!--Backup & Recovery-->
+        <cntrls:SeparatorWithHeader Header="Backup &amp; Recovery" Grid.Row="2" LeftSeparatorWidth="10" Margin="4,6,4,4"/>
+        <Grid Grid.Row="3" Margin="10,0,0,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <Grid Grid.Row="0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <CheckBox x:Name="AutoRecoverCheckBox" Grid.Column="0" Content="Create AutoRecover backup every" Margin="4" VerticalAlignment="Center" IsChecked="{Binding CreateAutoRecoverBackup, Mode=TwoWay}"/>
+                <cntrls:NumericUpDown x:Name="AutoRecoverTimerUpDown" Maximum="60" Minimum="1" Increment="1" Grid.Column="1" Height="24" Width="52" Margin="4" Value="{Binding AutoRecoverInterval, Mode=TwoWay}"/>
+                <TextBlock Text="minutes" Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="4"/>
+            </Grid>
+            <CheckBox x:Name="BackupCheckBox" Grid.Row="1" Content="Keep the last backup version if I close without saving" Margin="4" VerticalAlignment="Center" IsChecked="{Binding KeepLastBackupVersion, Mode=TwoWay}"/>
+        </Grid>
+    </Grid>
+</UserControl>

@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <PackageId>OxyPlot.Core</PackageId>
+    <Description>OxyPlot is a plotting library for .NET.</Description>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>OxyPlot.snk</AssemblyOriginatorKeyFile>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <LangVersion>9</LangVersion>
+    <NoWarn>$(NoWarn);CS0618</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include="OxyPlot.snk" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Axes\Probability Axis Support\" />
+  </ItemGroup>
+</Project>

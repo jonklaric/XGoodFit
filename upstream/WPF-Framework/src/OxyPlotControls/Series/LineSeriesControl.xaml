@@ -1,0 +1,473 @@
+<UserControl x:Class="OxyPlotControls.LineSeriesControl" x:Name="LineSeriesProperties"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:OxyPlotControls"
+             xmlns:cntrls="clr-namespace:GenericControls;assembly=GenericControls"
+             mc:Ignorable="d"
+             d:DesignHeight="450" d:DesignWidth="800"
+             DataContext="{Binding RelativeSource={RelativeSource Self}}"
+             >
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="../Resources/ResourceDictionary.xaml"/>
+                <ResourceDictionary>
+                    <cntrls:FontFamilyToFontStringConverter x:Key="FontFamilyToFontConverter"/>
+                    <cntrls:AlwaysVisibleConverter x:Key="AlwaysVisibleConverter" />
+                    <local:LineSeriesColorConverter x:Key="LineColorConverter"/>
+                    <local:OxyAutomaticColorConverter x:Key="OxyAutoColorConverter"/>
+                    <local:AreaSeriesFillConverter x:Key="AreaFillConverter"/>
+                    <local:LineSeriesMarkerFillConverter x:Key="MarkerFillConverter"/>
+                    <local:LineSeriesMarkerStrokeConverter x:Key="MarkerStrokeConverter"/>
+                    <local:VerticalStrokeThicknessConverter x:Key="VerticalThicknessConverter"/>
+                    <local:OxyLineStyleToDashArrayConverter x:Key="LineStyleConverter"/>
+                    <local:OxyDefaultFontSizeConverter x:Key="DefaultFontSizeConverter"/>
+                    <cntrls:DoubleToGridLengthConverter x:Key="ActualToLengthConverter" />
+                    <cntrls:VisibilityToBooleanConverter x:Key="VisibilityToBoolConverter" VisibleValue="True" CollapsedValue="False" HiddenValue="False"/>
+                </ResourceDictionary>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="0"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <cntrls:ContentPropertyControl
+            Name="DummyPropertyControl"
+            Grid.Row="0"
+            Visibility="Hidden"
+            Title="Marker Line Thickness"
+            Padding="6 0 0 0"/>
+
+        <!--Display-->
+        <Expander
+                x:Name="DisplayEXP"
+                Grid.Row="1" Margin="0,0,0,0"
+                Header="DISPLAY"
+                IsExpanded="True"
+                DockPanel.Dock="Top"
+                Style="{Binding ElementName=LineSeriesProperties, Path=ExpanderStyle}">
+
+            <DockPanel>
+
+                <!--Title Text-->
+                <cntrls:TextPropertyControl
+                    Margin="0 2"
+                    DockPanel.Dock="Top"
+                    MaxPropertyWidth="400"
+                    Title="Title"
+                    Text="{Binding Series.Title, ElementName=LineSeriesProperties, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay, NotifyOnSourceUpdated=True}"
+                    PropertyWidth="{Binding ElementName=DummyPropertyControl, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}"/>
+
+                <!--Visibility (DEVELOPER)-->
+                <cntrls:BooleanPropertyControl
+                    Margin="0 2"
+                    DockPanel.Dock="Top"
+                    Title="Is Visible"
+                    IsSelected="{Binding ElementName=LineSeriesProperties, Path=Series.Visibility, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay, NotifyOnSourceUpdated=True, Converter={StaticResource VisibilityToBoolConverter}}"/>
+
+                <!--Render In Legend (DEVELOPER)-->
+                <cntrls:BooleanPropertyControl
+                    Margin="0 2"
+                    DockPanel.Dock="Top"
+                    Title="Show In Legend"
+                    IsSelected="{Binding ElementName=LineSeriesProperties, Path=Series.RenderInLegend, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay, NotifyOnSourceUpdated=True}"/>
+
+                <!--Series Color (Standard - hidden for TwoColor/ThreeColor)-->
+                <cntrls:ColorPropertyControl
+                        Margin="0 2"
+                        DockPanel.Dock="Top"
+                        Title="Line Color"
+                        Visibility="{Binding ElementName=LineSeriesProperties, Path=ShowStandardColor}">
+                    <cntrls:ColorPropertyControl.SelectedColor>
+                        <MultiBinding
+                                Converter="{StaticResource LineColorConverter}"
+                                UpdateSourceTrigger="PropertyChanged" Mode="TwoWay"
+                                NotifyOnSourceUpdated="True">
+                            <Binding
+                                    Path="Series.Color"
+                                    ElementName="LineSeriesProperties"
+                                    UpdateSourceTrigger="PropertyChanged"
+                                    Mode="TwoWay"
+                                    NotifyOnSourceUpdated="True"/>
+                            <Binding
+                                    Path="Series"
+                                    ElementName="LineSeriesProperties"
+                                    UpdateSourceTrigger="PropertyChanged"
+                                    Mode="OneWay"/>
+                        </MultiBinding>
+                    </cntrls:ColorPropertyControl.SelectedColor>
+                </cntrls:ColorPropertyControl>
+
+                <!--TwoColorLineSeries: Upper Line Color-->
+                <cntrls:ColorPropertyControl
+                        Margin="0 2"
+                        DockPanel.Dock="Top"
+                        Title="Upper Line Color"
+                        Visibility="{Binding ElementName=LineSeriesProperties, Path=ShowTwoColorControls}">
+                    <cntrls:ColorPropertyControl.SelectedColor>
+                        <MultiBinding
+                                Converter="{StaticResource LineColorConverter}"
+                                UpdateSourceTrigger="PropertyChanged" Mode="TwoWay"
+                                NotifyOnSourceUpdated="True">
+                            <Binding
+                                    Path="Series.Color"
+                                    ElementName="LineSeriesProperties"
+                                    UpdateSourceTrigger="PropertyChanged"
+                                    Mode="TwoWay"
+                                    NotifyOnSourceUpdated="True"/>
+                            <Binding
+                                    Path="Series"
+                                    ElementName="LineSeriesProperties"
+                                    UpdateSourceTrigger="PropertyChanged"
+                                    Mode="OneWay"/>
+                        </MultiBinding>
+                    </cntrls:ColorPropertyControl.SelectedColor>
+                </cntrls:ColorPropertyControl>
+
+                <!--TwoColorLineSeries: Lower Line Color-->
+                <cntrls:ColorPropertyControl
+                        Margin="0 2"
+                        DockPanel.Dock="Top"
+                        Title="Lower Line Color"
+                        SelectedColor="{Binding ElementName=LineSeriesProperties, Path=Series.Color2, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay, NotifyOnSourceUpdated=True, Converter={StaticResource OxyAutoColorConverter}}"
+                        Visibility="{Binding ElementName=LineSeriesProperties, Path=ShowTwoColorControls}"/>
+
+                <!--ThreeColorLineSeries: Upper Line Color-->
+                <cntrls:ColorPropertyControl
+                        Margin="0 2"
+                        DockPanel.Dock="Top"
+                        Title="Upper Line Color"
+                        SelectedColor="{Binding ElementName=LineSeriesProperties, Path=Series.ColorHi, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay, NotifyOnSourceUpdated=True, Converter={StaticResource OxyAutoColorConverter}}"
+                        Visibility="{Binding ElementName=LineSeriesProperties, Path=ShowThreeColorControls}"/>
+
+                <!--ThreeColorLineSeries: Middle Line Color-->
+                <cntrls:ColorPropertyControl
+                        Margin="0 2"
+                        DockPanel.Dock="Top"
+                        Title="Middle Line Color"
+                        Visibility="{Binding ElementName=LineSeriesProperties, Path=ShowThreeColorControls}">
+                    <cntrls:ColorPropertyControl.SelectedColor>
+                        <MultiBinding
+                                Converter="{StaticResource LineColorConverter}"
+                                UpdateSourceTrigger="PropertyChanged" Mode="TwoWay"
+                                NotifyOnSourceUpdated="True">
+                            <Binding
+                                    Path="Series.Color"
+                                    ElementName="LineSeriesProperties"
+                                    UpdateSourceTrigger="PropertyChanged"
+                                    Mode="TwoWay"
+                                    NotifyOnSourceUpdated="True"/>
+                            <Binding
+                                    Path="Series"
+                                    ElementName="LineSeriesProperties"
+                                    UpdateSourceTrigger="PropertyChanged"
+                                    Mode="OneWay"/>
+                        </MultiBinding>
+                    </cntrls:ColorPropertyControl.SelectedColor>
+                </cntrls:ColorPropertyControl>
+
+                <!--ThreeColorLineSeries: Lower Line Color-->
+                <cntrls:ColorPropertyControl
+                        Margin="0 2"
+                        DockPanel.Dock="Top"
+                        Title="Lower Line Color"
+                        SelectedColor="{Binding ElementName=LineSeriesProperties, Path=Series.ColorLo, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay, NotifyOnSourceUpdated=True, Converter={StaticResource OxyAutoColorConverter}}"
+                        Visibility="{Binding ElementName=LineSeriesProperties, Path=ShowThreeColorControls}"/>
+
+                <!--Area Series Fill-->
+                <cntrls:ColorPropertyControl
+                    Margin="0 2"
+                    DockPanel.Dock="Top"
+                    Title="Fill"
+                    Visibility="{Binding ElementName=LineSeriesProperties, Path=Series.Fill, Converter={StaticResource AlwaysVisibleConverter}, FallbackValue=Collapsed}">
+                    <cntrls:ColorPropertyControl.SelectedColor>
+                        <MultiBinding
+                                Converter="{StaticResource AreaFillConverter}"
+                                UpdateSourceTrigger="PropertyChanged" Mode="TwoWay"
+                                NotifyOnSourceUpdated="True">
+                            <Binding
+                                    Path="Series.Fill"
+                                    ElementName="LineSeriesProperties"
+                                    UpdateSourceTrigger="PropertyChanged"
+                                    Mode="TwoWay"
+                                    NotifyOnSourceUpdated="True"/>
+                            <Binding
+                                    Path="Series"
+                                    ElementName="LineSeriesProperties"
+                                    UpdateSourceTrigger="PropertyChanged"
+                                    Mode="OneWay"/>
+                        </MultiBinding>
+                    </cntrls:ColorPropertyControl.SelectedColor>
+                </cntrls:ColorPropertyControl>
+
+                <!--LineStyle (Standard - hidden for StairStepSeries)-->
+                <cntrls:LineStyleSelectorControl
+                        Margin="0 2"
+                        DockPanel.Dock="Top"
+                        Title="Line Style"
+                        DashArrayOptions="{Binding ElementName=LineSeriesProperties, Path=LineStyleOptions}"
+                        SelectedDashArray="{Binding ElementName=LineSeriesProperties, Path=Series.LineStyle, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay, NotifyOnSourceUpdated=True, Converter={StaticResource LineStyleConverter}}"
+                        PropertyWidth="{Binding ElementName=DummyPropertyControl, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}"
+                        Visibility="{Binding ElementName=LineSeriesProperties, Path=ShowStandardLineStyle}"/>
+
+                <!--StairStepSeries: Horizontal Line Style-->
+                <cntrls:LineStyleSelectorControl
+                        Margin="0 2"
+                        DockPanel.Dock="Top"
+                        Title="Horizontal Line Style"
+                        DashArrayOptions="{Binding ElementName=LineSeriesProperties, Path=LineStyleOptions}"
+                        SelectedDashArray="{Binding ElementName=LineSeriesProperties, Path=Series.LineStyle, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay, NotifyOnSourceUpdated=True, Converter={StaticResource LineStyleConverter}}"
+                        PropertyWidth="{Binding ElementName=DummyPropertyControl, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}"
+                        Visibility="{Binding ElementName=LineSeriesProperties, Path=ShowStairStepControls}"/>
+
+                <!--StairStepSeries: Vertical Line Style-->
+                <cntrls:LineStyleSelectorControl
+                        Margin="0 2"
+                        DockPanel.Dock="Top"
+                        Title="Vertical Line Style"
+                        DashArrayOptions="{Binding ElementName=LineSeriesProperties, Path=LineStyleOptions}"
+                        SelectedDashArray="{Binding ElementName=LineSeriesProperties, Path=Series.VerticalLineStyle, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay, NotifyOnSourceUpdated=True, Converter={StaticResource LineStyleConverter}}"
+                        PropertyWidth="{Binding ElementName=DummyPropertyControl, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}"
+                        Visibility="{Binding ElementName=LineSeriesProperties, Path=ShowStairStepControls}"/>
+
+                <!--StrokeThickness (Standard - hidden for StairStepSeries)-->
+                <cntrls:LineWidthSelectorControl
+                        Margin="0 2"
+                        DockPanel.Dock="Top"
+                        Title="Line Thickness"
+                        WidthOptions="{StaticResource LineWidthOptions}" SelectedWidth="{Binding Series.StrokeThickness, ElementName=LineSeriesProperties, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay, NotifyOnSourceUpdated=True}"
+                        PropertyWidth="{Binding ElementName=DummyPropertyControl, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}"
+                        Visibility="{Binding ElementName=LineSeriesProperties, Path=ShowStandardLineStyle}"/>
+
+                <!--StairStepSeries: Horizontal Line Thickness-->
+                <cntrls:LineWidthSelectorControl
+                        Margin="0 2"
+                        DockPanel.Dock="Top"
+                        Title="Horizontal Line Thickness"
+                        WidthOptions="{StaticResource LineWidthOptions}" SelectedWidth="{Binding Series.StrokeThickness, ElementName=LineSeriesProperties, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay, NotifyOnSourceUpdated=True}"
+                        PropertyWidth="{Binding ElementName=DummyPropertyControl, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}"
+                        Visibility="{Binding ElementName=LineSeriesProperties, Path=ShowStairStepControls}"/>
+
+                <!--StairStepSeries: Vertical Line Thickness-->
+                <cntrls:LineWidthSelectorControl
+                        Margin="0 2"
+                        DockPanel.Dock="Top"
+                        Title="Vertical Line Thickness"
+                        WidthOptions="{StaticResource LineWidthOptions}"
+                        PropertyWidth="{Binding ElementName=DummyPropertyControl, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}"
+                        Visibility="{Binding ElementName=LineSeriesProperties, Path=ShowStairStepControls}">
+                    <cntrls:LineWidthSelectorControl.SelectedWidth>
+                        <MultiBinding Converter="{StaticResource VerticalThicknessConverter}"
+                            UpdateSourceTrigger="PropertyChanged" Mode="TwoWay" NotifyOnSourceUpdated="True">
+                            <Binding Path="Series.VerticalStrokeThickness" ElementName="LineSeriesProperties"
+                                UpdateSourceTrigger="PropertyChanged" Mode="TwoWay" NotifyOnSourceUpdated="True"/>
+                            <Binding Path="Series.StrokeThickness" ElementName="LineSeriesProperties"
+                                UpdateSourceTrigger="PropertyChanged" Mode="OneWay"/>
+                        </MultiBinding>
+                    </cntrls:LineWidthSelectorControl.SelectedWidth>
+                </cntrls:LineWidthSelectorControl>
+
+            </DockPanel>
+
+        </Expander>
+
+        <!--Markers-->
+        <Expander
+                x:Name="MarkersEXP"
+                Grid.Row="2" Margin="0,0,0,0"
+                Header="MARKERS"
+                IsExpanded="True"
+                DockPanel.Dock="Top"
+                Style="{Binding ElementName=LineSeriesProperties, Path=ExpanderStyle}">
+
+            <DockPanel>
+
+                <!--MarkerType (LineSeries and ScatterSeries)-->
+                <cntrls:ContentPropertyControl
+                            Title="Marker"
+                            Margin="0 2"
+                            DockPanel.Dock="Top"
+                            PropertyWidth="{Binding ElementName=DummyPropertyControl, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}">
+                    <cntrls:ContentPropertyControl.InnerContent>
+                        <ComboBox
+                            ItemsSource="{Binding MarkerTypeOptions}"
+                            SelectedValue="{Binding Path=Series.MarkerType, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay, NotifyOnSourceUpdated=True}"/>
+                    </cntrls:ContentPropertyControl.InnerContent>
+                </cntrls:ContentPropertyControl>
+
+                <!--MarkerFill (LineSeries and ScatterSeries)-->
+                <cntrls:ColorPropertyControl
+                        Margin="0 2"
+                        DockPanel.Dock="Top"
+                        Title="Marker Fill">
+                    <cntrls:ColorPropertyControl.SelectedColor>
+                        <MultiBinding
+                                Converter="{StaticResource MarkerFillConverter}"
+                                UpdateSourceTrigger="PropertyChanged" Mode="TwoWay"
+                                NotifyOnSourceUpdated="True">
+                            <Binding
+                                    Path="Series.MarkerFill"
+                                    ElementName="LineSeriesProperties"
+                                    UpdateSourceTrigger="PropertyChanged"
+                                    Mode="TwoWay"
+                                    NotifyOnSourceUpdated="True"/>
+                            <Binding
+                                    Path="Series"
+                                    ElementName="LineSeriesProperties"
+                                    UpdateSourceTrigger="PropertyChanged"
+                                    Mode="OneWay"/>
+                            <Binding
+                                    Path="Series.Color"
+                                    ElementName="LineSeriesProperties"
+                                    UpdateSourceTrigger="PropertyChanged"
+                                    Mode="OneWay"/>
+                        </MultiBinding>
+                    </cntrls:ColorPropertyControl.SelectedColor>
+                </cntrls:ColorPropertyControl>
+
+                <!--MarkerSize (LineSeries and ScatterSeries)-->
+                <cntrls:NumericPropertySelectorControl
+                        Margin="0 2"
+                        DockPanel.Dock="Top"
+                        Title="Marker Size"
+                        CanHaveNegative="False"
+                        NumericOptions="{StaticResource LineWidthOptions}"
+                        SelectedNumber="{Binding ElementName=LineSeriesProperties, Path=Series.MarkerSize, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay, NotifyOnSourceUpdated=True}"
+                        PropertyWidth="{Binding ElementName=DummyPropertyControl, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}"/>
+
+                <!--MarkerStroke (LineSeries and ScatterSeries)-->
+                <cntrls:ColorPropertyControl
+                        Margin="0 2"
+                        DockPanel.Dock="Top"
+                        Title="Marker Line Color">
+                    <cntrls:ColorPropertyControl.SelectedColor>
+                        <MultiBinding
+                                Converter="{StaticResource MarkerStrokeConverter}"
+                                UpdateSourceTrigger="PropertyChanged" Mode="TwoWay"
+                                NotifyOnSourceUpdated="True">
+                            <Binding
+                                    Path="Series.MarkerStroke"
+                                    ElementName="LineSeriesProperties"
+                                    UpdateSourceTrigger="PropertyChanged"
+                                    Mode="TwoWay"
+                                    NotifyOnSourceUpdated="True"/>
+                            <Binding
+                                    Path="Series"
+                                    ElementName="LineSeriesProperties"
+                                    UpdateSourceTrigger="PropertyChanged"
+                                    Mode="OneWay"/>
+                            <Binding
+                                    Path="Series.Color"
+                                    ElementName="LineSeriesProperties"
+                                    UpdateSourceTrigger="PropertyChanged"
+                                    Mode="OneWay"/>
+                        </MultiBinding>
+                    </cntrls:ColorPropertyControl.SelectedColor>
+                </cntrls:ColorPropertyControl>
+
+                <!--MarkerStrokeThickness (LineSeries and ScatterSeries)-->
+                <cntrls:LineWidthSelectorControl
+                        Margin="0 2"
+                        DockPanel.Dock="Top"
+                        Title="Marker Line Thickness"
+                        WidthOptions="{StaticResource LineWidthOptions}"
+                        SelectedWidth="{Binding Series.MarkerStrokeThickness,
+                        ElementName=LineSeriesProperties, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay, NotifyOnSourceUpdated=True}"
+                        PropertyWidth="{Binding ElementName=DummyPropertyControl, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}"/>
+
+            </DockPanel>
+
+        </Expander>
+
+        <!--Specialized Settings (TwoColor/ThreeColor thresholds and line styles)-->
+        <Expander
+                x:Name="SpecializedSettingsEXP"
+                Grid.Row="3" Margin="0,0,0,0"
+                Header="SPECIALIZED SETTINGS"
+                IsExpanded="True"
+                DockPanel.Dock="Top"
+                Style="{Binding ElementName=LineSeriesProperties, Path=ExpanderStyle}"
+                Visibility="{Binding ElementName=LineSeriesProperties, Path=ShowSpecializedSettings}">
+
+            <DockPanel>
+
+                <!--TwoColorLineSeries: Color Threshold-->
+                <cntrls:NumericPropertyControl
+                        Margin="0 2"
+                        DockPanel.Dock="Top"
+                        Title="Color Threshold"
+                        Number="{Binding ElementName=LineSeriesProperties, Path=Series.Limit, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay, NotifyOnSourceUpdated=True}"
+                        PropertyWidth="{Binding ElementName=DummyPropertyControl, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}"
+                        Visibility="{Binding ElementName=LineSeriesProperties, Path=ShowTwoColorControls}"/>
+
+                <!--TwoColorLineSeries: Lower Line Style-->
+                <cntrls:LineStyleSelectorControl
+                        Margin="0 2"
+                        DockPanel.Dock="Top"
+                        Title="Lower Line Style"
+                        DashArrayOptions="{Binding ElementName=LineSeriesProperties, Path=LineStyleOptions}"
+                        SelectedDashArray="{Binding ElementName=LineSeriesProperties, Path=Series.LineStyle2, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay, NotifyOnSourceUpdated=True, Converter={StaticResource LineStyleConverter}}"
+                        PropertyWidth="{Binding ElementName=DummyPropertyControl, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}"
+                        Visibility="{Binding ElementName=LineSeriesProperties, Path=ShowTwoColorControls}"/>
+
+                <!--ThreeColorLineSeries: Low Threshold-->
+                <cntrls:NumericPropertyControl
+                        Margin="0 2"
+                        DockPanel.Dock="Top"
+                        Title="Low Threshold"
+                        Number="{Binding ElementName=LineSeriesProperties, Path=Series.LimitLo, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay, NotifyOnSourceUpdated=True}"
+                        PropertyWidth="{Binding ElementName=DummyPropertyControl, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}"
+                        Visibility="{Binding ElementName=LineSeriesProperties, Path=ShowThreeColorControls}"/>
+
+                <!--ThreeColorLineSeries: High Threshold-->
+                <cntrls:NumericPropertyControl
+                        Margin="0 2"
+                        DockPanel.Dock="Top"
+                        Title="High Threshold"
+                        Number="{Binding ElementName=LineSeriesProperties, Path=Series.LimitHi, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay, NotifyOnSourceUpdated=True}"
+                        PropertyWidth="{Binding ElementName=DummyPropertyControl, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}"
+                        Visibility="{Binding ElementName=LineSeriesProperties, Path=ShowThreeColorControls}"/>
+
+                <!--ThreeColorLineSeries: Lower Line Style-->
+                <cntrls:LineStyleSelectorControl
+                        Margin="0 2"
+                        DockPanel.Dock="Top"
+                        Title="Lower Line Style"
+                        DashArrayOptions="{Binding ElementName=LineSeriesProperties, Path=LineStyleOptions}"
+                        SelectedDashArray="{Binding ElementName=LineSeriesProperties, Path=Series.LineStyleLo, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay, NotifyOnSourceUpdated=True, Converter={StaticResource LineStyleConverter}}"
+                        PropertyWidth="{Binding ElementName=DummyPropertyControl, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}"
+                        Visibility="{Binding ElementName=LineSeriesProperties, Path=ShowThreeColorControls}"/>
+
+                <!--ThreeColorLineSeries: Middle Line Style-->
+                <cntrls:LineStyleSelectorControl
+                        Margin="0 2"
+                        DockPanel.Dock="Top"
+                        Title="Middle Line Style"
+                        DashArrayOptions="{Binding ElementName=LineSeriesProperties, Path=LineStyleOptions}"
+                        SelectedDashArray="{Binding ElementName=LineSeriesProperties, Path=Series.LineStyle, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay, NotifyOnSourceUpdated=True, Converter={StaticResource LineStyleConverter}}"
+                        PropertyWidth="{Binding ElementName=DummyPropertyControl, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}"
+                        Visibility="{Binding ElementName=LineSeriesProperties, Path=ShowThreeColorControls}"/>
+
+                <!--ThreeColorLineSeries: Upper Line Style-->
+                <cntrls:LineStyleSelectorControl
+                        Margin="0 2"
+                        DockPanel.Dock="Top"
+                        Title="Upper Line Style"
+                        DashArrayOptions="{Binding ElementName=LineSeriesProperties, Path=LineStyleOptions}"
+                        SelectedDashArray="{Binding ElementName=LineSeriesProperties, Path=Series.LineStyleHi, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay, NotifyOnSourceUpdated=True, Converter={StaticResource LineStyleConverter}}"
+                        PropertyWidth="{Binding ElementName=DummyPropertyControl, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}"
+                        Visibility="{Binding ElementName=LineSeriesProperties, Path=ShowThreeColorControls}"/>
+
+            </DockPanel>
+
+        </Expander>
+
+    </Grid>
+</UserControl>

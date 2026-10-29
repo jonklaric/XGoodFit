@@ -1,0 +1,8 @@
+<Project>
+
+  <!--
+    Intentionally empty: stops XGoodFit's central package management (../Directory.Packages.props)
+    from applying to upstream projects that have no Directory.Packages.props of their own.
+  -->
+
+</Project>

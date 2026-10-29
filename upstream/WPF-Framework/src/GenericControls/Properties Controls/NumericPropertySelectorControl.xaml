@@ -1,0 +1,54 @@
+﻿<UserControl x:Class="GenericControls.NumericPropertySelectorControl" x:Name="NumericPropertySelector"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:GenericControls"
+             xmlns:glob="clr-namespace:System.Globalization;assembly=mscorlib"
+             mc:Ignorable="d"
+             PreviewMouseUp="NumericPropertySelector_PreviewMouseUp"
+             MouseUp="NumericPropertySelector_MouseUp"
+             d:DesignHeight="450" d:DesignWidth="800">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="../Resources/ResourceDictionary.xaml"/>
+                <ResourceDictionary>
+                    <local:BooleanToVisibilityConverter x:Key="BoolToVisConverter" TrueValue="Visible" FalseValue="Collapsed"/>
+                    <local:DoubleConverter x:Key="DoubleConverter"/>
+                </ResourceDictionary>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <Grid Height="22" Background="Transparent">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width=".001*"/>
+            <ColumnDefinition Width="{Binding ElementName=NumericPropertySelector, Path=PropertyWidth, FallbackValue=10*}" 
+                              MaxWidth="{Binding ElementName=NumericPropertySelector, Path=MaxPropertyWidth, FallbackValue=200}"
+                              MinWidth="{Binding ElementName=NumericPropertySelector, Path=MinPropertyWidth, FallbackValue=10}"/>
+        </Grid.ColumnDefinitions>
+
+        <TextBlock Grid.Column="0" Style="{StaticResource TitleTextStyle}"
+                   Text="{Binding ElementName=NumericPropertySelector, Path=Title}" />
+        
+        <Line Style="{StaticResource DotLeaderLineStyle}"
+              Visibility="{Binding ShowLeaderLine, ElementName=NumericPropertySelector, Converter={StaticResource BoolToVisConverter}}"/>
+        
+        
+        <ComboBox x:Name="NumericComboBox" Grid.Column="2" HorizontalAlignment="Stretch" IsTextSearchEnabled="True" 
+                  IsEditable="{Binding ElementName=NumericPropertySelector, Path=IsEditable}" 
+                  ItemsSource="{Binding ElementName=NumericPropertySelector, Path=NumericOptions}" 
+                  Text="{Binding Path=SelectedNumber, ElementName=NumericPropertySelector, UpdateSourceTrigger=PropertyChanged, StringFormat={}{0:0.#####}, Mode=TwoWay, TargetNullValue='N/A', FallbackValue='N/A', Converter={StaticResource DoubleConverter}, ConverterCulture={x:Static glob:CultureInfo.CurrentCulture}}"
+                  PreviewTextInput="ComboBox_PreviewTextInput" PreviewKeyDown="ComboBox_PreviewKeyDown"
+                  SizeChanged="ControlSizeChanged">
+                  <!--Width="{Binding Path=ComboBoxWidth, ElementName=NumericPropertySelector, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"-->
+            <ComboBox.ItemContainerStyle>
+                <Style TargetType="{x:Type ComboBoxItem}" BasedOn="{StaticResource {x:Type ComboBoxItem}}">
+                    <Setter Property="HorizontalContentAlignment" Value="Right"/>
+                </Style>
+            </ComboBox.ItemContainerStyle>
+        </ComboBox>
+
+    </Grid>
+</UserControl>

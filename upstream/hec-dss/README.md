@@ -1,0 +1,146 @@
+
+This is the HEC-DSS library source tree.  DSS is a database optimized for timeseries data.  
+
+
+Documentation:  https://www.hec.usace.army.mil/software/hec-dss/documentation.aspx
+
+
+Branches and versions
+
+|Version labels| branch | description |
+|--|--|--|
+|7-IW,7-IX,... | master |dss 7 and dss 6|
+|7-JA,7-JB     | main |dss 7 only |
+|varies        |dotnet-1.2.x|old .net support (managed extensions) |
+
+Windows Dependencies
+
+heclib.dll 
+    libifcoremdd.dll
+    libifportMD.dll
+    libmmdd.dll
+    KERNEL32.dll
+    VCRUNTIME140D.dll
+    ucrtbased.dll
+
+
+
+# RedHat/RockyLinux -- Install Build Dependencies
+
+yum install -y \
+     git \
+     gcc \
+     make \
+     zlib-devel \
+     java-devel \
+	 gcc-c++
+
+export JAVA_HOME=/etc/alternatives/java_sdk_11_openjdk
+
+
+# Ubuntu -- Install Build Dependencies
+
+```
+sudo apt-get install build-essential
+sudo apt-get install zlib1g-dev
+apt-get install default-jdk
+```
+
+It has been reported the Centos binaries worked in ubuntu after installing the following:
+
+zlib, math, quadmath, and gfortran for pydsstools to work in Ubuntu.
+
+
+## To build and test heclib
+
+### Linux 
+```
+git clone https://github.com/HydrologicEngineeringCenter/hec-dss.git
+cd hec-dss
+git clone https://github.com/HydrologicEngineeringCenter/dss-test-data.git
+In the hec-dss/heclib directory, execute make clean ; make
+In the hec-dss/test/C directory, execute ./unix_test
+In the hec-dss/test/Dss-C directory, execute make clean ; make test
+In the hec-dss/test/Fortran directory, execute make clean ; make test
+
+```
+
+### Solaris sparc sun4v  
+
+```txt
+developerstudio12.6 
+#pkg contents system/library/fortran-runtime
+export PATH=$PATH:/opt/developerstudio12.6/bin:/usr/gcc/7/bin
+export JAVA_HOME=/usr/jdk/instances/jdk1.8.0
+export LD_LIBRARY_PATH=/usr/gcc/7/lib/sparcv9
+```
+
+```bash
+ git clone https://github.com/HydrologicEngineeringCenter/hec-dss.git
+ cd hec-dss
+ git clone https://github.com/HydrologicEngineeringCenter/dss-test-data.git
+ In the hec-dss/heclib directory, execute gmake clean ; gmake
+ In the hec-dss/test/C directory, execute ./unix_test
+ In the hec-dss/test/Dss-C directory, execute gmake clean ; gmake test
+ In the hec-dss/test/Fortran directory, execute gmake -f Makefile.Solaris clean ; gmake -f Makefile.Solaris test
+
+#  maven config:
+   mvn deploy:deploy-file -DgroupId=mil.army.usace.hec -DartifactId=javaHeclib -Dversion=7-IU-15-SunOS-SPARC_64 -DgeneratePom=true -Dfile=C:\temp\javaHeclib.zip -DrepositoryId=nexus -Dpackaging=zip 
+```
+
+
+
+### Windows
+
+For Windows we are using the Visual Studio 2022.
+
+
+The environment variable JAVA_HOME needs to be set.
+example: 
+
+```cmd
+set JAVA_HOME=c:\bin\jdk1.8.0
+
+git clone https://github.com/HydrologicEngineeringCenter/hec-dss.git
+cd hec-dss
+git clone https://github.com/HydrologicEngineeringCenter/dss-test-data.git
+
+build_release.bat 
+
+cd test
+test_c.bat
+cd ..
+test_Dss-C.bat
+test_fortran.bat
+
+
+```
+
+## running the java tests
+
+```bash
+
+./gradlew test --tests hec.heclib.* --info
+# check test results here;
+# hec-monolith/hec-monolith-compat/build/reports/tests/test
+
+```
+
+
+
+
+## User Interface
+The primary user interface for DSS files is HEC-DSSVue.
+https://www.hec.usace.army.mil/confluence/dssdocs/dssvueum/
+
+
+
+
+## Known Python libraries using DSS
+
+| Repo URL | Description | DSS versions supported |
+|---|---|---|
+| https://github.com/HydrologicEngineeringCenter/hec-dss-python | Official HEC Python bindings for reading/writing HEC-DSS using the HECLIB C library/DLL. | DSS-7 only |
+| https://github.com/gyanz/pydsstools | Community Python library for working with HEC-DSS data (e.g., time series, paired data, grids) and basic DSS operations. | DSS-6 and 7  |
+| https://github.com/CADWRDeltaModeling/pyhecdss | Python 3 interface to HECLIB (DSS-6) via SWIG for 64-bit Windows/Linux use. | DSS-6 |
+| https://github.com/nzahasan/pyheclib | Python interface for reading and writing HEC-DSS files (HECLIB wrapper). | DSS-6 |

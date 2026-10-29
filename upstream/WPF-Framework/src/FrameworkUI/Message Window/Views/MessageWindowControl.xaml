@@ -1,0 +1,147 @@
+﻿<UserControl x:Class="FrameworkUI.MessageWindow.MessageWindowControl" x:Name="MWControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:FrameworkUI.MessageWindow"
+             xmlns:converters="clr-namespace:FrameworkUI.MessageWindow.Converters"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/FrameworkUI;component/Icons/IconDictionary.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+            <converters:MessageTypeToImageConverter x:Key="MessageTypeToImageConverter"
+													  ErrorImageSource="{StaticResource ErrorImage}"
+                                                      WarningImageSource="{StaticResource WarningImage}"
+													  MessageImageSource="{StaticResource InformationImage}"
+                                                      EventImageSource="{StaticResource EventImage}"/>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <DockPanel x:Name="MyDockPanel" Background="{Binding ElementName=MWControl, Path=StackPanelBackgroundColor}">
+        <!--Tool Bar Stack Panel-->
+        <StackPanel x:Name="MyStackPanel" Margin="2" DockPanel.Dock="Top" Orientation="Horizontal" Background="{Binding ElementName=MWControl, Path=StackPanelBackgroundColor}">
+            <Button x:Name="ErrorsButton" ToolTip="Errors" Cursor="Hand" Click="ErrorsButton_Click" Style="{Binding ElementName=MWControl, Path=StackPanelPressedButtonStyle}">
+                <StackPanel Orientation="Horizontal" Margin="0,0,4,0">
+                    <Image Margin="1" Source="{StaticResource ErrorImage}" Stretch="UniformToFill" Width="16" Height="16"/>
+                    <TextBlock x:Name="ErrorsButtonText" VerticalAlignment="Center" Text="Errors"/>
+                </StackPanel>
+            </Button>
+            <Separator Style="{Binding ElementName=MWControl, Path=StackPanelSeparatorStyle}"/>
+            <Button x:Name="WarningsButton" ToolTip="Warnings" Cursor="Hand" Click="WarningsButton_Click" Style="{Binding ElementName=MWControl, Path=StackPanelPressedButtonStyle}">
+                <StackPanel Orientation="Horizontal" Margin="0,0,4,0">
+                    <Image Margin="1" Source="{StaticResource WarningImage}" Stretch="UniformToFill" Width="16" Height="16"/>
+                    <TextBlock x:Name="WarningsButtonText" VerticalAlignment="Center" Text="Warnings"/>
+                </StackPanel>
+            </Button>
+            <Separator Style="{Binding ElementName=MWControl, Path=StackPanelSeparatorStyle}"/>
+            <Button x:Name="MessagesButton" ToolTip="Messages" Cursor="Hand" Click="MessagesButton_Click" Style="{Binding ElementName=MWControl, Path=StackPanelButtonStyle}">
+                <StackPanel Orientation="Horizontal" Margin="0,0,4,0">
+                    <Image Margin="1" Source="{StaticResource InformationImage}" Stretch="UniformToFill" Width="16" Height="16"/>
+                    <TextBlock x:Name="MessageButtonText" VerticalAlignment="Center" Text="Messages"/>
+                </StackPanel>
+            </Button>
+            <Separator Style="{Binding ElementName=MWControl, Path=StackPanelSeparatorStyle}"/>
+            <Button x:Name="EventsButton" ToolTip="Events" Cursor="Hand" Click="EventsButton_Click" Style="{Binding ElementName=MWControl, Path=StackPanelButtonStyle}">
+                <StackPanel Orientation="Horizontal" Margin="0,0,4,0">
+                    <Image Margin="1" Source="{StaticResource EventImage}" Stretch="UniformToFill" Width="16" Height="16"/>
+                    <TextBlock x:Name="EventsButtonText" VerticalAlignment="Center" Text="Events"/>
+                </StackPanel>
+            </Button>
+            <Separator Style="{Binding ElementName=MWControl, Path=StackPanelSeparatorStyle}"/>
+            <Button x:Name="ClearFiltersButton" ToolTip="Clear All Filters" Height="24" Width="24" Cursor="Hand" IsEnabled="False" Click="ClearFiltersButton_Click" Style="{Binding ElementName=MWControl, Path=StackPanelButtonStyle}">
+                <Image Margin="3" Source="{StaticResource ClearFilterImage}" Stretch="UniformToFill"/>
+            </Button>
+            <Separator Style="{Binding ElementName=MWControl, Path=StackPanelSeparatorStyle}"/>
+            <Button x:Name="ExportToTextFileButton" ToolTip="Export to Text File" Style="{Binding ElementName=MWControl, Path=StackPanelButtonStyle}"
+                    Height="24" Width="24" Cursor="Hand" Click="ExportToTextFileButton_Click" >
+                <Image Margin="3" Source="{StaticResource ExportFileImage}" Stretch="UniformToFill"/>
+            </Button>
+        </StackPanel>
+        <!--Data Grid-->
+        <DataGrid x:Name="MyDataGrid" AutoGenerateColumns="False" IsReadOnly="True" Background="{Binding ElementName=MWControl, Path=BackgroundColor}" BorderThickness="0"
+                  GridLinesVisibility="None" HeadersVisibility="Column"  CanUserSortColumns="False" CanUserReorderColumns="False" MouseDoubleClick="MyDataGrid_MouseDoubleClick"
+                  LostFocus="MyDataGrid_LostFocus"
+                  RowHeight="NaN"
+                  EnableRowVirtualization="False"
+                  ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+            <DataGrid.RowStyle>
+                <Style TargetType="DataGridRow">
+                    <Setter Property="MinHeight" Value="22"/>
+                    <Setter Property="Background" Value="Transparent"/>
+                    <Setter Property="Foreground" Value="{Binding ForegroundColor}"/>
+                </Style>
+            </DataGrid.RowStyle>
+            <DataGrid.CellStyle>
+                <Style TargetType="DataGridCell">
+                    <Setter Property="Padding" Value="0"/>
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="DataGridCell">
+                                <Border Padding="{TemplateBinding Padding}" Background="{TemplateBinding Background}">
+                                    <ContentPresenter VerticalAlignment="Center"/>
+                                </Border>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </DataGrid.CellStyle>
+            <DataGrid.Columns>
+                <!--Icon-->
+                <DataGridTemplateColumn x:Name="IconColumn" Width="SizeToCells" CanUserSort="False" CanUserReorder="False" CanUserResize="False">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Image Source="{Binding Message.Type, Converter={StaticResource MessageTypeToImageConverter}}" Margin="2"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <!--Time Stamp-->
+                <DataGridTextColumn x:Name="TimeStampColumn" Width="60" MinWidth="60" Header=" Time " Binding="{Binding Message.TimeStamp}" CanUserSort="False" CanUserReorder="False" CanUserResize="False">
+                    <DataGridTextColumn.ElementStyle>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="HorizontalAlignment" Value="Center" />
+                            <Setter Property="VerticalAlignment" Value="Center" />
+                        </Style>
+                    </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
+                <!--Description-->
+                <DataGridTemplateColumn x:Name="DescriptionColumn"  Width="0.4*" Header=" Description " >
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Margin="2" Text="{Binding Message.Description}" Foreground="{Binding ForegroundColor}" TextWrapping="Wrap" TextAlignment="Left" >
+                                <TextBlock.ToolTip>
+                                    <TextBlock Text="Double-click the message to open the source file and resolve any issues." TextWrapping="Wrap"/>
+                                </TextBlock.ToolTip>
+                            </TextBlock>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <!--File Type-->
+                <DataGridTemplateColumn x:Name="SourceColumn" Width="0.1*" MinWidth="60" Header=" Source " CanUserSort="False" CanUserReorder="False">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Margin="2" Text="{Binding Message.SourceCollectionName}" Foreground="{Binding ForegroundColor}" TextAlignment="Left" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <!--Name-->
+                <DataGridTemplateColumn x:Name="NameColumn" Width="0.1*" MinWidth="60" Header=" Name " CanUserSort="False" CanUserReorder="False">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Margin="2" Text="{Binding Message.SourceName}" Foreground="{Binding ForegroundColor}" TextAlignment="Left" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <!--Parameter-->
+                <DataGridTemplateColumn x:Name="ParameterColumn" Width="0.1*" MinWidth="60" Header=" Parameter " CanUserSort="False" CanUserReorder="False">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Margin="2" Text="{Binding Message.ParameterName}" Foreground="{Binding ForegroundColor}" TextAlignment="Left" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+    </DockPanel>
+</UserControl>

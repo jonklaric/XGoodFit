@@ -1,0 +1,249 @@
+﻿using System;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Numerics.Distributions;
+
+namespace Distributions.Univariate
+{
+    /// <summary>
+    /// Testing the Pareto distribution algorithm.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    ///     <b> Authors: </b>
+    ///     <list type="bullet">
+    ///     <item> Haden Smith, USACE Risk Management Center, cole.h.smith@usace.army.mil </item>
+    ///     <item> Tiki Gonzalez, USACE Risk Management Center, julian.t.gonzalez@usace.army.mil</item>
+    ///     </list> 
+    /// </para>
+    /// <para>
+    /// <b> References: </b>
+    /// </para>
+    /// <para>
+    /// <see href = "https://github.com/mathnet/mathnet-numerics/blob/master/src/Numerics.Tests/DistributionTests" />
+    /// </para>
+    /// </remarks>
+    [TestClass]
+    public class Test_Pareto
+    {
+
+        /// <summary>
+        /// Verified using Palisade's @Risk and Accord.Net
+        /// </summary>
+        [TestMethod()]
+        public void Test_ParetoDist()
+        {
+            double true_mean = 0.63d;
+            double true_mode = 0.42d;
+            double true_median = 0.52916684095584676d;
+            double true_stdDev = Math.Sqrt(0.13229999999999997d);
+            double true_pdf = 0.057857142857142857d;
+            double true_cdf = 0.973d;
+            double true_icdf = 1.4d;
+            double true_icdf05 = 0.4272d;
+            double true_icdf95 = 1.1401d;
+            var PA = new Pareto(0.42d, 3d);
+            Assert.AreEqual(true_mean, PA.Mean, 0.0001d);
+            Assert.AreEqual(true_median, PA.Median, 0.0001d);
+            Assert.AreEqual(true_mode, PA.Mode, 0.0001d);
+            Assert.AreEqual(true_stdDev, PA.StandardDeviation, 0.0001d);
+            Assert.AreEqual(true_pdf, PA.PDF(1.4d), 0.0001d);
+            Assert.AreEqual(true_cdf, PA.CDF(1.4d), 0.0001d);
+            Assert.AreEqual(true_icdf, PA.InverseCDF(PA.CDF(1.4d)), 0.0001d);
+            Assert.AreEqual(true_icdf05, PA.InverseCDF(0.05d), 0.0001d);
+            Assert.AreEqual(true_icdf95, PA.InverseCDF(0.95d), 0.0001d);
+            PA.SetParameters(new[] { 1d, 10d });
+            double true_skew = 2.8111d;
+            double true_kurt = 17.8286d;
+            Assert.AreEqual(true_skew, PA.Skewness, 0.0001d);
+            Assert.AreEqual(true_kurt, PA.Kurtosis, 0.0001d);
+        }
+
+        /// <summary>
+        /// Verifying input parameters can create distribution.
+        /// </summary>
+        [TestMethod()]
+        public void Test_Construction()
+        {
+            var p = new Pareto();
+            Assert.AreEqual(1, p.Xm);
+            Assert.AreEqual(10, p.Alpha);
+
+            var p2 = new Pareto(1, 1);
+            Assert.AreEqual(1, p2.Xm);
+            Assert.AreEqual(1, p2.Alpha);
+        }
+
+        /// <summary>
+        /// Testing distribution with bad parameters.
+        /// </summary>
+        [TestMethod()]
+        public void Test_InvalidParameters()
+        {
+            var p = new Pareto(double.NaN,double.PositiveInfinity);
+            Assert.IsFalse(p.ParametersValid);
+
+            var p2 = new Pareto(double.PositiveInfinity,double.PositiveInfinity);
+            Assert.IsFalse(p2.ParametersValid);
+
+            var p3 = new Pareto(0, 0);
+            Assert.IsFalse(p3.ParametersValid);
+        }
+
+        /// <summary>
+        /// Testing parameters to string.
+        /// </summary>
+        [TestMethod()]
+        public void Test_ParametersToString()
+        {
+            var p = new Pareto();
+            Assert.AreEqual("Scale (Xm)", p.ParametersToString[0, 0]);
+            Assert.AreEqual("Shape (α)", p.ParametersToString[1, 0]);
+            Assert.AreEqual("1", p.ParametersToString[0, 1]);
+            Assert.AreEqual("10", p.ParametersToString[1, 1]);
+        }
+
+        /// <summary>
+        /// Compare analytical moments against numerical integration.
+        /// </summary>
+        [TestMethod()]
+        public void Test_Moments()
+        {
+            var dist = new Pareto();
+            var mom = dist.CentralMoments(1E-8);
+            Assert.AreEqual(dist.Mean, mom[0], 1E-2);
+            Assert.AreEqual(dist.StandardDeviation, mom[1], 1E-2);
+            Assert.AreEqual(dist.Skewness, mom[2], 1E-2);
+            Assert.AreEqual(dist.Kurtosis, mom[3], 1E-2);
+        }
+
+        /// <summary>
+        /// Testing mean.
+        /// </summary>
+        [TestMethod()]
+        public void Test_Mean()
+        {
+            var p = new Pareto();
+            Assert.AreEqual(1.1111, p.Mean,  1e-04);
+
+            var p2 = new Pareto(1,1);
+            Assert.AreEqual(double.PositiveInfinity, p2.Mean);
+        }
+
+        /// <summary>
+        /// Testing median.
+        /// </summary>
+        [TestMethod()]
+        public void Test_Median()
+        {
+            var p = new Pareto();
+            Assert.AreEqual(1.07177, p.Median,  1e-04);
+
+            var p2 = new Pareto(1, 1);
+            Assert.AreEqual(2, p2.Median);
+        }
+
+        /// <summary>
+        /// Testing mode.
+        /// </summary>
+        [TestMethod()]
+        public void Test_Mode()
+        {
+            var p = new Pareto();
+            Assert.AreEqual(1, p.Mode);
+
+            var p2 = new Pareto(2, 1);
+            Assert.AreEqual(2, p2.Mode);
+        }
+
+        /// <summary>
+        /// Testing standard deviation.
+        /// </summary>
+        [TestMethod()]
+        public void Test_StandardDeviation()
+        {
+            var p = new Pareto();
+            Assert.AreEqual(0.12422, p.StandardDeviation,  1e-04);
+
+            var p2 = new Pareto(1, 2);
+            Assert.AreEqual(double.PositiveInfinity, p2.StandardDeviation);
+        }
+
+        /// <summary>
+        /// Testing skew.
+        /// </summary>
+        [TestMethod()]
+        public void Test_Skewness()
+        {
+            var p = new Pareto();
+            Assert.AreEqual(2.81105, p.Skewness, 1e-04);
+
+            var p2 = new Pareto(1, 3);
+            Assert.AreEqual(double.NaN, p2.Skewness);
+        }
+
+        /// <summary>
+        /// Testing Kurtosis.
+        /// </summary>
+        [TestMethod()]
+        public void Test_Kurtosis()
+        {
+            var p = new Pareto();
+            Assert.AreEqual(17.82857, p.Kurtosis, 1e-04);
+
+            var p2 = new Pareto(1, 4);
+            Assert.AreEqual(double.NaN, p2.Kurtosis);
+        }
+
+        /// <summary>
+        /// Testing minimum and maximum functions
+        /// </summary>
+        [TestMethod()]
+        public void Test_MinMax()
+        {
+            var p = new Pareto();
+            Assert.AreEqual(1, p.Minimum);
+            Assert.AreEqual(double.PositiveInfinity, p.Maximum);
+
+            var p2 = new Pareto(2,3);
+            Assert.AreEqual(2, p2.Minimum);
+            Assert.AreEqual(double.PositiveInfinity, p2.Maximum);
+        }
+
+        /// <summary>
+        /// Testing PDF
+        /// </summary>
+        [TestMethod()]
+        public void Test_PDF()
+        {
+            var p = new Pareto(1,1);
+            Assert.AreEqual(1, p.PDF(1));
+            Assert.AreEqual(4d / 9d,p.PDF(1.5) );
+
+            var p2 = new Pareto(3, 2);
+            Assert.AreEqual(2d / 3d,p2.PDF(3));
+            Assert.AreEqual(18d / 125d,p2.PDF(5) );
+        }
+
+        /// <summary>
+        /// Testing CDF.
+        /// </summary>
+        [TestMethod()]
+        public void Test_CDF()
+        {
+            var p = new Pareto();
+            Assert.AreEqual(0, p.CDF(0));
+            Assert.AreEqual(0.9990, p.CDF(2),  1e-04);
+        }
+
+        /// <summary>
+        /// Testing inverse CDF.
+        /// </summary>
+        [TestMethod()]
+        public void Test_InverseCDF()
+        {
+            var p = new Pareto();
+            Assert.AreEqual(1, p.InverseCDF(0));
+            Assert.AreEqual(1.0363, p.InverseCDF(0.3), 1e-04);
+        }
+    }
+}

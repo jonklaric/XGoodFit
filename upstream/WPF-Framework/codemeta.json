@@ -1,0 +1,75 @@
+{
+  "@context": "https://doi.org/10.5063/schema/codemeta-2.0",
+  "@type": "SoftwareSourceCode",
+  "name": "WPF Framework",
+  "description": "A free and open-source .NET 10 application framework for building Windows desktop project management applications. Provides a docking application shell with theming, project explorer, undo/redo, and specialized controls for charting, numeric input, databases, expression parsing, and directed acyclic graphs.",
+  "version": "1.0.5",
+  "dateCreated": "2025-12-29",
+  "dateModified": "2026-10-07",
+  "license": "https://spdx.org/licenses/0BSD",
+  "codeRepository": "https://github.com/USACE-RMC/WPF-Framework",
+  "issueTracker": "https://github.com/USACE-RMC/WPF-Framework/issues",
+  "applicationCategory": "Desktop application framework",
+  "programmingLanguage": {
+    "@type": "ComputerLanguage",
+    "name": "C#",
+    "url": "https://learn.microsoft.com/en-us/dotnet/csharp/"
+  },
+  "runtimePlatform": ".NET 10.0",
+  "operatingSystem": "Windows",
+  "keywords": [
+    "WPF",
+    "desktop application",
+    "application framework",
+    "docking layout",
+    "theming",
+    "undo redo",
+    "charting",
+    "OxyPlot",
+    "database",
+    "expression parser",
+    "DAG",
+    "directed acyclic graph",
+    ".NET",
+    "C#",
+    "USACE",
+    "risk assessment"
+  ],
+  "author": [
+    {
+      "@type": "Person",
+      "givenName": "C. Haden",
+      "familyName": "Smith",
+      "@id": "https://orcid.org/0000-0002-4651-9890",
+      "affiliation": {
+        "@type": "Organization",
+        "name": "U.S. Army Corps of Engineers, Risk Management Center"
+      }
+    },
+    {
+      "@type": "Person",
+      "givenName": "Woodrow L.",
+      "familyName": "Fields",
+      "@id": "https://orcid.org/0009-0008-7454-5552",
+      "affiliation": {
+        "@type": "Organization",
+        "name": "U.S. Army Corps of Engineers, Risk Management Center"
+      }
+    },
+    {
+      "@type": "Person",
+      "givenName": "Julian",
+      "familyName": "Gonzalez",
+      "@id": "https://orcid.org/0009-0009-9058-7653",
+      "affiliation": {
+        "@type": "Organization",
+        "name": "U.S. Army Corps of Engineers, Risk Management Center"
+      }
+    }
+  ],
+  "funder": {
+    "@type": "Organization",
+    "name": "U.S. Army Corps of Engineers"
+  },
+  "developmentStatus": "active"
+}

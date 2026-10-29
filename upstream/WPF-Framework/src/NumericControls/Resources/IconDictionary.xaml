@@ -1,0 +1,244 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!--
+    ╔═══════════════════════════════════════════════════════════════════════════════╗
+    ║  NumericControls Icon Dictionary                                              ║
+    ╠═══════════════════════════════════════════════════════════════════════════════╣
+    ║  Vector icons specific to mathematical and numeric operations.                ║
+    ║  Extends GenericControls icons for shared action icons.                       ║
+    ║                                                                               ║
+    ║  INHERITED ICONS (from GenericControls):                                      ║
+    ║  RunIcon, StopIcon, DeleteIcon, BrowseIcon, DownloadIcon                      ║
+    ║                                                                               ║
+    ║  NUMERIC OPERATION ICONS:                                                     ║
+    ║  • MathFunctionIcon  - "fx" symbol for math functions                         ║
+    ║  • PlusIcon          - Addition operation (green)                             ║
+    ║  • MinusIcon         - Subtraction operation (red)                            ║
+    ║  • MultiplyIcon      - Multiplication operation (orange)                      ║
+    ║  • DivideIcon        - Division operation (purple)                            ║
+    ║  • LogIcon           - Logarithm operation (cyan)                             ║
+    ║  • ExpIcon           - Exponent/power operation (blue)                        ║
+    ║  • InvertIcon        - 1/x inverse operation (teal)                           ║
+    ║  • ReplaceIcon       - Replace/swap operation (amber)                         ║
+    ║  • InterpolateIcon   - Interpolation operation (pink)                         ║
+    ║  • EditIconBrush     - Edit/pencil brush for styling                          ║
+    ║                                                                               ║
+    ║  COLOR PALETTE (semantic colors for math operations):                         ║
+    ║  • #16A34A (Green)   - Add/Plus operations                                    ║
+    ║  • #DC2626 (Red)     - Subtract/Remove operations                             ║
+    ║  • #F97316 (Orange)  - Multiply operations                                    ║
+    ║  • #8B5CF6 (Purple)  - Divide operations                                      ║
+    ║  • #2563EB (Blue)    - Exponent/Power operations                              ║
+    ║  • #0891B2 (Cyan)    - Log operations                                         ║
+    ║  • #14B8A6 (Teal)    - Invert operations                                      ║
+    ║  • #F59E0B (Amber)   - Replace/Edit operations                                ║
+    ║  • #EC4899 (Pink)    - Interpolate operations                                 ║
+    ║                                                                               ║
+    ║  USAGE:                                                                       ║
+    ║  <ContentControl Content="{StaticResource PlusIcon}"/>                        ║
+    ║                                                                               ║
+    ║  NOTE: All icons use x:Shared="False" to allow multiple instances.            ║
+    ╚═══════════════════════════════════════════════════════════════════════════════╝
+    -->
+
+    <!-- Merge with GenericControls for shared action icons -->
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="/GenericControls;component/Resources/IconDictionary.xaml"/>
+    </ResourceDictionary.MergedDictionaries>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+    <!-- MATH FUNCTION ICON                                                          -->
+    <!-- "fx" symbol for math functions - theme aware                                -->
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+
+    <Viewbox x:Key="MathFunctionIcon" Width="16" Height="16" x:Shared="False" RenderOptions.EdgeMode="Aliased">
+        <Grid Width="16" Height="16">
+            <!-- Italic f -->
+            <TextBlock Text="f" FontFamily="Cambria" FontSize="14" FontStyle="Italic" FontWeight="SemiBold"
+                       Foreground="{DynamicResource EnvironmentWindowText}"
+                       HorizontalAlignment="Left" VerticalAlignment="Stretch"
+                       Margin="2,-1,0,0"/>
+            <!-- Subscript x -->
+            <TextBlock Text="x" FontFamily="Cambria" FontSize="10" FontStyle="Italic" FontWeight="SemiBold"
+                       Foreground="{DynamicResource EnvironmentWindowText}"
+                       HorizontalAlignment="Left" VerticalAlignment="Bottom"
+                       Margin="7,0,0,1"/>
+        </Grid>
+    </Viewbox>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+    <!-- ARITHMETIC OPERATION ICONS                                                  -->
+    <!-- Basic math operations with semantic colors                                  -->
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+
+    <!-- Add / Plus Icon - Green plus sign for addition -->
+    <Viewbox x:Key="PlusIcon" Width="16" Height="16" x:Shared="False" RenderOptions.EdgeMode="Aliased">
+        <Grid Width="16" Height="16">
+            <Path Data="M8,3 V13 M3,8 H13"
+                  Stroke="#16A34A" StrokeThickness="2"
+                  StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+        </Grid>
+    </Viewbox>
+
+    <!-- Subtract / Minus Icon - Red minus sign for subtraction -->
+    <Viewbox x:Key="MinusIcon" Width="16" Height="16" x:Shared="False" RenderOptions.EdgeMode="Aliased">
+        <Grid Width="16" Height="16">
+            <Path Data="M3,8 H13"
+                  Stroke="#DC2626" StrokeThickness="2"
+                  StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+        </Grid>
+    </Viewbox>
+
+    <!-- Multiply Icon - Orange X for multiplication -->
+    <Viewbox x:Key="MultiplyIcon" Width="16" Height="16" x:Shared="False" RenderOptions.EdgeMode="Aliased">
+        <Grid Width="16" Height="16">
+            <Path Data="M4,4 L12,12 M12,4 L4,12"
+                  Stroke="#F97316" StrokeThickness="2"
+                  StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+        </Grid>
+    </Viewbox>
+
+    <!-- Divide Icon - Purple division symbol (obelus) -->
+    <Viewbox x:Key="DivideIcon" Width="16" Height="16" x:Shared="False" RenderOptions.EdgeMode="Aliased">
+        <Grid Width="16" Height="16">
+            <!-- Horizontal line -->
+            <Path Data="M3,8 H13"
+                  Stroke="#8B5CF6" StrokeThickness="2"
+                  StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+            <!-- Top dot -->
+            <Ellipse Width="3" Height="3" Fill="#8B5CF6"
+                     HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,3,0,0"/>
+            <!-- Bottom dot -->
+            <Ellipse Width="3" Height="3" Fill="#8B5CF6"
+                     HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,3"/>
+        </Grid>
+    </Viewbox>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+    <!-- ADVANCED MATH OPERATION ICONS                                               -->
+    <!-- Logarithm, exponent, invert operations                                      -->
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+
+    <!-- Logarithm Icon - "log" text in cyan -->
+    <Viewbox x:Key="LogIcon" Width="16" Height="16" x:Shared="False" RenderOptions.EdgeMode="Aliased">
+        <Grid Width="16" Height="16">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <TextBlock Text="l" FontSize="11" FontWeight="Bold" Foreground="#0891B2"/>
+                <TextBlock Text="o" FontSize="11" FontWeight="Bold" Foreground="#0891B2"/>
+                <TextBlock Text="g" FontSize="11" FontWeight="Bold" Foreground="#0891B2"/>
+            </StackPanel>
+        </Grid>
+    </Viewbox>
+
+    <!-- Exponent / Power Icon - Blue x with superscript n -->
+    <Viewbox x:Key="ExpIcon" Width="16" Height="16" x:Shared="False" RenderOptions.EdgeMode="Aliased">
+        <Grid Width="16" Height="16">
+            <!-- Base 'x' -->
+            <TextBlock Text="x" FontFamily="Cambria" FontSize="14" FontStyle="Italic" FontWeight="SemiBold"
+                       Foreground="#2563EB"
+                       HorizontalAlignment="Left" VerticalAlignment="Bottom"
+                       Margin="1,0,0,0"/>
+            <!-- Superscript 'n' -->
+            <TextBlock Text="n" FontFamily="Cambria" FontSize="10" FontStyle="Italic" FontWeight="SemiBold"
+                       Foreground="#2563EB"
+                       HorizontalAlignment="Left" VerticalAlignment="Top"
+                       Margin="8,-1,0,0"/>
+        </Grid>
+    </Viewbox>
+
+    <!-- Invert Icon - Teal "1/x" with diagonal slash -->
+    <Viewbox x:Key="InvertIcon" Width="16" Height="16" x:Shared="False" RenderOptions.EdgeMode="Aliased">
+        <Grid Width="16" Height="16">
+            <!-- 1 -->
+            <TextBlock Text="1" FontFamily="Cambria" FontSize="11" FontWeight="Bold"
+                       Foreground="#14B8A6"
+                       HorizontalAlignment="Left" VerticalAlignment="Top"
+                       Margin="1,0,0,0"/>
+            <!-- Diagonal slash -->
+            <Path Data="M4,14 L12,2" Stroke="#14B8A6" StrokeThickness="1.5"
+                  StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+            <!-- x -->
+            <TextBlock Text="x" FontFamily="Cambria" FontSize="11" FontStyle="Italic" FontWeight="SemiBold"
+                       Foreground="#14B8A6"
+                       HorizontalAlignment="Right" VerticalAlignment="Bottom"
+                       Margin="0,0,1,0"/>
+        </Grid>
+    </Viewbox>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+    <!-- DATA OPERATION ICONS                                                        -->
+    <!-- Replace, interpolate, and edit operations                                   -->
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+
+    <!-- Replace Icon - Amber bidirectional horizontal arrows -->
+    <Viewbox x:Key="ReplaceIcon" Width="16" Height="16" x:Shared="False" RenderOptions.EdgeMode="Aliased">
+        <Grid Width="16" Height="16">
+            <!-- Right arrow -->
+            <Path Data="M2,5 H12 M9,2 L12,5 L9,8"
+                  Stroke="#F59E0B" StrokeThickness="1.5"
+                  StrokeStartLineCap="Round" StrokeEndLineCap="Round"
+                  StrokeLineJoin="Round"/>
+            <!-- Left arrow -->
+            <Path Data="M14,11 H4 M7,8 L4,11 L7,14"
+                  Stroke="#F59E0B" StrokeThickness="1.5"
+                  StrokeStartLineCap="Round" StrokeEndLineCap="Round"
+                  StrokeLineJoin="Round"/>
+        </Grid>
+    </Viewbox>
+
+    <!-- Interpolate Icon - Pink dots with gapped line -->
+    <Viewbox x:Key="InterpolateIcon" Width="16" Height="16" x:Shared="False" RenderOptions.EdgeMode="Aliased">
+        <Grid Width="16" Height="16">
+            <!-- Left line segment -->
+            <Path Data="M4,12 L6,9"
+                  Stroke="#EC4899" StrokeThickness="2"
+                  StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+            <!-- Right line segment (gap in middle) -->
+            <Path Data="M10,7 L12,4"
+                  Stroke="#EC4899" StrokeThickness="2"
+                  StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+            <!-- Start point -->
+            <Ellipse Width="5" Height="5" Fill="#EC4899"
+                     HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="0,0,0,0"/>
+            <!-- End point -->
+            <Ellipse Width="5" Height="5" Fill="#EC4899"
+                     HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,0,0,0"/>
+        </Grid>
+    </Viewbox>
+
+    <!-- Edit Icon - Pencil for edit actions (VS-style) -->
+    <Viewbox x:Key="EditIcon" Width="16" Height="16" x:Shared="False" RenderOptions.EdgeMode="Aliased">
+        <Grid Width="16" Height="16">
+            <!-- Pencil body -->
+            <Path Data="M2,14 L3,10 L12,1 L15,4 L6,13 Z"
+                  Stroke="{DynamicResource EnvironmentWindowText}" StrokeThickness="1"
+                  StrokeLineJoin="Round" Fill="#F59E0B"/>
+            <!-- Pencil tip -->
+            <Path Data="M2,14 L3,10 L6,13 Z"
+                  Fill="{DynamicResource EnvironmentWindowText}"/>
+        </Grid>
+    </Viewbox>
+
+    <!-- Edit Icon as DrawingBrush (for use in styles and buttons) -->
+    <DrawingBrush x:Key="EditIconBrush" Stretch="Uniform">
+        <DrawingBrush.Drawing>
+            <DrawingGroup>
+                <GeometryDrawing Brush="#F59E0B">
+                    <GeometryDrawing.Geometry>
+                        <PathGeometry Figures="M2,14 L3,10 L12,1 L15,4 L6,13 Z"/>
+                    </GeometryDrawing.Geometry>
+                    <GeometryDrawing.Pen>
+                        <Pen Brush="{DynamicResource EnvironmentWindowText}" Thickness="1" LineJoin="Round"/>
+                    </GeometryDrawing.Pen>
+                </GeometryDrawing>
+                <GeometryDrawing Brush="{DynamicResource EnvironmentWindowText}">
+                    <GeometryDrawing.Geometry>
+                        <PathGeometry Figures="M2,14 L3,10 L6,13 Z"/>
+                    </GeometryDrawing.Geometry>
+                </GeometryDrawing>
+            </DrawingGroup>
+        </DrawingBrush.Drawing>
+    </DrawingBrush>
+
+</ResourceDictionary>

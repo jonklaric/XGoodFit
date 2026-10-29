@@ -18,63 +18,65 @@ The goal is the same application, looking and behaving the same, running nativel
   unchanged.
 - The Windows-only WPF desktop layers are ported file for file to [Avalonia](https://avaloniaui.net),
   keeping the original structure, logic and look.
-- Upstream sources are pinned in [`upstream.lock`](upstream.lock) and fetched on demand, so each
-  upstream release can be re-ported change by change.
+- The upstream source code is vendored in [`upstream/`](upstream), copied byte for byte from the
+  commits pinned in [`upstream.lock`](upstream.lock). Each upstream release can be vendored again
+  and its changes ported one by one.
 
 ## Building
 
-You need the [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0), git 2.35 or later,
-and bash. On Windows, use Git Bash, which comes with Git for Windows.
+You need the [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0) and git. Everything
+needed to build is in this repository:
 
 ```bash
 git clone https://github.com/jonklaric/XGoodFit.git
 cd XGoodFit
-
-# Download the pinned upstream sources into upstream/ (about 22 MB).
-scripts/fetch-upstream.sh
-
 dotnet build XGoodFit.slnx
 ```
 
-If the upstream sources are missing or out of date, the build stops and says so. This happens, for
-example, after a pull that changed `upstream.lock`. Re-run `scripts/fetch-upstream.sh` to fix it.
-
-To check that this machine gives the same results as the other platforms:
+To check that this machine gives the same results as the other platforms, you also need bash (on
+Windows, Git Bash, which comes with Git for Windows) and git 2.35 or later:
 
 ```bash
-# Also download the sample data (about 480 MB): BestFit's example projects and HEC's DSS files.
-scripts/fetch-upstream.sh --with-examples
+# Download the sample data (about 480 MB): BestFit's example projects and HEC's DSS files.
+scripts/fetch-sample-data.sh
 
 # Run upstream's portable test suites.
 scripts/run-upstream-tests.sh
 
 # Check that every example project opens and reads correctly.
-dotnet run --project tools/ProjectProbe/ProjectProbe.csproj -- upstream/RMC-BestFit/examples
+dotnet run --project tools/ProjectProbe/ProjectProbe.csproj -- sample-data/RMC-BestFit/examples
 ```
 
 ## Where the source code comes from
 
-XGoodFit's own code lives in this repository. Everything else is downloaded at pinned versions, so
-every build uses exactly the same sources.
+All the code needed to build XGoodFit is in this repository. Code that comes from other projects is
+in [`upstream/`](upstream), with [a table](upstream/README.md) that cites each original repository,
+commit, version and licence.
 
-| Code | Comes from | How a build gets it |
+| Code | Original repository | In this repository |
 |---|---|---|
-| XGoodFit's own code: the Avalonia port (from Phase 1), tools and scripts | This repository | `git clone` |
-| RMC-BestFit: the model library, and the WPF code being ported | [USACE-RMC/RMC-BestFit](https://github.com/USACE-RMC/RMC-BestFit) | `scripts/fetch-upstream.sh`, at the commit pinned in [`upstream.lock`](upstream.lock) |
-| WPF-Framework: the database and expression libraries, the OxyPlot fork, and the WPF code being ported | [USACE-RMC/WPF-Framework](https://github.com/USACE-RMC/WPF-Framework) | Same |
-| HEC-DSS: the C library, the zlib it builds with, the `Hec.Dss` .NET wrapper, and HEC's sample DSS files | [hec-dss](https://github.com/HydrologicEngineeringCenter/hec-dss), [zlib](https://github.com/madler/zlib), [hec-dss-dotnet](https://github.com/HydrologicEngineeringCenter/hec-dss-dotnet), [dss-test-data](https://github.com/HydrologicEngineeringCenter/dss-test-data) | Same |
-| RMC.Numerics and third-party libraries such as SQLite | Their own repositories | NuGet packages, restored by `dotnet build` |
+| XGoodFit's own code: the Avalonia port (from Phase 1), tools and scripts | This repository | `src/`, `tools/`, `scripts/` |
+| RMC-BestFit: the model library, and the WPF code being ported | [USACE-RMC/RMC-BestFit](https://github.com/USACE-RMC/RMC-BestFit) | `upstream/RMC-BestFit` |
+| WPF-Framework: the database and expression libraries, the OxyPlot fork, and the WPF code being ported | [USACE-RMC/WPF-Framework](https://github.com/USACE-RMC/WPF-Framework) | `upstream/WPF-Framework` |
+| RMC.Numerics: the numerical library under the model | [USACE-RMC/Numerics](https://github.com/USACE-RMC/Numerics) | `upstream/Numerics` |
+| HEC-DSS: the C library, the zlib it builds with, and the `Hec.Dss` .NET wrapper | [hec-dss](https://github.com/HydrologicEngineeringCenter/hec-dss), [zlib](https://github.com/madler/zlib), [hec-dss-dotnet](https://github.com/HydrologicEngineeringCenter/hec-dss-dotnet) | `upstream/hec-dss`, `upstream/zlib`, `upstream/hec-dss-dotnet` |
+| Third-party libraries published on NuGet, such as SQLite | Their own repositories | Not stored: `dotnet build` restores them at pinned versions |
+| Sample data for the test suites | [RMC-BestFit examples](https://github.com/USACE-RMC/RMC-BestFit/tree/main/examples), [dss-test-data](https://github.com/HydrologicEngineeringCenter/dss-test-data) | Not stored: `scripts/fetch-sample-data.sh` downloads it |
 
-The fetched sources go into `upstream/`, which is git-ignored and never edited. Portable upstream
-code compiles unmodified. The one planned exception is the file of native declarations in HEC's
-.NET wrapper: it no longer matches the HEC-DSS library, so a corrected copy will live here. The
-Windows-only WPF code is ported into this repository file for file.
+Upstream code is never edited. Portable upstream code compiles unmodified. The one planned exception
+is the file of native declarations in HEC's .NET wrapper: it no longer matches the HEC-DSS library,
+so a corrected copy will live in `src/`. The Windows-only WPF code is ported into `src/` file for
+file.
 
 ## Relationship to RMC-BestFit
 
 XGoodFit is not affiliated with or endorsed by the U.S. Army Corps of Engineers. RMC-BestFit is
 developed by USACE-RMC and released under the Zero-Clause BSD licence. Please report problems with
 the original application to [its repository](https://github.com/USACE-RMC/RMC-BestFit/issues).
+
+If you use XGoodFit in your work, please cite the original software: RMC-BestFit, and the Numerics
+library it is built on. [`upstream/README.md`](upstream/README.md) gives the citations, and each
+project's `CITATION.cff` is included.
 
 ## Licence
 

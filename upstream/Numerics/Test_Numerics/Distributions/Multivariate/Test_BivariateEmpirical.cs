@@ -1,0 +1,80 @@
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
+using Numerics.Distributions;
+
+namespace Distributions.Multivariate
+{
+    /// <summary>
+    /// Unit tests for the bivariate empirical distribution. 
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    ///     <b> Authors: </b>
+    ///     <list type="bullet">
+    ///     <item>Haden Smith, USACE Risk Management Center, cole.h.smith@usace.army.mil</item>
+    ///     </list>
+    /// </para>
+    /// </remarks>
+    [TestClass]
+    public class Test_BivariateEmpirical
+    {
+        /// <summary>
+        /// Test the Bivariate empirical distribution CDF.
+        /// </summary>
+        [TestMethod()]
+        public void Test_BivariateEmp()
+        {
+            var X1vals = new double[] { 1d, 2d, 3d, 4d, 5d };
+            var X2vals = new double[] { 6d, 7d, 8d, 9d, 10d };
+            var Pvals = new double[,] { { 0.00405294623516298d, 0.0132662170105167d, 0.0207236588305977d, 0.022603272182165d, 0.0227468879771625d }, { 0.0132662170105167d, 0.0625140947096637d, 0.127398206576625d, 0.154872951858602d, 0.158508394165442d }, { 0.0207236588305977d, 0.127398206576625d, 0.333333333333333d, 0.468742952645168d, 0.497973526882419d }, { 0.022603272182165d, 0.154872951858602d, 0.468742952645168d, 0.745203586846751d, 0.831860831130881d }, { 0.0227468879771625d, 0.158508394165442d, 0.497973526882419d, 0.831860831130881d, 0.958552682338805d } };
+            var bv = new BivariateEmpirical(X1vals, X2vals, Pvals);
+
+            // Real space
+            double true_cdf1 = 0.008659582d;
+            double true_cdf2 = 0.388089576d;
+            double true_cdf3 = 0.497681221d;
+            double cdf1 = bv.CDF(1.5d, 6d);
+            double cdf2 = bv.CDF(3.22d, 8.15d);
+            double cdf3 = bv.CDF(3d, 9.99d);
+            Assert.AreEqual(cdf1, true_cdf1, 1E-6);
+            Assert.AreEqual(cdf2, true_cdf2, 1E-6);
+            Assert.AreEqual(cdf3, true_cdf3, 1E-6);
+
+            // Log 10 space
+            double true_cdf4 = 0.379680109d;
+            bv.ProbabilityTransform = Numerics.Data.Transform.Logarithmic;
+            double cdf4 = bv.CDF(3.22d, 8.15d);
+            Assert.AreEqual(cdf4, true_cdf4, 1E-6);
+
+            // Z space
+            double true_cdf5 = 0.386806419d;
+            bv.ProbabilityTransform = Numerics.Data.Transform.NormalZ;
+            double cdf5 = bv.CDF(3.22d, 8.15d);
+
+            Assert.AreEqual(cdf5, true_cdf5, 1E-6);
+        }
+
+        /// <summary>
+        /// Verifies that replacing the parameter grid invalidates the cached transformed interpolator.
+        /// </summary>
+        [TestMethod]
+        public void SetParametersInvalidatesBilinearInterpolator()
+        {
+            var x1 = new[] { 1d, 10d };
+            var x2 = new[] { 1d, 10d };
+            var original = new[,] { { 0.1d, 0.2d }, { 0.3d, 0.4d } };
+            var replacement = new[,] { { 0.6d, 0.7d }, { 0.8d, 0.9d } };
+            var distribution = new BivariateEmpirical(x1, x2, original)
+            {
+                X1Transform = Numerics.Data.Transform.Logarithmic,
+                X2Transform = Numerics.Data.Transform.Logarithmic
+            };
+
+            double coordinate = Math.Sqrt(10d);
+            Assert.AreEqual(0.25d, distribution.CDF(coordinate, coordinate), 1E-12);
+            distribution.SetParameters(x1, x2, replacement);
+            Assert.AreEqual(0.75d, distribution.CDF(coordinate, coordinate), 1E-12);
+        }
+
+    }
+}

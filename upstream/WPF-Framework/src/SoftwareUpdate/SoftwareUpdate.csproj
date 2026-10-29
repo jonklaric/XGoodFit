@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <RootNamespace>SoftwareUpdate</RootNamespace>
+    <AssemblyName>SoftwareUpdate</AssemblyName>
+    <Nullable>enable</Nullable>
+    <UseWPF>true</UseWPF>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+
+    <IsWpfFrameworkLibrary>true</IsWpfFrameworkLibrary>
+    <PackageId>RMC.SoftwareUpdate</PackageId>
+    <Title>SoftwareUpdate</Title>
+    <Description>GitHub Releases-based automatic update service for .NET desktop applications. Provides SemVer 2.0 version comparison, SHA256 checksum validation, skipped-version persistence, and an external updater process for in-place installs.</Description>
+    <PackageTags>auto-update; github-releases; semver; software-update; installer; usace-rmc</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="SoftwareUpdate.Tests" />
+  </ItemGroup>
+
+</Project>

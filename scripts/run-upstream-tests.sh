@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
-# Runs the upstream test suites that cover the portable (OS-independent) layers on the current
-# machine, with the exclusions documented below. Used by CI and for local checks on any OS.
-# Logs go to artifacts/logs/test-<suite>.log. Requires scripts/fetch-upstream.sh to have run.
+# Runs the vendored upstream test suites that cover the portable (OS-independent) layers on the
+# current machine, with the exclusions documented below. Used by CI and for local checks on any OS.
+# Logs go to artifacts/logs/test-<suite>.log. RMC-BestFit builds against the vendored RMC.Numerics
+# source (Directory.Build.rsp).
 set -uo pipefail
 
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -30,9 +31,12 @@ run() {
   fi
 }
 
+# RMC.Numerics, the numerical library under the model (vendored at tag v2.2.0).
+run Test_Numerics dotnet test upstream/Numerics/Test_Numerics/Test_Numerics.csproj -c Release -f net10.0
+
 # RMC.BestFit model library, run directly so --filter reaches the test runner. Excluded:
 #  - Documentation_LocalLinksResolve: checks links into upstream folders that are deliberately
-#    not fetched (verification evidence, PDFs, skill packages).
+#    not vendored (examples, validation evidence, skill packages).
 #  - RunAsync_MultipleAnalyses_Parallel: asserts a 250 ms wall-clock limit, so it fails
 #    intermittently on busy machines (seen on Windows and Linux); it measures speed, not results.
 bestfit="upstream/RMC-BestFit/src/RMC.BestFit.Tests"

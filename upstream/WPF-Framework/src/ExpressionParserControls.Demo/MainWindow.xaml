@@ -1,0 +1,19 @@
+﻿<Window x:Class="ExpressionParserControls.Demo.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:ExpressionParserControls.Demo"
+        xmlns:parseControls="clr-namespace:ExpressionParserControls;assembly=ExpressionParserControls"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="450" Width="800">
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <TextBlock Name="ResultTextBlock" Grid.Row="0" Margin="0,0,0,5" Text="Example Text:" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+
+        <parseControls:CalculatorControl Name="testCalc" Grid.Row="1" Margin="0,0,2,0" ExpressionChanged="CalculatorControl_ExpressionChanged"></parseControls:CalculatorControl>
+    </Grid>
+</Window>

@@ -1,0 +1,14 @@
+<Application x:Class="OxyPlotControls.Demo.App"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="clr-namespace:OxyPlotControls.Demo"
+    Startup="Application_Startup">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/GenericControls;component/Themes/GenericControlsTheme.xaml"/>
+                <ResourceDictionary Source="pack://application:,,,/OxyPlotControls;Component/Themes/OxyPlotControlsTheme.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

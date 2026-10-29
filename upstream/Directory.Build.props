@@ -1,0 +1,9 @@
+<Project>
+
+  <!--
+    Intentionally empty. MSBuild imports the nearest Directory.Build.props above a project, so
+    this file stops XGoodFit's own settings (../Directory.Build.props) from reaching upstream
+    projects that have no Directory.Build.props of their own. They then build as upstream intends.
+  -->
+
+</Project>

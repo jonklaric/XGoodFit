@@ -1,5 +1,5 @@
-# Pinned upstream sources, fetched by scripts/fetch-upstream.sh
-/upstream/
+# Sample data for the test suites, downloaded by scripts/fetch-sample-data.sh
+/sample-data/
 
 # Build output
 bin/

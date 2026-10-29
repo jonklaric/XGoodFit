@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <RootNamespace>FrameworkInterfaces</RootNamespace>
+    <AssemblyName>FrameworkInterfaces</AssemblyName>
+    <Nullable>enable</Nullable>
+    <UseWPF>true</UseWPF>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+
+    <IsWpfFrameworkLibrary>true</IsWpfFrameworkLibrary>
+    <PackageId>RMC.FrameworkInterfaces</PackageId>
+    <Title>FrameworkInterfaces</Title>
+    <Description>Core contracts and base classes for WPF Framework: messaging, undo/redo, project/element hierarchy, and shared utilities. The foundational dependency of the WPF Framework desktop application shell.</Description>
+    <PackageTags>wpf; mvvm; undo-redo; messaging; project-management; usace-rmc</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+  </ItemGroup>
+
+</Project>

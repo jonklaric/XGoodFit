@@ -1,0 +1,1801 @@
+﻿using System.IO.Compression;
+using System.IO;
+using System.Linq;
+using System.Net;
+using System.Net.Sockets;
+using System.Xml.Linq;
+using System;
+using System.Text.RegularExpressions;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Net.Http;
+using System.Globalization;
+using System.Collections.Generic;
+using System.Text;
+
+namespace Numerics.Data
+{
+
+    /// <summary>
+    /// Download time series data from the Internet.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    ///     <b> Authors: </b>
+    ///     Haden Smith, USACE Risk Management Center, cole.h.smith@usace.army.mil
+    /// </para>
+    /// </remarks>
+    public class TimeSeriesDownload
+    {
+        private static HttpClient _defaultClient = CreateDefaultClient();
+        private static HttpClient _decompressClient = CreateDecompressClient();
+        private static readonly HttpClient _bomClient = CreateBomClient();
+
+        private const string UserAgent = "USACE-Numerics/2.0";
+
+        /// <summary>
+        /// Maximum time allowed for one provider request attempt before retry/failure handling runs.
+        /// </summary>
+        /// <remarks>
+        /// A short per-attempt timeout prevents blocked government-network routes from making UI
+        /// callers wait for the default minute-long HTTP timeout on each retry.
+        /// </remarks>
+        private static readonly TimeSpan ProviderRequestTimeout = TimeSpan.FromSeconds(10);
+
+        /// <summary>
+        /// Maximum time allowed for one instantaneous provider request attempt.
+        /// </summary>
+        /// <remarks>
+        /// Instantaneous series can be substantially larger than daily, peak, or field-measurement
+        /// responses, especially when a provider accepts a long period-of-record query.
+        /// </remarks>
+        private static readonly TimeSpan InstantaneousProviderRequestTimeout = TimeSpan.FromSeconds(120);
+
+        /// <summary>
+        /// Maximum time allowed for one GHCN station-file request attempt.
+        /// </summary>
+        /// <remarks>
+        /// NCEI serves full station files in seconds over IPv4. The historical multi-minute
+        /// header waits were sequential TCP timeouts against NCEI's six IPv6 addresses on
+        /// networks that drop IPv6 traffic, which the downloader now avoids by preferring IPv4.
+        /// This margin only covers genuinely slow links and large station files.
+        /// </remarks>
+        private static readonly TimeSpan GhcnProviderRequestTimeout = TimeSpan.FromSeconds(60);
+
+        /// <summary>
+        /// Maximum time allowed for one explicit connectivity probe.
+        /// </summary>
+        /// <remarks>
+        /// Connectivity probes are advisory only and must remain faster than real provider downloads.
+        /// </remarks>
+        private static readonly TimeSpan ConnectivityProbeTimeout = TimeSpan.FromSeconds(2);
+
+        /// <summary>
+        /// Default number of attempts for provider requests made through the retry helper.
+        /// </summary>
+        /// <remarks>
+        /// Two attempts are enough to smooth over one transient outage without turning blocked
+        /// network paths into multi-minute waits.
+        /// </remarks>
+        private const int DefaultMaxDownloadAttempts = 2;
+
+        /// <summary>
+        /// Provider root endpoints used for the public Internet connectivity check.
+        /// </summary>
+        /// <remarks>
+        /// These URLs are not a precondition for data requests; they are used only by callers that
+        /// explicitly ask whether at least one supported provider endpoint is reachable.
+        /// </remarks>
+        private static readonly string[] InternetProbeUrls =
+        {
+            "https://waterservices.usgs.gov/nwis/",
+            "https://www.ncei.noaa.gov/",
+            "https://wateroffice.ec.gc.ca/",
+            "https://www.bom.gov.au/waterdata/"
+        };
+
+#if !NETFRAMEWORK
+        /// <summary>
+        /// Maximum time allowed for one TCP connect attempt to a single resolved address.
+        /// </summary>
+        /// <remarks>
+        /// Bounding each address separately keeps one unreachable address family from consuming
+        /// the whole request timeout while still letting later addresses in the list be tried.
+        /// </remarks>
+        private static readonly TimeSpan ConnectAttemptTimeout = TimeSpan.FromSeconds(5);
+#endif
+
+        /// <summary>
+        /// Creates the HTTP handler used by the downloader's shared clients.
+        /// </summary>
+        /// <param name="automaticDecompression">True to enable automatic GZip and Deflate response decompression.</param>
+        /// <returns>A configured HTTP handler.</returns>
+        /// <remarks>
+        /// Some providers publish IPv6 (AAAA) DNS records while many restricted networks silently
+        /// drop IPv6 traffic. A default handler tries every unreachable IPv6 address before
+        /// falling back to IPv4 (~21 s of TCP timeout per address; measured at ~126 s to first
+        /// byte for NOAA NCEI's six AAAA records). On modern targets the handler connects with
+        /// <c>ConnectPreferringIPv4Async</c> so IPv4 is tried first and IPv6 remains a
+        /// fallback. On .NET Framework the equivalent ordering is applied per request through
+        /// <see cref="PreferIPv4ForNetFramework"/>.
+        /// </remarks>
+        private static HttpMessageHandler CreateHandler(bool automaticDecompression)
+        {
+#if NETFRAMEWORK
+            var handler = new HttpClientHandler();
+#else
+            var handler = new SocketsHttpHandler { ConnectCallback = ConnectPreferringIPv4Async };
+#endif
+            if (automaticDecompression)
+            {
+                handler.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
+            }
+            return handler;
+        }
+
+#if !NETFRAMEWORK
+        /// <summary>
+        /// Opens a TCP connection for an HTTP request, preferring IPv4 addresses over IPv6.
+        /// </summary>
+        /// <param name="context">The connection context supplied by the HTTP handler.</param>
+        /// <param name="cancellationToken">Token used to cancel the connection attempt.</param>
+        /// <returns>A connected network stream.</returns>
+        /// <exception cref="HttpRequestException">Thrown when no resolved address accepts a connection.</exception>
+        /// <exception cref="OperationCanceledException">Thrown when <paramref name="cancellationToken"/> is canceled.</exception>
+        /// <remarks>
+        /// The default connect logic tries DNS results in returned order, which lists IPv6 first.
+        /// On networks that silently drop IPv6 traffic every dead address costs a full TCP
+        /// timeout before IPv4 is reached. Trying IPv4 first keeps downloads fast there while the
+        /// IPv6 fallback keeps IPv6-only networks working.
+        /// </remarks>
+        private static async ValueTask<Stream> ConnectPreferringIPv4Async(SocketsHttpConnectionContext context, CancellationToken cancellationToken)
+        {
+            IPAddress[] addresses = await Dns.GetHostAddressesAsync(context.DnsEndPoint.Host, cancellationToken).ConfigureAwait(false);
+            IPAddress[] ordered = OrderAddressesForConnect(addresses);
+            Exception? lastFailure = null;
+            foreach (IPAddress address in ordered)
+            {
+                var socket = new Socket(address.AddressFamily, SocketType.Stream, ProtocolType.Tcp) { NoDelay = true };
+                try
+                {
+                    using var attemptCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                    attemptCts.CancelAfter(ConnectAttemptTimeout);
+                    await socket.ConnectAsync(new IPEndPoint(address, context.DnsEndPoint.Port), attemptCts.Token).ConfigureAwait(false);
+                    return new NetworkStream(socket, ownsSocket: true);
+                }
+                catch (Exception ex)
+                {
+                    socket.Dispose();
+                    cancellationToken.ThrowIfCancellationRequested();
+                    lastFailure = ex;
+                }
+            }
+
+            throw new HttpRequestException(
+                $"Could not connect to '{context.DnsEndPoint.Host}:{context.DnsEndPoint.Port}' on any resolved address.",
+                lastFailure);
+        }
+#endif
+
+        /// <summary>
+        /// Orders resolved addresses so IPv4 is attempted before IPv6.
+        /// </summary>
+        /// <param name="addresses">The addresses returned by DNS resolution.</param>
+        /// <returns>The addresses with IPv4 first; relative order within each family is preserved.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="addresses"/> is null.</exception>
+        internal static IPAddress[] OrderAddressesForConnect(IPAddress[] addresses)
+        {
+            if (addresses == null) throw new ArgumentNullException(nameof(addresses));
+            return addresses.OrderBy(address => address.AddressFamily == AddressFamily.InterNetworkV6 ? 1 : 0).ToArray();
+        }
+
+        /// <summary>
+        /// Local-endpoint binder that rejects IPv6 remote endpoints so connects fall through to IPv4.
+        /// </summary>
+        /// <param name="remoteEndPoint">The remote endpoint the connection is being bound for.</param>
+        /// <returns>Null for IPv4 remote endpoints, letting the OS choose the local endpoint.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="remoteEndPoint"/> is null.</exception>
+        /// <exception cref="SocketException">Thrown for IPv6 remote endpoints to make the connection attempt skip to the next resolved address.</exception>
+        /// <remarks>
+        /// On .NET Framework a <see cref="ServicePoint"/> tries resolved addresses in DNS order
+        /// (IPv6 first) with no per-address bound, so blocked IPv6 routes cost a full TCP timeout
+        /// per address. Throwing from the bind delegate fails an IPv6 attempt immediately and the
+        /// service point moves on to the next (IPv4) address.
+        /// </remarks>
+        internal static IPEndPoint? RejectIPv6BindEndPoint(IPEndPoint remoteEndPoint)
+        {
+            if (remoteEndPoint == null) throw new ArgumentNullException(nameof(remoteEndPoint));
+            if (remoteEndPoint.AddressFamily == AddressFamily.InterNetworkV6)
+            {
+                throw new SocketException((int)SocketError.AddressFamilyNotSupported);
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Configures the .NET Framework service point for a request URI to prefer IPv4 connections.
+        /// </summary>
+        /// <param name="requestUri">The absolute request URI about to be downloaded.</param>
+        /// <remarks>
+        /// No-op on modern targets, where <see cref="CreateHandler"/> installs an IPv4-preferring
+        /// connect callback instead. Skipped when the OS has no IPv4 stack so IPv6-only machines
+        /// keep working.
+        /// </remarks>
+        private static void PreferIPv4ForNetFramework(Uri requestUri)
+        {
+#if NETFRAMEWORK
+            if (!Socket.OSSupportsIPv4) return;
+            ServicePoint servicePoint = ServicePointManager.FindServicePoint(requestUri);
+            servicePoint.BindIPEndPointDelegate = (servicePointArg, remoteEndPoint, retryCount) => RejectIPv6BindEndPoint(remoteEndPoint);
+#endif
+        }
+
+        /// <summary>
+        /// Creates the default HTTP client used for uncompressed provider requests.
+        /// </summary>
+        /// <returns>A configured HTTP client whose timeout is controlled by the retry helper.</returns>
+        /// <remarks>
+        /// The client is held as a static instance in production to avoid socket churn. Request
+        /// timeouts are applied by <see cref="GetWithRetryAsync(HttpClient, string, int, TimeSpan?, CancellationToken)"/>
+        /// so each provider call can choose the right timeout for its payload size.
+        /// </remarks>
+        private static HttpClient CreateDefaultClient()
+        {
+            var client = new HttpClient(CreateHandler(automaticDecompression: false)) { Timeout = Timeout.InfiniteTimeSpan };
+            client.DefaultRequestHeaders.UserAgent.ParseAdd(UserAgent);
+            return client;
+        }
+
+        /// <summary>
+        /// Creates the HTTP client used for provider requests that may return compressed payloads.
+        /// </summary>
+        /// <returns>A configured HTTP client with automatic GZip and Deflate decompression.</returns>
+        /// <remarks>
+        /// The client is held as a static instance in production to avoid socket churn. Request
+        /// timeouts are applied by <see cref="GetWithRetryAsync(HttpClient, string, int, TimeSpan?, CancellationToken)"/>.
+        /// </remarks>
+        private static HttpClient CreateDecompressClient()
+        {
+            var client = new HttpClient(CreateHandler(automaticDecompression: true)) { Timeout = Timeout.InfiniteTimeSpan };
+            client.DefaultRequestHeaders.UserAgent.ParseAdd(UserAgent);
+            return client;
+        }
+
+        /// <summary>
+        /// Creates the HTTP client used for BOM KiWIS requests.
+        /// </summary>
+        /// <returns>A configured HTTP client with browser-like default headers.</returns>
+        /// <remarks>
+        /// BOM sits behind a security appliance that rejects bare programmatic requests, so the
+        /// client sends browser-like headers. The client is held as a static instance so the
+        /// station lookup and value download in one call, and repeated calls, reuse pooled
+        /// connections instead of paying a fresh TCP and TLS handshake each time. The
+        /// Accept-Encoding header is supplied by the handler's automatic decompression.
+        /// </remarks>
+        private static HttpClient CreateBomClient()
+        {
+            var client = new HttpClient(CreateHandler(automaticDecompression: true)) { Timeout = Timeout.InfiniteTimeSpan };
+            client.DefaultRequestHeaders.Add("User-Agent", UserAgent);
+            client.DefaultRequestHeaders.Add("Accept", "application/json,text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
+            client.DefaultRequestHeaders.Add("Accept-Language", "en-US,en;q=0.9");
+            client.DefaultRequestHeaders.Add("DNT", "1");
+            client.DefaultRequestHeaders.Add("Connection", "keep-alive");
+            return client;
+        }
+
+        /// <summary>
+        /// Replaces the static HTTP clients used by the downloader for deterministic tests.
+        /// </summary>
+        /// <param name="defaultClient">The client to use for ordinary provider requests.</param>
+        /// <param name="decompressClient">The client to use for compressed provider requests.</param>
+        /// <exception cref="ArgumentNullException">Thrown when either client is null.</exception>
+        /// <remarks>
+        /// This method is internal so tests can verify request routing without adding public API.
+        /// </remarks>
+        internal static void SetHttpClientsForTesting(HttpClient defaultClient, HttpClient decompressClient)
+        {
+            _defaultClient = defaultClient ?? throw new ArgumentNullException(nameof(defaultClient));
+            _decompressClient = decompressClient ?? throw new ArgumentNullException(nameof(decompressClient));
+        }
+
+        /// <summary>
+        /// Restores the production HTTP clients after a deterministic test.
+        /// </summary>
+        /// <remarks>
+        /// Tests call this method in a finally block so later tests do not inherit fake handlers.
+        /// </remarks>
+        internal static void ResetHttpClientsForTesting()
+        {
+            _defaultClient = CreateDefaultClient();
+            _decompressClient = CreateDecompressClient();
+        }
+
+        /// <summary>
+        /// GET with bounded retry and exponential backoff on transient failures. Retries 5xx, 408, 429, network
+        /// exceptions, and KiWIS DatasourceError bodies. Does NOT retry 4xx —
+        /// those mean the request itself is wrong.
+        /// </summary>
+        /// <param name="client">The HTTP client used to issue the request.</param>
+        /// <param name="url">The request URL.</param>
+        /// <param name="maxAttempts">The maximum number of request attempts.</param>
+        /// <param name="requestTimeout">The maximum duration allowed for each request attempt.</param>
+        /// <param name="cancellationToken">Token used to cancel the request and retry delay.</param>
+        /// <returns>The final HTTP status code and response body.</returns>
+        /// <exception cref="HttpRequestException">Thrown when all attempts fail with a network error.</exception>
+        /// <exception cref="OperationCanceledException">Thrown when <paramref name="cancellationToken"/> is canceled.</exception>
+        /// <exception cref="TimeoutException">Thrown when all attempts exceed the per-attempt timeout.</exception>
+        /// <remarks>
+        /// The helper bounds each attempt separately so blocked network paths fail quickly while
+        /// still allowing one retry for transient service errors.
+        /// </remarks>
+        private static async Task<(HttpStatusCode status, string body)> GetWithRetryAsync(
+            HttpClient client,
+            string url,
+            int maxAttempts = DefaultMaxDownloadAttempts,
+            TimeSpan? requestTimeout = null,
+            CancellationToken cancellationToken = default)
+        {
+            TimeSpan timeout = requestTimeout ?? ProviderRequestTimeout;
+            PreferIPv4ForNetFramework(new Uri(url));
+            Exception? lastNet = null;
+            for (int attempt = 1; attempt <= maxAttempts; attempt++)
+            {
+                try
+                {
+                    using var attemptCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                    attemptCts.CancelAfter(timeout);
+                    using var resp = await client.GetAsync(
+                        url,
+                        HttpCompletionOption.ResponseHeadersRead,
+                        attemptCts.Token).ConfigureAwait(false);
+                    string body = await ReadResponseBodyAsync(resp, attemptCts.Token).ConfigureAwait(false);
+                    bool transient =
+                        (int)resp.StatusCode >= 500 ||
+                        resp.StatusCode == HttpStatusCode.RequestTimeout ||
+                        (int)resp.StatusCode == 429 ||
+                        body.Contains("DatasourceError") ||
+                        body.Contains("Error connecting to WDP");
+                    if (!transient || attempt == maxAttempts) return (resp.StatusCode, body);
+                }
+                catch (HttpRequestException ex) { lastNet = ex; if (attempt == maxAttempts) throw; }
+                catch (TaskCanceledException) when (cancellationToken.IsCancellationRequested) { throw; }
+                catch (TaskCanceledException ex)
+                {
+                    lastNet = CreateDownloadTimeoutException(url, timeout, ex);
+                    if (attempt == maxAttempts) throw lastNet;
+                }
+
+                await Task.Delay(500 * (int)Math.Pow(2, attempt - 1), cancellationToken).ConfigureAwait(false);
+            }
+            throw lastNet ?? new Exception("GetWithRetryAsync exhausted retries");
+        }
+
+        /// <summary>
+        /// Reads an HTTP response body with cancellation support.
+        /// </summary>
+        /// <param name="response">The HTTP response whose content should be read.</param>
+        /// <param name="cancellationToken">Token used to cancel the body read.</param>
+        /// <returns>The decoded response text.</returns>
+        /// <exception cref="OperationCanceledException">Thrown when <paramref name="cancellationToken"/> is canceled.</exception>
+        /// <remarks>
+        /// <see cref="HttpContent.ReadAsStringAsync()"/> cannot be canceled on older target
+        /// frameworks. Full-period instantaneous USGS responses are large enough that body reads
+        /// must honor the same bounded timeout as the request headers.
+        /// </remarks>
+        private static async Task<string> ReadResponseBodyAsync(HttpResponseMessage response, CancellationToken cancellationToken)
+        {
+            using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+            using var memory = new MemoryStream();
+            byte[] buffer = new byte[81920];
+            int bytesRead;
+            while ((bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length, cancellationToken).ConfigureAwait(false)) > 0)
+            {
+                memory.Write(buffer, 0, bytesRead);
+            }
+
+            return GetResponseEncoding(response).GetString(memory.ToArray());
+        }
+
+        /// <summary>
+        /// Gets the text encoding declared by an HTTP response, defaulting to UTF-8.
+        /// </summary>
+        /// <param name="response">The HTTP response to inspect.</param>
+        /// <returns>The declared response encoding, or UTF-8 when none is declared or recognized.</returns>
+        /// <remarks>
+        /// USGS RDB and most provider text responses are UTF-8-compatible. The fallback keeps parsing
+        /// stable when a provider omits or misstates the charset.
+        /// </remarks>
+        private static Encoding GetResponseEncoding(HttpResponseMessage response)
+        {
+            string charset = response.Content.Headers.ContentType?.CharSet ?? "";
+            if (string.IsNullOrWhiteSpace(charset)) return Encoding.UTF8;
+
+            try
+            {
+                return Encoding.GetEncoding(charset.Trim('"'));
+            }
+            catch (ArgumentException)
+            {
+                return Encoding.UTF8;
+            }
+        }
+
+        /// <summary>
+        /// Creates a timeout exception for a provider request that did not complete quickly enough.
+        /// </summary>
+        /// <param name="url">The URL that timed out.</param>
+        /// <param name="requestTimeout">The timeout used for the request attempt.</param>
+        /// <param name="innerException">The cancellation exception raised by the HTTP stack.</param>
+        /// <returns>An exception with a user-facing timeout message.</returns>
+        /// <remarks>
+        /// The message names the endpoint so application callers can distinguish a blocked provider
+        /// request from a general Internet connectivity failure.
+        /// </remarks>
+        private static TimeoutException CreateDownloadTimeoutException(string url, TimeSpan requestTimeout, Exception innerException)
+        {
+            return new TimeoutException(
+                $"The request to '{url}' did not complete within {requestTimeout.TotalSeconds:0} seconds.",
+                innerException);
+        }
+
+        /// <summary>
+        /// Checks if there is an Internet connection by probing provider endpoints used by the downloader.
+        /// </summary>
+        /// <returns>True when at least one supported provider endpoint completes an HTTP request; otherwise false.</returns>
+        /// <remarks>
+        /// This method is not used as a preflight gate for provider downloads because restricted
+        /// networks may allow one data provider while blocking unrelated endpoints.
+        /// </remarks>
+        public static async Task<bool> IsConnectedToInternet()
+        {
+            using var cts = new CancellationTokenSource();
+            var probes = InternetProbeUrls.Select(url => CanReachEndpoint(url, cts.Token)).ToList();
+
+            while (probes.Count > 0)
+            {
+                Task<bool> completed = await Task.WhenAny(probes);
+                probes.Remove(completed);
+                if (await completed)
+                {
+                    cts.Cancel();
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Determines whether an endpoint can complete an HTTP request.
+        /// </summary>
+        /// <param name="url">The endpoint URL to probe.</param>
+        /// <param name="cancellationToken">Token used to cancel the probe.</param>
+        /// <returns>True when the request completes with any HTTP response; otherwise false.</returns>
+        /// <remarks>
+        /// Any HTTP response means the network path exists. HTTP status codes are intentionally not
+        /// interpreted because security appliances and provider roots may return redirects or errors
+        /// while still proving transport reachability.
+        /// </remarks>
+        private static async Task<bool> CanReachEndpoint(string url, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                PreferIPv4ForNetFramework(new Uri(url));
+                using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                cts.CancelAfter(ConnectivityProbeTimeout);
+                using (await _defaultClient.GetAsync(
+                    url,
+                    HttpCompletionOption.ResponseHeadersRead,
+                    cts.Token))
+                {
+                }
+
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Adds a downloaded ordinate or replaces the previously parsed ordinate at the same date/time.
+        /// </summary>
+        /// <param name="timeSeries">The time series being populated.</param>
+        /// <param name="indexesByDateTime">Lookup from parsed date/time values to their current series index.</param>
+        /// <param name="index">The ordinate date/time.</param>
+        /// <param name="value">The ordinate value.</param>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="timeSeries"/> or <paramref name="indexesByDateTime"/> is null.</exception>
+        /// <remarks>
+        /// Provider data can contain distinct source records with the same timestamp. Handling that
+        /// as records are parsed preserves the historical "last value wins" behavior without a
+        /// second full-series pass after download completion.
+        /// </remarks>
+        private static void AddOrReplaceByDateTime(
+            TimeSeries timeSeries,
+            Dictionary<DateTime, int> indexesByDateTime,
+            DateTime index,
+            double value)
+        {
+            if (timeSeries == null) throw new ArgumentNullException(nameof(timeSeries));
+            if (indexesByDateTime == null) throw new ArgumentNullException(nameof(indexesByDateTime));
+
+            var ordinate = new SeriesOrdinate<DateTime, double>(index, value);
+            if (indexesByDateTime.TryGetValue(index, out int existingIndex))
+            {
+                timeSeries[existingIndex] = ordinate;
+                return;
+            }
+
+            indexesByDateTime.Add(index, timeSeries.Count);
+            timeSeries.Add(ordinate);
+        }
+
+        /// <summary>
+        /// Enumeration of time series options.
+        /// </summary>
+        public enum TimeSeriesType
+        {
+            /// <summary>
+            /// Daily mean discharge.
+            /// </summary>
+            DailyDischarge,
+            /// <summary>
+            /// Daily mean stage.
+            /// </summary>
+            DailyStage,
+            /// <summary>
+            /// Daily total precipitation.
+            /// </summary>
+            DailyPrecipitation,
+            /// <summary>
+            /// Daily total snow.
+            /// </summary>
+            DailySnow,
+            /// <summary>
+            /// Instantaneous discharge, typically recorded at a 15-minute interval.
+            /// </summary>
+            InstantaneousDischarge,
+            /// <summary>
+            /// Instantaneous stage, typically recorded at a 15-minute interval.
+            /// </summary>
+            InstantaneousStage,
+            /// <summary>
+            /// Annual max peak discharge.
+            /// </summary>
+            PeakDischarge,
+            /// <summary>
+            /// Annual max peak stage.
+            /// </summary>
+            PeakStage,
+            /// <summary>
+            /// Discrete field measurement of discharge, used for rating curves.
+            /// </summary>
+            MeasuredDischarge,
+            /// <summary>
+            /// Discrete field measurement of stage (gage height), used for rating curves.
+            /// </summary>
+            MeasuredStage
+        }
+
+        /// <summary>
+        /// Enumeration of depth unit options.
+        /// </summary>
+        public enum DepthUnit
+        {
+            /// <summary>
+            /// Millimeters (mm)
+            /// </summary>
+            Millimeters,
+            /// <summary>
+            /// Centimeters (cm).
+            /// </summary>
+            Centimeters,
+            /// <summary>
+            /// Inches (in).
+            /// </summary>
+            Inches
+        }
+
+        /// <summary>
+        /// Enumeration of discharge unit options.
+        /// </summary>
+        public enum DischargeUnit
+        {
+            /// <summary>
+            /// Cubic feet per second (cfs)
+            /// </summary>
+            CubicFeetPerSecond,
+            /// <summary>
+            /// Cubic meters per second (cms)
+            /// </summary>
+            CubicMetersPerSecond,
+        }
+
+        /// <summary>
+        /// Enumeration of gage height unit options.
+        /// </summary>
+        public enum HeightUnit
+        {
+            /// <summary>
+            /// Feet (ft)
+            /// </summary>
+            Feet,
+            /// <summary>
+            /// Meters (m)
+            /// </summary>
+            Meters,
+        }
+
+        #region GHCN
+
+        /// <summary>
+        /// Download data from the Global Historical Climatology Network (GHCN). 
+        /// </summary>
+        /// <param name="siteNumber">The station identification code.</param>
+        /// <param name="timeSeriesType">The time series type. Default = Daily precipitation.</param>
+        /// <param name="unit">The depth unit. Default = inches.</param>
+        /// <param name="cancellationToken">Token used to cancel the download.</param>
+        /// <returns>A downloaded time series.</returns>
+        public static async Task<TimeSeries> FromGHCN(string siteNumber, TimeSeriesType timeSeriesType = TimeSeriesType.DailyPrecipitation, DepthUnit unit = DepthUnit.Inches, CancellationToken cancellationToken = default)
+        {
+            
+
+            // Check site number
+            if (siteNumber.Length != 11 || !Regex.IsMatch(siteNumber, @"^[A-Za-z0-9]{11}$"))
+            {
+                throw new ArgumentException("The GHCN site number must be exactly 11 alphanumeric characters.", nameof(siteNumber));
+            }
+
+            // Check time series type
+            if (timeSeriesType != TimeSeriesType.DailyPrecipitation && timeSeriesType != TimeSeriesType.DailySnow)
+            {
+                throw new ArgumentException("The time series type must be either daily precipitation or daily snow.", nameof(timeSeriesType));
+            }
+
+            var timeSeries = new TimeSeries(TimeInterval.OneDay);
+            DateTime? previousDate = null;
+            string tempFilePath = Path.Combine(Path.GetTempPath(), $"{Path.GetRandomFileName()}.dly");
+
+            try
+            {
+ 
+                // Download the GHCN file
+                string ghcnBaseUrl = "https://www.ncei.noaa.gov/pub/data/ghcn/daily/all/";
+                string stationFileUrl = $"{ghcnBaseUrl}{Uri.EscapeDataString(siteNumber)}.dly";
+                {
+                    var client = _defaultClient;
+                    PreferIPv4ForNetFramework(new Uri(stationFileUrl));
+                    // GHCN is large enough to want streaming, so we can't use GetWithRetryAsync
+                    // directly (it buffers the whole body). Inline the same retry shape on the
+                    // headers-only GetAsync, then stream from the successful response.
+                    HttpResponseMessage? response = null;
+                    for (int attempt = 1; attempt <= DefaultMaxDownloadAttempts; attempt++)
+                    {
+                        try
+                        {
+                            using var attemptCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                            attemptCts.CancelAfter(GhcnProviderRequestTimeout);
+                            response = await client.GetAsync(
+                                stationFileUrl,
+                                HttpCompletionOption.ResponseHeadersRead,
+                                attemptCts.Token).ConfigureAwait(false);
+                            if ((int)response.StatusCode < 500
+                                && response.StatusCode != HttpStatusCode.RequestTimeout
+                                && (int)response.StatusCode != 429) break;
+                            if (attempt == DefaultMaxDownloadAttempts) break;
+                            response.Dispose();
+                        }
+                        catch (HttpRequestException) when (attempt < DefaultMaxDownloadAttempts) { /* retry */ }
+                        catch (TaskCanceledException) when (cancellationToken.IsCancellationRequested) { throw; }
+                        catch (TaskCanceledException ex)
+                        {
+                            if (attempt == DefaultMaxDownloadAttempts)
+                            {
+                                throw CreateDownloadTimeoutException(stationFileUrl, GhcnProviderRequestTimeout, ex);
+                            }
+                        }
+                        await Task.Delay(500 * (int)Math.Pow(2, attempt - 1), cancellationToken).ConfigureAwait(false);
+                    }
+                    using (response)
+                    {
+                        response!.EnsureSuccessStatusCode();
+                        using (Stream stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false))
+                        using (FileStream fs = new FileStream(tempFilePath, FileMode.Create, FileAccess.Write, FileShare.None, bufferSize: 81920, useAsync: true))
+                        {
+                            await stream.CopyToAsync(fs, 81920, cancellationToken).ConfigureAwait(false);
+                        }
+                    }
+                }
+
+                // Read and parse the file
+                if (!File.Exists(tempFilePath))
+                {
+                    throw new Exception("Downloaded file does not exist.");
+                }
+
+                // Read and parse the file
+                bool previousSuppressCollectionChanged = timeSeries.SuppressCollectionChanged;
+                var indexesByDateTime = new Dictionary<DateTime, int>();
+                timeSeries.SuppressCollectionChanged = true;
+                try
+                {
+                    string[] lines = File.ReadAllLines(tempFilePath);
+                    foreach (string line in lines)
+                    {
+                        // Extract the type (PRCP, SNOW, etc.)
+                        var typeString = line.Substring(17, 4);
+                        if ((typeString == "PRCP" && timeSeriesType == TimeSeriesType.DailyPrecipitation) ||
+                            (typeString == "SNOW" && timeSeriesType == TimeSeriesType.DailySnow))
+                        {
+
+                            // Extract year, month, and parse days
+                            int.TryParse(line.Substring(11, 4), NumberStyles.Integer, CultureInfo.InvariantCulture, out var year);
+                            int.TryParse(line.Substring(15, 2), NumberStyles.Integer, CultureInfo.InvariantCulture, out var month);
+                            int daysInMonth = DateTime.DaysInMonth(year, month);
+
+                            for (int i = 0; i < daysInMonth; i++)
+                            {
+                                int offset = 21 + (i * 8);
+                                string strgValue = line.Substring(offset, 5).Trim();
+                                var currentDate = new DateTime(year, month, i + 1);
+
+                                // Fill missing dates with NaN if there is a gap
+                                if (previousDate.HasValue && (currentDate - previousDate.Value).Days > 1)
+                                {
+                                    FillMissingDates(timeSeries, previousDate.Value, currentDate, indexesByDateTime);
+                                }
+
+                                // Parse the precipitation or snow value
+                                if (int.TryParse(strgValue, NumberStyles.Integer, CultureInfo.InvariantCulture, out int rawValue) && rawValue != -9999)  // Valid precipitation value
+                                {
+                                    double convertedValue = ConvertToDesiredUnit(rawValue, unit);
+                                    AddOrReplaceByDateTime(timeSeries, indexesByDateTime, currentDate, convertedValue);
+                                }
+                                else
+                                {
+                                    // Add missing value if invalid
+                                    AddOrReplaceByDateTime(timeSeries, indexesByDateTime, currentDate, double.NaN);
+                                }
+
+                                previousDate = currentDate;
+                            }
+                        }
+                    }
+                }
+                finally
+                {
+                    timeSeries.SuppressCollectionChanged = previousSuppressCollectionChanged;
+                }
+
+            }
+            finally
+            {
+                // Ensure temporary file is deleted even if an exception occurs
+                if (File.Exists(tempFilePath))
+                {
+                    File.Delete(tempFilePath);
+                }
+            }
+
+            return timeSeries;
+        }
+
+        /// <summary>
+        /// Converts raw GHCN values to the desired unit.
+        /// </summary>
+        /// <param name="rawValue">The raw value from the GHCN dataset.</param>
+        /// <param name="unit">The unit to convert to.</param>
+        /// <returns>The converted value.</returns>
+        private static double ConvertToDesiredUnit(int rawValue, DepthUnit unit)
+        {
+            return unit switch
+            {
+                DepthUnit.Millimeters => rawValue / 10.0,
+                DepthUnit.Centimeters => rawValue / 100.0,
+                DepthUnit.Inches => rawValue / 254.0,
+                _ => throw new ArgumentOutOfRangeException(nameof(unit), "Unsupported depth unit.")
+            };
+        }
+
+        /// <summary>
+        /// Fills missing dates between the last available date and the current date.
+        /// </summary>
+        /// <param name="timeSeries">The time series to fill.</param>
+        /// <param name="previousDate">The last available date.</param>
+        /// <param name="currentDate">The current date to reach.</param>
+        /// <param name="indexesByDateTime">Optional parsed-date lookup used when duplicate replacement is active.</param>
+        /// <remarks>
+        /// When a lookup is supplied, inserted gap ordinates participate in the same inline
+        /// duplicate handling as provider records. Without a lookup the method preserves the
+        /// historical append-only behavior.
+        /// </remarks>
+        private static void FillMissingDates(
+            TimeSeries timeSeries,
+            DateTime previousDate,
+            DateTime currentDate,
+            Dictionary<DateTime, int>? indexesByDateTime = null)
+        {
+            DateTime missingDate = previousDate.AddDays(1);
+            while (missingDate < currentDate)
+            {
+                if (indexesByDateTime == null)
+                {
+                    timeSeries.Add(new SeriesOrdinate<DateTime, double>(missingDate, double.NaN));
+                }
+                else
+                {
+                    AddOrReplaceByDateTime(timeSeries, indexesByDateTime, missingDate, double.NaN);
+                }
+
+                missingDate = missingDate.AddDays(1);
+            }
+        }
+
+        #endregion
+
+        #region USGS
+
+        /// <summary>
+        /// Create the URL string for USGS download.
+        /// </summary>
+        /// <param name="siteNumber">USGS site number.</param>
+        /// <param name="timeSeriesType">The time series type.</param>
+        /// <returns>The URL string.</returns>
+        private static string CreateURLForUSGSDownload(string siteNumber, TimeSeriesType timeSeriesType = TimeSeriesType.DailyDischarge)
+        {
+            // For annual max data (peak values)
+            if (timeSeriesType == TimeSeriesType.PeakDischarge || timeSeriesType == TimeSeriesType.PeakStage)
+            {
+                return $"https://nwis.waterdata.usgs.gov/nwis/peak?site_no={siteNumber}&agency_cd=USGS&format=rdb";
+            }
+
+            // For field measurements (modernized OGC API)
+            if (timeSeriesType == TimeSeriesType.MeasuredDischarge || timeSeriesType == TimeSeriesType.MeasuredStage)
+            {
+                string paramCode = timeSeriesType == TimeSeriesType.MeasuredDischarge ? "00060" : "00065";
+                return $"https://api.waterdata.usgs.gov/ogcapi/v0/collections/field-measurements/items?monitoring_location_id=USGS-{siteNumber}&parameter_code={paramCode}&limit=10000&f=json";
+            }
+
+            // Daily and instantaneous data (legacy NWIS API)
+            string dataTypePart = (timeSeriesType == TimeSeriesType.DailyDischarge || timeSeriesType == TimeSeriesType.DailyStage) ? "dv/?" : "iv/?";
+            string siteNumberPart = $"&sites={siteNumber}";
+            string parameterCodePart = $"&parameterCd={(timeSeriesType == TimeSeriesType.DailyDischarge || timeSeriesType == TimeSeriesType.InstantaneousDischarge ? "00060" : "00065")}";
+            string startDatePart = $"&startDT={(timeSeriesType == TimeSeriesType.DailyDischarge || timeSeriesType == TimeSeriesType.DailyStage ? "1800-01-01" : "1900-01-01")}";
+            string endDatePart = $"&endDT={DateTime.Now:yyyy-MM-dd}";
+            string statCodePart = (timeSeriesType == TimeSeriesType.DailyDischarge) ? "&statCd=00003" : "";
+            string siteStatusPart = "&siteStatus=all";
+            string formatPart = "&format=rdb";
+
+            return $"https://waterservices.usgs.gov/nwis/{dataTypePart}{siteNumberPart}{parameterCodePart}{startDatePart}{endDatePart}{statCodePart}{siteStatusPart}{formatPart}";
+        }
+
+        /// <summary>
+        /// Download time series data from USGS
+        /// </summary>
+        /// <param name="siteNumber">USGS site number.</param>
+        /// <param name="timeSeriesType">The time series type.</param>
+        /// <param name="cancellationToken">Token used to cancel the download.</param>
+        public static async Task<(TimeSeries TimeSeries, string RawText)> FromUSGS(string siteNumber, TimeSeriesType timeSeriesType = TimeSeriesType.DailyDischarge, CancellationToken cancellationToken = default)
+        {
+            
+
+            // Check site number
+            if (siteNumber.Length != 8)
+            {
+                throw new ArgumentException("The USGS site number must be 8-digits long", nameof(siteNumber));
+            }
+
+            // Check time series type
+            if (timeSeriesType == TimeSeriesType.DailyPrecipitation || timeSeriesType == TimeSeriesType.DailySnow)
+            {
+                throw new ArgumentException("The time series type cannot be daily precipitation or daily snow.", nameof(timeSeriesType));
+            }
+
+            var timeSeries = (timeSeriesType == TimeSeriesType.MeasuredDischarge || timeSeriesType == TimeSeriesType.MeasuredStage ||
+                              timeSeriesType == TimeSeriesType.InstantaneousDischarge || timeSeriesType == TimeSeriesType.InstantaneousStage)
+                ? new TimeSeries(TimeInterval.Irregular)
+                : new TimeSeries();
+            string textDownload = "";
+
+            // Get URL
+            string url = CreateURLForUSGSDownload(siteNumber, timeSeriesType);
+
+            // For daily or instantaneous data, use HttpClient with gzip support
+            {
+                if (timeSeriesType == TimeSeriesType.DailyDischarge ||
+                    timeSeriesType == TimeSeriesType.DailyStage ||
+                    timeSeriesType == TimeSeriesType.InstantaneousDischarge ||
+                    timeSeriesType == TimeSeriesType.InstantaneousStage)
+                {
+                    bool isInstantaneous = timeSeriesType == TimeSeriesType.InstantaneousDischarge ||
+                                           timeSeriesType == TimeSeriesType.InstantaneousStage;
+                    // Instantaneous RDB has an extra tz_cd column at index 3, pushing the value to index 4
+                    int valueIndex = isInstantaneous ? 4 : 3;
+                    bool previousSuppressCollectionChanged = timeSeries.SuppressCollectionChanged;
+                    var indexesByDateTime = new Dictionary<DateTime, int>();
+
+                    timeSeries.SuppressCollectionChanged = true;
+
+                    try
+                    {
+                        {
+                            var client = _decompressClient;
+
+                            TimeSpan requestTimeout = isInstantaneous ? InstantaneousProviderRequestTimeout : ProviderRequestTimeout;
+                            var (status, body) = await GetWithRetryAsync(
+                                client,
+                                url,
+                                requestTimeout: requestTimeout,
+                                cancellationToken: cancellationToken).ConfigureAwait(false);
+                            if ((int)status >= 400)
+                            {
+                                string snippet = body.Length > 500 ? body.Substring(0, 500) + "…" : body;
+                                throw new Exception(
+                                    $"Failed to retrieve USGS data. Status={(int)status} ({status}). Body={snippet}");
+                            }
+                            textDownload = body;
+
+                            using var reader = new StringReader(body);
+                            string? line;
+                            bool isHeader = true;
+
+                            while ((line = await reader.ReadLineAsync().ConfigureAwait(false)) != null)
+                            {
+                                // Skip header row
+                                if (isHeader)
+                                {
+                                    isHeader = false;
+                                    continue;
+                                }
+
+                                // Skip comment lines
+                                if (line.StartsWith("#"))
+                                {
+                                    if (line.Trim() == "#  No sites found matching all criteria")
+                                    {
+                                        throw new Exception("No data found matching all criteria.");
+                                    }
+                                    continue;
+                                }
+
+                                string[] fields = line.Split('\t');
+                                // Validate expected number of fields and record type
+                                if (fields.Length <= valueIndex || fields[0] != "USGS")
+                                    continue;
+
+                                // USGS instantaneous timestamps are local-time strings without an offset;
+                                // the tz_cd column at fields[3] reports the offset separately. We currently
+                                // parse these as naive DateTime (Kind=Unspecified). Future work: synthesize
+                                // a DateTimeOffset from fields[2] + fields[3] for full timezone fidelity.
+                                if (!DateTime.TryParse(fields[2], CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime index))
+                                {
+                                    continue;
+                                }
+
+                                // Fill in missing days only for daily series (not instantaneous)
+                                if (!isInstantaneous && timeSeries.Count > 0 && index != TimeSeries.AddTimeInterval(timeSeries.Last().Index, TimeInterval.OneDay))
+                                {
+                                    while (timeSeries.Last().Index < TimeSeries.SubtractTimeInterval(index, TimeInterval.OneDay))
+                                    {
+                                        DateTime missingIndex = TimeSeries.AddTimeInterval(timeSeries.Last().Index, TimeInterval.OneDay);
+                                        AddOrReplaceByDateTime(timeSeries, indexesByDateTime, missingIndex, double.NaN);
+                                    }
+                                }
+
+                                // Get and parse value
+                                string valueStr = fields[valueIndex];
+                                double value = string.IsNullOrWhiteSpace(valueStr) ? double.NaN
+                                    : double.TryParse(valueStr, NumberStyles.Float, CultureInfo.InvariantCulture, out double tempVal) ? tempVal : double.NaN;
+                                AddOrReplaceByDateTime(timeSeries, indexesByDateTime, index, value);
+                            }
+                        }
+                    }
+                    finally
+                    {
+                        timeSeries.SuppressCollectionChanged = previousSuppressCollectionChanged;
+                    }
+                }
+                // For peak data (annual max values)
+                else if (timeSeriesType == TimeSeriesType.PeakDischarge || timeSeriesType == TimeSeriesType.PeakStage)
+                {
+                    {
+                        var (peakStatus, peakBody) = await GetWithRetryAsync(_defaultClient, url, cancellationToken: cancellationToken).ConfigureAwait(false);
+                        if ((int)peakStatus >= 400)
+                        {
+                            string snippet = peakBody.Length > 500 ? peakBody.Substring(0, 500) + "…" : peakBody;
+                            throw new Exception(
+                                $"Failed to retrieve USGS peak data. Status={(int)peakStatus} ({peakStatus}). Body={snippet}");
+                        }
+                        textDownload = peakBody;
+
+                        int idx = timeSeriesType == TimeSeriesType.PeakDischarge ? 4 : 6;
+                        var indexesByDateTime = new Dictionary<DateTime, int>();
+                        var lines = textDownload.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
+                        foreach (string line in lines)
+                        {
+                            var segments = line.Split('\t');
+                            // Bounds-check against the actual column we'll read (peak_va at 4 for
+                            // discharge, gage_ht at 6 for stage), not a fixed minimum. Old guard
+                            // was Length >= 5 which would IndexOutOfRange on a 5-column historical
+                            // row when reading stage at index 6.
+                            if (segments.Length > idx && segments[0] == "USGS")
+                            {
+                                // Get date
+                                DateTime index = DateTime.Now;
+                                int year = 2000;
+                                int month = 1;
+                                int day = 1;
+                                var dateString = segments[2].Split('-');
+                                DateTime.TryParse(segments[2], CultureInfo.InvariantCulture, DateTimeStyles.None, out index);
+
+                                if (index == DateTime.MinValue)
+                                {
+                                    // The date parsing failed, so try to manually parse it
+                                    if (dateString[1] == "00" && dateString[2] != "00")
+                                    {
+                                        int.TryParse(dateString[0], NumberStyles.Integer, CultureInfo.InvariantCulture, out year);
+                                        int.TryParse(dateString[2], NumberStyles.Integer, CultureInfo.InvariantCulture, out day);
+                                        index = new DateTime(year, month, day, 0, 0, 0);
+                                    }
+                                    else if (dateString[1] != "00" && dateString[2] == "00")
+                                    {
+                                        int.TryParse(dateString[0], NumberStyles.Integer, CultureInfo.InvariantCulture, out year);
+                                        int.TryParse(dateString[1], NumberStyles.Integer, CultureInfo.InvariantCulture, out month);
+                                        index = new DateTime(year, month, day, 0, 0, 0);
+                                    }
+                                    else if (dateString[1] == "00" && dateString[2] == "00")
+                                    {
+                                        int.TryParse(dateString[0], NumberStyles.Integer, CultureInfo.InvariantCulture, out year);
+                                        index = new DateTime(year, month, day, 0, 0, 0);
+                                    }
+                                }
+                                // Get value
+                                double value = 0;
+                                if (!string.IsNullOrWhiteSpace(segments[idx]))
+                                {
+                                    double.TryParse(segments[idx], NumberStyles.Float, CultureInfo.InvariantCulture, out value);
+                                    AddOrReplaceByDateTime(timeSeries, indexesByDateTime, index, value);
+                                }
+                            }
+                        }
+                    }
+                }
+                // For field measurements (modernized OGC API)
+                else if (timeSeriesType == TimeSeriesType.MeasuredDischarge || timeSeriesType == TimeSeriesType.MeasuredStage)
+                {
+                    {
+                        var rawText = new System.Text.StringBuilder();
+                        await ParseUSGSOgcApiPages(_decompressClient, url, timeSeries, rawText, cancellationToken).ConfigureAwait(false);
+                        textDownload = rawText.ToString();
+                    }
+
+                    timeSeries.SortByTime();
+                }
+            }
+
+            return (timeSeries, textDownload);
+        }
+
+        /// <summary>
+        /// Parse paginated USGS OGC API responses (GeoJSON FeatureCollection).
+        /// Follows cursor-based pagination via links[rel=next].
+        /// </summary>
+        /// <param name="client">HttpClient to use for requests.</param>
+        /// <param name="initialUrl">The initial API URL.</param>
+        /// <param name="timeSeries">TimeSeries to populate with parsed data.</param>
+        /// <param name="rawText">Optional StringBuilder to accumulate raw JSON responses.</param>
+        /// <param name="cancellationToken">Token used to cancel pagination requests.</param>
+        private static async Task ParseUSGSOgcApiPages(HttpClient client, string initialUrl, TimeSeries timeSeries, System.Text.StringBuilder? rawText = null, CancellationToken cancellationToken = default)
+        {
+            string? nextUrl = initialUrl;
+            var indexesByDateTime = new Dictionary<DateTime, int>();
+
+            while (nextUrl != null)
+            {
+                var (status, json) = await GetWithRetryAsync(client, nextUrl, cancellationToken: cancellationToken).ConfigureAwait(false);
+                if ((int)status >= 400)
+                {
+                    string snippet = json.Length > 500 ? json.Substring(0, 500) + "…" : json;
+                    throw new Exception(
+                        $"USGS OGC API error. Status={(int)status} ({status}). Body={snippet}");
+                }
+
+                if (rawText != null)
+                {
+                    if (rawText.Length > 0) rawText.AppendLine();
+                    rawText.Append(json);
+                }
+
+                var doc = System.Text.Json.JsonDocument.Parse(json);
+                var root = doc.RootElement;
+
+                if (root.TryGetProperty("features", out var features))
+                {
+                    foreach (var feature in features.EnumerateArray())
+                    {
+                        var props = feature.GetProperty("properties");
+                        string? timeStr = props.GetProperty("time").GetString();
+                        if (!DateTime.TryParse(timeStr, CultureInfo.InvariantCulture,
+                            DateTimeStyles.AdjustToUniversal, out DateTime dt))
+                            continue;
+
+                        string? valueStr = props.GetProperty("value").GetString();
+                        if (string.IsNullOrWhiteSpace(valueStr) ||
+                            !double.TryParse(valueStr, NumberStyles.Float,
+                            CultureInfo.InvariantCulture, out double val))
+                            continue;
+
+                        AddOrReplaceByDateTime(timeSeries, indexesByDateTime, dt, val);
+                    }
+                }
+
+                // Follow cursor-based pagination
+                nextUrl = null;
+                if (root.TryGetProperty("links", out var links))
+                {
+                    foreach (var link in links.EnumerateArray())
+                    {
+                        if (link.GetProperty("rel").GetString() is "next")
+                        {
+                            var candidateUrl = link.GetProperty("href").GetString();
+                            // Validate the URL domain to prevent open redirect
+                            if (candidateUrl != null && Uri.TryCreate(candidateUrl, UriKind.Absolute, out var uri) &&
+                                uri.Host.EndsWith(".usgs.gov", StringComparison.OrdinalIgnoreCase))
+                            {
+                                nextUrl = candidateUrl;
+                            }
+                            // Small delay between pages to avoid rate limiting
+                            await System.Threading.Tasks.Task.Delay(200, cancellationToken);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        #endregion
+
+        #region Canadian Hydrometric Monitoring Network (CHMN)
+
+        /// <summary>
+        /// Download time series data from the Water Survey of Canada
+        /// (Environment and Climate Change Canada Hydrometric Monitoring Network).
+        /// </summary>
+        /// <param name="stationNumber">WSC 7-character station id, e.g., "08LG010".</param>
+        /// <param name="timeSeriesType">
+        ///     DailyDischarge / DailyStage → daily_data endpoint (parameters[]=flow/level).
+        ///     InstantaneousDischarge / InstantaneousStage → real_time_data endpoint (parameters[]=46/47).
+        ///     PeakDischarge / PeakStage → peak_data endpoint (parameters[]=flow/level).
+        /// </param>
+        /// <param name="dischargeUnit">Desired discharge unit for discharge types.</param>
+        /// <param name="heightUnit">Desired stage unit for stage types.</param>
+        /// <param name="startDate">
+        ///     Optional inclusive start date. If null, defaults vary by type:
+        ///     Daily → 1800-01-01, Instantaneous → 18 months ago, Peak → year 1800.
+        /// </param>
+        /// <param name="endDate">
+        ///     Optional inclusive end date. If null, defaults to DateTime.Today (or Now for instantaneous).
+        /// </param>
+        /// <param name="cancellationToken">Token used to cancel the download.</param>
+        /// <returns>TimeSeries of values.</returns>
+        public static async Task<TimeSeries> FromCHMN(
+            string stationNumber,
+            TimeSeriesType timeSeriesType = TimeSeriesType.DailyDischarge,
+            DischargeUnit dischargeUnit = DischargeUnit.CubicMetersPerSecond,
+            HeightUnit heightUnit = HeightUnit.Meters,
+            DateTime? startDate = null,
+            DateTime? endDate = null,
+            CancellationToken cancellationToken = default)
+        {
+            // Basic validation (WSC station numbers are 7 chars including letters)
+            if (string.IsNullOrWhiteSpace(stationNumber) || stationNumber.Length != 7)
+                throw new ArgumentException("The WSC station number must be 7 characters, e.g., 08LG010.", nameof(stationNumber));
+
+            // Supported series types
+            if (timeSeriesType == TimeSeriesType.DailyPrecipitation || timeSeriesType == TimeSeriesType.DailySnow ||
+                timeSeriesType == TimeSeriesType.MeasuredDischarge || timeSeriesType == TimeSeriesType.MeasuredStage)
+                throw new ArgumentException("Canadian API supports Daily, Instantaneous, and Peak discharge/stage types. Field measurements are not available through the API.", nameof(timeSeriesType));
+
+            // Determine if this is a discharge or stage request
+            bool isDischarge = timeSeriesType == TimeSeriesType.DailyDischarge ||
+                               timeSeriesType == TimeSeriesType.InstantaneousDischarge ||
+                               timeSeriesType == TimeSeriesType.PeakDischarge;
+
+            // Build the URL based on the time series type
+            string url;
+            TimeInterval interval;
+
+            if (timeSeriesType == TimeSeriesType.DailyDischarge || timeSeriesType == TimeSeriesType.DailyStage)
+            {
+                // Daily data endpoint
+                string parameter = isDischarge ? "flow" : "level";
+                DateTime sd = startDate ?? new DateTime(1800, 1, 1);
+                DateTime ed = endDate ?? DateTime.Today;
+                url = "https://wateroffice.ec.gc.ca/services/daily_data/csv/inline" +
+                    $"?stations[]={Uri.EscapeDataString(stationNumber)}" +
+                    $"&parameters[]={parameter}" +
+                    $"&start_date={sd:yyyy-MM-dd}" +
+                    $"&end_date={ed:yyyy-MM-dd}";
+                interval = TimeInterval.OneDay;
+            }
+            else if (timeSeriesType == TimeSeriesType.InstantaneousDischarge || timeSeriesType == TimeSeriesType.InstantaneousStage)
+            {
+                // Real-time data endpoint (parameter codes: 46=level, 47=discharge)
+                string paramCode = isDischarge ? "47" : "46";
+                DateTime sd = startDate ?? DateTime.UtcNow.AddMonths(-18);
+                DateTime ed = endDate ?? DateTime.UtcNow;
+                // Use '+' as the URL-safe space separator instead of a literal space
+                // in the query string. ECCC accepts the literal space, but some
+                // intermediate proxies and CDNs reject it.
+                url = "https://wateroffice.ec.gc.ca/services/real_time_data/csv/inline" +
+                    $"?stations[]={Uri.EscapeDataString(stationNumber)}" +
+                    $"&parameters[]={paramCode}" +
+                    $"&start_date={sd:yyyy-MM-dd}+{sd:HH:mm:ss}" +
+                    $"&end_date={ed:yyyy-MM-dd}+{ed:HH:mm:ss}";
+                interval = TimeInterval.FiveMinute;
+            }
+            else // PeakDischarge or PeakStage
+            {
+                // Peak data endpoint
+                string parameter = isDischarge ? "flow" : "level";
+                int startYear = startDate?.Year ?? 1800;
+                int endYear = endDate?.Year ?? DateTime.Today.Year;
+                url = "https://wateroffice.ec.gc.ca/services/peak_data/csv/inline" +
+                    $"?stations[]={Uri.EscapeDataString(stationNumber)}" +
+                    $"&parameters[]={parameter}" +
+                    $"&start_year={startYear}" +
+                    $"&end_year={endYear}";
+                interval = TimeInterval.Irregular;
+            }
+
+            var ts = new TimeSeries(interval);
+            var indexesByDateTime = new Dictionary<DateTime, int>();
+
+            {
+                var client = _decompressClient;
+
+                // The endpoint returns CSV (automatically decompressed by HttpClientHandler).
+                TimeSpan requestTimeout = timeSeriesType == TimeSeriesType.InstantaneousDischarge ||
+                                          timeSeriesType == TimeSeriesType.InstantaneousStage
+                    ? InstantaneousProviderRequestTimeout
+                    : ProviderRequestTimeout;
+                var (status, csv) = await GetWithRetryAsync(
+                    client,
+                    url,
+                    requestTimeout: requestTimeout,
+                    cancellationToken: cancellationToken);
+                if ((int)status >= 400)
+                {
+                    string snippet = csv.Length > 500 ? csv.Substring(0, 500) + "…" : csv;
+                    throw new Exception(
+                        $"Failed to retrieve CHMN data. Status={(int)status} ({status}). Body={snippet}");
+                }
+
+                // Parse the CSV response based on endpoint type
+                bool previousSuppressCollectionChanged = ts.SuppressCollectionChanged;
+                ts.SuppressCollectionChanged = true;
+                try
+                {
+                    if (timeSeriesType == TimeSeriesType.PeakDischarge || timeSeriesType == TimeSeriesType.PeakStage)
+                    {
+                        // Peak data CSV format:
+                        // ID,Parameter/Paramètre,Date,Timezone/Fuseau horaire,Type/Catégorie,Value/Valeur,Symbol/Symbole
+                        ParseCHMNPeakCsv(csv, stationNumber, isDischarge, dischargeUnit, heightUnit, ts, indexesByDateTime);
+                    }
+                    else
+                    {
+                        // Daily and real-time CSV share the same column layout:
+                        // ID,Date,Parameter/Paramètre,Value/Valeur,...
+                        ParseCHMNDailyCsv(csv, stationNumber, timeSeriesType, isDischarge, dischargeUnit, heightUnit, ts, indexesByDateTime);
+                    }
+                }
+                finally
+                {
+                    ts.SuppressCollectionChanged = previousSuppressCollectionChanged;
+                }
+            }
+
+            return ts;
+        }
+
+        /// <summary>
+        /// Parse CHMN daily or real-time CSV data.
+        /// </summary>
+        /// <param name="csv">The CSV response body returned by the CHMN endpoint.</param>
+        /// <param name="stationNumber">The CHMN station identifier to retain while parsing.</param>
+        /// <param name="timeSeriesType">The requested time series type.</param>
+        /// <param name="isDischarge">A value indicating whether discharge values are being parsed.</param>
+        /// <param name="dischargeUnit">The discharge unit requested by the caller.</param>
+        /// <param name="heightUnit">The height unit requested by the caller.</param>
+        /// <param name="ts">The time series being populated.</param>
+        /// <param name="indexesByDateTime">Lookup used to replace duplicate dates inline while parsing.</param>
+        /// <remarks>
+        /// CSV format: ID,Date,Parameter/Paramètre,Value/Valeur,... (additional columns vary by endpoint)
+        /// </remarks>
+        private static void ParseCHMNDailyCsv(string csv, string stationNumber, TimeSeriesType timeSeriesType,
+            bool isDischarge, DischargeUnit dischargeUnit, HeightUnit heightUnit, TimeSeries ts,
+            Dictionary<DateTime, int> indexesByDateTime)
+        {
+            bool isDailyType = timeSeriesType == TimeSeriesType.DailyDischarge || timeSeriesType == TimeSeriesType.DailyStage;
+
+            using (var sr = new StringReader(csv))
+            {
+                string? line;
+                int idCol = 0, dateCol = 1, paramCol = 2, valueCol = 3;
+                bool headerParsed = false;
+                DateTime? prevDate = null;
+
+                while ((line = sr.ReadLine()) != null)
+                {
+                    if (string.IsNullOrWhiteSpace(line)) continue;
+
+                    // Detect header line
+                    if (!headerParsed)
+                    {
+                        if (line.Contains("ID") && line.Contains("Date") && line.Contains("Value"))
+                        {
+                            headerParsed = true;
+                        }
+                        continue;
+                    }
+
+                    // Parse data rows
+                    string[] parts = line.Split(',');
+                    if (parts.Length <= Math.Max(Math.Max(idCol, dateCol), valueCol))
+                        continue;
+
+                    // Check station match
+                    if (!parts[idCol].Trim().Equals(stationNumber, StringComparison.OrdinalIgnoreCase))
+                        continue;
+
+                    // Check parameter match for daily data (parameter column contains text like "discharge/débit" or "level")
+                    if (isDailyType && paramCol >= 0 && parts.Length > paramCol)
+                    {
+                        string paramValue = parts[paramCol].Trim().ToLowerInvariant();
+                        bool isFlowParam = paramValue.Contains("discharge") || paramValue.Contains("débit") || paramValue.Contains("flow");
+                        bool isLevelParam = paramValue.Contains("level") || paramValue.Contains("stage") || paramValue.Contains("niveau");
+
+                        if (isDischarge && !isFlowParam) continue;
+                        if (!isDischarge && !isLevelParam) continue;
+                    }
+
+                    // Real-time CHMN timestamps include explicit Pacific/Eastern offsets,
+                    // e.g. "2024-11-01T08:00:00-08:00". DateTime.TryParse with
+                    // DateTimeStyles.None converts these to local time, shifting them on
+                    // any non-Canadian-Pacific machine. Use DateTimeOffset to preserve
+                    // the offset, then take the wall-clock value the gauge reported.
+                    if (!DateTimeOffset.TryParse(parts[dateCol].Trim(), CultureInfo.InvariantCulture,
+                            DateTimeStyles.None, out DateTimeOffset dto))
+                        continue;
+                    DateTime date = isDailyType ? dto.Date : dto.DateTime;
+
+                    // Parse value
+                    double val = double.NaN;
+                    string valueStr = parts[valueCol].Trim();
+
+                    if (!string.IsNullOrWhiteSpace(valueStr))
+                    {
+                        if (double.TryParse(valueStr, NumberStyles.Float, CultureInfo.InvariantCulture, out double raw))
+                        {
+                            val = ConvertCHMNValue(raw, isDischarge, dischargeUnit, heightUnit);
+                        }
+                    }
+
+                    // Fill gaps with NaN for daily series only
+                    if (isDailyType && prevDate.HasValue && (date - prevDate.Value).Days > 1)
+                        FillMissingDates(ts, prevDate.Value, date, indexesByDateTime);
+
+                    AddOrReplaceByDateTime(ts, indexesByDateTime, date, val);
+                    prevDate = date;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Parse CHMN peak data CSV.
+        /// </summary>
+        /// <param name="csv">The CSV response body returned by the CHMN endpoint.</param>
+        /// <param name="stationNumber">The CHMN station identifier to retain while parsing.</param>
+        /// <param name="isDischarge">A value indicating whether discharge values are being parsed.</param>
+        /// <param name="dischargeUnit">The discharge unit requested by the caller.</param>
+        /// <param name="heightUnit">The height unit requested by the caller.</param>
+        /// <param name="ts">The time series being populated.</param>
+        /// <param name="indexesByDateTime">Lookup used to replace duplicate dates inline while parsing.</param>
+        /// <remarks>
+        /// CSV format: ID,Parameter/Paramètre,Date,Timezone/Fuseau horaire,Type/Catégorie,Value/Valeur,Symbol/Symbole.
+        /// Only "maximum" rows are included (minimums are skipped).
+        /// </remarks>
+        private static void ParseCHMNPeakCsv(string csv, string stationNumber, bool isDischarge,
+            DischargeUnit dischargeUnit, HeightUnit heightUnit, TimeSeries ts,
+            Dictionary<DateTime, int> indexesByDateTime)
+        {
+            using (var sr = new StringReader(csv))
+            {
+                string? line;
+                bool headerParsed = false;
+
+                // Peak CSV columns: ID(0), Parameter(1), Date(2), Timezone(3), Type(4), Value(5), Symbol(6)
+                int idCol = 0, dateCol = 2, typeCol = 4, valueCol = 5;
+
+                while ((line = sr.ReadLine()) != null)
+                {
+                    if (string.IsNullOrWhiteSpace(line)) continue;
+
+                    // Detect header line
+                    if (!headerParsed)
+                    {
+                        if (line.Contains("ID") && line.Contains("Date") && line.Contains("Value"))
+                        {
+                            headerParsed = true;
+                        }
+                        continue;
+                    }
+
+                    string[] parts = line.Split(',');
+                    if (parts.Length <= valueCol) continue;
+
+                    // Check station match
+                    if (!parts[idCol].Trim().Equals(stationNumber, StringComparison.OrdinalIgnoreCase))
+                        continue;
+
+                    // Only include maximum values (skip minimums)
+                    string typeValue = parts[typeCol].Trim().ToLowerInvariant();
+                    if (typeValue != "maximum") continue;
+
+                    // Parse date
+                    if (!DateTime.TryParse(parts[dateCol].Trim(), CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime date))
+                        continue;
+
+                    // Parse value
+                    string valueStr = parts[valueCol].Trim();
+                    if (string.IsNullOrWhiteSpace(valueStr)) continue;
+                    if (!double.TryParse(valueStr, NumberStyles.Float, CultureInfo.InvariantCulture, out double raw))
+                        continue;
+
+                    double val = ConvertCHMNValue(raw, isDischarge, dischargeUnit, heightUnit);
+                    AddOrReplaceByDateTime(ts, indexesByDateTime, date, val);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Convert a CHMN raw value to the desired unit.
+        /// </summary>
+        /// <remarks>
+        /// WSC native units: discharge in m³/s, stage in meters.
+        /// </remarks>
+        private static double ConvertCHMNValue(double raw, bool isDischarge, DischargeUnit dischargeUnit, HeightUnit heightUnit)
+        {
+            if (isDischarge)
+            {
+                return dischargeUnit == DischargeUnit.CubicFeetPerSecond
+                    ? raw * 35.3146667   // cms → cfs
+                    : raw;               // cms
+            }
+            else
+            {
+                return heightUnit == HeightUnit.Feet
+                    ? raw * 3.280839895  // m → ft
+                    : raw;               // m
+            }
+        }
+
+        #endregion
+
+        #region Australian Bureau of Meteorology (BOM)
+
+        /// <summary>
+        /// Download time series data from the Australian Bureau of Meteorology (BOM)
+        /// via the KiWIS API.
+        /// </summary>
+        /// <param name="stationNumber">BOM station number (e.g., "410730").</param>
+        /// <param name="timeSeriesType">The time series type.</param>
+        /// <param name="dischargeUnit">Desired discharge unit for discharge types.</param>
+        /// <param name="heightUnit">Desired stage unit for stage types.</param>
+        /// <param name="depthUnit">Desired depth unit for precipitation types.</param>
+        /// <param name="startDate">Optional start date. If null, attempts to retrieve full period of record.</param>
+        /// <param name="endDate">Optional end date. If null, defaults to today.</param>
+        /// <param name="cancellationToken">Token used to cancel the download.</param>
+        /// <returns>TimeSeries of values.</returns>
+        public static async Task<TimeSeries> FromABOM(
+            string stationNumber,
+            TimeSeriesType timeSeriesType = TimeSeriesType.DailyDischarge,
+            DischargeUnit dischargeUnit = DischargeUnit.CubicMetersPerSecond,
+            HeightUnit heightUnit = HeightUnit.Meters,
+            DepthUnit depthUnit = DepthUnit.Millimeters,
+            DateTime? startDate = null,
+            DateTime? endDate = null,
+            CancellationToken cancellationToken = default)
+        {
+            
+
+            // Validate station number (BOM station numbers are typically 6 digits)
+            if (string.IsNullOrWhiteSpace(stationNumber) || stationNumber.Length < 6)
+                throw new ArgumentException("BOM station number must be at least 6 digits.", nameof(stationNumber));
+
+            // Validate time series type - BOM supports daily/instantaneous discharge and stage, plus daily precipitation
+            var supportedTypes = new[] {
+                TimeSeriesType.DailyDischarge, TimeSeriesType.DailyStage,
+                TimeSeriesType.InstantaneousDischarge, TimeSeriesType.InstantaneousStage,
+                TimeSeriesType.DailyPrecipitation
+            };
+            if (!supportedTypes.Contains(timeSeriesType))
+                throw new ArgumentException(
+                    "BOM API supports DailyDischarge, DailyStage, InstantaneousDischarge, InstantaneousStage, and DailyPrecipitation.",
+                    nameof(timeSeriesType));
+
+            // Set default dates
+            DateTime sd = startDate ?? new DateTime(1800, 1, 1);
+            DateTime ed = endDate ?? DateTime.Today;
+
+            // Determine parameter type and ts_name search pattern based on requested series
+            bool isDischarge = timeSeriesType == TimeSeriesType.DailyDischarge || timeSeriesType == TimeSeriesType.InstantaneousDischarge;
+            bool isStage = timeSeriesType == TimeSeriesType.DailyStage || timeSeriesType == TimeSeriesType.InstantaneousStage;
+            bool isPrecip = timeSeriesType == TimeSeriesType.DailyPrecipitation;
+            bool isInstantaneous = timeSeriesType == TimeSeriesType.InstantaneousDischarge || timeSeriesType == TimeSeriesType.InstantaneousStage;
+
+            string parameterType;
+            if (isDischarge) parameterType = "Water Course Discharge";
+            else if (isStage) parameterType = "Water Course Level";
+            else parameterType = "Rainfall";
+
+            // Step 1: Get timeseries list to find the appropriate ts_id
+            string tsListUrl = "https://www.bom.gov.au/waterdata/services" +
+                $"?service=kisters&type=QueryServices&datasource=0&format=json" +
+                $"&request=getTimeseriesList" +
+                $"&station_no={Uri.EscapeDataString(stationNumber)}" +
+                $"&parametertype_name={Uri.EscapeDataString(parameterType)}";
+
+            string? tsId = null;
+
+            // The shared BOM client carries the browser-like headers the BOM security
+            // appliance expects and reuses pooled connections across both KiWIS requests.
+            {
+                var client = _bomClient;
+
+                HttpStatusCode listStatus;
+                string listResponse;
+                try
+                {
+                    (listStatus, listResponse) = await GetWithRetryAsync(client, tsListUrl, cancellationToken: cancellationToken);
+                }
+                catch (HttpRequestException ex)
+                {
+                    throw new Exception($"Failed to connect to BOM API: {ex.Message}", ex);
+                }
+                catch (TaskCanceledException ex)
+                {
+                    throw new Exception("Request to BOM API timed out.", ex);
+                }
+
+                // Surface the response body in the exception so transient upstream failures
+                // (KiWIS 5xx with a JSON error payload) are self-documenting.
+                if ((int)listStatus >= 400)
+                {
+                    string snippet = listResponse.Length > 500 ? listResponse.Substring(0, 500) + "…" : listResponse;
+                    throw new Exception(
+                        $"Failed to retrieve time series list from BOM API. Status={(int)listStatus} ({listStatus}). Body={snippet}");
+                }
+
+                // Check for error response from KiWIS
+                if (listResponse.Contains("\"type\":\"error\"") || listResponse.StartsWith("{\"type\":\"error\""))
+                {
+                    throw new Exception($"BOM API returned an error. Response: {listResponse}");
+                }
+
+                // Parse JSON response to find appropriate timeseries
+                // BOM returns array where first element is column headers, subsequent elements are data rows
+                System.Text.Json.JsonDocument listData;
+                try
+                {
+                    listData = System.Text.Json.JsonDocument.Parse(listResponse);
+                }
+                catch (System.Text.Json.JsonException ex)
+                {
+                    throw new Exception($"Failed to parse BOM API response as JSON. Response: {listResponse.Substring(0, Math.Min(500, listResponse.Length))}", ex);
+                }
+
+                var root = listData.RootElement;
+
+                if (root.ValueKind != System.Text.Json.JsonValueKind.Array || root.GetArrayLength() < 2)
+                    throw new Exception($"No time series found for station {stationNumber} with parameter {parameterType}. " +
+                        $"API returned {root.GetArrayLength()} items.");
+
+                // Find ts_id column index from header row
+                int tsIdIndex = -1;
+                int tsNameIndex = -1;
+                var headers = root[0];
+
+                if (headers.ValueKind != System.Text.Json.JsonValueKind.Array)
+                    throw new Exception("Unexpected response format: first element is not an array of headers");
+
+                for (int i = 0; i < headers.GetArrayLength(); i++)
+                {
+                    string? header = headers[i].GetString();
+                    if (header == "ts_id") tsIdIndex = i;
+                    if (header == "ts_name") tsNameIndex = i;
+                }
+
+                if (tsIdIndex == -1)
+                    throw new Exception("Could not find ts_id in response");
+
+                // Determine the ts_name pattern to search for.
+                // Prioritize DMQaQc.Merged (quality-controlled merged data).
+                string tsNamePattern;
+                if (isInstantaneous)
+                    tsNamePattern = "AsStored";
+                else if (isPrecip)
+                    tsNamePattern = "DailyTotal";
+                else
+                    tsNamePattern = "DailyMean";
+
+                // Two-pass search: first look for DMQaQc.Merged match, then any match
+                for (int pass = 0; pass < 2 && tsId == null; pass++)
+                {
+                    for (int i = 1; i < root.GetArrayLength(); i++)
+                    {
+                        var row = root[i];
+                        string tsName = tsNameIndex >= 0 ? row[tsNameIndex].GetString() ?? "" : "";
+
+                        if (!tsName.Contains(tsNamePattern)) continue;
+                        if (pass == 0 && !tsName.StartsWith("DMQaQc.Merged")) continue;
+
+                        tsId = row[tsIdIndex].GetString();
+                        break;
+                    }
+                }
+
+                // No silent fallback: if the requested cadence isn't present we'd rather
+                // throw than quietly hand back hourly data when the caller asked for daily.
+                if (tsId == null)
+                {
+                    var available = new List<string>();
+                    for (int i = 1; i < root.GetArrayLength() && available.Count < 10; i++)
+                        if (tsNameIndex >= 0)
+                            available.Add(root[i][tsNameIndex].GetString() ?? "");
+                    throw new Exception(
+                        $"No suitable time series found for station {stationNumber} matching '{tsNamePattern}'. " +
+                        $"Available ts_name values: [{string.Join(", ", available)}]");
+                }
+            }
+
+            // Step 2: Get time series values using the ts_id
+            string valuesUrl = "https://www.bom.gov.au/waterdata/services" +
+                $"?service=kisters&type=QueryServices&datasource=0&format=json" +
+                $"&request=getTimeseriesValues" +
+                $"&ts_id={tsId}" +
+                $"&from={sd:yyyy-MM-dd}" +
+                $"&to={ed:yyyy-MM-dd}";
+
+            var ts = isInstantaneous ? new TimeSeries(TimeInterval.Irregular) : new TimeSeries(TimeInterval.OneDay);
+            DateTime? prevDate = null;
+            var indexesByDateTime = new Dictionary<DateTime, int>();
+
+            // Reuse the shared BOM client so the values request rides the connection the
+            // station lookup already established.
+            {
+                var client = _bomClient;
+
+                HttpStatusCode valuesStatus;
+                string valuesResponse;
+                try
+                {
+                    (valuesStatus, valuesResponse) = await GetWithRetryAsync(
+                        client,
+                        valuesUrl,
+                        requestTimeout: isInstantaneous ? InstantaneousProviderRequestTimeout : ProviderRequestTimeout,
+                        cancellationToken: cancellationToken);
+                }
+                catch (HttpRequestException ex)
+                {
+                    throw new Exception($"Failed to retrieve time series values from BOM API: {ex.Message}", ex);
+                }
+                catch (TaskCanceledException ex)
+                {
+                    throw new Exception("Request to BOM API timed out while retrieving values.", ex);
+                }
+
+                // Surface the response body in the exception so transient upstream failures
+                // (e.g. KiWIS returning 500 with `{"code":"DatasourceError","message":"Error connecting to WDP."}`)
+                // are self-documenting after the retry helper has exhausted its attempts.
+                if ((int)valuesStatus >= 400)
+                {
+                    string snippet = valuesResponse.Length > 500 ? valuesResponse.Substring(0, 500) + "…" : valuesResponse;
+                    throw new Exception(
+                        $"Failed to retrieve time series values from BOM API. Status={(int)valuesStatus} ({valuesStatus}). Body={snippet}");
+                }
+
+                // Check for error response
+                if (valuesResponse.Contains("\"type\":\"error\"") || valuesResponse.StartsWith("{\"type\":\"error\""))
+                {
+                    throw new Exception($"BOM API returned an error for time series values. Response: {valuesResponse}");
+                }
+
+                var valuesData = System.Text.Json.JsonDocument.Parse(valuesResponse);
+                var root = valuesData.RootElement;
+
+                // Response structure: array with single object containing 'data' array
+                if (root.GetArrayLength() == 0)
+                    throw new Exception("No data returned from BOM");
+
+                var dataObj = root[0];
+                if (!dataObj.TryGetProperty("data", out var dataArray))
+                    throw new Exception("Invalid response format from BOM");
+
+                bool previousSuppressCollectionChanged = ts.SuppressCollectionChanged;
+                ts.SuppressCollectionChanged = true;
+                try
+                {
+                    // Parse the data array - each element is [timestamp, value, ...]
+                    foreach (var point in dataArray.EnumerateArray())
+                    {
+                        if (point.GetArrayLength() < 2) continue;
+
+                        // BOM returns ISO-8601 with explicit offset, e.g. "2021-11-01T00:00:00.000+10:00".
+                        // DateTime.TryParse converts these to LOCAL time, which on a non-AEST machine
+                        // shifts daily series labels by a calendar day. DateTimeOffset preserves the
+                        // offset; .Date gives the wall-clock date BOM intended.
+                        string? timestampStr = point[0].GetString();
+                        if (!DateTimeOffset.TryParse(timestampStr, CultureInfo.InvariantCulture,
+                                DateTimeStyles.None, out DateTimeOffset dto))
+                            continue;
+                        DateTime date = isInstantaneous ? dto.DateTime : dto.Date;
+
+                        // Parse value
+                        double val = double.NaN;
+                        var valueElement = point[1];
+
+                        if (valueElement.ValueKind == System.Text.Json.JsonValueKind.Number)
+                        {
+                            double raw = valueElement.GetDouble();
+
+                            // Apply unit conversion
+                            if (isDischarge)
+                            {
+                                // BOM returns discharge in m³/s
+                                val = dischargeUnit == DischargeUnit.CubicFeetPerSecond
+                                    ? raw * 35.3146667
+                                    : raw;
+                            }
+                            else if (isStage)
+                            {
+                                // BOM returns stage in meters
+                                val = heightUnit == HeightUnit.Feet
+                                    ? raw * 3.280839895
+                                    : raw;
+                            }
+                            else if (isPrecip)
+                            {
+                                // BOM returns rainfall in millimeters
+                                val = depthUnit switch
+                                {
+                                    DepthUnit.Millimeters => raw,
+                                    DepthUnit.Centimeters => raw / 10.0,
+                                    DepthUnit.Inches => raw / 25.4,
+                                    _ => raw
+                                };
+                            }
+                        }
+
+                        // Fill gaps with NaN for daily series only
+                        if (!isInstantaneous && prevDate.HasValue && (date - prevDate.Value).Days > 1)
+                            FillMissingDates(ts, prevDate.Value, date, indexesByDateTime);
+
+                        AddOrReplaceByDateTime(ts, indexesByDateTime, date, val);
+                        prevDate = date;
+                    }
+                }
+                finally
+                {
+                    ts.SuppressCollectionChanged = previousSuppressCollectionChanged;
+                }
+            }
+
+            return ts;
+        }
+
+        #endregion
+
+    }
+}

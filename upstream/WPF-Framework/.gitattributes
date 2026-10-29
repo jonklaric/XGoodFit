@@ -1,0 +1,29 @@
+# Default: normalize line endings to CRLF on checkout for this Windows-only repo.
+* text=auto eol=crlf
+
+# Shell scripts must use LF even on Windows.
+*.sh        text eol=lf
+
+# Binary files — never touch.
+*.png       binary
+*.jpg       binary
+*.jpeg      binary
+*.gif       binary
+*.ico       binary
+*.cur       binary
+*.dll       binary
+*.exe       binary
+*.pdb       binary
+*.snk       binary
+*.zip       binary
+*.pdf       binary
+*.ttf       binary
+*.otf       binary
+*.woff      binary
+*.woff2     binary
+
+# Vendored third-party forks — exclude from GitHub language statistics so the
+# framework's own code dominates the repo profile.
+src/AvalonDock/**               linguist-vendored=true
+src/OxyPlot/OxyPlot/**          linguist-vendored=true
+src/OxyPlot/OxyPlot.Wpf.Shared/** linguist-vendored=true

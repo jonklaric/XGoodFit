@@ -1,0 +1,46 @@
+<cntrls:MetroWindow x:Class="FrameworkUI.TermsAndConditionsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:cntrls="clr-namespace:GenericControls;assembly=GenericControls"
+        mc:Ignorable="d"
+        Title="Terms and Conditions for Use"
+        ResizeMode="NoResize"
+        ShowInTaskbar="True"
+        WindowStartupLocation="CenterScreen"
+        SizeToContent="WidthAndHeight"
+        Style="{DynamicResource MetroWindowStyle}"
+        Background="{DynamicResource EnvironmentWindowBackground}"
+        Foreground="{DynamicResource EnvironmentWindowText}"
+        >
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition x:Name="CheckboxRow" Height="Auto"/>
+            <RowDefinition x:Name="ButtonRow" Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!--Terms and Conditions-->
+        <RichTextBox x:Name="TCURichTextBox" Grid.Row="0" Margin="6" Width="500" Height="300"
+                     IsReadOnly="True" VerticalScrollBarVisibility="Visible"
+                     ScrollViewer.ScrollChanged="RichTextBox_ScrollChanged" />
+
+        <!--I Agree Checkbox-->
+        <CheckBox x:Name="IAgreeCheckbox" IsEnabled="False" Grid.Row="1" Margin="6"
+                  VerticalContentAlignment="Center" Content="I agree to the above Terms and Conditions for Use"
+                  IsChecked="False" Checked="IAgreeCheckbox_Changed" Unchecked="IAgreeCheckbox_Changed"/>
+
+        <!--Buttons-->
+        <Grid Grid.Row="2" HorizontalAlignment="Right">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <Button Name="OKButton" IsEnabled="False" Click="OKButton_Click" Content="OK"
+                    Grid.Column="0" Width="75" Height="24" Cursor="Hand" Margin="6,0,0,6"/>
+            <Button Name="CancelButton" IsCancel="True" Content="Cancel"
+                    Grid.Column="1" Width="75" Height="24" Cursor="Hand" Margin="6,0,6,6"/>
+        </Grid>
+    </Grid>
+</cntrls:MetroWindow>

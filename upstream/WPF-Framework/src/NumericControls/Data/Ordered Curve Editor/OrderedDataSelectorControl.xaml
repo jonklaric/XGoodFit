@@ -1,0 +1,84 @@
+﻿<UserControl x:Class="NumericControls.OrderedDataSelectorControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:NumericControls"
+             xmlns:cntrls="clr-namespace:GenericControls;assembly=GenericControls"
+             xmlns:oxy="http://oxyplot.org/wpf"
+             xmlns:oxyCntrls="clr-namespace:OxyPlotControls;assembly=OxyPlotControls"
+             mc:Ignorable="d"
+             d:DesignHeight="450" d:DesignWidth="800">
+    <Control.Resources>
+        <!-- Column header style with wrapped text and sorting support -->
+        <Style x:Key="WrappedColumnHeaderStyle" TargetType="{x:Type DataGridColumnHeader}" BasedOn="{StaticResource {x:Type DataGridColumnHeader}}">
+            <Setter Property="ContentTemplate">
+                <Setter.Value>
+                    <DataTemplate>
+                        <TextBlock TextWrapping="Wrap" TextAlignment="Center" VerticalAlignment="Bottom" FontWeight="Bold" HorizontalAlignment="Stretch" Text="{Binding}"/>
+                    </DataTemplate>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Bottom" />
+            <EventSetter Event="Click" Handler="DataGridColumnHeader_Click"/>
+        </Style>
+    </Control.Resources>
+    <Grid DataContext="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}}">
+        <Grid.Resources>
+            <cntrls:BooleanToVisibilityConverter x:Key="VisibilityConverter" TrueValue="Collapsed" FalseValue="Visible"/>
+            <cntrls:ReverseBooleanConverter x:Key="RevBoolConverter"/>
+        </Grid.Resources>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="{Binding TableWidth}" MinWidth="197"/>
+            <ColumnDefinition Width="1*"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Data table grid -->
+        <Grid Grid.Column="0" Margin="0,0,2,0">
+            <cntrls:ValidationDataGrid Name="ValidationGrid"
+                                       AutoGenerateColumns="True"
+                                       CanUserResizeColumns="False"
+                                       SelectionMode="Extended" SelectionUnit="CellOrRowHeader"
+                                       CanUserDeleteRows="False" CanUserAddRows="False" CanUserResizeRows="False" CanUserSortColumns="False"
+                                       CanUserReorderColumns="False"
+                                       CanUserAddInsertDeleteRows="True"
+                                       RowHeight="24"
+                                       VerticalContentAlignment="Center"
+                                       IsReadOnly="{Binding Path=IsReadOnly}"
+                                       ColumnHeaderStyle="{StaticResource WrappedColumnHeaderStyle}"
+                                       PreviewAddRows="ValidationGrid_PreviewAddRows"
+                                       RowsAdded="ValidationGrid_RowsAdded"
+                                       RowsDeleted="ValidationGrid_RowsDeleted"
+                                       DataPasted="ValidationGrid_DataPasted"/>
+        </Grid>
+
+        <!-- Resizable splitter between table and plot -->
+        <GridSplitter Grid.Column="1" Margin="-2,0,0,0" Width="4" HorizontalAlignment="Left" VerticalAlignment="Stretch" Background="Transparent"/>
+
+        <!-- Plot grid with curve visualization -->
+        <Grid Grid.Column="1" Margin="2,0,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <oxy:Plot x:Name="Plot" x:FieldModifier="public"
+                      Grid.Column="0"
+                      LegendPosition="{Binding PlotLegendPosition}"
+                      Title="{Binding PlotTitle}">
+                <oxy:Plot.Axes>
+                    <oxy:LinearAxis Position="Left" Title="{Binding YAxisLabel}" AbsoluteMinimum="{Binding YAxisMinimum}" AbsoluteMaximum="{Binding YAxisMaximum}" AxisTitleDistance="20" TitleFontSize="20" MajorGridlineStyle="Solid" MinorGridlineStyle="Dash"/>
+                    <oxy:LinearAxis Position="Bottom" Title="{Binding XAxisLabel}" AbsoluteMinimum="{Binding XAxisMinimum}" AbsoluteMaximum="{Binding XAxisMaximum}" AxisTitleDistance="15" TitleFontSize="20" MajorGridlineStyle="Solid" MinorGridlineStyle="Dash"/>
+                </oxy:Plot.Axes>
+                <oxy:Plot.Series>
+                    <oxy:LineSeries Name="CurveLine" Title="Curve" Color="Black" MarkerFill="Transparent" ItemsSource="{Binding CurveLinePoints}"/>
+                </oxy:Plot.Series>
+            </oxy:Plot>
+            <oxyCntrls:OxyPlotToolbar Grid.Column="1" VerticalAlignment="Stretch" ToolBarOrientation="Vertical" 
+                              Plot="{Binding ElementName=Plot, Mode=OneTime}" 
+                              Background="{Binding ElementName=Plot, Path=Background}" 
+                              PropertiesCalled="OxyplotToolbar_PropertiesCalled"/>
+        </Grid>
+    </Grid>
+</UserControl>

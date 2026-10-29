@@ -1,0 +1,57 @@
+﻿<UserControl x:Class="FrameworkUI.MessageWindowOptions" x:Name="MessageOptionsControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:cntrls="clr-namespace:GenericControls;assembly=GenericControls"
+             mc:Ignorable="d"
+             d:DesignHeight="300" d:DesignWidth="300"
+             Background="{DynamicResource EnvironmentWindowBackground}"
+             Foreground="{DynamicResource EnvironmentWindowText}" 
+             DataContext="{Binding RelativeSource={RelativeSource Self}}">
+    <Grid x:Name="MainGrid">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <!--Beep-->
+        <cntrls:SeparatorWithHeader Header="Beep when a message occurs" Grid.Row="0" LeftSeparatorWidth="10" Margin="4"/>
+        <Grid Grid.Row="1" Margin="10,0,0,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <CheckBox x:Name="ErrorCheckBox" Grid.Row="0" Content="Errors" Margin="4" VerticalAlignment="Center" IsChecked="{Binding ErrorBeep, Mode=TwoWay}"/>
+            <CheckBox x:Name="WarningCheckBox" Grid.Row="1" Content="Warnings" Margin="4" VerticalAlignment="Center" IsChecked="{Binding WarningBeep, Mode=TwoWay}"/>
+            <CheckBox x:Name="MessageCheckBox" Grid.Row="2" Content="Messages" Margin="4" VerticalAlignment="Center" IsChecked="{Binding MessageBeep, Mode=TwoWay}"/>
+            <CheckBox x:Name="EventCheckBox" Grid.Row="3" Content="Events" Margin="4" VerticalAlignment="Center" IsChecked="{Binding EventBeep, Mode=TwoWay}"/>
+        </Grid>
+        <!--Message-->
+        <cntrls:SeparatorWithHeader Header="Message text color" Grid.Row="2" LeftSeparatorWidth="10" Margin="4,6,4,4"/>
+        <Grid Grid.Row="3" Margin="10,0,0,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <cntrls:ColorPickerPopup x:Name="ErrorColorControl" Height="24" Width="38" Grid.Row="0" Grid.Column="0" Margin="5,4,4,4" Color="{Binding ErrorColor, ElementName=MessageOptionsControl, Mode=TwoWay}"/>
+            <TextBlock Text="Errors" VerticalAlignment="Center" HorizontalAlignment="Left" Grid.Row="0" Grid.Column="1" Margin="0,4,4,4" Foreground="{Binding ErrorColor}"/>
+            <cntrls:ColorPickerPopup x:Name="WarningColorControl" Height="24" Width="38" Grid.Row="1" Grid.Column="0" Margin="5,4,4,4" Color="{Binding WarningColor, ElementName=MessageOptionsControl, Mode=TwoWay}"/>
+            <TextBlock Text="Warnings" VerticalAlignment="Center" HorizontalAlignment="Left" Grid.Row="1" Grid.Column="1" Margin="0,4,4,4" Foreground="{Binding WarningColor}"/>
+            <cntrls:ColorPickerPopup x:Name="MessageColorControl" Height="24" Width="38" Grid.Row="2" Grid.Column="0" Margin="5,4,4,4" Color="{Binding MessageColor, ElementName=MessageOptionsControl, Mode=TwoWay}"/>
+            <TextBlock Text="Messages" VerticalAlignment="Center" HorizontalAlignment="Left" Grid.Row="2" Grid.Column="1" Margin="0,4,4,4" Foreground="{Binding MessageColor}"/>
+            <cntrls:ColorPickerPopup x:Name="EventColorControl" Height="24" Width="38" Grid.Row="3" Grid.Column="0" Margin="5,4,4,4" Color="{Binding EventColor, ElementName=MessageOptionsControl, Mode=TwoWay}"/>
+            <TextBlock Text="Events" VerticalAlignment="Center" HorizontalAlignment="Left" Grid.Row="3" Grid.Column="1" Margin="0,4,4,4" Foreground="{Binding EventColor}"/>
+        </Grid>
+    </Grid>
+</UserControl>

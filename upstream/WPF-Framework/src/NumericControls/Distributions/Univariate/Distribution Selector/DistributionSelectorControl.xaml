@@ -1,0 +1,259 @@
+﻿<UserControl x:Class="NumericControls.Distributions.Univariate.DistributionSelectorControl" x:Name="DistributionSelector"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:NumericControls"
+             xmlns:cntrls="clr-namespace:GenericControls;assembly=GenericControls"
+             xmlns:oxy="http://oxyplot.org/wpf"
+             xmlns:sys="clr-namespace:System;assembly=mscorlib"
+             xmlns:glob="clr-namespace:System.Globalization;assembly=mscorlib"
+             mc:Ignorable="d"
+             d:DesignHeight="382" d:DesignWidth="300" MinWidth="200">
+    <UserControl.Resources>
+        <cntrls:BooleanToVisibilityConverter x:Key="BoolToVisConverter" TrueValue="Visible" FalseValue="Collapsed"/>
+        <cntrls:BooleanToTextConverter x:Key="BoolToYAxisTextConverter" TrueValue="Density" FalseValue=""/>
+        <cntrls:BooleanToTextConverter x:Key="BoolToXAxisTextConverter" TrueValue="X Value" FalseValue=""/>
+        <cntrls:BooleanToDoubleConverter x:Key="BoolToLabelDoubleConverter" TrueValue="{x:Static sys:Double.NaN}" FalseValue="5"/>
+        <cntrls:BooleanToDoubleConverter x:Key="BoolToTitleDoubleConverter" TrueValue="{x:Static sys:Double.NaN}" FalseValue="8"/>
+
+        <Style x:Key="ReadOnlyTextBackgroundCellStyle" TargetType="DataGridCell">
+            <Setter Property="Background" Value="{DynamicResource EnvironmentWindowBackground}"/>
+            <Setter Property="Foreground" Value="{DynamicResource EnvironmentWindowText}"/>
+            <Setter Property="TextBlock.TextAlignment" Value="Left"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+            <Style.Triggers>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="{DynamicResource DataGrid.Row.Selection.Background}"/>
+                    <Setter Property="Foreground" Value="{DynamicResource DataGrid.Row.Selection.Foreground}"/>
+                </Trigger>
+                <MultiTrigger>
+                    <MultiTrigger.Conditions>
+                        <Condition Property="IsSelected" Value="True"/>
+                        <Condition Property="Selector.IsSelectionActive" Value="False"/>
+                    </MultiTrigger.Conditions>
+                    <Setter Property="Background" Value="{DynamicResource DataGrid.Row.Selection.Inactive.Background}"/>
+                    <Setter Property="Foreground" Value="{DynamicResource DataGrid.Row.Selection.Inactive.Foreground}"/>
+                </MultiTrigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="ReadOnlyValueBackgroundCellStyle" TargetType="DataGridCell">
+            <Setter Property="Background" Value="{DynamicResource EnvironmentWindowBackground}"/>
+            <Setter Property="Foreground" Value="{DynamicResource EnvironmentWindowText}"/>
+            <Setter Property="TextBlock.TextAlignment" Value="Right"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+            <Style.Triggers>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="{DynamicResource DataGrid.Row.Selection.Background}"/>
+                    <Setter Property="Foreground" Value="{DynamicResource DataGrid.Row.Selection.Foreground}"/>
+                </Trigger>
+                <MultiTrigger>
+                    <MultiTrigger.Conditions>
+                        <Condition Property="IsSelected" Value="True"/>
+                        <Condition Property="Selector.IsSelectionActive" Value="False"/>
+                    </MultiTrigger.Conditions>
+                    <Setter Property="Background" Value="{DynamicResource DataGrid.Row.Selection.Inactive.Background}"/>
+                    <Setter Property="Foreground" Value="{DynamicResource DataGrid.Row.Selection.Inactive.Foreground}"/>
+                </MultiTrigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="ParameterValueCellStyle" TargetType="DataGridCell">
+            <Setter Property="Background" Value="{DynamicResource TextBox.Static.Background}"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextBox.Static.Foreground}"/>
+            <Setter Property="TextBlock.TextAlignment" Value="Right"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+            <Style.Triggers>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="{DynamicResource DataGrid.Row.Selection.Background}"/>
+                    <Setter Property="Foreground" Value="{DynamicResource DataGrid.Row.Selection.Foreground}"/>
+                </Trigger>
+                <MultiTrigger>
+                    <MultiTrigger.Conditions>
+                        <Condition Property="IsSelected" Value="True"/>
+                        <Condition Property="Selector.IsSelectionActive" Value="False"/>
+                    </MultiTrigger.Conditions>
+                    <Setter Property="Background" Value="{DynamicResource DataGrid.Row.Selection.Inactive.Background}"/>
+                    <Setter Property="Foreground" Value="{DynamicResource DataGrid.Row.Selection.Inactive.Foreground}"/>
+                </MultiTrigger>
+                <DataTrigger Binding="{Binding Path=IsValid, UpdateSourceTrigger=PropertyChanged}" Value="False">
+                    <Setter Property="Background" Value="{DynamicResource DataGrid.Cell.Error.Background}"/>
+                    <Setter Property="BorderBrush" Value="{DynamicResource DataGrid.Cell.Error.Border}"/>
+                    <Setter Property="ToolTip" Value="{Binding Path=ErrorMessage}"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid Background="{Binding ElementName=DistributionSelector, Path=BackgroundColor, TargetNullValue=Transparent, FallbackValue=Transparent}"
+          PreviewMouseDown="Grid_PreviewMouseDown">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <!--0 Probability Distribution Label-->
+            <RowDefinition Height="Auto"/>
+            <!--1 Probability Distribution Combobox-->
+            <RowDefinition Height="Auto"/>
+            <!--2 Parameter Grid-->
+            <RowDefinition Height="Auto"/>
+            <!--3 Plot Expander-->
+            <RowDefinition Height="*"/>
+            <!--5 Summary Stats Expander-->
+        </Grid.RowDefinitions>
+
+        <!--Probability Distribution Label-->
+        <StackPanel HorizontalAlignment="Left" Orientation="Horizontal" Grid.Row="0" Grid.Column="0" Margin="0 2" >
+            <TextBlock Text="Select Distribution for " VerticalAlignment="Center" Foreground="{DynamicResource EnvironmentWindowText}"/>
+            <TextBlock VerticalAlignment="Center" Foreground="{DynamicResource EnvironmentWindowText}"
+                       Text="{Binding ElementName=DistributionSelector, Path=DistributionTitle, UpdateSourceTrigger=PropertyChanged}"/>
+            <TextBlock Text=":" VerticalAlignment="Center" Foreground="{DynamicResource EnvironmentWindowText}"/>
+        </StackPanel>
+
+        <Grid Grid.Row="1" Margin="0 2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <!--Probability Distribution Combobox-->
+            <ComboBox x:Name="DistributionCombobox" Grid.Column="0" 
+                  ItemsSource="{Binding ElementName=DistributionSelector, Path=Distributions, UpdateSourceTrigger=PropertyChanged}"
+                  DisplayMemberPath="DisplayName"
+                  SelectionChanged="DistributionCombobox_SelectionChanged"/>
+
+            <Button 
+                x:Name="EstimateParametersButton" 
+                Grid.Column="1" 
+                Width="22"
+                Height="22"
+                Margin="4,0,0,0"
+                Visibility="Collapsed" 
+                ToolTip="Click to estimate parameters for the selected distribution based on the sample data."
+                Click="EstimateParametersButton_Click">
+                <Rectangle Width="16" Height="16" Fill="{DynamicResource RunIconBrush}"/>
+            </Button>
+        </Grid>
+
+
+        <!--Parameter Grid-->
+        <Grid Name="SelectorControlGrid" Grid.Row="2" Margin="0 2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <cntrls:CopyPasteDataGrid x:Name="ParametersTable"
+                                      HeadersVisibility="None"
+                                      Grid.Column="0"
+                                      VerticalContentAlignment="Center"
+                                      HorizontalScrollBarVisibility="Disabled"
+                                      Width="{Binding ElementName=SelectorControlGrid, Path=ActualWidth}"
+                                      AutoGenerateColumns="False"
+                                      SelectionMode="Extended"
+                                      SelectionUnit="Cell"
+                                      CanUserDeleteRows="False"
+                                      CanUserAddRows="False"
+                                      CanUserResizeRows="False"
+                                      CanUserResizeColumns="False"
+                                      CanUserSortColumns="False"
+                                      CanUserReorderColumns="False"
+                                      CanUserAddInsertDeleteRows="False"
+                                      PasteAddsRows="False">
+                <cntrls:CopyPasteDataGrid.Columns>
+                    <DataGridTextColumn x:Name="NameColumn" IsReadOnly="True" Width="140" Binding="{Binding Path=DisplayName}" 
+                                        CellStyle="{StaticResource ReadOnlyTextBackgroundCellStyle}"/>
+                    <DataGridTextColumn x:Name="ValueColumn" IsReadOnly="False" Width="*" Binding="{Binding Path=Value, StringFormat={}{0:0.####}, ConverterCulture={x:Static glob:CultureInfo.CurrentCulture}}"
+                                        CellStyle="{StaticResource ParameterValueCellStyle}"
+                                        EditingElementStyle="{StaticResource DataGridEditingTextBoxStyle}"/>
+                </cntrls:CopyPasteDataGrid.Columns>
+            </cntrls:CopyPasteDataGrid>
+
+        </Grid>
+
+
+        <!--Plot Expander-->
+        <Expander x:Name="PlotExpander" Header="Probability Density Plot" Grid.Row="3" IsExpanded="True" VerticalAlignment="Top" Padding="0"
+                  Visibility="{Binding ElementName=DistributionSelector, Path=ShowPlot, Converter={StaticResource BoolToVisConverter}}" 
+                  Style="{DynamicResource PropertyExpanderStyle}">
+            <Grid>
+                <oxy:Plot x:Name="Plot" Margin="2,2,0,0" Height="250" IsHitTestVisible="False" Padding="0" >
+                    <oxy:Plot.Axes>
+                        <oxy:LinearAxis x:Name="Yaxis"
+                                    MaximumPadding="0.1"
+                                    MinimumPadding="0.0"
+                                    AbsoluteMinimum="0"
+                                    Position="Left"
+                                    Title="{Binding ElementName=DistributionSelector, Path=ShowAxisTitle, UpdateSourceTrigger=PropertyChanged, Mode=OneWay, Converter={StaticResource BoolToYAxisTextConverter}}"
+                                    AxisTitleDistance="10"
+                                    IsAxisVisible="{Binding ElementName=DistributionSelector, Path=ShowAxis, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}"
+                                    TitleFontSize="{Binding ElementName=DistributionSelector, Path=ShowAxisTitle, UpdateSourceTrigger=PropertyChanged, Mode=OneWay, Converter={StaticResource BoolToTitleDoubleConverter}}"
+                                    FontSize="{Binding ElementName=DistributionSelector, Path=ShowAxisLabel, UpdateSourceTrigger=PropertyChanged, Mode=OneWay, Converter={StaticResource BoolToLabelDoubleConverter}}"/>
+                        <oxy:LinearAxis x:Name="Xaxis"
+                                    MaximumPadding="0.0"
+                                    MinimumPadding="0.0"
+                                    Position="Bottom"
+                                    Title="{Binding ElementName=DistributionSelector, Path=ShowAxisTitle, UpdateSourceTrigger=PropertyChanged, Mode=OneWay, Converter={StaticResource BoolToXAxisTextConverter}}"
+                                    AxisTitleDistance="10"
+                                    PositionAtZeroCrossing="True"
+                                    IsAxisVisible="{Binding ElementName=DistributionSelector, Path=ShowAxis, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}"
+                                    TitleFontSize="{Binding ElementName=DistributionSelector, Path=ShowAxisTitle, UpdateSourceTrigger=PropertyChanged, Mode=OneWay, Converter={StaticResource BoolToTitleDoubleConverter}}"
+                                    FontSize="{Binding ElementName=DistributionSelector, Path=ShowAxisLabel, UpdateSourceTrigger=PropertyChanged, Mode=OneWay, Converter={StaticResource BoolToLabelDoubleConverter}}"/>
+                    </oxy:Plot.Axes>
+                    <oxy:Plot.Series>
+                        <oxy:AreaSeries x:Name="PDF" Color="DarkBlue" Fill="#FF3F8BD6"></oxy:AreaSeries>
+                    </oxy:Plot.Series>
+                </oxy:Plot>
+
+                <TextBlock Name="InvalidDistributionTextBlock" Visibility="Collapsed" Foreground="Red" FontWeight="Bold" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+            </Grid>
+        </Expander>
+
+        <!--Summary Statistics Expander-->
+        <Expander x:Name="SummaryStatisticstExpander" Grid.Row="4" IsExpanded="False" VerticalAlignment="Top" Header="Statistics"
+                  Visibility="{Binding ElementName=DistributionSelector, Path=ShowStatistics, Converter={StaticResource BoolToVisConverter}}"
+                  Style="{DynamicResource PropertyExpanderStyle}">
+            <Grid Name="SummaryStatsGrid">
+                <cntrls:CopyPasteDataGrid x:Name="SummaryTable"
+                                          Width="{Binding ElementName=SummaryStatsGrid, Path=ActualWidth}"
+                                          HeadersVisibility="Column"
+                                          AutoGenerateColumns="False"
+                                          SelectionMode="Extended"
+                                          SelectionUnit="Cell"
+                                          Margin="0,4,0,2"
+                                          CanUserDeleteRows="False"
+                                          CanUserAddRows="False"
+                                          CanUserResizeRows="False"
+                                          CanUserResizeColumns="False"
+                                          CanUserSortColumns="False"
+                                          CanUserReorderColumns="False"
+                                          IsReadOnly="True">
+                    <cntrls:CopyPasteDataGrid.Columns>
+                        <DataGridTextColumn x:Name="StatNameColumn" Header="Statistic" IsReadOnly="True" Width="140"
+                                            Binding="{Binding Path=StatName}"
+                                            HeaderStyle="{DynamicResource LeftAlignedColumnHeaderStyle}"/>
+                        <DataGridTextColumn x:Name="DistStatsColumn" Header="Distribution" IsReadOnly="True" Width="*"
+                                            Binding="{Binding Path=DistStat}"
+                                            HeaderStyle="{DynamicResource RightAlignedColumnHeaderStyle}">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="HorizontalAlignment" Value="Right"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+                        <DataGridTextColumn x:Name="DataStatsColumn" Header="Data" IsReadOnly="True" Width="*" Visibility="Collapsed"
+                                            Binding="{Binding Path=DataStat}"
+                                            HeaderStyle="{DynamicResource RightAlignedColumnHeaderStyle}">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="HorizontalAlignment" Value="Right"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+                    </cntrls:CopyPasteDataGrid.Columns>
+                </cntrls:CopyPasteDataGrid>
+            </Grid>
+        </Expander>
+
+    </Grid>
+</UserControl>

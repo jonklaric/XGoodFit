@@ -1,0 +1,215 @@
+# Numerics Library Documentation
+
+## Overview
+
+***Numerics*** is a comprehensive numerical computing library for .NET, developed by the U.S. Army Corps of Engineers Risk Management Center for quantitative risk assessment applications. The library provides robust implementations of probability distributions, statistical analysis, numerical methods, optimization algorithms, and Markov Chain Monte Carlo (MCMC) sampling techniques.
+
+The library is designed for engineers, scientists, and researchers who need reliable numerical computing capabilities, particularly in the domains of:
+
+- Hydrological frequency analysis
+- Infrastructure risk assessment
+- Monte Carlo simulation
+- Bayesian parameter estimation
+- Statistical model validation
+
+## Key Features
+
+### Probability Distributions
+- 43 univariate probability distributions with PDF, CDF, and inverse CDF
+- Multiple parameter estimation methods (Method of Moments, L-Moments, Maximum Likelihood)
+- Uncertainty analysis via bootstrap resampling
+- Bivariate copulas for dependency modeling
+- Multivariate distributions (Normal, Student-t, Dirichlet, Multinomial)
+
+### Statistical Analysis
+- Comprehensive goodness-of-fit metrics (NSE, KGE, RMSE, PBIAS, AIC/BIC)
+- Descriptive statistics and hypothesis tests
+- Autocorrelation and time series analysis
+- Outlier detection (Multiple Grubbs-Beck Test)
+
+### Numerical Methods
+- Adaptive numerical integration (Simpson's Rule, Gauss-Lobatto, Gauss-Kronrod)
+- Multidimensional integration (Monte Carlo, MISER, VEGAS)
+- Numerical differentiation (two-point, Ridder's method)
+- Root finding algorithms (Bisection, Brent, Newton-Raphson)
+- ODE solvers (Runge-Kutta methods)
+
+### Optimization
+- Local optimization (BFGS, Nelder-Mead, Powell, Golden Section)
+- Global optimization (Differential Evolution, SCE-UA, Simulated Annealing, Particle Swarm)
+- Constrained optimization (Augmented Lagrangian)
+
+### MCMC Sampling
+- Random Walk Metropolis-Hastings (RWMH)
+- Adaptive Random Walk Metropolis-Hastings (ARWMH)
+- Differential Evolution MCMC (DE-MCz, DE-MCzs)
+- Hamiltonian Monte Carlo (HMC)
+- Gibbs sampling
+- Convergence diagnostics (Gelman-Rubin, Effective Sample Size)
+
+## Quick Start
+
+### Creating a Distribution
+
+```cs
+using Numerics.Distributions;
+
+// Create a Normal distribution
+var normal = new Normal(100, 15);
+
+// Compute probability functions
+double pdf = normal.PDF(110);           // f(110)
+double cdf = normal.CDF(110);           // P(X ≤ 110)
+double quantile = normal.InverseCDF(0.95); // x such that P(X ≤ x) = 0.95
+
+Console.WriteLine($"PDF(110) = {pdf:F6}");
+Console.WriteLine($"CDF(110) = {cdf:F4}");
+Console.WriteLine($"95th percentile = {quantile:F2}");
+```
+
+### Fitting a Distribution to Data
+
+```cs
+using Numerics.Distributions;
+
+double[] annualMaxFlows = { 1200, 1500, 1100, 1800, 1350, 1600, 1250, 1450 };
+
+// Fit using L-Moments (recommended for hydrologic data)
+var gev = new GeneralizedExtremeValue();
+gev.Estimate(annualMaxFlows, ParameterEstimationMethod.MethodOfLinearMoments);
+
+// Compute the 100-year flood (1% annual exceedance probability)
+double q100 = gev.InverseCDF(0.99);
+Console.WriteLine($"100-year flood estimate: {q100:F0} cfs");
+```
+
+### Numerical Integration
+
+```cs
+using Numerics.Mathematics.Integration;
+
+// Integrate f(x) = x² from 0 to 1
+Func<double, double> f = x => x * x;
+var asr = new AdaptiveSimpsonsRule(f, 0, 1);
+asr.Integrate();
+double result = asr.Result;  // 0.333...
+Console.WriteLine($"∫₀¹ x² dx = {result:F10}");
+```
+
+### MCMC Sampling
+
+```cs
+using Numerics.Sampling.MCMC;
+using Numerics.Distributions;
+
+// Define prior distributions
+var priors = new List<IUnivariateDistribution>
+{
+    new Normal(0, 10),    // Prior for parameter 1
+    new Uniform(0, 100)   // Prior for parameter 2
+};
+
+// Define log-likelihood function (simple Gaussian example)
+double ComputeLogLikelihood(double[] parameters)
+{
+    // Log-likelihood for parameters[0] with observed value of 5
+    return -0.5 * Math.Pow(parameters[0] - 5, 2);
+}
+
+// Create and run sampler
+var sampler = new DEMCz(priors, ComputeLogLikelihood);
+sampler.Iterations = 10000;
+sampler.Sample();
+
+// Get results
+var results = sampler.Output;
+```
+
+## Documentation Structure
+
+| Document | Description |
+|----------|-------------|
+| [Getting Started](getting-started.md) | Installation and basic usage patterns |
+| **Mathematics** | |
+| [Numerical Integration](mathematics/integration.md) | Comprehensive guide to 1D, 2D, and multidimensional integration |
+| [Numerical Differentiation](mathematics/differentiation.md) | Derivatives, gradients, Hessians, and Jacobians |
+| [Optimization](mathematics/optimization.md) | Local and global optimization algorithms |
+| [Root Finding](mathematics/root-finding.md) | Equation solving methods |
+| [Linear Algebra](mathematics/linear-algebra.md) | Matrix and vector operations, decompositions |
+| [Special Functions](mathematics/special-functions.md) | Gamma, Beta, Error functions |
+| [ODE Solvers](mathematics/ode-solvers.md) | Runge-Kutta methods for initial value problems |
+| **Data** | |
+| [Interpolation](data/interpolation.md) | Interpolation methods and splines |
+| [Linear Regression](data/regression.md) | Linear regression modeling |
+| [Time Series](data/time-series.md) | Time series data structures and analysis |
+| **Statistics** | |
+| [Descriptive Statistics](statistics/descriptive.md) | Summary statistics and moments |
+| [Goodness-of-Fit](statistics/goodness-of-fit.md) | Model evaluation metrics |
+| [Hypothesis Tests](statistics/hypothesis-tests.md) | Statistical hypothesis testing |
+| **Distributions** | |
+| [Univariate Distributions](distributions/univariate.md) | 43 probability distributions with PDF, CDF, and quantile functions |
+| [Parameter Estimation](distributions/parameter-estimation.md) | Fitting distributions to data |
+| [Uncertainty Analysis](distributions/uncertainty-analysis.md) | Bootstrap and confidence intervals |
+| [Copulas](distributions/copulas.md) | Dependency modeling with copulas |
+| [Multivariate Distributions](distributions/multivariate.md) | Multivariate Normal, Student-t, Dirichlet, Multinomial |
+| **Functions** | |
+| [Univariate Functions](functions/index.md) | Uncertain univariate function forms, composition, posterior ensembles, and link functions |
+| **Machine Learning** | |
+| [Machine Learning](machine-learning/machine-learning.md) | Supervised and unsupervised learning algorithms |
+| **Sampling** | |
+| [Random Generation](sampling/random-generation.md) | PRNGs, quasi-random, and sampling methods |
+| [MCMC Methods](sampling/mcmc.md) | Markov Chain Monte Carlo samplers |
+| [Convergence Diagnostics](sampling/convergence-diagnostics.md) | MCMC convergence assessment |
+| [References](references.md) | Complete bibliography |
+
+## Namespaces
+
+| Namespace | Description |
+|-----------|-------------|
+| `Numerics.Distributions` | Probability distributions and copulas |
+| `Numerics.Functions` | Uncertain univariate functions, posterior ensembles, and link functions |
+| `Numerics.Data.Statistics` | Statistical functions and tests |
+| `Numerics.Data` | Interpolation methods, linear regression, time series data structures |
+| `Numerics.Mathematics` | Base namespace for mathematical operations (includes NumericalDerivative) |
+| `Numerics.Mathematics.Integration` | Numerical integration methods |
+| `Numerics.Mathematics.Optimization` | Optimization algorithms |
+| `Numerics.Mathematics.LinearAlgebra` | Matrix and vector operations |
+| `Numerics.Mathematics.RootFinding` | Root finding algorithms |
+| `Numerics.Mathematics.SpecialFunctions` | Gamma, Beta, Error functions |
+| `Numerics.MachineLearning` | Supervised and unsupervised learning algorithms |
+| `Numerics.Sampling` | Random sampling and stratification |
+| `Numerics.Sampling.MCMC` | MCMC samplers and diagnostics |
+
+## Installation
+
+Install via NuGet Package Manager:
+
+```
+Install-Package RMC.Numerics
+```
+
+Or using the .NET CLI:
+
+```
+dotnet add package RMC.Numerics
+```
+
+## Support and Contributing
+
+This library is developed and maintained by the U.S. Army Corps of Engineers Risk Management Center. For questions, bug reports, or feature requests, please contact the development team.
+
+## License
+
+This software is provided under the Zero-Clause BSD (0BSD) license. See the LICENSE file for complete terms.
+
+---
+
+## Key References
+
+[1] Press, W. H., Teukolsky, S. A., Vetterling, W. T., & Flannery, B. P. (2007). *Numerical Recipes: The Art of Scientific Computing* (3rd ed.). Cambridge University Press.
+
+[2] Hosking, J. R. M. (1990). L-moments: Analysis and estimation of distributions using linear combinations of order statistics. *Journal of the Royal Statistical Society: Series B*, 52(1), 105-124.
+
+[3] ter Braak, C. J. F., & Vrugt, J. A. (2008). Differential Evolution Markov Chain with snooker updater and fewer chains. *Statistics and Computing*, 18(4), 435-446.
+
+[4] Moriasi, D. N., et al. (2007). Model evaluation guidelines for systematic quantification of accuracy in watershed simulations. *Transactions of the ASABE*, 50(3), 885-900.

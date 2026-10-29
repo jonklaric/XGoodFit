@@ -1,0 +1,178 @@
+<!-- technical-reference-status: complete -->
+
+# Time-Series Models and Analysis Workflow
+
+[Technical reference](../index.md) | [Rating curve](rating-curve.md)
+
+## Chapter Map
+
+| Model | Mathematical treatment | Principal API |
+|---|---|---|
+| AR($p$) | [Autoregressive models](autoregressive.md) | `AutoRegressive`, `ARAnalysis` |
+| MA($q$) | [Moving-average models](moving-average.md) | `MovingAverage`, `MAAnalysis` |
+| ARIMA($p,d,q$) | [Integrated ARMA](arima.md) | `ARIMA`, `ARIMAAnalysis` |
+| ARIMAX($p,d,q,b$) | [Regression, covariates, trend, and seasonality](arimax.md) | `ARIMAX`, `ARIMAXAnalysis` |
+
+All four models use Gaussian conditional likelihoods on an optional transformed response, bounded marginal parameter priors, Bayesian MCMC as the primary analysis estimator, and posterior-predictive simulation for uncertainty curves. They do not share one interchangeable parameter ordering; use each chapter's crosswalk.
+
+## Shared Statistical Contract
+
+For raw response $y_t$ and configured transform $z_t=g(y_t)$, the model target is
+
+$$
+p(\theta\mid y_{0:T-1})\propto
+\left\{\prod_{t\in\mathcal I}
+\frac{1}{\sigma}\varphi\!\left(\frac{e_t(\theta)}{\sigma}\right)
+\left|g'(y_t)\right|\right\}\pi(\theta), \tag{TS.1}
+$$
+
+where $\mathcal I$ is the model-specific conditional-likelihood index set. None of the classes implements an exact initial-state/Kalman likelihood. Response intervals must be regular; missing timestamps are not imputed; coefficients and innovation variance are fixed through time.
+
+For ARIMA and ARIMAX with raw training length $T$ and differencing order $d$, model step $k$
+maps to raw response index $k+d$, and the training model series has $T-d$ values. ARIMAX uses
+level covariates matched by exact timestamp at that raw index; covariates are never differenced.
+AR conditions on its first $p$ observations. Standalone MA initializes presample innovations
+to zero and includes every residual, starting at index zero. ARIMA starts at $k=\max(p,q)$
+in the differenced series. ARIMAX with covariates starts at $k=\max(q,p+b)$, so every evaluated
+step's own mean and every autoregressive-lag mean include all $b$ covariate lags; without
+covariates it starts at $k=\max(p,q)$, because the covariate lag order then has no role. The
+transform Jacobian uses raw indices $d+k$ through $T-1$. The pointwise data
+log-likelihood attributes each observation's own change-of-variables term $\log|g'(y_{k+d})|$ to
+the model step that evaluates that observation, so the pointwise terms sum to the scalar
+data log-likelihood and WAIC/PSIS-LOO see the actual per-observation contributions. Required
+missing or duplicate ARIMAX covariate timestamps invalidate
+evaluation; extra dates outside the required window are ignored.
+
+**Default training window.** With conditioning order $K$ ($p$ for AR, $0$ for MA, $\max(p,q)$
+for ARIMA and for ARIMAX without covariates, $\max(q,p+b)$ for ARIMAX with covariates), a
+$T$-step training window scores $n=T-d-K$ residuals. With $k$ estimated parameters (the scale
+included; a fitted transform exponent is preprocessing and is not counted) the residual degrees
+of freedom are $n-k$. When `UseDefaultTrainingSteps` is on, the window is
+
+$$
+T_{\text{default}}=\max\left(d+K+k+10,\ \left\lfloor 0.8\,N\right\rfloor\right), \tag{TS.2}
+$$
+
+so it trains on 80% of the $N$ observed steps but always leaves at least ten residual degrees of
+freedom, which also guarantees at least ten fitted steps. The window is not capped at $N$: a
+series shorter than $d+K+k+10$ is too short for the model under the default settings, and
+validation names that minimum; the desktop Training Steps box shows such a window without capping
+it. The default is recomputed when the series or the model structure changes (orders, intercept,
+trend, seasonality, covariates); opening, copying, cloning, or undoing a model-property edit keeps
+the saved window, while undoing a covariate or response-series change recomputes it as the change
+did. Manual windows keep the checks $T\le N$, $T\ge k$ (AR, MA, ARIMAX), and $T-d>K$ (ARIMA,
+ARIMAX). The rule was approved by Haden Smith on 26 September 2026 and replaced
+$\max(30,k,\lfloor 0.8N\rfloor)$, under which every series shorter than 30 steps failed validation
+with the default settings. For example, AR(1) with an intercept has $k=3$ and $K=1$ and needs 14
+observations, MA(1) needs 13, ARIMA(1,1,1) with an intercept needs 16, and AR(10) needs 32.
+
+When the optional Jeffreys rule is enabled, each model adds the scale contribution
+$\log \pi_J(\sigma)=-\log(\sigma)$ for $\sigma>0$. Pointwise prior diagnostics classify this
+term as `JeffreysScalePrior`, separately from each parameter's configured marginal
+`ParameterPrior`; the sum of all pointwise prior components equals the scalar prior likelihood at
+valid parameter sets. This classification is diagnostic metadata and does not alter the prior.
+
+The innovation scale domain is finite $\sigma>0$. Zero, negative, NaN, and infinite scales are
+impossible numerical parameter evaluations: scalar data/prior likelihoods return negative
+infinity, and pointwise data/prior decompositions retain their configured lengths and metadata
+with a negative-infinity scale contribution. They do not construct a Gaussian distribution or
+throw. This evaluation guard does not narrow the configured positive parameter bounds.
+
+`Transform.None`, logarithmic Box–Cox, fitted Box–Cox, and fitted Yeo–Johnson are supported.
+Transformation fitting is preprocessing, not part of $\theta$. Box-Cox and Yeo-Johnson lambda are
+fit from raw observations `[0, TrainingTimeSteps)` and then frozen while the transform is applied
+to the full response. Consequently, changing holdout values cannot change the training transform,
+Jacobian, likelihood, or defaults. The effective read-only `TransformLambda` is fitted
+automatically unless assigned through `SetTransformParameters`. A manual lambda remains fixed
+when only the training window changes; a fitted lambda refits when the response, training window,
+or transform type changes. None and logarithmic transforms use canonical lambda zero.
+
+Transform state is rebuilt atomically before numerical results are reused. Existing XML remains
+valid; optional invariant-culture `TransformLambda` and `TransformLambdaIsManual` attributes
+preserve the effective exponent and its provenance through save/open and clone/copy workflows.
+The setter's second argument, `lambda2`, remains accepted but is intentionally ignored for API
+compatibility; it is not a shift or offset parameter.
+
+Prediction and simulation share the inverse statistical order but have different conditioning
+contracts. ARIMA/ARIMAX first construct intercept, trend, seasonality, exact-date level-covariate,
+AR, MA, and innovation contributions on the transformed/highest-difference model scale. For
+prediction with $d>0$, every fitted training level uses the observed lower-order state at the
+preceding raw index; the first forecast uses the final observed training states, and later
+forecasts recurse from generated states. For generation, the complete path is integrated from the
+first $d$ observed transformed levels when data are attached or zero transformed anchors otherwise.
+The inverse response transform is applied once after reconstruction in either path. Thus
+preprocessing is raw response $\rightarrow$ transform $\rightarrow$ difference, while simulation
+is model recurrence $\rightarrow$ integration $\rightarrow$ inverse transform. For component
+arrays, model step $k$ maps to raw slot $k+d$ and the first $d$ conditioning slots are zero.
+
+## Analysis Lifecycle
+
+`ARAnalysis`, `MAAnalysis`, `ARIMAAnalysis`, and `ARIMAXAnalysis` follow the common `AnalysisBase` lifecycle:
+
+1. Validate model data, orders, parameter bounds, training length, and forecast horizon.
+2. Initialize `BayesianAnalysis`, ordinarily with MLE-derived screening/starting behavior managed by the analysis.
+3. Run Bayesian sampling asynchronously with progress and cancellation propagation.
+4. Select the posterior mean or sampled MAP state for the displayed deterministic curve.
+5. Generate uncertainty realizations from joint posterior draws and seeded innovations.
+6. Publish model-scale results, original-scale curves, DIC, RMSE, and analysis metadata.
+
+`ForecastingTimeSteps` on an analysis means steps beyond the complete observed response in the published result. Internally the analysis passes `observedCount - TrainingTimeSteps + ForecastingTimeSteps` to `Predict`, so the returned curve includes the training region, held-out observed region, and future horizon. Forecasting is capped at 100 steps.
+
+The uncertainty result is posterior predictive: parameter uncertainty, innovation noise, nonlinear inverse transformation, and—where applicable—covariate extension are combined. It is not a confidence band for the conditional mean. Report the seed, posterior draw count, transform, training endpoint, and covariate scenario.
+
+For an integrated transformed model, a stable and nearly symmetric forecast distribution on the
+transformed scale can become strongly asymmetric after the inverse transform. Innovation variance
+also accumulates with forecast horizon when $d>0$. A rapidly rising original-scale upper bound is
+therefore not, by itself, evidence that raw observations entered the AR/MA recurrence. Diagnose the
+recurrence on the transformed-difference scale, compare its horizon variance with the ARMA impulse
+response, and only then apply the monotone inverse transform to the completed levels. Raw-scale
+intervals from `Transform.None` are not directly comparable with intervals from a fitted nonlinear
+transform because they represent different fitted models.
+
+## Model Selection and Diagnostics
+
+Choose orders using scientific plausibility, ACF/PACF as exploratory tools, residual diagnostics, and genuinely held-out predictive performance. ACF/PACF patterns are asymptotic heuristics and are distorted by trend, seasonality, transformations, outliers, and short records. After fitting, examine:
+
+- response and residual time plots;
+- residual ACF/PACF and portmanteau checks at hydrologically relevant lags;
+- innovation normality and variance stability;
+- characteristic roots and their posterior uncertainty;
+- chain mixing, R-hat, and ESS under the limitations in [MCMC diagnostics](../estimation/diagnostics.md);
+- holdout coverage and proper scores on the original decision scale;
+- sensitivity to training window, transform, order, and covariate specification.
+
+AR, MA, ARIMA, and ARIMAX analyses compute AIC/BIC from each model's data log likelihood evaluated at the stored MAP; prior-density terms are excluded. The values agree with MLE criteria only when every active prior is constant and MAP coincides with the constrained MLE. The default Jeffreys scale option is nonconstant, so analyses using it—or any informative prior—should use DIC, WAIC, or verified PSIS-LOO for Bayesian comparison rather than treating the MAP-evaluated fields as conventional AIC/BIC.
+
+The verification suite checks this routing independently for AR, MA, ARIMA, ARIMAX, and rating
+curve, with an analytical flat-prior order-zero Gaussian comparison.
+
+## Current Scientific Availability
+
+| Configuration | Estimation likelihood | Forecast/predictive simulation |
+|---|---|---|
+| AR/MA, no fitted transform | Available subject to conditional-likelihood assumptions | Available subject to diagnostic checks |
+| AR/MA with fitted transform | Available with training-only frozen lambda | Back-transform is median-like; transform uncertainty omitted |
+| ARIMA/ARIMAX with $d=0$, no transform | Available | Available, subject to ARIMAX covariate scenario |
+| ARIMA with $d>0$ | Conditional likelihood can be inspected | Prediction conditions on observed training states; simulation uses explicit observed/zero initialization anchors |
+| ARIMAX with $d>0$ | Available with exact-date level covariates and conditional Jacobian alignment | Prediction conditions on observed training states with exact-date covariates; simulation uses explicit observed/zero initialization anchors |
+| ARIMA transformed/differenced simulation | — | Available; full model-scale recursion, integration, then one inverse transform |
+| ARIMAX transformed/differenced simulation | — | Available; all components on model scale, exact-date level covariates, integration, then one inverse transform |
+
+These capabilities remain conditional on the likelihood, transformation, initialization, and covariate assumptions described above. Ordinary pointwise LOO for a conditional time-series likelihood is not leave-future-out validation: neighboring observations can retain information about an omitted time. Assess forecasting with a chronological holdout or rolling-origin experiment.
+
+## Hydrologic Reporting Checklist
+
+State the variable and units, interval, calendar/water-year convention, missing-data treatment, training and holdout dates, transformation and fitting subset, model orders, intercept meaning, seasonal period, covariate units/lags/future scenario, priors, sampler/seed, diagnostic thresholds, residual results, parameter roots, forecast target (median/mean/realization), and uncertainty components. Distinguish operational forecasts conditional on known covariates from scenarios requiring future precipitation, regulation, or climate assumptions.
+
+## Traceability and References
+
+Implementation is under `Models/TimeSeries/`; orchestration is under `Analyses/TimeSeries/`. Fast
+tests are under `RMC.BestFit.Tests/TimeSeriesModels/` and `TimeSeriesAnalysis/`. Focused numerical
+Verification methods are under the matching `RMC.BestFit.Verification` directories and are run
+only by exact fully qualified name; the complete Verification project is not run.
+
+<a id="ref-1"></a>[1] G. E. P. Box, G. M. Jenkins, G. C. Reinsel, and G. M. Ljung, *Time Series Analysis: Forecasting and Control*, 5th ed., Wiley, 2015.
+
+<a id="ref-2"></a>[2] R. H. Shumway and D. S. Stoffer, *Time Series Analysis and Its Applications*, 4th ed., Springer, 2017.
+
+<a id="ref-3"></a>[3] R. J. Hyndman and G. Athanasopoulos, *Forecasting: Principles and Practice*, 3rd ed., OTexts, 2021.

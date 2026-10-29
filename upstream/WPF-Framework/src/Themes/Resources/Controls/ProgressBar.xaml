@@ -1,0 +1,83 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!--
+    ProgressBar Control Template
+
+    Provides themed styling for the WPF ProgressBar control.
+    All colors use DynamicResource bindings for runtime theme switching.
+
+    Required template parts (from ProgressBar):
+      PART_Track     - Border element representing the full track area
+      PART_Indicator - Border element representing the filled progress area
+      PART_GlowRect - Rectangle used for the indeterminate animation glow
+    -->
+
+    <!-- ProgressBar Style -->
+    <Style TargetType="{x:Type ProgressBar}">
+        <Setter Property="Background" Value="{DynamicResource ProgressBar.Static.Background}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource ProgressBar.Static.Border}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Foreground" Value="{DynamicResource ProgressBar.Static.Foreground}"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type ProgressBar}">
+                    <Grid x:Name="TemplateRoot" SnapsToDevicePixels="True">
+
+                        <!-- Outer border and background -->
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"/>
+
+                        <!-- Track (clipping region for the indicator) -->
+                        <Border x:Name="PART_Track"
+                                Margin="1"
+                                BorderThickness="0">
+                            <Grid>
+                                <!-- Decoration layer for clipping -->
+                                <Rectangle x:Name="DecoratorRectangle" Fill="Transparent"/>
+                            </Grid>
+                        </Border>
+
+                        <!-- Progress indicator (filled portion) -->
+                        <Border x:Name="PART_Indicator"
+                                Margin="1"
+                                HorizontalAlignment="Left"
+                                Background="{TemplateBinding Foreground}"
+                                BorderThickness="0"/>
+
+                        <!-- Glow rectangle for indeterminate animation -->
+                        <Rectangle x:Name="PART_GlowRect"
+                                   Margin="1"
+                                   HorizontalAlignment="Left"
+                                   Width="100"
+                                   Fill="{TemplateBinding Foreground}"
+                                   Opacity="0.7"/>
+
+                    </Grid>
+
+                    <ControlTemplate.Triggers>
+                        <!-- Hide glow rect in determinate mode -->
+                        <Trigger Property="IsIndeterminate" Value="False">
+                            <Setter TargetName="PART_GlowRect" Property="Visibility" Value="Collapsed"/>
+                        </Trigger>
+                        <!-- Hide indicator in indeterminate mode -->
+                        <Trigger Property="IsIndeterminate" Value="True">
+                            <Setter TargetName="PART_Indicator" Property="Visibility" Value="Collapsed"/>
+                        </Trigger>
+                        <!-- Disabled state -->
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Background"
+                                    Value="{DynamicResource ProgressBar.Disabled.Background}"/>
+                            <Setter Property="BorderBrush"
+                                    Value="{DynamicResource ProgressBar.Disabled.Border}"/>
+                            <Setter Property="Foreground"
+                                    Value="{DynamicResource ProgressBar.Disabled.Foreground}"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+</ResourceDictionary>

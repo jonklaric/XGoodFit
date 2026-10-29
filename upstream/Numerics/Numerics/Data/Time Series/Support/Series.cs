@@ -1,0 +1,283 @@
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.ComponentModel;
+using System.Linq;
+
+namespace Numerics.Data
+{
+
+    /// <summary>
+    /// An abstract series class, which is a collection of series ordinates.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    ///     <b> Authors: </b>
+    ///     Haden Smith, USACE Risk Management Center, cole.h.smith@usace.army.mil
+    /// </para>
+    /// </remarks>
+    [Serializable]
+    public abstract class Series<TIndex, TValue> : IList<SeriesOrdinate<TIndex, TValue>>, IList, INotifyCollectionChanged
+    {
+        /// <summary>
+        /// Internal list.
+        /// </summary>
+        protected List<SeriesOrdinate<TIndex, TValue>> _seriesOrdinates = new List<SeriesOrdinate<TIndex, TValue>>();
+
+        /// <inheritdoc/>
+        public event NotifyCollectionChangedEventHandler? CollectionChanged;
+
+        /// <inheritdoc/>
+        public SeriesOrdinate<TIndex, TValue> this[int index]
+        {
+            get { return _seriesOrdinates[index]; }
+            set
+            {
+                if (_seriesOrdinates[index] != value)
+                {
+                    var oldvalue = _seriesOrdinates[index];
+                    _seriesOrdinates[index] = value;
+                    if (SuppressCollectionChanged == false)
+                        CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Replace, value, oldvalue, index));
+                }
+            }
+        }
+
+        /// <inheritdoc/>
+        object? IList.this[int index]
+        {
+            get { return _seriesOrdinates[index]; }
+            set
+            {
+                if (value is null) throw new ArgumentNullException(nameof(value));
+                if (value.GetType() != typeof(SeriesOrdinate<TIndex, TValue>))
+                {
+                    if (_seriesOrdinates[index] != (SeriesOrdinate<TIndex, TValue>)value)
+                    {
+                        var oldvalue = _seriesOrdinates[index];
+                        _seriesOrdinates[index] = (SeriesOrdinate<TIndex, TValue>)value;
+                        if (SuppressCollectionChanged == false)
+                            CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Replace, value, oldvalue, index));
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Suppress collection changed events from firing.
+        /// </summary>
+        public bool SuppressCollectionChanged { get; set; } = false;
+
+        /// <inheritdoc/>
+        public int Count => _seriesOrdinates.Count;
+
+        /// <inheritdoc/>
+        public virtual bool IsReadOnly => false;
+
+        /// <inheritdoc/>
+        public bool IsFixedSize => false;
+
+        private readonly object _syncRoot = new object();
+
+        /// <inheritdoc/>
+        public object SyncRoot => _syncRoot;
+
+        /// <inheritdoc/>
+        public bool IsSynchronized => false;
+
+        /// <inheritdoc/>
+        public virtual void Add(SeriesOrdinate<TIndex, TValue> item)
+        {
+            if (item is null) throw new ArgumentNullException(nameof(item));
+            _seriesOrdinates.Add(item);         
+            RaiseCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, item, _seriesOrdinates.Count - 1)); 
+        }
+
+        /// <inheritdoc/>
+        public int Add(object? item)
+        {
+            if (item is null) throw new ArgumentNullException(nameof(item));
+            if (item.GetType() != typeof(SeriesOrdinate<TIndex, TValue>)) { return -1; }
+            Add((SeriesOrdinate<TIndex, TValue>)item);
+            return _seriesOrdinates.Count - 1;
+        }
+
+        /// <inheritdoc/>
+        public virtual void Insert(int index, SeriesOrdinate<TIndex, TValue> item)
+        {
+            if (item is null) throw new ArgumentNullException(nameof(item));
+            _seriesOrdinates.Insert(index, item);
+            RaiseCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, item, index));
+        }
+
+        /// <inheritdoc/>
+        public void Insert(int index, object? item)
+        {
+            if (item is null) throw new ArgumentNullException(nameof(item));
+            if (item.GetType() == typeof(SeriesOrdinate<TIndex, TValue>)) 
+            { 
+                Insert(index, (SeriesOrdinate<TIndex, TValue>)item); 
+            }
+        }
+
+        /// <inheritdoc/>
+        public virtual bool Remove(SeriesOrdinate<TIndex, TValue> item)
+        {
+            var index = IndexOf(item);
+            if (index < 0) return false;
+            _seriesOrdinates.RemoveAt(index);
+            RaiseCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, item, index));
+            return true;
+        }
+
+        /// <inheritdoc/>
+        public void Remove(object? item)
+        {
+            if (item is null) return;
+            if (item.GetType() == typeof(SeriesOrdinate<TIndex, TValue>))
+            {
+                Remove((SeriesOrdinate<TIndex, TValue>)item);
+            }
+        }
+
+        /// <inheritdoc/>
+        /// <remarks>
+        /// Removes the ordinate at the requested position directly, so when equal-valued
+        /// ordinates exist elsewhere in the series the element at <paramref name="index"/> is
+        /// the one removed and reported.
+        /// </remarks>
+        public virtual void RemoveAt(int index)
+        {
+            var item = _seriesOrdinates[index];
+            _seriesOrdinates.RemoveAt(index);
+            RaiseCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, item, index));
+        }
+
+        /// <summary>
+        /// Remove all elements from the collection.
+        /// </summary>
+        /// <remarks>
+        /// Clears the backing list in one operation and raises a single reset event. The former
+        /// element-by-element removal cost two full equality scans per element, which made
+        /// clearing a large series O(n²).
+        /// </remarks>
+        public void Clear()
+        {
+            _seriesOrdinates.Clear();
+            RaiseCollectionChangedReset();
+        }
+
+        /// <inheritdoc/>
+        public bool Contains(SeriesOrdinate<TIndex, TValue> item)
+        {
+            return _seriesOrdinates.Contains(item);
+        }
+
+        /// <inheritdoc/>
+        public bool Contains(object? item)
+        {
+            if (item is null) return false;
+            if (item.GetType() == typeof(SeriesOrdinate<TIndex, TValue>))
+            {
+                return Contains((SeriesOrdinate<TIndex, TValue>)item);
+            }
+            return false;
+        }
+
+        /// <inheritdoc/>
+        public void CopyTo(SeriesOrdinate<TIndex, TValue>[] array, int index)
+        {
+            _seriesOrdinates.CopyTo(array, index);
+        }
+
+        /// <inheritdoc/>
+        public void CopyTo(Array array, int index)
+        {
+            if (array.GetType() == typeof(SeriesOrdinate<TIndex, TValue>[]))
+            {
+                CopyTo((SeriesOrdinate<TIndex, TValue>[])array, index);
+            }
+        }
+
+        /// <inheritdoc/>
+        public int IndexOf(SeriesOrdinate<TIndex, TValue> item)
+        {
+            return _seriesOrdinates.IndexOf(item);
+        }
+
+        /// <inheritdoc/>
+        public int IndexOf(object? item)
+        {
+            if (item is null) return -1;
+            if (item.GetType() == typeof(SeriesOrdinate<TIndex, TValue>))
+            {
+                return _seriesOrdinates.IndexOf((SeriesOrdinate<TIndex, TValue>)item);
+            }
+            return -1;
+        }
+
+        /// <inheritdoc/>
+        public IEnumerator<SeriesOrdinate<TIndex, TValue>> GetEnumerator()
+        {
+            return _seriesOrdinates.GetEnumerator();
+        }
+
+        /// <inheritdoc/>
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+        /// <summary>
+        /// Raise the collection changed event.
+        /// </summary>
+        /// <param name="args">Change event args.</param>
+        protected void RaiseCollectionChanged(NotifyCollectionChangedEventArgs args)
+        {
+            if (!SuppressCollectionChanged)
+                CollectionChanged?.Invoke(this, args);
+        }
+
+        /// <summary>
+        /// Raise the collection changed reset event.
+        /// </summary>
+        public void RaiseCollectionChangedReset()
+        {
+            CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+        }
+
+        /// <summary>
+        /// Returns the list of series values as a list.
+        /// </summary>
+        public List<TValue> ValuesToList()
+        {
+            return _seriesOrdinates.Select(x => x.Value).ToList();
+        }
+
+        /// <summary>
+        /// Returns the list of series values as an array.
+        /// </summary>
+        public TValue[] ValuesToArray()
+        {
+            return _seriesOrdinates.Select(x => x.Value).ToArray();
+        }
+
+        /// <summary>
+        /// Returns the list of series indexes as a list.
+        /// </summary>
+        public List<TIndex> IndexesToList()
+        {
+            return _seriesOrdinates.Select(x => x.Index).ToList();
+        }
+
+        /// <summary>
+        /// Returns the list of series indexes as an array.
+        /// </summary>
+        public TIndex[] IndexesToArray()
+        {
+            return _seriesOrdinates.Select(x => x.Index).ToArray();
+        }
+
+    }
+}

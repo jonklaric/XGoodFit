@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <id>RMC.Wpf.Framework.Controls</id>
+    <version>$version$</version>
+    <authors>C. Haden Smith, Woodrow L. Fields, Julian Gonzalez</authors>
+    <owners>USACE-RMC</owners>
+    <license type="expression">0BSD</license>
+    <projectUrl>https://github.com/USACE-RMC/WPF-Framework</projectUrl>
+    <repository type="git" url="https://github.com/USACE-RMC/WPF-Framework" />
+    <readme>README.md</readme>
+    <description>WPF controls, framework UI, DAG controls, database controls, numeric controls, OxyPlot controls, and AvalonDock assemblies for the RMC WPF Framework.</description>
+    <releaseNotes>Version 1.0.5 keeps compaction active until database work completes, reports maintenance errors, and updates FrameworkUI demo workflows.</releaseNotes>
+    <tags>RMC WPF framework controls AvalonDock OxyPlot numeric database DAG</tags>
+    <dependencies>
+      <group targetFramework="net10.0-windows7.0">
+        <dependency id="RMC.Wpf.Framework.Core" version="$version$" />
+        <dependency id="RMC.Wpf.Framework.Models" version="$version$" />
+        <dependency id="RMC.Wpf.Framework.Support" version="$version$" />
+        <dependency id="RMC.Numerics" version="$rmcNumericsPackageDependencyVersion$" />
+      </group>
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="..\..\..\README.md" target="" />
+    <file src="..\..\GenericControls\bin\$configuration$\net10.0-windows\GenericControls.dll" target="lib\net10.0-windows7.0" />
+    <file src="..\..\GenericControls\bin\$configuration$\net10.0-windows\GenericControls.xml" target="lib\net10.0-windows7.0" />
+    <file src="..\..\FrameworkUI\bin\$configuration$\net10.0-windows\FrameworkUI.dll" target="lib\net10.0-windows7.0" />
+    <file src="..\..\FrameworkUI\bin\$configuration$\net10.0-windows\FrameworkUI.xml" target="lib\net10.0-windows7.0" />
+    <file src="..\..\DAGControls\bin\$configuration$\net10.0-windows\DAGControls.dll" target="lib\net10.0-windows7.0" />
+    <file src="..\..\DAGControls\bin\$configuration$\net10.0-windows\DAGControls.xml" target="lib\net10.0-windows7.0" />
+    <file src="..\..\DatabaseControls\bin\$configuration$\net10.0-windows\DatabaseControls.dll" target="lib\net10.0-windows7.0" />
+    <file src="..\..\DatabaseControls\bin\$configuration$\net10.0-windows\DatabaseControls.xml" target="lib\net10.0-windows7.0" />
+    <file src="..\..\ExpressionParserControls\bin\$configuration$\net10.0-windows\ExpressionParserControls.dll" target="lib\net10.0-windows7.0" />
+    <file src="..\..\ExpressionParserControls\bin\$configuration$\net10.0-windows\ExpressionParserControls.xml" target="lib\net10.0-windows7.0" />
+    <file src="..\..\NumericControls\bin\$configuration$\net10.0-windows\NumericControls.dll" target="lib\net10.0-windows7.0" />
+    <file src="..\..\NumericControls\bin\$configuration$\net10.0-windows\NumericControls.xml" target="lib\net10.0-windows7.0" />
+    <file src="..\..\OxyPlotControls\bin\$configuration$\net10.0-windows\OxyPlotControls.dll" target="lib\net10.0-windows7.0" />
+    <file src="..\..\OxyPlotControls\bin\$configuration$\net10.0-windows\OxyPlotControls.xml" target="lib\net10.0-windows7.0" />
+    <file src="..\..\AvalonDock\Xceed.Wpf.AvalonDock\bin\$configuration$\net10.0-windows\Xceed.Wpf.AvalonDock.dll" target="lib\net10.0-windows7.0" />
+    <file src="..\..\AvalonDock\Xceed.Wpf.AvalonDock.Themes.VS2013\bin\$configuration$\net10.0-windows\Xceed.Wpf.AvalonDock.Themes.VS2013.dll" target="lib\net10.0-windows7.0" />
+  </files>
+</package>

@@ -1,0 +1,35 @@
+
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <RootNamespace>DatabaseControls.Demo</RootNamespace>
+    <AssemblyName>DatabaseControls.Demo</AssemblyName>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+
+  	<!-- Shared packages -->
+	<ItemGroup>
+		<PackageReference Include="System.Data.SQLite" />
+		<PackageReference Include="SourceGear.sqlite3" />
+	</ItemGroup>
+	<ItemGroup>
+	  <ProjectReference Include="..\DatabaseControls\DatabaseControls.csproj" />
+	  <ProjectReference Include="..\DatabaseManager\DatabaseManager.csproj" />
+	  <ProjectReference Include="..\GenericControls\GenericControls.csproj" />
+	  <ProjectReference Include="..\OxyPlotControls\OxyPlotControls.csproj" />
+	  <ProjectReference Include="..\Themes\Themes.csproj" />
+	</ItemGroup>
+	<ItemGroup>
+	  <PackageReference Include="RMC.Numerics" />
+	  <ProjectReference Include="..\OxyPlot\OxyPlot\OxyPlot.csproj" />
+	  <ProjectReference Include="..\OxyPlot\OxyPlot.Wpf\OxyPlot.Wpf.csproj" />
+	  <ProjectReference Include="..\OxyPlot\OxyPlot.Wpf.Shared\OxyPlot.Wpf.Shared.csproj" />
+	</ItemGroup>
+
+</Project>

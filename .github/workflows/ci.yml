@@ -37,19 +37,23 @@ jobs:
         with:
           dotnet-version: '10.0.x'
 
-      - name: Fetch pinned upstream sources
-        shell: bash
-        run: bash scripts/fetch-upstream.sh --with-examples
+      # Everything needed to build is in the repository: no downloads besides NuGet packages.
+      - name: Build from a fresh checkout
+        run: dotnet build XGoodFit.slnx -c Release
 
       # Exclusions and per-OS limits are documented in the script.
       - name: Upstream portable test suites
         shell: bash
         run: bash scripts/run-upstream-tests.sh
 
+      - name: Fetch sample data
+        shell: bash
+        run: bash scripts/fetch-sample-data.sh RMC-BestFit
+
       - name: Probe example projects
         shell: bash
         run: |
-          dotnet run --project tools/ProjectProbe/ProjectProbe.csproj -c Release -- upstream/RMC-BestFit/examples --tables > probe-${{ matrix.name }}.txt
+          dotnet run --project tools/ProjectProbe/ProjectProbe.csproj -c Release -- sample-data/RMC-BestFit/examples --tables > probe-${{ matrix.name }}.txt
           grep '^#' probe-${{ matrix.name }}.txt
 
       - uses: actions/upload-artifact@v7

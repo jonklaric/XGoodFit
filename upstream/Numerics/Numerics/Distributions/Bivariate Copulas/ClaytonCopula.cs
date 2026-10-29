@@ -1,0 +1,184 @@
+﻿using Numerics.Data.Statistics;
+using System;
+using System.Collections.Generic;
+
+namespace Numerics.Distributions.Copulas
+{
+
+    /// <summary>
+    /// The Clayton copula.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    ///     <b> Authors: </b>
+    ///     Haden Smith, USACE Risk Management Center, cole.h.smith@usace.army.mil
+    /// </para>
+    /// </remarks>
+    [Serializable]
+    public class ClaytonCopula : ArchimedeanCopula
+    {
+
+        /// <summary>
+        /// Constructs a Clayton copula with a dependency θ = 2.
+        /// </summary>
+        public ClaytonCopula()
+        {
+            Theta = 2d;
+        }
+
+        /// <summary>
+        /// Constructs a Clayton copula with a specified θ.
+        /// </summary>
+        /// <param name="theta">The dependency parameter, θ.</param>
+        public ClaytonCopula(double theta)
+        {
+            Theta = theta;
+        }
+
+        /// <summary>
+        /// Constructs a Clayton copula with a specified θ and marginal distributions.
+        /// </summary>
+        /// <param name="theta">The dependency parameter, θ.</param>
+        ///<param name="marginalDistributionX">The X marginal distribution for the copula.</param>
+        ///<param name="marginalDistributionY">The Y marginal distribution for the copula.</param>
+        public ClaytonCopula(double theta, IUnivariateDistribution? marginalDistributionX, IUnivariateDistribution? marginalDistributionY)
+        {
+            Theta = theta;
+            MarginalDistributionX = marginalDistributionX;
+            MarginalDistributionY = marginalDistributionY;
+        }
+
+        /// <inheritdoc/>
+        public override CopulaType Type
+        {
+            get { return CopulaType.Clayton; }
+        }
+
+        /// <inheritdoc/>
+        public override string DisplayName
+        {
+            get { return "Clayton"; }
+        }
+
+        /// <inheritdoc/>
+        public override string ShortDisplayName
+        {
+            get { return "C"; }
+        }
+
+        /// <inheritdoc/>
+        public override double ThetaMinimum
+        {
+            get { return -1.0d; }
+        }
+
+        /// <inheritdoc/>
+        public override double ThetaMaximum
+        {
+            get { return double.PositiveInfinity; }
+        }
+
+        /// <inheritdoc/>
+        public override double Generator(double t)
+        {
+            double a = t;
+            return Math.Sign(a) * Math.Pow(Math.Abs(a), -Theta) - 1.0d;
+        }
+
+        /// <inheritdoc/>
+        public override double GeneratorInverse(double t)
+        {
+            double a = 1.0d + t;
+            return Math.Sign(a) * Math.Pow(Math.Abs(a), -1.0d / Theta);
+        }
+
+        /// <inheritdoc/>
+        public override double GeneratorPrime(double t)
+        {
+            double a = t;
+            return -Theta * Math.Sign(a) * Math.Pow(Math.Abs(a), -Theta - 1.0d);
+        }
+
+        /// <inheritdoc/>
+        public override double GeneratorPrime2(double t)
+        {
+            double a = t;
+            return -Theta * Math.Sign(a) * Math.Pow(Math.Abs(a), -Theta - 2.0d) * (-Theta - 1.0d);
+        }
+
+        /// <inheritdoc/>
+        public override double GeneratorPrimeInverse(double t)
+        {
+            double a = t / -Theta;
+            return Math.Sign(a) * Math.Pow(Math.Abs(a), -1.0d / (Theta + 1.0d));
+        }
+
+        /// <inheritdoc/>
+        public override double CDF(double u, double v)
+        {
+            // Validate parameters
+            if (_parametersValid == false) ValidateParameter(Theta, true);
+            return Math.Pow(Math.Max(Math.Pow(u,-Theta) + Math.Pow(v, -Theta) - 1d,0d), -1d / Theta);
+        }
+
+        /// <inheritdoc/>
+        /// <remarks>
+        /// Uses the Clayton closed-form conditional inversion
+        /// v = (u^(−θ)·(t^(−θ/(θ+1)) − 1) + 1)^(−1/θ).
+        /// </remarks>
+        public override double InverseConditionalCDF(double u, double t)
+        {
+            // Validate parameters
+            if (_parametersValid == false) ValidateParameter(Theta, true);
+            return Math.Pow(Math.Pow(u, -Theta) * (Math.Pow(t, -Theta / (Theta + 1d)) - 1d) + 1d, -1d / Theta);
+        }
+
+        /// <inheritdoc/>
+        public override double[] InverseCDF(double u, double v)
+        {
+            return [u, InverseConditionalCDF(u, v)];
+        }
+
+        /// <summary>
+        /// Gets the upper tail dependence coefficient λ_U = 0.
+        /// The Clayton copula has no upper tail dependence.
+        /// </summary>
+        public override double UpperTailDependence => 0.0;
+
+        /// <summary>
+        /// Gets the lower tail dependence coefficient λ_L = 2^(-1/θ).
+        /// </summary>
+        public override double LowerTailDependence
+        {
+            get
+            {
+                if (Theta <= 0.0) return 0.0;
+                return Math.Pow(2.0, -1.0 / Theta);
+            }
+        }
+
+        /// <inheritdoc/>
+        public override BivariateCopula Clone()
+        {
+            return new ClaytonCopula(Theta, CloneMarginal(MarginalDistributionX), CloneMarginal(MarginalDistributionY));
+        }
+
+        /// <summary>
+        /// Estimates the dependency parameter using the method of moments.
+        /// </summary>
+        /// <param name="sampleDataX">The sample data for the X variable.</param>
+        /// <param name="sampleDataY">The sample data for the Y variable.</param>
+        public void SetThetaFromTau(IList<double> sampleDataX, IList<double> sampleDataY)
+        {
+            var tau = Correlation.KendallsTau(sampleDataX, sampleDataY);
+            Theta = (2d * tau) / (1 - tau);
+        }
+
+        /// <inheritdoc/>
+        public override double[,] ParameterConstraints(IList<double> sampleDataX, IList<double> sampleDataY)
+        {
+            return new double[,] { { -1, 100 } };
+        }
+
+    }
+}

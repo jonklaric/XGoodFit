@@ -1,0 +1,496 @@
+﻿<UserControl x:Class="NumericControls.Distributions.Univariate.Selector"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:NumericControls"
+             xmlns:cntrls="clr-namespace:GenericControls;assembly=GenericControls"
+             xmlns:oxy="http://oxyplot.org/wpf"
+             xmlns:sys="clr-namespace:System;assembly=mscorlib"
+             xmlns:glob="clr-namespace:System.Globalization;assembly=mscorlib"
+             mc:Ignorable="d"
+             d:DesignHeight="382" d:DesignWidth="300" MinWidth="200">
+    <UserControl.Resources>
+        <cntrls:BooleanToVisibilityConverter x:Key="BoolToVisConverter" TrueValue="Visible" FalseValue="Collapsed"/>
+        <cntrls:BooleanToTextConverter x:Key="BoolToYAxisTextConverter" TrueValue="Density" FalseValue=""/>
+        <cntrls:BooleanToTextConverter x:Key="BoolToXAxisTextConverter" TrueValue="X Value" FalseValue=""/>
+        <cntrls:BooleanToDoubleConverter x:Key="BoolToLabelDoubleConverter" TrueValue="{x:Static sys:Double.NaN}" FalseValue="5"/>
+        <cntrls:BooleanToDoubleConverter x:Key="BoolToTitleDoubleConverter" TrueValue="{x:Static sys:Double.NaN}" FalseValue="8"/>
+
+        <SolidColorBrush x:Key="ReadOnlyBackGround" Color="{DynamicResource {x:Static SystemColors.ControlColorKey}}"/>
+        <Style x:Key="Left_ColumnHeaderStyle" TargetType="{x:Type DataGridColumnHeader}">
+            <Setter Property="ContentTemplate">
+                <Setter.Value>
+                    <DataTemplate>
+                        <Grid>
+                            <TextBlock TextWrapping="Wrap" TextAlignment="Left" VerticalAlignment="Bottom" FontWeight="Bold" HorizontalAlignment="Stretch" Text="{Binding}"/>
+                        </Grid>
+                    </DataTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="Right_ColumnHeaderStyle" TargetType="{x:Type DataGridColumnHeader}">
+            <Setter Property="ContentTemplate">
+                <Setter.Value>
+                    <DataTemplate>
+                        <Grid HorizontalAlignment="Right">
+                            <TextBlock TextWrapping="Wrap" TextAlignment="Right" VerticalAlignment="Bottom" FontWeight="Bold" HorizontalAlignment="Stretch" Text="{Binding}"/>
+                        </Grid>
+                    </DataTemplate>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="HorizontalContentAlignment" Value="Right" />
+        </Style>
+        <Style x:Key="ReadOnlyTextBackgroundCellStyle" TargetType="DataGridCell">
+            <Setter Property="Background" Value="{StaticResource ReadOnlyBackGround}"></Setter>
+            <Setter Property="TextBlock.TextAlignment"  Value="Left"></Setter>
+            <Style.Triggers>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Foreground" Value="Black"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="ReadOnlyValueBackgroundCellStyle" TargetType="DataGridCell">
+            <Setter Property="Background" Value="{StaticResource ReadOnlyBackGround}"></Setter>
+            <Setter Property="TextBlock.TextAlignment"  Value="Right"></Setter>
+            <Style.Triggers>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Foreground" Value="Black"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="ParameterValueCellStyle" TargetType="DataGridCell">
+            <Setter Property="TextBlock.TextAlignment"  Value="Right"></Setter>
+            <Style.Triggers>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Foreground" Value="Black"/>
+                </Trigger>
+                <DataTrigger Binding="{Binding Path=IsValid, UpdateSourceTrigger=PropertyChanged}" Value="False">
+                    <Setter Property="Background" Value="#FFF7B6AF"/>
+                    <Setter Property="BorderBrush" Value="Red"/>
+                    <Setter Property="ToolTip" Value="{Binding Path=ErrorMessage}"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Path=IsValid, UpdateSourceTrigger=PropertyChanged}" Value="True">
+                    <Setter Property="Background" Value="White"/>
+                    <Setter Property="ToolTip" Value="{x:Null}"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Expander control brushes for various states -->
+        <SolidColorBrush x:Key="Expander.MouseOver.Circle.Stroke" Color="#FF5593FF"/>
+        <SolidColorBrush x:Key="Expander.MouseOver.Circle.Fill" Color="#FFF3F9FF"/>
+        <SolidColorBrush x:Key="Expander.MouseOver.Arrow.Stroke" Color="#FF000000"/>
+        <SolidColorBrush x:Key="Expander.Pressed.Circle.Stroke" Color="#FF3C77DD"/>
+        <SolidColorBrush x:Key="Expander.Pressed.Circle.Fill" Color="#FFD9ECFF"/>
+        <SolidColorBrush x:Key="Expander.Pressed.Arrow.Stroke" Color="#FF000000"/>
+        <SolidColorBrush x:Key="Expander.Disabled.Circle.Stroke" Color="#FFBCBCBC"/>
+        <SolidColorBrush x:Key="Expander.Disabled.Circle.Fill" Color="#FFE6E6E6"/>
+        <SolidColorBrush x:Key="Expander.Disabled.Arrow.Stroke" Color="#FF707070"/>
+        <SolidColorBrush x:Key="Expander.Static.Circle.Fill" Color="#FFFFFFFF"/>
+        <SolidColorBrush x:Key="Expander.Static.Circle.Stroke" Color="#FF333333"/>
+        <SolidColorBrush x:Key="Expander.Static.Arrow.Stroke" Color="#FF333333"/>
+        <Style x:Key="ExpanderRightHeaderStyle" TargetType="{x:Type ToggleButton}">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type ToggleButton}">
+                        <Border Padding="{TemplateBinding Padding}">
+                            <Grid Background="Transparent" SnapsToDevicePixels="False">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="19"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+                                <Grid>
+                                    <Grid.LayoutTransform>
+                                        <TransformGroup>
+                                            <TransformGroup.Children>
+                                                <TransformCollection>
+                                                    <RotateTransform Angle="-90"/>
+                                                </TransformCollection>
+                                            </TransformGroup.Children>
+                                        </TransformGroup>
+                                    </Grid.LayoutTransform>
+                                    <Ellipse x:Name="circle" Fill="{StaticResource Expander.Static.Circle.Fill}" HorizontalAlignment="Center" Height="19" Stroke="{StaticResource Expander.Static.Circle.Stroke}" VerticalAlignment="Center" Width="19"/>
+                                    <Path x:Name="arrow" Data="M 1,1.5 L 4.5,5 L 8,1.5" HorizontalAlignment="Center" SnapsToDevicePixels="false" Stroke="{StaticResource Expander.Static.Arrow.Stroke}" StrokeThickness="2" VerticalAlignment="Center"/>
+                                </Grid>
+                                <ContentPresenter HorizontalAlignment="Center" Margin="0,4,0,0" Grid.Row="1" RecognizesAccessKey="True" SnapsToDevicePixels="True" VerticalAlignment="Top"/>
+                            </Grid>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="true">
+                                <Setter Property="Data" TargetName="arrow" Value="M 1,4.5  L 4.5,1  L 8,4.5"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="true">
+                                <Setter Property="Stroke" TargetName="circle" Value="{StaticResource Expander.MouseOver.Circle.Stroke}"/>
+                                <Setter Property="Fill" TargetName="circle" Value="{StaticResource Expander.MouseOver.Circle.Fill}"/>
+                                <Setter Property="Stroke" TargetName="arrow" Value="{StaticResource Expander.MouseOver.Arrow.Stroke}"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="true">
+                                <Setter Property="Stroke" TargetName="circle" Value="{StaticResource Expander.Pressed.Circle.Stroke}"/>
+                                <Setter Property="StrokeThickness" TargetName="circle" Value="1.5"/>
+                                <Setter Property="Fill" TargetName="circle" Value="{StaticResource Expander.Pressed.Circle.Fill}"/>
+                                <Setter Property="Stroke" TargetName="arrow" Value="{StaticResource Expander.Pressed.Arrow.Stroke}"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="false">
+                                <Setter Property="Stroke" TargetName="circle" Value="{StaticResource Expander.Disabled.Circle.Stroke}"/>
+                                <Setter Property="Fill" TargetName="circle" Value="{StaticResource Expander.Disabled.Circle.Fill}"/>
+                                <Setter Property="Stroke" TargetName="arrow" Value="{StaticResource Expander.Disabled.Arrow.Stroke}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="ExpanderUpHeaderStyle" TargetType="{x:Type ToggleButton}">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type ToggleButton}">
+                        <Border Padding="{TemplateBinding Padding}">
+                            <Grid Background="Transparent" SnapsToDevicePixels="False">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="19"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid>
+                                    <Grid.LayoutTransform>
+                                        <TransformGroup>
+                                            <TransformGroup.Children>
+                                                <TransformCollection>
+                                                    <RotateTransform Angle="180"/>
+                                                </TransformCollection>
+                                            </TransformGroup.Children>
+                                        </TransformGroup>
+                                    </Grid.LayoutTransform>
+                                    <Ellipse x:Name="circle" Fill="{StaticResource Expander.Static.Circle.Fill}" HorizontalAlignment="Center" Height="19" Stroke="{StaticResource Expander.Static.Circle.Stroke}" VerticalAlignment="Center" Width="19"/>
+                                    <Path x:Name="arrow" Data="M 1,1.5 L 4.5,5 L 8,1.5" HorizontalAlignment="Center" SnapsToDevicePixels="false" Stroke="{StaticResource Expander.Static.Arrow.Stroke}" StrokeThickness="2" VerticalAlignment="Center"/>
+                                </Grid>
+                                <ContentPresenter Grid.Column="1" HorizontalAlignment="Left" Margin="4,0,0,0" RecognizesAccessKey="True" SnapsToDevicePixels="True" VerticalAlignment="Center"/>
+                            </Grid>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="true">
+                                <Setter Property="Data" TargetName="arrow" Value="M 1,4.5  L 4.5,1  L 8,4.5"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="true">
+                                <Setter Property="Stroke" TargetName="circle" Value="{StaticResource Expander.MouseOver.Circle.Stroke}"/>
+                                <Setter Property="Fill" TargetName="circle" Value="{StaticResource Expander.MouseOver.Circle.Fill}"/>
+                                <Setter Property="Stroke" TargetName="arrow" Value="{StaticResource Expander.MouseOver.Arrow.Stroke}"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="true">
+                                <Setter Property="Stroke" TargetName="circle" Value="{StaticResource Expander.Pressed.Circle.Stroke}"/>
+                                <Setter Property="StrokeThickness" TargetName="circle" Value="1.5"/>
+                                <Setter Property="Fill" TargetName="circle" Value="{StaticResource Expander.Pressed.Circle.Fill}"/>
+                                <Setter Property="Stroke" TargetName="arrow" Value="{StaticResource Expander.Pressed.Arrow.Stroke}"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="false">
+                                <Setter Property="Stroke" TargetName="circle" Value="{StaticResource Expander.Disabled.Circle.Stroke}"/>
+                                <Setter Property="Fill" TargetName="circle" Value="{StaticResource Expander.Disabled.Circle.Fill}"/>
+                                <Setter Property="Stroke" TargetName="arrow" Value="{StaticResource Expander.Disabled.Arrow.Stroke}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="ExpanderLeftHeaderStyle" TargetType="{x:Type ToggleButton}">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type ToggleButton}">
+                        <Border Padding="{TemplateBinding Padding}">
+                            <Grid Background="Transparent" SnapsToDevicePixels="False">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="19"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+                                <Grid>
+                                    <Grid.LayoutTransform>
+                                        <TransformGroup>
+                                            <TransformGroup.Children>
+                                                <TransformCollection>
+                                                    <RotateTransform Angle="90"/>
+                                                </TransformCollection>
+                                            </TransformGroup.Children>
+                                        </TransformGroup>
+                                    </Grid.LayoutTransform>
+                                    <Ellipse x:Name="circle" Fill="{StaticResource Expander.Static.Circle.Fill}" HorizontalAlignment="Center" Height="19" Stroke="{StaticResource Expander.Static.Circle.Stroke}" VerticalAlignment="Center" Width="19"/>
+                                    <Path x:Name="arrow" Data="M 1,1.5 L 4.5,5 L 8,1.5" HorizontalAlignment="Center" SnapsToDevicePixels="false" Stroke="{StaticResource Expander.Static.Arrow.Stroke}" StrokeThickness="2" VerticalAlignment="Center"/>
+                                </Grid>
+                                <ContentPresenter HorizontalAlignment="Center" Margin="0,4,0,0" Grid.Row="1" RecognizesAccessKey="True" SnapsToDevicePixels="True" VerticalAlignment="Top"/>
+                            </Grid>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="true">
+                                <Setter Property="Data" TargetName="arrow" Value="M 1,4.5  L 4.5,1  L 8,4.5"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="true">
+                                <Setter Property="Stroke" TargetName="circle" Value="{StaticResource Expander.MouseOver.Circle.Stroke}"/>
+                                <Setter Property="Fill" TargetName="circle" Value="{StaticResource Expander.MouseOver.Circle.Fill}"/>
+                                <Setter Property="Stroke" TargetName="arrow" Value="{StaticResource Expander.MouseOver.Arrow.Stroke}"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="true">
+                                <Setter Property="Stroke" TargetName="circle" Value="{StaticResource Expander.Pressed.Circle.Stroke}"/>
+                                <Setter Property="StrokeThickness" TargetName="circle" Value="1.5"/>
+                                <Setter Property="Fill" TargetName="circle" Value="{StaticResource Expander.Pressed.Circle.Fill}"/>
+                                <Setter Property="Stroke" TargetName="arrow" Value="{StaticResource Expander.Pressed.Arrow.Stroke}"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="false">
+                                <Setter Property="Stroke" TargetName="circle" Value="{StaticResource Expander.Disabled.Circle.Stroke}"/>
+                                <Setter Property="Fill" TargetName="circle" Value="{StaticResource Expander.Disabled.Circle.Fill}"/>
+                                <Setter Property="Stroke" TargetName="arrow" Value="{StaticResource Expander.Disabled.Arrow.Stroke}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="ExpanderHeaderFocusVisual">
+            <Setter Property="Control.Template">
+                <Setter.Value>
+                    <ControlTemplate>
+                        <Border>
+                            <Rectangle Margin="0" SnapsToDevicePixels="true" Stroke="Black" StrokeThickness="1" StrokeDashArray="1 2"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="ExpanderDownHeaderStyle" TargetType="{x:Type ToggleButton}">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type ToggleButton}">
+                        <Border Padding="{TemplateBinding Padding}">
+                            <Grid Background="Transparent" SnapsToDevicePixels="False">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="19"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Ellipse x:Name="circle" Fill="{StaticResource Expander.Static.Circle.Fill}" HorizontalAlignment="Center" Height="19" Stroke="{StaticResource Expander.Static.Circle.Stroke}" VerticalAlignment="Center" Width="19"/>
+                                <Path x:Name="arrow" Data="M 1,1.5 L 4.5,5 L 8,1.5" HorizontalAlignment="Center" SnapsToDevicePixels="false" Stroke="{StaticResource Expander.Static.Arrow.Stroke}" StrokeThickness="2" VerticalAlignment="Center"/>
+                                <ContentPresenter Grid.Column="1" HorizontalAlignment="Left" Margin="4,0,0,0" RecognizesAccessKey="True" SnapsToDevicePixels="True" VerticalAlignment="Center"/>
+                            </Grid>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="true">
+                                <Setter Property="Data" TargetName="arrow" Value="M 1,4.5  L 4.5,1  L 8,4.5"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="true">
+                                <Setter Property="Stroke" TargetName="circle" Value="{StaticResource Expander.MouseOver.Circle.Stroke}"/>
+                                <Setter Property="Fill" TargetName="circle" Value="{StaticResource Expander.MouseOver.Circle.Fill}"/>
+                                <Setter Property="Stroke" TargetName="arrow" Value="{StaticResource Expander.MouseOver.Arrow.Stroke}"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="true">
+                                <Setter Property="Stroke" TargetName="circle" Value="{StaticResource Expander.Pressed.Circle.Stroke}"/>
+                                <Setter Property="StrokeThickness" TargetName="circle" Value="1.5"/>
+                                <Setter Property="Fill" TargetName="circle" Value="{StaticResource Expander.Pressed.Circle.Fill}"/>
+                                <Setter Property="Stroke" TargetName="arrow" Value="{StaticResource Expander.Pressed.Arrow.Stroke}"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="false">
+                                <Setter Property="Stroke" TargetName="circle" Value="{StaticResource Expander.Disabled.Circle.Stroke}"/>
+                                <Setter Property="Fill" TargetName="circle" Value="{StaticResource Expander.Disabled.Circle.Fill}"/>
+                                <Setter Property="Stroke" TargetName="arrow" Value="{StaticResource Expander.Disabled.Arrow.Stroke}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="ExpanderStyle1" TargetType="{x:Type Expander}">
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="VerticalContentAlignment" Value="Stretch"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Expander}">
+                        <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="3" SnapsToDevicePixels="true">
+                            <DockPanel>
+                                <ToggleButton Visibility="{Binding ExpandPlot, ElementName=DistributionSelector, Converter={StaticResource BoolToVisConverter}}" x:Name="HeaderSite" ContentTemplate="{TemplateBinding HeaderTemplate}" ContentTemplateSelector="{TemplateBinding HeaderTemplateSelector}" Content="{TemplateBinding Header}" DockPanel.Dock="Top" Foreground="{TemplateBinding Foreground}" FontWeight="{TemplateBinding FontWeight}" FocusVisualStyle="{StaticResource ExpanderHeaderFocusVisual}" FontStyle="{TemplateBinding FontStyle}" FontStretch="{TemplateBinding FontStretch}" FontSize="{TemplateBinding FontSize}" FontFamily="{TemplateBinding FontFamily}" HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}" IsChecked="{Binding IsExpanded, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}" Margin="0" MinWidth="0" MinHeight="0" Padding="{TemplateBinding Padding}" Style="{StaticResource ExpanderDownHeaderStyle}" VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                                <ContentPresenter x:Name="ExpandSite" DockPanel.Dock="Bottom" Focusable="false" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" Visibility="Collapsed" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                            </DockPanel>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsExpanded" Value="true">
+                                <Setter Property="Visibility" TargetName="ExpandSite" Value="Visible"/>
+                            </Trigger>
+                            <Trigger Property="ExpandDirection" Value="Right">
+                                <Setter Property="DockPanel.Dock" TargetName="ExpandSite" Value="Right"/>
+                                <Setter Property="DockPanel.Dock" TargetName="HeaderSite" Value="Left"/>
+                                <Setter Property="Style" TargetName="HeaderSite" Value="{StaticResource ExpanderRightHeaderStyle}"/>
+                            </Trigger>
+                            <Trigger Property="ExpandDirection" Value="Up">
+                                <Setter Property="DockPanel.Dock" TargetName="ExpandSite" Value="Top"/>
+                                <Setter Property="DockPanel.Dock" TargetName="HeaderSite" Value="Bottom"/>
+                                <Setter Property="Style" TargetName="HeaderSite" Value="{StaticResource ExpanderUpHeaderStyle}"/>
+                            </Trigger>
+                            <Trigger Property="ExpandDirection" Value="Left">
+                                <Setter Property="DockPanel.Dock" TargetName="ExpandSite" Value="Left"/>
+                                <Setter Property="DockPanel.Dock" TargetName="HeaderSite" Value="Right"/>
+                                <Setter Property="Style" TargetName="HeaderSite" Value="{StaticResource ExpanderLeftHeaderStyle}"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="false">
+                                <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid Background="{Binding ElementName=DistributionSelector, Path=BackgroundColor, TargetNullValue=Transparent, FallbackValue=Transparent}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <!--0 Probability Distribution Label-->
+            <RowDefinition Height="Auto"/>
+            <!--1 Probability Distribution Combobox-->
+            <RowDefinition Height="Auto"/>
+            <!--2 Parameter Grid-->
+            <RowDefinition Height="Auto"/>
+            <!--3 Plot Expander-->
+            <RowDefinition Height="*"/>
+            <!--5 Summary Stats Expander-->
+        </Grid.RowDefinitions>
+
+        <!--Probability Distribution Label-->
+        <StackPanel HorizontalAlignment="Left" Orientation="Horizontal" Grid.Row="0" Grid.Column="0" Margin="0 2" >
+            <TextBlock Text="Select Distribution for " VerticalAlignment="Center" Foreground="Black"/>
+            <TextBlock VerticalAlignment="Center" Foreground="Black" 
+                       Text="{Binding ElementName=DistributionSelector, Path=DistributionTitle, UpdateSourceTrigger=PropertyChanged}"/>
+            <TextBlock Text=":" VerticalAlignment="Center" Foreground="Black"/>
+        </StackPanel>
+
+        
+        <!--Probability Distribution ComboBox-->
+        <Grid Grid.Row="1" Margin="0 2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <!--Probability Distribution Combobox-->
+            <ComboBox x:Name="DistributionCombobox" Grid.Column="0" 
+                  DisplayMemberPath="DisplayName"
+                  SelectionChanged="DistributionCombobox_SelectionChanged"/>
+
+            <Button 
+                x:Name="EstimateParametersButton" 
+                Grid.Column="1" 
+                Width="22"
+                Height="22"
+                Margin="4,0,0,0"
+                Visibility="Collapsed" 
+                ToolTip="Click to estimate parameters for the selected distribution based on the sample data."
+                Click="EstimateParametersButton_Click">
+                <Rectangle Width="16" Height="16" Fill="{DynamicResource RunIconBrush}"/>
+            </Button>
+        </Grid>
+
+        
+        <!--Parameter Grid-->
+        <Grid Name="SelectorControlGrid" Grid.Row="2" Margin="0 2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <cntrls:CopyPasteDataGrid x:Name="ParametersTable" 
+                                      HeadersVisibility="None" 
+                                      Grid.Column="0"
+                                      VerticalContentAlignment="Center" 
+                                      HorizontalScrollBarVisibility="Disabled"
+                                      Width="{Binding ElementName=SelectorControlGrid, Path=ActualWidth}"
+                                      HorizontalGridLinesBrush="#FF353B7A" 
+                                      VerticalGridLinesBrush="#FF353B7A" 
+                                      Background="Transparent" 
+                                      AutoGenerateColumns="False" 
+                                      SelectionMode="Extended" 
+                                      SelectionUnit="Cell" 
+                                      BorderBrush="Black" 
+                                      BorderThickness="1,1,0,0"
+                                      CanUserDeleteRows="False" 
+                                      CanUserAddRows="False" 
+                                      CanUserResizeRows="False" 
+                                      CanUserResizeColumns="False" 
+                                      CanUserSortColumns="False" 
+                                      CanUserReorderColumns="False" 
+                                      CanUserAddInsertDeleteRows="False" 
+                                      PasteAddsRows="False">
+                <cntrls:CopyPasteDataGrid.Columns>
+                    <DataGridTextColumn x:Name="NameColumn" IsReadOnly="True" Width="140" Binding="{Binding Path=DisplayName}" 
+                                        CellStyle="{StaticResource ReadOnlyTextBackgroundCellStyle}"/>
+                    <DataGridTextColumn x:Name="ValueColumn" IsReadOnly="False" Width="*" Binding="{Binding Path=Value, StringFormat={}{0:0.####}, ConverterCulture={x:Static glob:CultureInfo.CurrentCulture}}"
+                                        CellStyle="{StaticResource ParameterValueCellStyle}"
+                                        EditingElementStyle="{StaticResource DataGridEditingTextBoxStyle}"/>
+                </cntrls:CopyPasteDataGrid.Columns>
+            </cntrls:CopyPasteDataGrid>
+            
+        </Grid>
+
+     
+        <!--Plot Expander-->
+        <Expander x:Name="PlotExpander" Header="Probability Density Plot" Grid.Row="3" IsExpanded="True" VerticalAlignment="Top" Padding="0"
+                  Visibility="{Binding ElementName=DistributionSelector, Path=ShowPlot, Converter={StaticResource BoolToVisConverter}}" 
+                  Style="{Binding ElementName=DistributionSelector, Path=ExpanderStyle}">
+            <Grid>
+                <oxy:Plot x:Name="Plot" Margin="2,2,0,0" Height="250" IsHitTestVisible="False" Padding="0">
+                    <oxy:Plot.Axes>
+                        <oxy:LinearAxis x:Name="Yaxis"
+                                    MaximumPadding="0.1"
+                                    MinimumPadding="0.0"
+                                    AbsoluteMinimum="0"
+                                    Position="Left"
+                                    Title="{Binding ElementName=DistributionSelector, Path=ShowAxisTitle, UpdateSourceTrigger=PropertyChanged, Mode=OneWay, Converter={StaticResource BoolToYAxisTextConverter}}"
+                                    AxisTitleDistance="10"
+                                    IsAxisVisible="{Binding ElementName=DistributionSelector, Path=ShowAxis, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}"
+                                    TitleFontSize="{Binding ElementName=DistributionSelector, Path=ShowAxisTitle, UpdateSourceTrigger=PropertyChanged, Mode=OneWay, Converter={StaticResource BoolToTitleDoubleConverter}}"
+                                    FontSize="{Binding ElementName=DistributionSelector, Path=ShowAxisLabel, UpdateSourceTrigger=PropertyChanged, Mode=OneWay, Converter={StaticResource BoolToLabelDoubleConverter}}"/>
+                        <oxy:LinearAxis x:Name="Xaxis"
+                                    MaximumPadding="0.0"
+                                    MinimumPadding="0.0"
+                                    Position="Bottom"
+                                    Title="{Binding ElementName=DistributionSelector, Path=ShowAxisTitle, UpdateSourceTrigger=PropertyChanged, Mode=OneWay, Converter={StaticResource BoolToXAxisTextConverter}}"
+                                    AxisTitleDistance="10"
+                                    PositionAtZeroCrossing="True"
+                                    IsAxisVisible="{Binding ElementName=DistributionSelector, Path=ShowAxis, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}"
+                                    TitleFontSize="{Binding ElementName=DistributionSelector, Path=ShowAxisTitle, UpdateSourceTrigger=PropertyChanged, Mode=OneWay, Converter={StaticResource BoolToTitleDoubleConverter}}"
+                                    FontSize="{Binding ElementName=DistributionSelector, Path=ShowAxisLabel, UpdateSourceTrigger=PropertyChanged, Mode=OneWay, Converter={StaticResource BoolToLabelDoubleConverter}}"/>
+                    </oxy:Plot.Axes>
+                    <oxy:Plot.Series>
+                        <oxy:AreaSeries x:Name="PDF" Color="DarkBlue" Fill="#FF3F8BD6"></oxy:AreaSeries>
+                    </oxy:Plot.Series>
+                </oxy:Plot>
+
+                <TextBlock Name="InvalidDistributionTextBlock" Visibility="Collapsed" Foreground="Red" FontWeight="Bold" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+            </Grid>
+        </Expander>
+
+        <!--Summary Statistics Expander-->
+        <Expander x:Name="SummaryStatisticstExpander" Grid.Row="4" IsExpanded="False" VerticalAlignment="Top" Header="Statistics"
+                  Visibility="{Binding ElementName=DistributionSelector, Path=ShowStatistics, Converter={StaticResource BoolToVisConverter}}"
+                  Style="{Binding ElementName=DistributionSelector, Path=ExpanderStyle}">
+            <Grid Name="SummaryStatsGrid">
+                <cntrls:CopyPasteDataGrid x:Name="SummaryTable"
+                                          Width="{Binding ElementName=SummaryStatsGrid, Path=ActualWidth}"
+                                          HeadersVisibility="Column" CanUserResizeColumns="False" HorizontalGridLinesBrush="#FF353B7A" 
+                                          VerticalGridLinesBrush="#FF353B7A" AutoGenerateColumns="False" SelectionMode="Extended" 
+                                          SelectionUnit="Cell" Margin="0,4,0,2" CanUserDeleteRows="False" CanUserAddRows="False" 
+                                          CanUserResizeRows="False" CanUserSortColumns="False" CanUserReorderColumns="False" 
+                                          Background="Transparent" VerticalContentAlignment="Center" IsReadOnly="True">
+
+                    <cntrls:CopyPasteDataGrid.Columns>
+                        <DataGridTextColumn x:Name="StatNameColumn" Header="Statistic" IsReadOnly="True" Width="140" HeaderStyle="{StaticResource Left_ColumnHeaderStyle}"
+                                            Binding="{Binding Path=StatName}" CellStyle="{StaticResource ReadOnlyTextBackgroundCellStyle}"/>
+                        <DataGridTextColumn x:Name="DistStatsColumn" Header="Distribution" IsReadOnly="True" Width="*" HeaderStyle="{StaticResource Right_ColumnHeaderStyle}"
+                                            Binding="{Binding Path=DistStat}" CellStyle="{StaticResource ReadOnlyValueBackgroundCellStyle}"/>
+                        <DataGridTextColumn x:Name="DataStatsColumn" Header="Data" IsReadOnly="True" Width="*" Visibility="Collapsed" HeaderStyle="{StaticResource Right_ColumnHeaderStyle}"
+                                            Binding="{Binding Path=DataStat}" CellStyle="{StaticResource ReadOnlyValueBackgroundCellStyle}"/>
+
+                    </cntrls:CopyPasteDataGrid.Columns>
+                </cntrls:CopyPasteDataGrid>
+            </Grid>
+        </Expander>
+
+    </Grid>
+</UserControl>

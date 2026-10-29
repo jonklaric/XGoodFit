@@ -1,0 +1,68 @@
+<local:MetroDialogWindow x:Class="GenericControls.MessageBoxWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="clr-namespace:GenericControls"
+    Title="Message"
+    Width="420"
+    SizeToContent="Height"
+    ShowInTaskbar="False"
+    Style="{DynamicResource MetroDialogStyle}"
+    Background="{DynamicResource EnvironmentWindowBackground}">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <!-- Content area (icon + text) -->
+            <RowDefinition Height="Auto"/>
+            <!-- Don't show again checkbox (optional) -->
+            <RowDefinition Height="Auto"/>
+            <!-- Button bar -->
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Content area -->
+        <Grid Grid.Row="0" Margin="16,16,16,12">
+            <Grid.ColumnDefinitions>
+                <!-- Icon column (auto = collapses when no icon) -->
+                <ColumnDefinition Width="Auto"/>
+                <!-- Message text column -->
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Icon (32x32, from IconDictionary, collapsed when None) -->
+            <Image x:Name="IconImage"
+                Grid.Column="0"
+                Width="32" Height="32"
+                Margin="0,0,12,0"
+                VerticalAlignment="Top"
+                Visibility="Collapsed"/>
+
+            <!-- Message text with wrapping -->
+            <TextBlock x:Name="MessageText"
+                Grid.Column="1"
+                TextWrapping="Wrap"
+                VerticalAlignment="Center"
+                Foreground="{DynamicResource MessageWindow.Foreground}"
+                FontSize="12"/>
+        </Grid>
+
+        <!-- Don't show this again checkbox (hidden by default) -->
+        <CheckBox x:Name="SuppressCheckBox"
+            Grid.Row="1"
+            Content="Don't show this message again"
+            Margin="16,0,16,8"
+            Foreground="{DynamicResource MessageWindow.Foreground}"
+            VerticalAlignment="Center"
+            Visibility="Collapsed"/>
+
+        <!-- Button bar -->
+        <Grid Grid.Row="2"
+            Background="{DynamicResource EnvironmentWindowBackground}"
+            MinHeight="30">
+            <StackPanel x:Name="ButtonPanel"
+                Orientation="Horizontal"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Center"
+                Margin="0"/>
+        </Grid>
+    </Grid>
+</local:MetroDialogWindow>

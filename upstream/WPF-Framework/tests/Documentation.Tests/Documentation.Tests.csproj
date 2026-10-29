@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\FrameworkInterfaces\FrameworkInterfaces.csproj" />
+    <ProjectReference Include="..\..\src\FrameworkUI\FrameworkUI.csproj" />
+    <ProjectReference Include="..\..\src\Themes\Themes.csproj" />
+    <ProjectReference Include="..\..\src\GenericControls\GenericControls.csproj" />
+    <ProjectReference Include="..\..\src\NumericControls\NumericControls.csproj" />
+    <ProjectReference Include="..\..\src\OxyPlotControls\OxyPlotControls.csproj" />
+    <ProjectReference Include="..\..\src\DatabaseManager\DatabaseManager.csproj" />
+    <ProjectReference Include="..\..\src\DatabaseControls\DatabaseControls.csproj" />
+    <ProjectReference Include="..\..\src\ExpressionParser\ExpressionParser.csproj" />
+    <ProjectReference Include="..\..\src\ExpressionParserControls\ExpressionParserControls.csproj" />
+    <ProjectReference Include="..\..\src\DAG\DAG.csproj" />
+    <ProjectReference Include="..\..\src\DAGControls\DAGControls.csproj" />
+    <ProjectReference Include="..\..\src\SoftwareUpdate\SoftwareUpdate.csproj" />
+  </ItemGroup>
+</Project>

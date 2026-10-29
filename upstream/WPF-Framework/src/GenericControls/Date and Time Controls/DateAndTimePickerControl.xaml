@@ -1,0 +1,28 @@
+﻿<UserControl x:Class="GenericControls.DateAndTimePickerControl" x:Name="DateTimePicker"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:GenericControls"
+             mc:Ignorable="d" 
+             d:DesignHeight="250" Width="300">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <Viewbox x:Name="CalendarViewBox" Grid.Column="0" VerticalAlignment="Top">
+            <Calendar x:Name="CalendarSelector" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="0.5,-3.5,0.5,-3.5" DisplayDateChanged="CalendarSelector_DisplayDateChanged" SelectedDatesChanged="CalendarSelector_SelectedDatesChanged" GotMouseCapture="CalendarSelector_GotMouseCapture"></Calendar>
+        </Viewbox>
+        
+        <local:ClockControl x:Name="Clock" Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Top" TimeFontSize="20" SelectedTimeFontSize="20"
+                            Width="{Binding ElementName=CalendarViewBox, Path=ActualWidth}"
+                            Height="{Binding ElementName=CalendarViewBox, Path=ActualHeight}"
+                            BorderBrush="{DynamicResource Button.Static.Border}" BorderThickness="0.5"
+                            HasSeconds="{Binding ElementName=DateTimePicker, Path=HasSeconds, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                            Time="{Binding ElementName=DateTimePicker, Path=DateAndTime, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                            Is24Hour="{Binding ElementName=DateTimePicker, Path=Is24Hour, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"/>
+
+
+    </Grid>
+</UserControl>

@@ -1,0 +1,372 @@
+﻿using System;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Numerics.Distributions;
+
+namespace Distributions.Univariate
+{
+    /// <summary>
+    /// Testing the Log-Normal distribution algorithm.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    ///     <b> Authors: </b>
+    ///     <list type="bullet">
+    ///     <item> Haden Smith, USACE Risk Management Center, cole.h.smith@usace.army.mil </item>
+    ///     <item> Tiki Gonzalez, USACE Risk Management Center, julian.t.gonzalez@usace.army.mil</item>
+    ///     </list>
+    /// </para>
+    /// <para>
+    /// <b> References: </b>
+    /// </para>
+    /// <para>
+    /// <see href = "https://github.com/mathnet/mathnet-numerics/blob/master/src/Numerics.Tests/DistributionTests" />
+    /// </para>
+    /// </remarks>
+    [TestClass]
+    public class Test_LogNormal
+    {
+
+        // Reference: "Flood Frequency Analysis", A.R. Rao & K.H. Hamed, CRC Press, 2000.
+        // Table 1.8.1 Wabash River at Lafayette, IN
+        private double[] sample = new double[] { 41500d, 57000d, 44000d, 49000d, 31000d, 45900d, 19000d, 41100d, 37300d, 76000d, 33200d, 61200d, 76000d, 59800d, 44400d, 58400d, 53600d, 59800d, 63300d, 57700d, 64000d, 63500d, 38000d, 74600d, 13100d, 37600d, 67500d, 21700d, 37000d, 93500d, 58500d, 63300d, 74400d, 34200d, 14600d, 44200d, 13100d, 73300d, 46600d, 39400d, 41200d, 41300d, 62000d, 90000d, 50600d, 41900d, 35000d, 16500d, 35300d, 30000d, 52600d, 99000d, 89000d, 39500d, 55400d, 46000d, 63000d, 58300d, 36500d, 14600d, 64900d, 68500d, 69100d, 42600d, 31000d, 39400d, 40700d, 53400d, 36000d, 43900d, 23600d, 50500d, 49700d, 48100d, 44500d, 56400d, 60800d, 40400d, 80400d, 41600d, 14700d, 33300d, 40700d, 53300d, 77400d };
+
+        /// <summary>
+        /// Verification of Log-Normal Distribution fit with method of moments.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Reference: "Flood Frequency Analysis", A.R. Rao &amp; K.H. Hamed, CRC Press, 2000.
+        /// </para>
+        /// <para>
+        /// Example 5.2.1 page 99.
+        /// </para>
+        /// </remarks>
+        [TestMethod()]
+        public void Test_LogNormal_MOM_Fit()
+        {
+            var LogN = new LogNormal() { Base = Math.E };
+            LogN.Estimate(sample, ParameterEstimationMethod.MethodOfMoments);
+            double u1 = LogN.Mu;
+            double u2 = LogN.Sigma;
+            double true_u1 = 10.716952223744224d;
+            double true_u2 = 0.45007398831588075d;
+            Assert.IsLessThan(0.01d, (u1 - true_u1) / true_u1);
+            Assert.IsLessThan(0.01d, (u2 - true_u2) / true_u2);
+        }
+
+        /// <summary>
+        /// Verification of Log-Normal Distribution fit with method of linear moments.
+        /// </summary>
+        [TestMethod()]
+        public void Test_LogNormal_LMOM_Fit()
+        {
+            // Air quality - wind data from R
+            var data = new double[] { 7.4, 8, 12.6, 11.5, 14.3, 14.9, 8.6, 13.8, 20.1, 8.6, 6.9, 9.7, 9.2, 10.9, 13.2, 11.5, 12, 18.4, 11.5, 9.7, 9.7, 16.6, 9.7, 12, 16.6, 14.9, 8, 12, 14.9, 5.7, 7.4, 8.6, 9.7, 16.1, 9.2, 8.6, 14.3, 9.7, 6.9, 13.8, 11.5, 10.9, 9.2, 8, 13.8, 11.5, 14.9, 20.7, 9.2, 11.5, 10.3, 6.3, 1.7, 4.6, 6.3, 8, 8, 10.3, 11.5, 14.9, 8, 4.1, 9.2, 9.2, 10.9, 4.6, 10.9, 5.1, 6.3, 5.7, 7.4, 8.6, 14.3, 14.9, 14.9, 14.3, 6.9, 10.3, 6.3, 5.1, 11.5, 6.9, 9.7, 11.5, 8.6, 8, 8.6, 12, 7.4, 7.4, 7.4, 9.2, 6.9, 13.8, 7.4, 6.9, 7.4, 4.6, 4, 10.3, 8, 8.6, 11.5, 11.5, 11.5, 9.7, 11.5, 10.3, 6.3, 7.4, 10.9, 10.3, 15.5, 14.3, 12.6, 9.7, 3.4, 8, 5.7, 9.7, 2.3, 6.3, 6.3, 6.9, 5.1, 2.8, 4.6, 7.4, 15.5, 10.9, 10.3, 10.9, 9.7, 14.9, 15.5, 6.3, 10.9, 11.5, 6.9, 13.8, 10.3, 10.3, 8, 12.6, 9.2, 10.3, 10.3, 16.6, 6.9, 13.2, 14.3, 8, 11.5 };
+            var norm = new LogNormal();
+            norm.Estimate(data, ParameterEstimationMethod.MethodOfLinearMoments);
+            double u1 = norm.Mu;
+            double u2 = norm.Sigma;
+            double true_u1 = 0.9672391d;
+            double true_u2 = 0.1675344d;
+            Assert.AreEqual(u1, true_u1, 0.0001d);
+            Assert.AreEqual(u2, true_u2, 0.0001d);
+            var lmom = norm.LinearMomentsFromParameters(norm.GetParameters);
+            Assert.AreEqual(0.96723909d, lmom[0],  0.0001d);
+            Assert.AreEqual(0.09452119d, lmom[1], 0.0001d);
+            Assert.AreEqual(0.00000000d, lmom[2], 0.0001d);
+            Assert.AreEqual(0.12260172d, lmom[3], 0.0001d);
+        }
+
+        /// <summary>
+        /// Verification of Log-Normal Distribution fit with method of maximum likelihood.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Reference: "Flood Frequency Analysis", A.R. Rao &amp; K.H. Hamed, CRC Press, 2000.
+        /// </para>
+        /// <para>
+        /// Example 5.2.1 page 99.
+        /// </para>
+        /// </remarks>
+        [TestMethod()]
+        public void Test_LogNormal_MLE_Fit()
+        {
+            var LogN = new LogNormal() { Base = Math.E };
+            LogN.Estimate(sample, ParameterEstimationMethod.MaximumLikelihood);
+            double u1 = LogN.Mu;
+            double u2 = LogN.Sigma;
+            double true_u1 = 10.716950857801747d;
+            double true_u2 = 0.44742859657407796d;
+            Assert.IsLessThan(0.01d, (u1 - true_u1) / true_u1);
+            Assert.IsLessThan(0.01d, (u2 - true_u2) / true_u2);
+            var LN = new LnNormal();
+            LN.Estimate(sample, ParameterEstimationMethod.MaximumLikelihood);
+        }
+
+        /// <summary>
+        /// Test the quantile function for the Log-Normal Distribution.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Reference: "Flood Frequency Analysis", A.R. Rao &amp; K.H. Hamed, CRC Press, 2000.
+        /// </para>
+        /// <para>
+        /// Example 5.2.2 page 102.
+        /// </para>
+        /// </remarks>
+        [TestMethod()]
+        public void Test_LogNormal_Quantile()
+        {
+            var LogN = new LogNormal() { Mu = 10.7676d, Sigma = 0.4544d, Base = Math.E };
+            double q100 = LogN.InverseCDF(0.99d);
+            double true_q100 = 136611d;
+            Assert.IsLessThan(0.01d, (q100 - true_q100) / true_q100);
+            double p = LogN.CDF(q100);
+            double true_p = 0.99d;
+            Assert.IsLessThan(0.01d, (p - true_p) / true_p);
+        }
+
+        /// <summary>
+        /// Test the standard error for the Log-Normal Distribution.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Reference: "Flood Frequency Analysis", A.R. Rao &amp; K.H. Hamed, CRC Press, 2000.
+        /// </para>
+        /// <para>
+        /// Example 5.1.3 page 94.
+        /// </para>
+        /// </remarks>
+        [TestMethod()]
+        public void Test_LogNormal_StandardError()
+        {
+
+            // Maximum Likelihood
+            var LogN = new LogNormal() { Mu = 10.7711d, Sigma = 0.4562d, Base = Math.E };
+            double qVar99 = Math.Sqrt(LogN.QuantileVariance(0.99d, 85, ParameterEstimationMethod.MaximumLikelihood));
+            double true_qVar99 = 13113d;
+            Assert.IsLessThan(0.01d, (qVar99 - true_qVar99) / true_qVar99);
+        }
+
+        /// <summary>
+        /// Verifying Log-Normal distribution is being created with input parameters.
+        /// </summary>
+        [TestMethod()]
+        public void Test_Construction()
+        {
+            var LogN = new LogNormal();
+            Assert.AreEqual(3,LogN.Mu);
+            Assert.AreEqual(0.5,LogN.Sigma);
+
+            var LogN2 = new LogNormal(1, 1);
+            Assert.AreEqual(1,LogN2.Mu);
+            Assert.AreEqual(1,LogN2.Sigma);
+        }
+
+        /// <summary>
+        /// Verifies cloning preserves the configured logarithm base and resulting distribution.
+        /// </summary>
+        [TestMethod]
+        public void Test_Clone_PreservesBase()
+        {
+            var source = new LogNormal(4.2d, 0.4d) { Base = Math.E };
+
+            var clone = (LogNormal)source.Clone();
+
+            Assert.AreNotSame(source, clone);
+            Assert.AreEqual(source.Mu, clone.Mu, 0d);
+            Assert.AreEqual(source.Sigma, clone.Sigma, 0d);
+            Assert.AreEqual(source.Base, clone.Base, 0d);
+            Assert.AreEqual(source.CDF(75d), clone.CDF(75d), 0d);
+        }
+
+        /// <summary>
+        /// Verifies bootstrap distributions retain the configured logarithm base.
+        /// </summary>
+        [TestMethod]
+        public void Test_Bootstrap_PreservesBase()
+        {
+            var source = new LogNormal(4.2d, 0.4d) { Base = Math.E };
+
+            var bootstrap = (LogNormal)source.Bootstrap(
+                ParameterEstimationMethod.MethodOfMoments, 40, 12345);
+
+            Assert.AreEqual(source.Base, bootstrap.Base, 0d);
+        }
+
+        /// <summary>
+        /// Equivalent base-10 and natural-log parameterizations produce the same seeded Monte
+        /// Carlo confidence intervals.
+        /// </summary>
+        [TestMethod]
+        public void Test_MonteCarloConfidenceIntervals_PreserveBase()
+        {
+            const double mu10 = 2.0;
+            const double sigma10 = 0.3;
+            var base10 = new LogNormal(mu10, sigma10);
+            var natural = new LogNormal(mu10 * Math.Log(10.0), sigma10 * Math.Log(10.0))
+            {
+                Base = Math.E
+            };
+            double[] quantiles = [0.5, 0.9];
+            double[] percentiles = [0.1, 0.5, 0.9];
+
+            double[,] expected = base10.MonteCarloConfidenceIntervals(
+                25, 100, quantiles, percentiles);
+            double[,] actual = natural.MonteCarloConfidenceIntervals(
+                25, 100, quantiles, percentiles);
+
+            for (int i = 0; i < expected.GetLength(0); i++)
+            {
+                for (int j = 0; j < expected.GetLength(1); j++)
+                {
+                    Assert.AreEqual(expected[i, j], actual[i, j],
+                        1E-10 * Math.Max(1.0, Math.Abs(expected[i, j])));
+                }
+            }
+        }
+
+        /// <summary>
+        /// Testing Log-Normal with bad parameters.
+        /// </summary>
+        [TestMethod()]
+        public void Test_InvalidParameters()
+        {
+            var LogN = new LogNormal(double.NaN,double.NaN);
+            Assert.IsFalse(LogN.ParametersValid);
+
+            var LogN2 = new LogNormal(double.PositiveInfinity,double.PositiveInfinity);
+            Assert.IsFalse(LogN2.ParametersValid);
+
+            var LogN3 = new LogNormal(1, -1);
+            Assert.IsFalse(LogN3.ParametersValid);
+        }
+
+        /// <summary>
+        /// Testing ParametersToString()
+        /// </summary>
+        [TestMethod()]
+        public void Test_ParametersToString()
+        {
+            var LogN = new LogNormal();
+            Assert.AreEqual("Mean (of log) (µ)",LogN.ParametersToString[0, 0] );
+            Assert.AreEqual("Std Dev (of log) (σ)",LogN.ParametersToString[1, 0]);
+            Assert.AreEqual("3",LogN.ParametersToString[0, 1]);
+            Assert.AreEqual("0.5", LogN.ParametersToString[1, 1]);
+        }
+
+        /// <summary>
+        /// Compare analytical moments against numerical integration.
+        /// </summary>
+        [TestMethod()]
+        public void Test_Moments()
+        {
+            var trueDist = new LnNormal(10, 5);
+            var dist = new LogNormal(trueDist.Mu, trueDist.Sigma) { Base = Math.E };
+            Assert.AreEqual(trueDist.Mean, dist.Mean, 1E-2);
+            Assert.AreEqual(trueDist.StandardDeviation, dist.StandardDeviation, 1E-2);
+            Assert.AreEqual(trueDist.Skewness, dist.Skewness, 1E-2);
+            Assert.AreEqual(trueDist.Kurtosis, dist.Kurtosis, 1E-2);
+        }
+
+        /// <summary>
+        /// Testing minimum and maximum functions respectively.
+        /// </summary>
+        [TestMethod()]
+        public void Test_MinMax()
+        {
+            var LogN = new LogNormal();
+            Assert.AreEqual(0,LogN.Minimum);
+            Assert.AreEqual(double.PositiveInfinity,LogN.Maximum );
+
+            var LogN2 = new LogNormal(1, 1);
+            Assert.AreEqual(0, LogN2.Minimum);
+            Assert.AreEqual(double.PositiveInfinity, LogN2.Maximum);
+        }
+
+        /// <summary>
+        /// Testing PDF method.
+        /// </summary>
+        [TestMethod()]
+        public void Test_PDF()
+        {
+            var LogN = new LogNormal(1.5,0.1);
+            Assert.AreEqual(3.32e-135, LogN.PDF(0.1), 1e-04);
+
+            var LogN2 = new LogNormal(-0.1, 0.1);
+            Assert.AreEqual(9.12888e-56, LogN.PDF(0.8), 1e-04);
+        }
+
+        /// <summary>
+        /// Testing the CDF, including the finite lower-tail probability at z = -25.
+        /// </summary>
+        /// <remarks>The lower-tail reference was computed with mpmath 1.4.1 at 50 significant digits.</remarks>
+        [TestMethod()]
+        public void Test_CDF()
+        {
+            var LogN = new LogNormal(1.5, 0.1);
+            const double lowerTail = 3.056696706382561E-138d;
+            Assert.AreEqual(lowerTail, LogN.CDF(0.1), lowerTail * 5E-12d);
+
+            var LogN2 = new LogNormal(1.5, 1.5);
+            Assert.AreEqual(0.11493, LogN2.CDF(0.5), 1e-05);
+        }
+
+        /// <summary>
+        /// Testing inverse CDF method.
+        /// </summary>
+        [TestMethod()]
+        public void Test_InverseCDF()
+        {
+            var LogN = new LogNormal(2.5, 2.5);
+            Assert.AreEqual(40183.99248, LogN.InverseCDF(0.8), 1e-04);
+
+            var LogN2 = new LogNormal(1.5, 2.5);
+            Assert.AreEqual(40183.99248, LogN.InverseCDF(0.8), 1e-05);
+        }
+        /// <summary>
+        /// Verify the parameter constraints admit a negative log10-space mean.
+        /// </summary>
+        /// <remarks>
+        /// The location parameter is the mean of the log10-transformed data, which is legitimately
+        /// negative whenever the data are mostly below 1. Flooring the lower bound at machine
+        /// epsilon with an upper bound near ceil(mu + 1) would put a sub-unity sample's initial
+        /// value below its own lower bound (and invert the pair for mu at or below -1), so every
+        /// downstream consumer would report the inputs invalid. The bounds are symmetric about zero
+        /// from the magnitude of the initial value, matching the Normal distribution's location
+        /// bounds.
+        /// </remarks>
+        [TestMethod]
+        public void Test_LogNormal_ParameterConstraints_AllowNegativeLogMean()
+        {
+            var shallow = new double[] { 0.12, 0.31, 0.45, 0.08, 0.90, 1.4, 0.25, 0.6, 0.5, 0.75 };
+            var deep = new double[] { 0.004, 0.012, 0.008, 0.02, 0.006, 0.015, 0.003, 0.01, 0.007, 0.011 };
+
+            foreach (var sample in new[] { shallow, deep })
+            {
+                var constraints = new LogNormal().GetParameterConstraints(sample);
+                var initials = constraints.Item1;
+                var lowers = constraints.Item2;
+                var uppers = constraints.Item3;
+                Assert.IsLessThan(0d, initials[0], "Fixture precondition: the log10 mean is negative.");
+                Assert.IsLessThan(uppers[0], lowers[0], "The mean bounds must not be inverted.");
+                Assert.IsTrue(initials[0] >= lowers[0] && initials[0] <= uppers[0],
+                    "The initial mean must sit inside its own bounds.");
+                Assert.IsTrue(lowers[1] < uppers[1] && initials[1] >= lowers[1] && initials[1] <= uppers[1],
+                    "The standard deviation bounds must contain the initial value.");
+            }
+        }
+
+        /// <summary>
+        /// Verify the parameter minimum metadata and validation admit a negative log10-space mean.
+        /// </summary>
+        [TestMethod]
+        public void Test_LogNormal_NegativeLogMean_IsValid()
+        {
+            Assert.AreEqual(double.NegativeInfinity, new LogNormal().MinimumOfParameters[0]);
+            var dist = new LogNormal();
+            Assert.IsNull(dist.ValidateParameters(new[] { -1.5, 0.3 }, false));
+        }
+
+    }
+}

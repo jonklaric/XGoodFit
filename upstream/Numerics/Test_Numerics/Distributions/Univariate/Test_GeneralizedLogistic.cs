@@ -1,0 +1,424 @@
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Numerics.Distributions;
+
+namespace Distributions.Univariate
+{
+    /// <summary>
+    /// Testing the Generalized Logistic distribution algorithm.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    ///     <b> Authors: </b>
+    ///     <list type="bullet">
+    ///     <item> Haden Smith, USACE Risk Management Center, cole.h.smith@usace.army.mil </item>
+    ///     <item> Tiki Gonzalez, USACE Risk Management Center, julian.t.gonzalez@usace.army.mil</item>
+    ///     </list>
+    /// </para>
+    /// <para>
+    /// <b> References: </b>
+    /// </para>
+    /// <para>
+    /// <see href = "https://github.com/mathnet/mathnet-numerics/blob/master/src/Numerics.Tests/DistributionTests" />
+    /// </para>
+    /// </remarks>
+    [TestClass]
+    public class Test_GeneralizedLogistic
+    {
+
+        // Reference: "Flood Frequency Analysis", A.R. Rao & K.H. Hamed, CRC Press, 2000.
+        // Table 9.2.1 East Fork White River at Seymour, IN
+        private double[] sample = new double[] { 24000d, 7920d, 21900d, 47100d, 30400d, 36100d, 67100d, 7030d, 28200d, 40100d, 10300d, 11100d, 17000d, 65600d, 32600d, 36200d, 46400d, 3650d, 16800d, 44800d, 37100d, 42900d, 15000d, 33000d, 28000d, 78500d, 54000d, 28600d, 44000d, 13300d, 6120d, 11100d, 42100d, 33400d, 30100d, 32100d, 28100d, 59400d, 23800d, 52000d, 54900d, 25600d, 10900d, 33700d, 60200d, 39200d, 26300d, 27900d, 27000d, 22700d, 17500d, 46400d, 19300d, 12700d, 36000d, 39900d, 25400d, 30200d, 47000d, 39800d, 23800d, 29600d, 33400d, 15400d, 28400d, 26700d, 46500d, 61200d };
+
+        /// <summary>
+        /// Verification of Generalized Logistic Distribution fit with method of moments.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Reference: "Flood Frequency Analysis", A.R. Rao &amp; K.H. Hamed, CRC Press, 2000.
+        /// </para>
+        /// <para>
+        /// Example 9.2.1 page 311.
+        /// </para>
+        /// </remarks>
+        [TestMethod()]
+        public void Test_GLO_MOM_Fit()
+        {
+
+            // The data is different than book, so I am using book moments.
+            var GLO = new GeneralizedLogistic();
+            // GLO.Estimate(sample, ParameterEstimationMethod.MethodOfMoments)
+            GLO.SetParameters(GLO.DirectMethodOfMoments(new[] { 32714d, 16560.2848d, 0.49051d }));
+            double x = GLO.Xi;
+            double a = GLO.Alpha;
+            double k = GLO.Kappa;
+            double true_x = 31892d;
+            double true_a = 9030d;
+            double true_k = -0.05515d;
+            Assert.IsLessThan(0.01d, (x - true_x) / true_x );
+            Assert.IsLessThan(0.01d, (a - true_a) / true_a );
+            Assert.IsLessThan(0.01d, (k - true_k) / true_k);
+        }
+
+        /// <summary>
+        /// Verification of Generalized Logistic Distribution fit with method of linear moments.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Reference: "Flood Frequency Analysis", A.R. Rao &amp; K.H. Hamed, CRC Press, 2000.
+        /// </para>
+        /// <para>
+        /// Example 9.2.1 page 311.
+        /// </para>
+        /// </remarks>
+        [TestMethod()]
+        public void Test_GLO_LMOM_Fit()
+        {
+            var sample = new double[] { 1953d, 1939d, 1677d, 1692d, 2051d, 2371d, 2022d, 1521d, 1448d, 1825d, 1363d, 1760d, 1672d, 1603d, 1244d, 1521d, 1783d, 1560d, 1357d, 1673d, 1625d, 1425d, 1688d, 1577d, 1736d, 1640d, 1584d, 1293d, 1277d, 1742d, 1491d };
+            var GLO = new GeneralizedLogistic();
+            GLO.Estimate(sample, ParameterEstimationMethod.MethodOfLinearMoments);
+            double x = GLO.Xi;
+            double a = GLO.Alpha;
+            double k = GLO.Kappa;
+            double true_x = 1625.42d;
+            double true_a = 135.8186d;
+            double true_k = -0.1033903d;
+            Assert.AreEqual(true_x, x, 0.001d);
+            Assert.AreEqual(true_a, a, 0.001d);
+            Assert.AreEqual(true_k, k, 0.001d);
+            var lmom = GLO.LinearMomentsFromParameters(GLO.GetParameters);
+            Assert.AreEqual(1648.806d, lmom[0],  0.001d);
+            Assert.AreEqual(138.2366d, lmom[1],  0.001d);
+            Assert.AreEqual(0.1033903d, lmom[2],  0.001d);
+            Assert.AreEqual(0.1755746d, lmom[3],  0.001d);
+        }
+
+        /// <summary>
+        /// Verification of Generalized Logistic Distribution fit with method of maximum likelihood.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Reference: "Flood Frequency Analysis", A.R. Rao &amp; K.H. Hamed, CRC Press, 2000.
+        /// </para>
+        /// <para>
+        /// Example 9.1.1 page 313.
+        /// </para>
+        /// </remarks>
+        [TestMethod()]
+        public void Test_GLO_MLE_Fit()
+        {
+            var GLO = new GeneralizedLogistic();
+            GLO.Estimate(sample, ParameterEstimationMethod.MaximumLikelihood);
+            double x = GLO.Xi;
+            double a = GLO.Alpha;
+            double k = GLO.Kappa;
+            double true_x = 30911.83d;
+            double true_a = 9305.0205d;
+            double true_k = -0.144152d;
+            Assert.IsLessThan(0.01d, (x - true_x) / true_x);
+            Assert.IsLessThan(0.01d, (a - true_a) / true_a);
+            Assert.IsLessThan(0.01d, (k - true_k) / true_k);
+        }
+
+        /// <summary>
+        /// Test the quantile function for the Generalized Logistic Distribution.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Reference: "Flood Frequency Analysis", A.R. Rao &amp; K.H. Hamed, CRC Press, 2000.
+        /// </para>
+        /// <para>
+        /// Example 9.2.2 page 315.
+        /// </para>
+        /// </remarks>
+        [TestMethod()]
+        public void Test_GLO_Quantile()
+        {
+            var GLO = new GeneralizedLogistic(31892d, 9030d, -0.05515d);
+            double q100 = GLO.InverseCDF(0.99d);
+            double true_100 = 79117d;
+            Assert.IsLessThan(0.01d, (q100 - true_100) / true_100);
+            double p = GLO.CDF(q100);
+            double true_p = 0.99d;
+            Assert.AreEqual(true_p, p);
+        }
+
+        /// <summary>
+        /// Test the partial derivatives for the Generalized Logistic Distribution.
+        /// </summary>
+        [TestMethod()]
+        public void Test_GLO_Partials()
+        {
+            var GLO = new GeneralizedLogistic(30911.83d, 9305.0205d, -0.144152d);
+            double dQdLocation = GLO.QuantileGradient(0.99d)[0];
+            double dQdScale = GLO.QuantileGradient(0.99d)[1];
+            double dQdShape = GLO.QuantileGradient(0.99d)[2];
+            double true_dLocation = 1.0d;
+            double true_dScale = 6.51695d;
+            double true_dShape = -154595.08d;
+            Assert.IsLessThan(0.01d, (dQdLocation - true_dLocation) / true_dLocation);
+            Assert.IsLessThan(0.01d, (dQdScale - true_dScale) / true_dScale);
+            Assert.IsLessThan(0.01d, (dQdShape - true_dShape) / true_dShape);
+        }
+
+        /// <summary>
+        /// Testing parameters can create a generalized logistic distribution.
+        /// </summary>
+        [TestMethod()]
+        public void Test_Construction()
+        {
+            var l = new GeneralizedLogistic();
+            Assert.AreEqual(100,l.Xi);
+            Assert.AreEqual(10,l.Alpha);
+            Assert.AreEqual(0, l.Kappa);
+
+            var l2 = new GeneralizedLogistic(-100, 10, 1);
+            Assert.AreEqual(-100,l2.Xi);
+            Assert.AreEqual(10, l2.Alpha);
+            Assert.AreEqual(1, l2.Kappa);
+        }
+
+        /// <summary>
+        /// Testing distribution with bad parameters.
+        /// </summary>
+        [TestMethod()]
+        public void Test_InvalidParameters()
+        {
+            var l = new GeneralizedLogistic(double.NaN,double.NaN,double.NaN);
+            Assert.IsFalse(l.ParametersValid);
+
+            var l2 = new GeneralizedLogistic(double.PositiveInfinity,double.PositiveInfinity,double.PositiveInfinity);
+            Assert.IsFalse(l2.ParametersValid);
+
+            var l3 = new GeneralizedLogistic(100, 0, 1);
+            Assert.IsFalse(l3.ParametersValid);
+        }
+
+        /// <summary>
+        /// Testing ParameterToString()
+        /// </summary>
+        [TestMethod()]
+        public void Test_ParametersToString()
+        {
+            var l = new GeneralizedLogistic();
+            Assert.AreEqual("Location (ξ)", l.ParametersToString[0, 0]);
+            Assert.AreEqual("Scale (α)", l.ParametersToString[1, 0]);
+            Assert.AreEqual("Shape (κ)", l.ParametersToString[2, 0]);
+            Assert.AreEqual("100", l.ParametersToString[0, 1]);
+            Assert.AreEqual("10", l.ParametersToString[1, 1]);
+            Assert.AreEqual("0", l.ParametersToString[2, 1]);
+        }
+
+        /// <summary>
+        /// Compare analytical moments against numerical integration.
+        /// </summary>
+        [TestMethod()]
+        public void Test_Moments()
+        {
+            var dist = new GeneralizedLogistic(100, 10, -0.1);
+            var mom = dist.CentralMoments(1E-8);
+            Assert.AreEqual(dist.Mean, mom[0], 1E-2);
+            Assert.AreEqual(dist.StandardDeviation, mom[1], 1E-2);
+            Assert.AreEqual(dist.Skewness, mom[2], 1E-2);
+            Assert.AreEqual(dist.Kurtosis, mom[3], 1E-2);
+        }
+
+        /// <summary>
+        /// Checking mean function.
+        /// </summary>
+        [TestMethod()]
+        public void Test_Mean()
+        {
+            var l = new GeneralizedLogistic();
+            Assert.AreEqual(100, l.Mean);
+
+            var l2 = new GeneralizedLogistic(100, 10, 0.9);
+            Assert.AreEqual(9.44703, l2.Mean,  1e-04);
+
+            var l3 = new GeneralizedLogistic(100, 10, 1);
+            Assert.AreEqual(double.NaN, l3.Mean);
+        }
+
+        /// <summary>
+        /// Testing Median is Xi.
+        /// </summary>
+        [TestMethod()]
+        public void Test_Median()
+        {
+            var l = new GeneralizedLogistic();
+            Assert.AreEqual(100, l.Median);
+
+            var l2 = new GeneralizedLogistic(10, 10, 1);
+            Assert.AreEqual(10, l2.Median);
+        }
+
+        /// <summary>
+        /// Testing mode function.
+        /// </summary>
+        [TestMethod()]
+        public void Test_Mode()
+        {
+            var l = new GeneralizedLogistic();
+            Assert.AreEqual(100, l.Mode);
+
+            var l2 = new GeneralizedLogistic(100, 10, 1);
+            // At kappa=1 the density increases to its one-sided maximum at xi+alpha.
+            Assert.AreEqual(110, l2.Mode);
+        }
+
+        /// <summary>
+        /// Checking Standard deviation.
+        /// </summary>
+        [TestMethod()]
+        public void Test_StandardDeviation()
+        {
+            var l = new GeneralizedLogistic();
+            Assert.AreEqual(18.13799, l.StandardDeviation,  1e-04);
+
+            var l2 = new GeneralizedLogistic(100, 10, 0.4);
+            Assert.AreEqual(39.76482, l2.StandardDeviation,  1e-04);
+
+            var l3 = new GeneralizedLogistic(100, 10, 1);
+            Assert.AreEqual(double.NaN, l3.StandardDeviation);
+        }
+
+        /// <summary>
+        /// Checking skew function.
+        /// </summary>
+        [TestMethod()]
+        public void Test_Skewness()
+        {
+            var l = new GeneralizedLogistic();
+            Assert.AreEqual(0, l.Skewness);
+
+            var l2 = new GeneralizedLogistic(100, 10, 0.3);
+            Assert.AreEqual(-10.90354, l2.Skewness,  1e-04);
+
+            var l3 = new GeneralizedLogistic(100, 10, 1);
+            Assert.AreEqual(double.NaN,l3.Skewness);
+        }
+
+        /// <summary>
+        /// Testing Kurtosis method.
+        /// </summary>
+        [TestMethod()]
+        public void Test_Kurtosis()
+        {
+            var l = new GeneralizedLogistic();
+            Assert.AreEqual(21d / 5d, l.Kurtosis);
+
+            var l2 = new GeneralizedLogistic(100, 10, 0.24);
+            Assert.AreEqual(199.733369, l2.Kurtosis, 1e-04);
+
+            var l3 = new GeneralizedLogistic(100, 10, 0.25);
+            Assert.AreEqual(double.NaN, l3.Kurtosis);
+        }
+
+        /// <summary>
+        /// Testing minimum function.
+        /// </summary>
+        [TestMethod()]
+        public void Test_Minimum()
+        {
+            var l = new GeneralizedLogistic();
+            Assert.AreEqual(double.NegativeInfinity, l.Minimum);
+
+            var l2 = new GeneralizedLogistic(100, 10, -5);
+            Assert.AreEqual(98, l2.Minimum);
+        }
+
+        /// <summary>
+        /// Testing maximum function.
+        /// </summary>
+        [TestMethod()]
+        public void Test_Maximum()
+        {
+            var l = new GeneralizedLogistic();
+            Assert.AreEqual(double.PositiveInfinity, l.Maximum);
+
+            var l2 = new GeneralizedLogistic(100, 10, 1);
+            Assert.AreEqual(110, l2.Maximum);
+        }
+
+        /// <summary>
+        /// Testing PDF method
+        /// </summary>
+        [TestMethod()]
+        public void Test_PDF()
+        {
+            var l = new GeneralizedLogistic();
+            Assert.AreEqual(0.025,l.PDF(100), 1E-16);
+            Assert.AreEqual(4.5395e-06, l.PDF(0), 1e-10);
+
+            var l2 = new GeneralizedLogistic(100, 10, 1);
+            Assert.AreEqual(0.025, l2.PDF(100), 1E-16);
+            Assert.AreEqual(6.9444e-04, l2.PDF(0),1e-08);
+        }
+
+        /// <summary>
+        /// Testing CDF method.
+        /// </summary>
+        [TestMethod()]
+        public void Test_CDF()
+        {
+            var l = new GeneralizedLogistic();
+            Assert.AreEqual(0.5, l.CDF(100));
+            Assert.AreEqual(4.5397e-05, l.CDF(0),  1e-8);
+
+            var l2 = new GeneralizedLogistic(100, 10, 1);
+            Assert.AreEqual(0.083333, l2.CDF(0),  1e-04);
+        }
+
+        /// <summary>
+        /// Testing the inverse CDF method.
+        /// </summary>
+        [TestMethod()]
+        public void Test_InverseCDF()
+        {
+            var l = new GeneralizedLogistic();
+            Assert.AreEqual(double.NegativeInfinity,l.InverseCDF(0) );
+            Assert.AreEqual(100, l.InverseCDF(0.5));
+            Assert.AreEqual(double.PositiveInfinity, l.InverseCDF(1));
+
+            var l2 = new GeneralizedLogistic(100, 10, 1);
+            Assert.AreEqual(100, l2.InverseCDF(0.5));
+            Assert.AreEqual(105.714285, l2.InverseCDF(0.7), 1e-04);
+        }
+
+        /// <summary>
+        /// Verifies the Logistic L-moment limit and stable near-zero round trips.
+        /// </summary>
+        [TestMethod]
+        public void Test_LinearMoments_ZeroAndNearZeroKappa()
+        {
+            var distribution = new GeneralizedLogistic();
+            double[] logistic = distribution.LinearMomentsFromParameters([2.0d, 3.0d, 0.0d]);
+
+            Assert.AreEqual(2.0d, logistic[0]);
+            Assert.AreEqual(3.0d, logistic[1]);
+            Assert.AreEqual(0.0d, logistic[2]);
+            Assert.AreEqual(1.0d / 6.0d, logistic[3], 1E-15);
+
+            double[] recoveredLogistic = distribution.ParametersFromLinearMoments(logistic);
+            Assert.AreEqual(2.0d, recoveredLogistic[0]);
+            Assert.AreEqual(3.0d, recoveredLogistic[1]);
+            Assert.AreEqual(0.0d, recoveredLogistic[2]);
+
+            foreach (double kappa in new[] { -1E-8, 1E-8, -5E-5, 5E-5 })
+            {
+                double[] parameters = [2.0d, 3.0d, kappa];
+                double[] moments = distribution.LinearMomentsFromParameters(parameters);
+                double[] recovered = distribution.ParametersFromLinearMoments(moments);
+
+                for (int i = 0; i < moments.Length; i++)
+                {
+                    Assert.IsFalse(double.IsNaN(moments[i]));
+                    Assert.IsFalse(double.IsInfinity(moments[i]));
+                }
+
+                Assert.AreEqual(parameters[0], recovered[0], 1E-12);
+                Assert.AreEqual(parameters[1], recovered[1], 1E-12);
+                Assert.AreEqual(parameters[2], recovered[2], 1E-15);
+            }
+        }
+    }
+}

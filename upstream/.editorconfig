@@ -1,0 +1,3 @@
+# Vendored upstream code is never edited (README.md). Stop the repository's .editorconfig from
+# applying here, so editors and analyzers treat each upstream tree as upstream does.
+root = true

@@ -1,0 +1,104 @@
+<cntrls:MetroDialogWindow x:Class="OxyPlotControls.SavePlotImageDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:cntrls="clr-namespace:GenericControls;assembly=GenericControls"
+        mc:Ignorable="d"
+        Title="Export Plot Image" SizeToContent="Manual" Width="700" Height="650"
+        MinWidth="500" MinHeight="450"
+        WindowStartupLocation="CenterOwner"
+        Style="{DynamicResource MetroDialogStyle}"
+        Background="{DynamicResource EnvironmentWindowBackground}">
+
+    <DockPanel Margin="6" LastChildFill="True">
+
+        <!-- TOP: Image Size, Dimensions & Report Theme -->
+        <Grid DockPanel.Dock="Top" Margin="0,0,0,4">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <TextBlock Grid.Row="0" Grid.Column="0" Text="Image Size:"
+                       HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,4,8,4"/>
+            <ComboBox Name="ImageSizeComboBox" Grid.Row="0" Grid.Column="1"
+                      Margin="0,4" VerticalAlignment="Center" HorizontalAlignment="Stretch"
+                      SelectedIndex="0" SelectionChanged="ImageSizeComboBox_SelectionChanged">
+                <ComboBoxItem Content="600 x 480 (5:4)"/>
+                <ComboBoxItem Content="1000 x 800 (5:4)"/>
+                <ComboBoxItem Content="600 x 450 (4:3)"/>
+                <ComboBoxItem Content="1000 x 750 (4:3)"/>
+                <ComboBoxItem Content="1280 x 720 (16:9)"/>
+                <ComboBoxItem Content="1920 x 1080 (16:9)"/>
+                <ComboBoxItem Content="800 x 800 (1:1)"/>
+                <ComboBoxItem Content="1080 x 1080 (1:1)"/>
+                <ComboBoxItem Content="500 x 800 (2.5:4)"/>
+                <ComboBoxItem Content="Custom"/>
+            </ComboBox>
+
+            <Grid Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,2,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <CheckBox Name="ReportThemeCheckBox" Grid.Column="0"
+                          Content="Apply Report Theme (white background, black text)"
+                          ToolTip="Optimized for reports and printing. Applies a clean white background with black text to the exported image."
+                          VerticalAlignment="Center" IsChecked="True"
+                          Checked="ReportThemeCheckBox_Changed"
+                          Unchecked="ReportThemeCheckBox_Changed"/>
+
+                <Grid x:Name="CustomDimensionsPanel" Grid.Column="1" Visibility="Collapsed">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="80"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="80"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="Width (px):" VerticalAlignment="Center" Margin="12,0,8,0"/>
+                    <cntrls:NumericTextBox x:Name="WidthTextBox" Grid.Column="1"
+                                           Height="22"
+                                           IsWholeNumber="True" MinValue="50" MaxValue="10000"
+                                           IsEnabled="False" ToolTipService.ShowOnDisabled="True"
+                                           TextChanged="DimensionTextChanged"/>
+                    <TextBlock Grid.Column="2" Text="Height (px):" VerticalAlignment="Center" Margin="12,0,8,0"/>
+                    <cntrls:NumericTextBox x:Name="HeightTextBox" Grid.Column="3"
+                                           Height="22"
+                                           IsWholeNumber="True" MinValue="50" MaxValue="10000"
+                                           IsEnabled="False" ToolTipService.ShowOnDisabled="True"
+                                           TextChanged="DimensionTextChanged"/>
+                </Grid>
+            </Grid>
+        </Grid>
+
+        <!-- BOTTOM: Buttons -->
+        <Grid DockPanel.Dock="Bottom" Margin="0,6,0,0" HorizontalAlignment="Right">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <Button Name="SaveAsButton" Content="Save As..." IsDefault="True" Grid.Column="0"
+                    Width="90" Height="24" Margin="6,0,0,0" Cursor="Hand"
+                    Click="SaveAsButton_Click"/>
+            <Button Name="CancelButton" Content="Cancel" IsCancel="True" Grid.Column="1"
+                    Width="75" Height="24" Margin="6,0,0,0" Cursor="Hand"
+                    Click="CancelButton_Click"/>
+        </Grid>
+
+        <!-- CENTER: Plot Preview -->
+        <Border BorderBrush="{DynamicResource SeparatorBorder}" BorderThickness="1"
+                Margin="0,2,0,0" Background="{DynamicResource EnvironmentWindowBackground}">
+            <Grid Name="PreviewContainer" SizeChanged="PreviewContainer_SizeChanged">
+                <Image Name="PreviewImage" HorizontalAlignment="Center" VerticalAlignment="Center"
+                       Stretch="None" RenderOptions.BitmapScalingMode="HighQuality"/>
+            </Grid>
+        </Border>
+
+    </DockPanel>
+</cntrls:MetroDialogWindow>

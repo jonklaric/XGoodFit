@@ -1,0 +1,4382 @@
+using Numerics;
+using Numerics.Data;
+using Numerics.Data.Statistics;
+using Numerics.Distributions;
+using Numerics.Functions;
+using Numerics.Mathematics.LinearAlgebra;
+using Numerics.Mathematics.Optimization;
+using Numerics.Sampling;
+using Numerics.Sampling.MCMC;
+using Numerics.Utilities;
+using RMC.BestFit.Estimation;
+using RMC.BestFit.Models;
+using RMC.BestFit.Models.LinkFunctions;
+
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.Globalization;
+using System.Linq;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Transactions;
+using System.Xml.Linq;
+
+namespace RMC.BestFit.Analyses
+{
+    /// <summary>
+    /// Specifies the method used for uncertainty quantification in frequentist analysis methods.
+    /// </summary>
+    public enum UncertaintyMethod
+    {
+        /// <summary>
+        /// Uses a multivariate normal approximation to the parameter covariance matrix
+        /// for uncertainty propagation. This is a first-order accurate method.
+        /// </summary>
+        MultivariateNormal,
+
+        /// <summary>
+        /// Uses a linked multivariate normal approximation that applies variance-stabilizing
+        /// link transformations before constructing the covariance matrix for uncertainty propagation.
+        /// </summary>
+        LinkedMultivariateNormal,
+
+        /// <summary>
+        /// Uses parametric bootstrap with percentile intervals. This is a first-order
+        /// accurate method that resamples from the fitted model.
+        /// </summary>
+        Bootstrap,
+
+        /// <summary>
+        /// Uses bias-corrected bootstrap intervals. This method corrects for bias in the
+        /// bootstrap distribution and provides improved coverage.
+        /// </summary>
+        BiasCorrectedBootstrap,
+
+    }
+
+    // Skewness uses an inverse-hyperbolic-sine link with epsilon calibrated from the fitted skew.
+
+    /// <summary>
+    /// Implements Bulletin 17C flood-frequency analysis using the Generalized Method of Moments (GMM).
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <b>Authors:</b>
+    /// Haden Smith, USACE Risk Management Center, cole.h.smith@usace.army.mil
+    /// </para>
+    /// <para>
+    /// Bulletin 17C is the recommended guideline for flood frequency analysis in the United States.
+    /// This implementation uses the Generalized Method of Moments (GMM) for parameter estimation,
+    /// which is more robust than traditional method of moments when dealing with:
+    /// </para>
+    /// <list type="bullet">
+    /// <item><description>Low outliers and censored data (values below a detection threshold)</description></item>
+    /// <item><description>Interval data and uncertain observations</description></item>
+    /// <item><description>Historical and paleoflood information</description></item>
+    /// <item><description>Regional skewness information through parameter penalties</description></item>
+    /// </list>
+    /// <para>
+    /// The analysis supports multiple uncertainty quantification methods including multivariate
+    /// normal approximation and various bootstrap approaches. Parameter and quantile penalties
+    /// can be specified to incorporate prior information, such as regional skewness estimates.
+    /// </para>
+    /// <para>
+    /// <b>References:</b>
+    /// </para>
+    /// <list type="bullet">
+    /// <item><description>
+    /// England, J.F., Jr., Cohn, T.A., Faber, B.A., Stedinger, J.R., Thomas, W.O., Jr.,
+    /// Veilleux, A.G., Kiang, J.E., and Mason, R.R., Jr., 2019, Guidelines for determining
+    /// flood flow frequency, Bulletin 17C: U.S. Geological Survey Techniques and Methods,
+    /// book 4, chap. B5, 148 p.
+    /// </description></item>
+    /// </list>
+    /// </remarks>
+    public class Bulletin17CAnalysis : AnalysisBase, IUnivariateAnalysis
+    {
+        #region Construction
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Bulletin17CAnalysis"/> class.
+        /// </summary>
+        /// <param name="bullet17CDistribution">
+        /// The <see cref="Models.Bulletin17CDistribution"/> to estimate. Typically Log-Pearson Type III
+        /// for Bulletin 17C analyses.
+        /// </param>
+        /// <exception cref="ArgumentNullException">
+        /// Thrown if <paramref name="bullet17CDistribution"/> is <c>null</c>.
+        /// </exception>
+        public Bulletin17CAnalysis(Bulletin17CDistribution bullet17CDistribution)
+        {
+            Bulletin17CDistribution = bullet17CDistribution ?? throw new ArgumentNullException(nameof(bullet17CDistribution));
+            BayesianAnalysis = new BayesianAnalysis();
+            BayesianAnalysis.PointEstimator = BayesianAnalysis.PointEstimateType.PosteriorMode;
+            UncertaintyMethod = UncertaintyMethod.LinkedMultivariateNormal;
+            ProbabilityOrdinates = new ProbabilityOrdinates();
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Bulletin17CAnalysis"/> class
+        /// by deserializing from an <see cref="XElement"/>.
+        /// </summary>
+        /// <param name="univariateDistribution">
+        /// The <see cref="Bulletin17CDistribution"/> associated with this analysis.
+        /// </param>
+        /// <param name="xElement">
+        /// The XML element from which to restore the compatibility result-container settings,
+        /// probability ordinates, uncertainty method, and estimated state. Produced by <see cref="ToXElement"/>.
+        /// </param>
+        /// <param name="mcmcResults">
+        /// Optional compatibility results containing a previously computed GMM estimate and uncertainty ensemble.
+        /// The <see cref="MCMCResults"/> type is reused for persistence; these values are not posterior draws.
+        /// Inapplicable Bayesian information criteria remain unset for this analysis.
+        /// </param>
+        /// <param name="analysisResults">
+        /// Optional frequency analysis results to restore from a previous estimation.
+        /// </param>
+        /// <param name="chronologyAnalysisResults">
+        /// Optional chronology analysis results for nonstationary models to restore from a previous estimation.
+        /// </param>
+        /// <exception cref="ArgumentNullException">
+        /// Thrown if <paramref name="univariateDistribution"/> or <paramref name="xElement"/> is <c>null</c>.
+        /// </exception>
+        public Bulletin17CAnalysis(Bulletin17CDistribution univariateDistribution, XElement xElement,
+                                  MCMCResults? mcmcResults = null,
+                                  UncertaintyAnalysisResults? analysisResults = null,
+                                  UncertaintyAnalysisResults? chronologyAnalysisResults = null)
+        {
+            if (xElement == null) throw new ArgumentNullException(nameof(xElement));
+            Bulletin17CDistribution = univariateDistribution ?? throw new ArgumentNullException(nameof(univariateDistribution));
+
+            // Probability ordinates
+            ProbabilityOrdinates = new ProbabilityOrdinates();
+            var probElement = xElement.Element(nameof(ProbabilityOrdinates));
+            if (probElement != null)
+            {
+                var probText = (string)probElement;
+                ProbabilityOrdinates.FromDelimitedString(probText, ProbabilityOrdinates.DefaultDelimiter);
+            }
+
+            // Uncertainty method
+            var methodAttr = xElement.Attribute(nameof(UncertaintyMethod));
+            if (methodAttr != null && Enum.TryParse(methodAttr.Value, out UncertaintyMethod method))
+            {
+                UncertaintyMethod = method;
+            }
+
+            // Restore the compatibility container used for GMM and uncertainty results.
+            var bayesElement = xElement.Element(nameof(BayesianAnalysis));
+            if (bayesElement != null)
+            {
+                BayesianAnalysis = new BayesianAnalysis(null, bayesElement);
+            }
+            else
+            {
+                BayesianAnalysis = new BayesianAnalysis();
+            }
+
+            // Is estimated
+            var isEstAttr = xElement.Attribute("IsEstimated");
+            if (isEstAttr != null && bool.TryParse(isEstAttr.Value, out bool isEst))
+            {
+                _isEstimated = isEst;
+            }
+
+            // Restore the supplied uncertainty ensemble with model parameter names for display.
+            if (mcmcResults != null)
+            {
+                var paramNames = Bulletin17CDistribution.Parameters.Select(p => p.DisplayName).ToArray();
+                _bayesianAnalysis.SetCustomMCMCResults(mcmcResults, skipInformationCriteria: true, paramNames);
+            }
+
+            // Restore analysis results
+            AnalysisResults = analysisResults;
+            NormalizeRestoredEstimatedState();
+
+            // Restore GMM estimation results if present in the XElement.
+            // GMM is a live computation object whose delegates come from the restored model.
+            // RestoreFromXElement reattaches the stored estimates, matrices, and diagnostics.
+            var gmmElement = xElement.Element(nameof(GeneralizedMethodOfMoments));
+            if (gmmElement != null && Bulletin17CDistribution.DataFrame != null)
+            {
+                try
+                {
+                    Bulletin17CDistribution.SetPenaltyFunction();
+                    _gmm = new GeneralizedMethodOfMoments(Bulletin17CDistribution);
+                    _gmm.RestoreFromXElement(gmmElement);
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Failed to restore GMM from XElement: {ex.Message}");
+                    _gmm = null;
+                }
+            }
+
+            // Restore uncertainty sampling diagnostics when present. The element is optional;
+            // projects saved by earlier versions restore with null diagnostics.
+            BootstrapResults = BootstrapDiagnostics.FromXElement(xElement.Element(nameof(BootstrapDiagnostics)));
+        }
+
+        #endregion
+
+        #region Members
+
+        private Bulletin17CDistribution _bulletin17CDistribution = null!;
+        private BayesianAnalysis _bayesianAnalysis = null!;
+        private ProbabilityOrdinates _probabilityOrdinates = null!;
+        private UncertaintyMethod _uncertaintyMethod = UncertaintyMethod.MultivariateNormal;
+        private GeneralizedMethodOfMoments? _gmm;
+        private new CancellationTokenSource? _cancellationTokenSource;
+        private TimeSpan? _elapsedTime;
+        private TimeSpan? _gmmElapsedTime;
+        private TimeSpan? _uncertaintyElapsedTime;
+
+        /// <summary>
+        /// Gets the univariate distribution model being estimated.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// For Bulletin 17C analysis, this is typically a Log-Pearson Type III distribution.
+        /// The distribution's <see cref="DataFrame"/> should contain the flood data to analyze.
+        /// </para>
+        /// </remarks>
+        public Bulletin17CDistribution Bulletin17CDistribution
+        {
+            get => _bulletin17CDistribution;
+            private set
+            {
+                if (_bulletin17CDistribution != null)
+                    _bulletin17CDistribution.PropertyChanged -= Model_PropertyChanged;
+
+                _bulletin17CDistribution = value;
+
+                if (_bulletin17CDistribution != null)
+                {
+                    _bulletin17CDistribution.PropertyChanged += Model_PropertyChanged;
+                }
+
+                RaisePropertyChange(nameof(Bulletin17CDistribution));
+            }
+        }
+
+        /// <inheritdoc/>
+        public ProbabilityOrdinates ProbabilityOrdinates
+        {
+            get => _probabilityOrdinates;
+            private set
+            {
+                if (_probabilityOrdinates != null)
+                    _probabilityOrdinates.CollectionChanged -= ProbabilityOrdinates_CollectionChanged;
+
+                _probabilityOrdinates = value ?? new ProbabilityOrdinates();
+                _probabilityOrdinates.CollectionChanged += ProbabilityOrdinates_CollectionChanged;
+
+                RaisePropertyChange(nameof(ProbabilityOrdinates));
+            }
+        }
+
+        /// <summary>
+        /// Gets the compatibility container used to store the GMM estimate and uncertainty ensemble.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Bulletin 17C uses penalized GMM and frequentist uncertainty sampling. The existing
+        /// <see cref="Estimation.BayesianAnalysis"/> property retains the same storage architecture
+        /// used by Bayesian analyses; its legacy member names do not imply a posterior distribution here.
+        /// </para>
+        /// </remarks>
+        public BayesianAnalysis BayesianAnalysis
+        {
+            get => _bayesianAnalysis;
+            private set
+            {
+                if (_bayesianAnalysis != null)
+                {
+                    _bayesianAnalysis.PropertyChanged -= BayesianAnalysis_PropertyChanged;
+                    _bayesianAnalysis.Model = null;
+                }
+
+                _bayesianAnalysis = value;
+
+                if (_bayesianAnalysis != null)
+                {
+                    _bayesianAnalysis.PropertyChanged += BayesianAnalysis_PropertyChanged;
+                }
+
+                RaisePropertyChange(nameof(BayesianAnalysis));
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the uncertainty quantification method.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// The default method is <see cref="Analyses.UncertaintyMethod.LinkedMultivariateNormal"/>,
+        /// which provides fast variance-stabilized parameter ensembles for operational uncertainty propagation.
+        /// </para>
+        /// </remarks>
+        public UncertaintyMethod UncertaintyMethod
+        {
+            get => _uncertaintyMethod;
+            set
+            {
+                if (_uncertaintyMethod != value)
+                {
+                    _uncertaintyMethod = value;
+                    ClearResults();
+                    RaisePropertyChange(nameof(UncertaintyMethod));
+                }
+            }
+        }
+
+        /// <inheritdoc/>
+        public UncertaintyAnalysisResults? AnalysisResults { get; private set; }
+
+        /// <summary>
+        /// Gets the Generalized Method of Moments estimator.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// This property is populated after <see cref="RunAsync"/> completes successfully.
+        /// It provides access to the GMM covariance matrix and other diagnostic information.
+        /// </para>
+        /// </remarks>
+        public GeneralizedMethodOfMoments? GMM => _gmm;
+
+        /// <summary>
+        /// Gets the total elapsed wall-clock time for the entire analysis (GMM + uncertainty).
+        /// </summary>
+        public TimeSpan? ElapsedTime
+        {
+            get => _elapsedTime;
+            private set
+            {
+                _elapsedTime = value;
+                RaisePropertyChange(nameof(ElapsedTime));
+            }
+        }
+
+        /// <summary>
+        /// Gets the elapsed wall-clock time for GMM parameter estimation only.
+        /// </summary>
+        public TimeSpan? GMMElapsedTime
+        {
+            get => _gmmElapsedTime;
+            private set
+            {
+                _gmmElapsedTime = value;
+                RaisePropertyChange(nameof(GMMElapsedTime));
+            }
+        }
+
+        /// <summary>
+        /// Gets the elapsed wall-clock time for the uncertainty quantification phase.
+        /// </summary>
+        public TimeSpan? UncertaintyElapsedTime
+        {
+            get => _uncertaintyElapsedTime;
+            private set
+            {
+                _uncertaintyElapsedTime = value;
+                RaisePropertyChange(nameof(UncertaintyElapsedTime));
+            }
+        }
+
+        /// <summary>
+        /// Gets the bootstrap diagnostics from the most recent bootstrap uncertainty analysis.
+        /// Null if the uncertainty method is not a bootstrap method.
+        /// </summary>
+        public BootstrapDiagnostics? BootstrapResults { get; private set; }
+
+        /// <summary>
+        /// Gets a user-facing description of why the most recent uncertainty quantification was
+        /// degraded or aborted, or an empty string when no issue occurred.
+        /// </summary>
+        /// <remarks>
+        /// Populated when a sampling method aborts (for example, when more than half of the
+        /// requested bootstrap replicates are discarded after retries, or the sampled covariance
+        /// is not usable) and when the delivered ensemble is too small to summarize. The UI layer
+        /// surfaces this text as an analysis warning message after a run that produced a point
+        /// estimate without uncertainty results. Cleared by <see cref="ClearResults"/>.
+        /// </remarks>
+        public string UncertaintyDiagnosticMessage { get; private set; } = string.Empty;
+
+        /// <summary>
+        /// Records the reason the most recent uncertainty quantification was degraded or aborted.
+        /// </summary>
+        /// <param name="message">The user-facing diagnostic text.</param>
+        /// <remarks>
+        /// Also writes the text to the debug trace so headless runs retain the explanation.
+        /// May be invoked from a background sampling thread; the property notification is a
+        /// plain <see cref="System.ComponentModel.INotifyPropertyChanged"/> raise with no
+        /// dispatcher marshaling, matching the model layer's notification conventions.
+        /// </remarks>
+        private void SetUncertaintyDiagnosticMessage(string message)
+        {
+            UncertaintyDiagnosticMessage = message;
+            Debug.WriteLine($"Bulletin17CAnalysis: {message}");
+            RaisePropertyChange(nameof(UncertaintyDiagnosticMessage));
+        }
+
+        /// <summary>
+        /// Optional override for the SES a-parameter formula used in the skewness link.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// When set, this delegate receives (gammaHat, sampleSize) and returns the desired SES 'a' value,
+        /// bypassing the default a(gamma) formula in <c>GetDistributionsFromLinkedMultivariateNormal</c>.
+        /// When null (default), the production calibrated formula is used.
+        /// </para>
+        /// <para>
+        /// Used by calibration tests to evaluate alternative formulas without code duplication.
+        /// </para>
+        /// </remarks>
+        public Func<double, int, double>? AFormulaOverride { get; set; }
+
+
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// Repairs the persisted estimated flag when older saves contain complete result artifacts
+        /// but the outer analysis-level flag was left false.
+        /// </summary>
+        /// <remarks>
+        /// Point-estimate-only setting changes are routed through <see cref="AnalysisBase.ReprocessIfEstimated"/>.
+        /// Some persisted projects can have an estimated compatibility container, serialized
+        /// <see cref="MCMCResults"/>, and serialized <see cref="AnalysisResults"/> while the outer
+        /// <see cref="AnalysisBase.IsEstimated"/> flag is false. Treating those artifacts as authoritative
+        /// restores the intended post-processing path without rerunning GMM or uncertainty sampling.
+        /// </remarks>
+        private void NormalizeRestoredEstimatedState()
+        {
+            if (_isEstimated)
+            {
+                return;
+            }
+
+            if (BayesianAnalysis?.IsEstimated == true &&
+                BayesianAnalysis.Results != null &&
+                AnalysisResults != null)
+            {
+                _isEstimated = true;
+            }
+        }
+
+        /// <summary>
+        /// Handles changes to the <see cref="ProbabilityOrdinates"/> collection.
+        /// </summary>
+        /// <remarks>
+        /// Ordinates drive only <see cref="AnalysisResults"/>, not the GMM fit or
+        /// <c>IsEstimated</c>. When estimated and valid, reprocess via
+        /// <see cref="CreateFrequencyAnalysisResultsAsync"/>; when invalid, clear
+        /// <see cref="AnalysisResults"/> only; when not estimated, no-op.
+        /// </remarks>
+        private void ProbabilityOrdinates_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        {
+            RaisePropertyChange(nameof(ProbabilityOrdinates));
+
+            if (!IsEstimated) return;
+
+            if (ProbabilityOrdinates.Validate().IsValid)
+                ReprocessIfEstimated(CreateFrequencyAnalysisResultsAsync);
+            else
+                ClearFrequencyAnalysisResults();
+        }
+
+        /// <summary>
+        /// Handles property changes on the <see cref="Bulletin17CDistribution"/> model.
+        /// Only structurally destructive changes (data, distribution, parameters, prior
+        /// penalties) clear results. <see cref="LinkController"/> and other post-fit
+        /// properties propagate for UI binding without invalidating the fit.
+        /// </summary>
+        private void Model_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(Bulletin17CDistribution.Parameters) ||
+                e.PropertyName == nameof(Bulletin17CDistribution.SetDefaultParameters) ||
+                e.PropertyName == nameof(Bulletin17CDistribution.DataFrame) ||
+                e.PropertyName == nameof(Bulletin17CDistribution.Distribution) ||
+                e.PropertyName == nameof(Bulletin17CDistribution.DistributionType) ||
+                e.PropertyName == nameof(Bulletin17CDistribution.ParameterPenalties) ||
+                e.PropertyName == nameof(Bulletin17CDistribution.QuantilePenalties))
+            {
+                ClearResults();
+            }
+
+            RaisePropertyChange(e.PropertyName);
+        }
+
+        /// <summary>
+        /// Handles property changes on the <see cref="BayesianAnalysis"/> object.
+        /// Loss of estimated state clears results. The legacy PointEstimator selects the GMM or
+        /// ensemble summary, while CredibleIntervalWidth sets the confidence level. Both changes
+        /// reprocess derived results without repeating uncertainty sampling.
+        /// All other notifications propagate for UI binding.
+        /// </summary>
+        private void BayesianAnalysis_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(BayesianAnalysis.IsEstimated))
+            {
+                if (!BayesianAnalysis.IsEstimated)
+                    ClearResults();
+                RaisePropertyChange(e.PropertyName);
+            }
+            else if (e.PropertyName == nameof(BayesianAnalysis.PointEstimator))
+            {
+                ReprocessIfEstimated(UpdatePointEstimateResultsAsync);
+                RaisePropertyChange(e.PropertyName);
+            }
+            else if (e.PropertyName == nameof(BayesianAnalysis.CredibleIntervalWidth))
+            {
+                ReprocessIfEstimated(CreateFrequencyAnalysisResultsAsync);
+                RaisePropertyChange(e.PropertyName);
+            }
+            else
+            {
+                RaisePropertyChange(e.PropertyName);
+            }
+        }
+
+        /// <inheritdoc/>
+        public void ClearResults()
+        {
+            // Set IsEstimated = false BEFORE raising AnalysisResults notification.
+            // When AnalysisResults fires, the UI control calls UpdateFrequencyPlot(),
+            // which checks IsEstimated to decide whether to draw curves.
+            IsEstimated = false;
+            BayesianAnalysis?.ClearResults();
+            _gmm = null;
+            AnalysisResults = null;
+            ElapsedTime = null;
+            GMMElapsedTime = null;
+            UncertaintyElapsedTime = null;
+            BootstrapResults = null;
+            UncertaintyDiagnosticMessage = string.Empty;
+            RaisePropertyChange(nameof(AnalysisResults));
+            RaisePropertyChange(nameof(GMM));
+        }
+
+        /// <summary>
+        /// Clears <see cref="AnalysisResults"/> only: the frequency/quantile output whose
+        /// evaluation grid is <see cref="ProbabilityOrdinates"/>. Leaves the GMM fit,
+        /// BayesianAnalysis results, and <c>IsEstimated</c> intact.
+        /// </summary>
+        public void ClearFrequencyAnalysisResults()
+        {
+            AnalysisResults = null;
+            RaisePropertyChange(nameof(AnalysisResults));
+        }
+
+       
+        /// <inheritdoc/>
+        public override async Task RunAsync(SafeProgressReporter? progressReporter = null)
+        {
+            _cancellationTokenSource?.Dispose();
+            _cancellationTokenSource = new CancellationTokenSource();
+
+            // Wait for any in-flight reprocess before clearing results and starting a new GMM and
+            // uncertainty run. A queued reprocess can otherwise remain inside its parallel loop
+            // when ClearResults() clears AnalysisResults and cause a null dereference on the next
+            // iteration.
+            await _reprocessGate.WaitAsync();
+            try
+            {
+                try
+                {
+                    ClearResults();
+
+                    var totalStopwatch = Stopwatch.StartNew();
+
+                    progressReporter?.IndicateTaskStart();
+                    AnalysisProgress.ReportStarting(progressReporter);
+
+                    GeneralizedMethodOfMoments? gmm = null;
+                    TimeSpan gmmElapsedTime = TimeSpan.Zero;
+                    CancellationToken cancellationToken = _cancellationTokenSource?.Token ?? CancellationToken.None;
+
+                    await Task.Run(() =>
+                    {
+                        cancellationToken.ThrowIfCancellationRequested();
+
+                        // Preprocess data and run the CPU-bound GMM fit off the UI thread.
+                        Bulletin17CDistribution.DataFrame.ProcessThresholdSeries();
+                        Bulletin17CDistribution.LinkController = LinkController.ForLocationScaleShape();
+                        Bulletin17CDistribution.SetInitialParameters();
+                        Bulletin17CDistribution.SetPenaltyFunction();
+
+                        var candidateGmm = new GeneralizedMethodOfMoments(Bulletin17CDistribution);
+                        var gmmStopwatch = Stopwatch.StartNew();
+                        candidateGmm.Estimate();
+                        gmmStopwatch.Stop();
+
+                        cancellationToken.ThrowIfCancellationRequested();
+                        gmm = candidateGmm;
+                        gmmElapsedTime = gmmStopwatch.Elapsed;
+                    }, cancellationToken);
+
+                    _gmm = gmm;
+                    GMMElapsedTime = gmmElapsedTime;
+                    if (_gmm!.Status == OptimizationStatus.Failure)
+                    {
+                        Debug.WriteLine("The GMM solver failed to find a solution for the distribution fit.");
+                        return;
+                    }
+
+                    progressReporter?.ReportProgress(1);
+
+                    // Set IsEstimated BEFORE creating results so that when
+                    // AnalysisResults PropertyChanged fires inside CreateFrequencyAnalysisResultsAsync,
+                    // the UI control's UpdateFrequencyPlot() sees IsEstimated == true and adds curves.
+                    _isEstimated = true;
+
+                    // Compute and store the uncertainty ensemble once for this fitted model.
+                    var uncertaintyStopwatch = Stopwatch.StartNew();
+                    await RunUncertaintyQuantificationAsync(AnalysisProgress.CreatePhaseReporter(progressReporter, 1, 98, "B17C Uncertainty"));
+                    uncertaintyStopwatch.Stop();
+                    UncertaintyElapsedTime = uncertaintyStopwatch.Elapsed;
+
+                    if (_cancellationTokenSource?.IsCancellationRequested == true)
+                    {
+                        _isEstimated = false;
+                        ClearResults();
+                        return;
+                    }
+
+                    // Build initial frequency-analysis results from the sampled parameter sets.
+                    // Subsequent ordinate changes call this fast path directly without resampling.
+                    AnalysisProgress.ReportProcessingResults(progressReporter);
+                    await CreateFrequencyAnalysisResultsAsync();
+
+                    // If cancelled during uncertainty quantification (caught by early return, not exception),
+                    // reset IsEstimated so the UI doesn't mistake this for a partial failure.
+                    if (_cancellationTokenSource?.IsCancellationRequested == true)
+                    {
+                        _isEstimated = false;
+                        ClearResults();
+                        return;
+                    }
+
+                    totalStopwatch.Stop();
+                    ElapsedTime = totalStopwatch.Elapsed;
+
+                    RaisePropertyChange(nameof(IsEstimated));
+                    RaisePropertyChange(nameof(GMM));
+                    AnalysisProgress.ReportComplete(progressReporter);
+                }
+                catch (OperationCanceledException)
+                {
+                    _isEstimated = false;
+                    ClearResults();
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"B17C RunAsync failed: {ex}");
+                    _isEstimated = false;
+                    ClearResults();
+                    throw;
+                }
+                finally
+                {
+                    progressReporter?.IndicateTaskEnded();
+                }
+            }
+            finally
+            {
+                _reprocessGate.Release();
+            }
+        }
+
+        /// <inheritdoc/>
+        public override void CancelAnalysis()
+        {
+            base.CancelAnalysis();
+            _cancellationTokenSource?.Cancel();
+        }
+
+        /// <summary>
+        /// Computes an uncertainty ensemble with the configured <see cref="UncertaintyMethod"/>
+        /// and stores it in the shared <see cref="BayesianAnalysis"/> compatibility container.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// This path samples from the GMM covariance or resamples data and refits the model for
+        /// bootstrap methods. Subsequent <see cref="CreateFrequencyAnalysisResultsAsync"/> calls
+        /// read the stored ensemble without repeating uncertainty sampling.
+        /// </para>
+        /// </remarks>
+        private async Task RunUncertaintyQuantificationAsync(SafeProgressReporter? progressReporter)
+        {
+            if (_gmm == null || _gmm.Status == OptimizationStatus.Failure) return;
+
+            ParameterSet[]? rawSets = null;
+
+            await Task.Run(() =>
+            {
+                Bulletin17CDistribution.SetParameterValues(_gmm.BestParameterSet.Values);
+
+                // Get sampled parameter sets (heavy: re-fits per draw or LHS-samples MVN/link space)
+                rawSets = UncertaintyMethod switch
+                {
+                    UncertaintyMethod.MultivariateNormal       => GetParameterSetsFromMultivariateNormal(progressReporter),
+                    UncertaintyMethod.LinkedMultivariateNormal => GetParameterSetsFromLinkedMultivariateNormal(progressReporter),
+                    UncertaintyMethod.Bootstrap                => GetParameterSetsFromParametricBootstrap(progressReporter),
+                    UncertaintyMethod.BiasCorrectedBootstrap   => GetParameterSetsFromPivotalBootstrap(progressReporter),
+                    _                                          => GetParameterSetsFromMultivariateNormal(progressReporter)
+                };
+
+                // Fallback: if LinkedMVN returned null (e.g., high rejection rate), fall back to plain MVN
+                if (rawSets == null && UncertaintyMethod == UncertaintyMethod.LinkedMultivariateNormal)
+                {
+                    Debug.WriteLine("B17C: LinkedMVN failed, falling back to plain MultivariateNormal.");
+                    rawSets = GetParameterSetsFromMultivariateNormal(progressReporter);
+                }
+            });
+
+            if (_cancellationTokenSource?.IsCancellationRequested == true) return;
+
+            if (rawSets == null)
+            {
+                // The sampler either set a specific diagnostic before returning null (e.g., an
+                // abort after excessive discards) or failed on the shared covariance path.
+                if (string.IsNullOrEmpty(UncertaintyDiagnosticMessage))
+                {
+                    SetUncertaintyDiagnosticMessage(
+                        "Uncertainty quantification failed - the covariance matrix from GMM estimation is not positive-definite. " +
+                        "The point estimate is still valid but confidence intervals cannot be computed. " +
+                        "Consider using a different distribution or the Bootstrap/Bias-Corrected Bootstrap uncertainty method.");
+                }
+                return;
+            }
+
+            // Filter out unset, dimensionally invalid, or non-finite entries.
+            // MVN samplers may discard invalid draws. Bootstrap collectors replace failed
+            // candidates and therefore must satisfy the exact-count invariant below.
+            int expectedParameterCount = Bulletin17CDistribution.NumberOfParameters;
+            var validSets = rawSets
+                .Where(ps => ps.Values != null &&
+                             ps.Values.Length == expectedParameterCount &&
+                             ps.Values.All(double.IsFinite))
+                .ToArray();
+            bool isBootstrapMethod = UncertaintyMethod == UncertaintyMethod.Bootstrap ||
+                                     UncertaintyMethod == UncertaintyMethod.BiasCorrectedBootstrap;
+            if (isBootstrapMethod &&
+                (rawSets.Length != BayesianAnalysis.OutputLength || validSets.Length != BayesianAnalysis.OutputLength))
+            {
+                SetUncertaintyDiagnosticMessage(
+                    $"Bootstrap uncertainty requires exactly {BayesianAnalysis.OutputLength:N0} valid parameter sets, " +
+                    $"but received {validSets.Length:N0}. No partial uncertainty result was published.");
+                return;
+            }
+            if (validSets.Length < 2)
+            {
+                SetUncertaintyDiagnosticMessage(
+                    $"Only {validSets.Length:N0} valid parameter sets out of {rawSets.Length:N0} sampled realizations. " +
+                    "Uncertainty analysis was skipped.");
+                return;
+            }
+
+            // Sanitize Fitness values: bootstrap parameter sets may have non-finite Fitness
+            // (NaN, Infinity) which System.Text.Json cannot serialize. Replace with 0.
+            SanitizeParameterSets(validSets);
+
+            // Sanitize the MAP (best) parameter set
+            var bestPs = _gmm!.BestParameterSet;
+            if (!double.IsFinite(bestPs.Fitness))
+                bestPs = new ParameterSet(bestPs.Values, 0.0);
+
+            var mcmcResults = new MCMCResults(bestPs, validSets, 1.0 - BayesianAnalysis.CredibleIntervalWidth);
+            var paramNames = Bulletin17CDistribution.Parameters.Select(p => p.DisplayName).ToList();
+            BayesianAnalysis.SetCustomMCMCResults(mcmcResults, true, paramNames);
+        }
+
+        /// <summary>
+        /// Builds <see cref="AnalysisResults"/> at the current <see cref="ProbabilityOrdinates"/>
+        /// from the parameter sets stored in the compatibility result container.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Rebuilds frequency results from the stored sampling distribution without refitting.
+        /// Clones the parent distribution for each stored parameter set
+        /// and constructs an <see cref="UncertaintyAnalysisResults"/> at the current ordinates.
+        /// The expensive per-draw resampling is owned by <see cref="RunUncertaintyQuantificationAsync"/>,
+        /// which runs once after GMM fit. This method is safe to call repeatedly on probability-ordinate
+        /// or confidence-level changes without repeating uncertainty sampling.
+        /// </para>
+        /// </remarks>
+        private async Task CreateFrequencyAnalysisResultsAsync()
+        {
+            AnalysisResults = null;
+            if (BayesianAnalysis == null || BayesianAnalysis.IsEstimated == false ||
+                BayesianAnalysis.Results == null || Bulletin17CDistribution?.Distribution is null)
+            {
+                RaisePropertyChange(nameof(AnalysisResults));
+                return;
+            }
+
+            await Task.Run(() =>
+            {
+                Bulletin17CDistribution.SetParameterValues(BayesianAnalysis.Results.MAP.Values);
+
+                // Build the sampled distribution array by cloning the parent distribution and
+                // Assign each stored parameter set without repeating uncertainty sampling.
+                int B = BayesianAnalysis.Results.Output.Count;
+                var sampledDistributions = new UnivariateDistributionBase[B];
+                Parallel.For(0, B, AnalysisProgress.CreateParallelOptions(), idx =>
+                {
+                    var dist = Bulletin17CDistribution.Distribution!.Clone();
+                    dist.SetParameters(BayesianAnalysis.Results.Output[idx].Values);
+                    sampledDistributions[idx] = dist;
+                });
+
+                AnalysisResults = new UncertaintyAnalysisResults(
+                    Bulletin17CDistribution.Distribution!,
+                    sampledDistributions,
+                    ProbabilityOrdinates.Select(p => 1.0 - p).ToArray(),
+                    1 - BayesianAnalysis.CredibleIntervalWidth,
+                    recordParameterSets: false);
+            });
+
+            await UpdatePointEstimateResultsAsync();
+        }
+
+       
+        /// <summary>
+        /// Attempts to retrieve the GMM parameter covariance for uncertainty sampling, recording
+        /// the shared "point estimate is still valid" diagnostic message when it cannot be
+        /// computed.
+        /// </summary>
+        /// <param name="thetaHat">The parameter values at which to evaluate the covariance.</param>
+        /// <param name="sigmaHat">
+        /// The computed covariance matrix when available; otherwise a zero matrix that must not
+        /// be interpreted as estimated uncertainty (mirrors
+        /// <see cref="GeneralizedMethodOfMoments.TryGetCovariance"/>).
+        /// </param>
+        /// <returns><see langword="true"/> when the covariance was computed successfully.</returns>
+        /// <remarks>
+        /// Shared by <see cref="GetParameterSetsFromMultivariateNormal"/> and
+        /// <see cref="GetParameterSetsFromLinkedMultivariateNormal"/> so both samplers report the
+        /// identical diagnostic wording for a GMM covariance failure. On a <see langword="false"/>
+        /// return, the caller should return <see langword="null"/> so
+        /// <see cref="RunUncertaintyQuantificationAsync"/> publishes no parameter sets while
+        /// leaving the GMM point estimate and <see cref="AnalysisBase.IsEstimated"/> untouched.
+        /// </remarks>
+        private bool TryGetUncertaintyCovariance(double[] thetaHat, out Matrix sigmaHat)
+        {
+            if (_gmm!.TryGetCovariance(thetaHat, true, out sigmaHat))
+                return true;
+
+            SetUncertaintyDiagnosticMessage("Uncertainty quantification failed - " +
+                (_gmm.CovarianceDiagnostic ?? "the GMM covariance matrix is unavailable.") +
+                " The point estimate is still valid but confidence intervals cannot be computed.");
+            return false;
+        }
+
+        /// <summary>
+        /// Generates distributions from a multivariate normal approximation.
+        /// </summary>
+        private ParameterSet[]? GetParameterSetsFromMultivariateNormal(SafeProgressReporter? progressReporter)
+        {
+            int B = BayesianAnalysis.OutputLength;
+            var results = new ParameterSet[B];
+
+            var thetaHat = _gmm!.BestParameterSet.Values;
+            if (!TryGetUncertaintyCovariance(thetaHat, out Matrix sigmaHat))
+                return null;
+
+            // Validate that the covariance matrix is positive-definite before constructing MVN.
+            // This can fail for ill-conditioned fits (e.g., fitting exponential to non-exponential data).
+            MultivariateNormal mvn;
+            try
+            {
+                mvn = new MultivariateNormal(thetaHat, sigmaHat.ToArray());
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"B17C MVN: covariance matrix is not positive-definite, cannot sample. {ex.Message}");
+                return null;
+            }
+
+            var draws = mvn.LatinHypercubeRandomValues(B, BayesianAnalysis.PRNGSeed);
+
+            var options = AnalysisProgress.CreateParallelOptions(_cancellationTokenSource?.Token ?? CancellationToken.None);
+
+            int iteration = 0;
+            int rejectionCount = 0;
+
+            try
+            {
+                Parallel.For(0, B, options, idx =>
+                {
+                    options.CancellationToken.ThrowIfCancellationRequested();
+
+                    // Per-thread validator (ValidateParameters is an instance method).
+                    var validator = Bulletin17CDistribution.Distribution.Clone();
+                    double[]? acceptedTheta = null;
+
+                    // First try: use the LHS draw (best space coverage)
+                    try
+                    {
+                        var theta = draws.GetRow(idx);
+                        validator.ValidateParameters(theta, true);
+                        acceptedTheta = theta;
+                    }
+                    catch (Exception ex) { Debug.WriteLine($"B17C MVN sampling:: rejected parameter set (idx={idx}): {ex.Message}"); }
+
+                    // Retry with fresh random draws if LHS sample was invalid
+                    if (acceptedTheta == null)
+                    {
+                        int p = thetaHat.Length;
+                        var prng = new MersenneTwister(BayesianAnalysis.PRNGSeed + B + idx);
+                        for (int retry = 0; retry < 10 && acceptedTheta == null; retry++)
+                        {
+                            try
+                            {
+                                var theta = mvn.InverseCDF(prng.NextDoubles(1, p).GetRow(0));
+                                validator.ValidateParameters(theta, true);
+                                acceptedTheta = theta;
+                            }
+                            catch (Exception ex) { Debug.WriteLine($"B17C MVN sampling: rejected parameter set (idx={idx}): {ex.Message}"); }
+                        }
+                        if (acceptedTheta == null)
+                            Interlocked.Increment(ref rejectionCount);
+                    }
+
+                    // Rejected draws stay as default(ParameterSet) (Values == null) and are
+                    // filtered below — no parent fallback, which would inject zero-variance
+                    // mass at the parent fit and bias the uncertainty bounds narrow.
+                    if (acceptedTheta != null)
+                        results[idx] = new ParameterSet(acceptedTheta, double.NaN);
+
+                    int current = Interlocked.Increment(ref iteration);
+                    if (AnalysisProgress.ShouldReportLoopProgress(current, B))
+                        progressReporter?.ReportProgress((int)(100.0 * current / B));
+                });
+
+                // Check the rejection rate — persistent rejection signals the MVN approximation
+                // places most of its mass outside the valid parameter space, not sampling noise.
+                double rejectionRate = (double)rejectionCount / B;
+                if (rejectionRate > 0.50)
+                {
+                    SetUncertaintyDiagnosticMessage(
+                        $"Multivariate Normal sampling: {rejectionCount:N0} of {B:N0} requested draws were rejected as invalid parameter sets " +
+                        $"({rejectionRate:P0} rejection rate). Uncertainty quantification was aborted. " +
+                        "Consider the Bootstrap uncertainty method, which does not rely on the asymptotic covariance.");
+                    return null;
+                }
+
+                // Filter out rejected draws (default-initialized entries have Values == null).
+                var validResults = results.Where(ps => ps.Values != null).ToArray();
+                if (validResults.Length < 2)
+                {
+                    SetUncertaintyDiagnosticMessage(
+                        $"Multivariate Normal sampling: only {validResults.Length:N0} of {B:N0} requested draws were valid. " +
+                        "Uncertainty quantification was aborted.");
+                    return null;
+                }
+
+                return validResults;
+            }
+            catch (OperationCanceledException)
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Evaluates the log-space quantile (for LP3) or real-space quantile at the given parameters.
+        /// </summary>
+        /// <param name="parameters">Distribution parameter vector [mu, sigma, gamma] in log10 space.</param>
+        /// <param name="nonExceedanceProbability">Non-exceedance probability (0 to 1).</param>
+        /// <returns>The log-space quantile value for LP3, or real-space for other distributions.</returns>
+        private double EvaluateLogQuantileSafe(double[] parameters, double nonExceedanceProbability)
+        {
+            try
+            {
+                // For LP3/LogNormal, work in log-space (P3/Normal base distribution)
+                var distType = Bulletin17CDistribution.DistributionType;
+                UnivariateDistributionBase dist;
+                if (distType == UnivariateDistributionType.LogPearsonTypeIII)
+                    dist = Bulletin17CDistribution.CreateDistribution(UnivariateDistributionType.PearsonTypeIII);
+                else if (distType == UnivariateDistributionType.LogNormal)
+                    dist = Bulletin17CDistribution.CreateDistribution(UnivariateDistributionType.Normal);
+                else
+                    dist = Bulletin17CDistribution.Distribution.Clone();
+
+                dist.ValidateParameters(parameters, true);
+                dist.SetParameters(parameters);
+                return dist.InverseCDF(nonExceedanceProbability);
+            }
+            catch (Exception ex)
+            {
+                // Fallback: use point estimate.
+                Debug.WriteLine($"Bulletin17CAnalysis.SafeInverseCDF: linked-distribution fit failed at p={nonExceedanceProbability}: {ex.Message}");
+                return Bulletin17CDistribution.Distribution.InverseCDF(nonExceedanceProbability);
+            }
+        }
+
+        /// <summary>
+        /// Generates distributions from a linked multivariate normal approximation.
+        /// </summary>
+        /// <param name="progressReporter">Optional progress reporter for UI feedback.</param>
+        /// <returns>An array of sampled distributions, or null if cancelled.</returns>
+        /// <remarks>
+        /// <para>
+        ///     Transforms GMM parameters to link space eta = h(theta), where the sampling distribution
+        ///     is more nearly normal, samples in that space via Latin Hypercube, and maps back.
+        ///     This improves CI coverage compared to straight MVN by:
+        /// </para>
+        /// <list type="bullet">
+        ///     <item><description>Ensuring positive parameters remain positive via a log-ASinH link.</description></item>
+        ///     <item><description>Making positive-parameter right-tail shape a bounded function of relative standard error.</description></item>
+        ///     <item><description>Using WEDS magnitude and fitted-gamma sign for LP3/P3 gamma asymmetry.</description></item>
+        ///     <item><description>Using gamma standard error for symmetric gamma-tail thickness, not asymmetry sign.</description></item>
+        /// </list>
+        /// <para>
+        ///     The covariance in link space is computed via the delta method:
+        ///     V_eta = G * S_theta * G', where G = dh/dtheta is the diagonal link Jacobian.
+        /// </para>
+        /// <para>
+        ///     Link function selection is distribution-aware. Parameter semantics vary:
+        ///     Normal/LogNormal/Exponential are [location, scale]; P3/LP3 are [location, scale, shape];
+        ///     GammaDistribution is [scale, shape] (both positive). Links assigned per parameter:
+        ///     <list type="bullet">
+        ///         <item><description>Positive parameters: LogASinH on log(parameter / estimate).
+        ///         Relative SE controls log-scale, positive asymmetry, and symmetric tail thickness;
+        ///         WEDS sign is excluded because support-driven right skew is structural.</description></item>
+        ///         <item><description>LP3/P3 gamma: ASinH with WEDS as magnitude and gammaHat as
+        ///         the theory-based direction. Positive gamma always receives positive asymmetry;
+        ///         negative gamma is damped near zero to avoid over-negative uncertainty tails.</description></item>
+        ///     </list>
+        /// </para>
+        /// <para>
+        ///     The link rules are intentionally diagnostic rather than calibration-table driven.
+        ///     WEDS is computed in natural parameter space before temporary links are installed,
+        ///     so the direction score remains a property of the fitted distribution and data
+        ///     rather than a side effect of the chosen uncertainty transformation.
+        /// </para>
+        /// </remarks>
+        private ParameterSet[]? GetParameterSetsFromLinkedMultivariateNormal(SafeProgressReporter? progressReporter)
+        {
+            int B = BayesianAnalysis.OutputLength;
+            var results = new ParameterSet[B];
+
+            // Step 1: obtain thetaHat and S_theta from GMM.
+            var thetaHat = _gmm!.BestParameterSet.Values;
+            if (!TryGetUncertaintyCovariance(thetaHat, out Matrix sigmaHat))
+                return null;
+
+            // Step 2: Compute weighted error direction score (WEDS) in natural parameter space.
+            // WEDS counts the weighted fraction of observations producing positive vs negative
+            // moment condition errors. Unlike CensoringAsymmetryScore (which decomposes error
+            // magnitudes and is constrained to zero at the GMM solution), WEDS is nonzero
+            // whenever the data or censoring structure is directionally asymmetric.
+            // This call intentionally occurs before the temporary LinkController is installed:
+            // WEDS is a diagnostic of theta-space moment residual directions, not link-space shape.
+            var weds = Bulletin17CDistribution.WeightedErrorDirectionScore(thetaHat);
+
+            // Step 3: Select link functions per distribution type.
+            //   - Location (mu): ASinH with a small gamma + WEDS blend.
+            //   - LP3/P3 scale (sigma): LogASinH, because scale is positive and its right-skewed
+            //     uncertainty should grow with relative standard error, not a fixed lambda.
+            //   - Other positive parameters: LogASinH with the same relative-SE rule.
+            //   - LP3/P3 shape (gamma): ASinH with WEDS magnitude and gammaHat direction;
+            //     gammaSE controls symmetric tail thickness rather than skew direction.
+            //
+            // Reference: Jones, M.C. and Pewsey, A. (2009). Sinh-arcsinh distributions.
+            // Biometrika, 96(4), 761-780.
+            int p = Bulletin17CDistribution.NumberOfParameters;
+            var links = new ILinkFunction?[p];
+            var distType = Bulletin17CDistribution.DistributionType;
+
+            if (distType == UnivariateDistributionType.GammaDistribution)
+            {
+                // Gamma: [scale(theta > 0), shape(kappa > 0)]. Both parameters are strictly
+                // positive, so use the same relative-SE LogASinH rule as the other positive
+                // LinkedMVN parameters. This preserves support and makes right-tail shape a
+                // function of parameter uncertainty rather than WEDS sign.
+                links[0] = CreatePositiveParameterLink(thetaHat[0], SafeStandardError(sigmaHat, 0));
+                links[1] = CreatePositiveParameterLink(thetaHat[1], SafeStandardError(sigmaHat, 1));
+            }
+            else if (distType == UnivariateDistributionType.PearsonTypeIII ||
+                     distType == UnivariateDistributionType.LogPearsonTypeIII)
+            {
+                // P3/LP3: [location(real), scale(>0), shape(real)]
+                double gammaHat = thetaHat[2];
+                double muSE = SafeStandardError(sigmaHat, 0);
+                double scaleSE = SafeStandardError(sigmaHat, 1);
+                double gammaSE = SafeStandardError(sigmaHat, 2);
+
+                // Location (mu): preserve the theory-calibrated LP3/P3 behavior. The fitted
+                // gamma contribution represents the local coupling between location and shape
+                // in Pearson moment space, while WEDS adds censoring-direction information.
+                // The modest epsilon cap is intentional; location should not be the primary
+                // source of high-quantile tail asymmetry.
+                links[0] = CreatePearsonLocationLink(thetaHat[0], muSE, gammaHat, CleanWeds(weds, 0));
+
+                // Scale (sigma): positive-support log-ASinH link driven by relative standard
+                // error. Scale estimators are structurally right-skewed, but the strength of
+                // that skew should increase with uncertainty rather than being fixed. WEDS sign
+                // is intentionally excluded because it is not a stable physical direction for scale.
+                links[1] = CreatePearsonScaleLink(thetaHat[1], scaleSE);
+
+                // Shape (gamma): WEDS supplies magnitude and gammaHat supplies direction.
+                // Positive fitted gamma always receives positive ASinH skew; negative fitted
+                // gamma keeps a near-zero damping guard to avoid the over-negative behavior
+                // that motivated this link. GammaSE is used only for symmetric tail thickness.
+                double gammaDirectionScore = OrientGammaWedsForLink(gammaHat, CleanWeds(weds, 2));
+                links[2] = CreateGammaShapeLink(gammaHat, gammaSE, gammaDirectionScore);
+            }
+            else
+            {
+                // Normal, LogNormal, Exponential: [location(real), scale(>0)]
+                // Location: ASinH with adaptive e from WEDS (captures censoring asymmetry).
+                // With WEDS near zero, as for uncensored symmetric data, epsilon remains near its identity-link value.
+                // For Exponential data, WEDS is naturally negative (about -0.26) because P(X &lt; mu) is about 0.63.
+                double muSE = SafeStandardError(sigmaHat, 0);
+
+                links[0] = CreateLocationLink(thetaHat[0], muSE, CleanWeds(weds, 0));
+
+                double scaleSE = SafeStandardError(sigmaHat, 1);
+
+                // Scale: positive support is structural for Normal, LogNormal, and Exponential.
+                // Use relative-SE LogASinH so weakly identified scale gets stronger right skew
+                // and fatter symmetric log-tails, while well-identified scale remains close to a
+                // centered log link. WEDS sign is not used because scale direction is structural.
+                links[1] = CreatePositiveParameterLink(thetaHat[1], scaleSE);
+            }
+
+            // Step 4: Set LinkController with selected links
+            Bulletin17CDistribution.LinkController = new LinkController(links);
+
+            // Step 5: Transform to link space
+            var etaHat = Bulletin17CDistribution.LinkController.Link(thetaHat);
+
+            // Step 6: evaluate G = diag(d eta_i / d theta_i) with the analytical link derivatives.
+            var GHat = Bulletin17CDistribution.LinkController.LinkJacobian(thetaHat);
+
+            // Step 7: transform covariance into link space as V_eta = G * S_theta * G'.
+            var VetaHat = GHat * sigmaHat * GHat.Transpose();
+            VetaHat = MatrixRegularization.MakeSymmetricPositiveDefinite(VetaHat);
+
+            // Step 8: sample eta from N(etaHat, V_eta) by Latin hypercube.
+            MultivariateNormal mvn;
+            try
+            {
+                mvn = new MultivariateNormal(etaHat, VetaHat.ToArray());
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"B17C LinkedMVN: link-space covariance matrix is not positive-definite. {ex.Message}");
+                return null;
+            }
+            var etaDraws = mvn.LatinHypercubeRandomValues(B, BayesianAnalysis.PRNGSeed);
+
+            var options = AnalysisProgress.CreateParallelOptions(_cancellationTokenSource?.Token ?? CancellationToken.None);
+
+            int iteration = 0;
+            int rejectionCount = 0;
+
+            try
+            {
+                // Step 9: map each draw back with theta = InverseLink(eta).
+                Parallel.For(0, B, options, idx =>
+                {
+                    options.CancellationToken.ThrowIfCancellationRequested();
+
+                    // Per-thread validator (ValidateParameters is an instance method).
+                    var validator = Bulletin17CDistribution.Distribution.Clone();
+                    double[]? acceptedTheta = null;
+
+                    // First try: use the LHS draw (best space coverage)
+                    try
+                    {
+                        var theta = Bulletin17CDistribution.LinkController.InverseLink(etaDraws.GetRow(idx));
+                        validator.ValidateParameters(theta, true);
+                        acceptedTheta = theta;
+                    }
+                    catch (Exception ex) { Debug.WriteLine($"B17C LinkedMVN sampling: rejected parameter set (idx={idx}): {ex.Message}"); }
+
+                    // Retry with a fresh link-space draw when a Latin-hypercube sample is invalid.
+                    if (acceptedTheta == null)
+                    {
+                        int p = etaHat.Length;
+                        var prng = new MersenneTwister(BayesianAnalysis.PRNGSeed + B + idx);
+                        for (int retry = 0; retry < 10 && acceptedTheta == null; retry++)
+                        {
+                            try
+                            {
+                                var eta = mvn.InverseCDF(prng.NextDoubles(1, p).GetRow(0));
+                                var theta = Bulletin17CDistribution.LinkController.InverseLink(eta);
+                                validator.ValidateParameters(theta, true);
+                                acceptedTheta = theta;
+                            }
+                            catch (Exception ex) { Debug.WriteLine($"B17C LinkedMVN sampling: rejected parameter set (idx={idx}): {ex.Message}"); }
+                        }
+
+                        if (acceptedTheta == null)
+                            Interlocked.Increment(ref rejectionCount);
+                    }
+
+                    // Rejected draws stay as default ParameterSet values (Values == null) and are
+                    // filtered below. There is no parent substitution on this path because a high
+                    // rejection rate triggers the full method fallback. ParameterSet is a struct, so
+                    // the default-initialized array slot already represents "no draw".
+                    if (acceptedTheta != null)
+                        results[idx] = new ParameterSet(acceptedTheta, double.NaN);
+
+                    int current = Interlocked.Increment(ref iteration);
+                    if (AnalysisProgress.ShouldReportLoopProgress(current, B))
+                        progressReporter?.ReportProgress((int)(100.0 * current / B));
+                });
+
+                // A high rejection rate indicates that the fitted link is too aggressive for this covariance.
+                double rejectionRate = (double)rejectionCount / B;
+                if (rejectionRate > 0.50)
+                {
+                    Debug.WriteLine($"B17C LinkedMVN: {rejectionRate:P0} rejection rate ({rejectionCount}/{B}). " +
+                                    "Cohn-calibrated links were too aggressive; falling back to empirical formulas.");
+                    // Restore identity link controller and return null to trigger fallback
+                    Bulletin17CDistribution.LinkController = new LinkController();
+                    return null;
+                }
+
+                // Filter out rejected draws (default-initialized entries have Values == null)
+                var validResults = results.Where(ps => ps.Values != null).ToArray();
+                if (validResults.Length < 2)
+                {
+                    Debug.WriteLine($"B17C LinkedMVN: Only {validResults.Length} valid draws. Returning null.");
+                    return null;
+                }
+
+                return validResults;
+            }
+            catch (OperationCanceledException)
+            {
+                return null;
+            }
+            finally
+            {
+                // Step 10: Restore empty (identity) link controller so downstream code is unaffected
+                Bulletin17CDistribution.LinkController = new LinkController();
+            }
+        }
+
+        /// <summary>
+        /// Returns a finite WEDS component for link selection.
+        /// </summary>
+        /// <param name="weds">The weighted error direction score vector.</param>
+        /// <param name="index">The parameter index to read.</param>
+        /// <returns>The finite WEDS score at <paramref name="index"/>, or zero if unavailable.</returns>
+        /// <remarks>
+        /// WEDS is a diagnostic input, not an optimizer constraint. If it is unavailable because
+        /// the fit is near a boundary or a moment is non-finite, the conservative choice is to
+        /// remove the extra directional adjustment and keep only structural parameter links.
+        /// </remarks>
+        private static double CleanWeds(double[] weds, int index)
+        {
+            if (weds == null || index < 0 || index >= weds.Length || !double.IsFinite(weds[index]))
+                return 0.0;
+
+            return Math.Clamp(weds[index], -1.0, 1.0);
+        }
+
+        /// <summary>
+        /// Creates the location link used by linked-MVN parameter draws.
+        /// </summary>
+        /// <param name="center">The fitted location parameter value.</param>
+        /// <param name="standardError">The GMM standard error for the location parameter.</param>
+        /// <param name="wedsScore">The signed WEDS score for the location moment.</param>
+        /// <returns>An <see cref="ASinHLink"/> centered at <paramref name="center"/>.</returns>
+        /// <remarks>
+        /// Location is unbounded, so no support transform is needed, but censoring can make the
+        /// estimator's uncertainty directionally asymmetric. Signed WEDS has a direct interpretation
+        /// for the location moment: it records whether weighted residual directions are predominantly
+        /// above or below the fitted center after censoring and interval information are integrated.
+        /// This is a defensible censoring correction, not a distribution-family calibration.
+        /// </remarks>
+        private static ASinHLink CreateLocationLink(double center, double standardError, double wedsScore)
+        {
+            return new ASinHLink(center, standardError)
+            {
+                UseAdaptiveEpsilon = true,
+                ParentIndicator = Math.Clamp(wedsScore, -1.0, 1.0),
+                EpsilonMax = 0.50,
+                EpsilonSlope = 1.0
+            };
+        }
+
+        /// <summary>
+        /// Creates the LP3/P3 location link used by linked-MVN parameter draws.
+        /// </summary>
+        /// <param name="center">The fitted location parameter value.</param>
+        /// <param name="standardError">The GMM standard error for the location parameter.</param>
+        /// <param name="gammaHat">The fitted LP3/P3 skewness parameter.</param>
+        /// <param name="wedsScore">The signed WEDS score for the location moment.</param>
+        /// <returns>An <see cref="ASinHLink"/> centered at <paramref name="center"/>.</returns>
+        /// <remarks>
+        /// LP3/P3 location behavior is intentionally different from the generic two-parameter
+        /// location link. Pearson location and shape are locally coupled through the moment
+        /// equations, so a small fitted-gamma contribution is retained. WEDS still carries the
+        /// censoring-direction information. The epsilon cap stays conservative because gamma
+        /// and scale, not location, should carry most of the high-quantile tail shape.
+        /// </remarks>
+        private static ASinHLink CreatePearsonLocationLink(
+            double center,
+            double standardError,
+            double gammaHat,
+            double wedsScore)
+        {
+            return new ASinHLink(center, standardError)
+            {
+                UseAdaptiveEpsilon = true,
+                ParentIndicator = (0.5 * gammaHat) + wedsScore,
+                EpsilonMax = 0.5,
+                EpsilonSlope = 1.0
+            };
+        }
+
+        /// <summary>
+        /// Converts the raw gamma WEDS component into the LP3/P3 gamma-link direction score.
+        /// </summary>
+        /// <param name="gammaHat">The fitted LP3/P3 skewness parameter.</param>
+        /// <param name="rawGammaWeds">The natural-parameter WEDS component for the third central moment.</param>
+        /// <returns>The oriented score used by the gamma ASinH link.</returns>
+        /// <remarks>
+        /// Gamma WEDS is used as magnitude, not sign. The raw third-moment residual sign depends on
+        /// how the moment condition is written and can flip under censoring. The fitted gamma value
+        /// provides the theory-based direction away from zero. Positive fitted gamma always receives
+        /// positive ASinH skew because a positive LP3/P3 shape should not be represented by a
+        /// symmetric or negatively skewed gamma marginal. Negative fitted gamma is still damped near
+        /// zero so large WEDS values under censoring do not recreate the over-negative uncertainty
+        /// tail. Gamma standard error is reserved for <see cref="CreateGammaTailDelta"/>, where it
+        /// affects symmetric tail kurtosis rather than skewness direction.
+        /// </remarks>
+        private static double OrientGammaWedsForLink(double gammaHat, double rawGammaWeds)
+        {
+            const double gammaAsymmetryFull = 0.50;
+            const double minPositiveDirection = 0.10;
+
+            if (!double.IsFinite(gammaHat))
+                return 0.0;
+
+            double wedsMagnitude = Math.Abs(Math.Clamp(rawGammaWeds, -1.0, 1.0));
+
+            if (gammaHat > 0.0)
+                return Math.Max(minPositiveDirection, wedsMagnitude);
+
+            if (gammaHat == 0.0)
+                return 0.0;
+
+            // Negative fitted gamma can only produce symmetric or negative gamma-link skewness.
+            // The smooth gate is retained only on the negative side because heavy censoring can
+            // make WEDS large when the fitted negative skew is practically indistinguishable from
+            // zero. Positive gamma is allowed to use full WEDS magnitude immediately.
+            double asymmetryGate = SmoothStep(0.0, gammaAsymmetryFull, Math.Abs(gammaHat));
+            return -wedsMagnitude * asymmetryGate;
+        }
+
+        /// <summary>
+        /// Evaluates a cubic smoothstep transition between two edges.
+        /// </summary>
+        /// <param name="edge0">The lower edge where the transition is zero.</param>
+        /// <param name="edge1">The upper edge where the transition is one.</param>
+        /// <param name="x">The value to map through the transition.</param>
+        /// <returns>A smooth value in [0, 1].</returns>
+        /// <remarks>
+        /// Used for the gamma-link transition so mild negative skew remains symmetric near zero,
+        /// while stronger negative skew enters smoothly without a discontinuous coverage jump.
+        /// </remarks>
+        private static double SmoothStep(double edge0, double edge1, double x)
+        {
+            if (!double.IsFinite(x))
+                return 0.0;
+
+            if (edge1 <= edge0)
+                return x >= edge1 ? 1.0 : 0.0;
+
+            double t = Math.Clamp((x - edge0) / (edge1 - edge0), 0.0, 1.0);
+            return t * t * (3.0 - (2.0 * t));
+        }
+
+        /// <summary>
+        /// Computes the ASinH tail-shape delta for the LP3/P3 gamma link.
+        /// </summary>
+        /// <param name="gammaHat">The fitted LP3/P3 skewness parameter.</param>
+        /// <param name="gammaSE">The GMM standard error for <paramref name="gammaHat"/>.</param>
+        /// <returns>A delta value in [0.80, 1.00]; smaller values give heavier symmetric tails.</returns>
+        /// <remarks>
+        /// Near-zero gamma needs additional high-quantile support, but assigning positive asymmetry
+        /// to a non-positive fitted gamma violates the LP3/P3 skewness direction. Delta provides the
+        /// theory-respecting knob: when gamma is close to zero and poorly identified, the gamma link
+        /// gets heavier symmetric tails. The standard error of gamma is used as an effective
+        /// information surrogate because raw record length is not meaningful with censoring,
+        /// historical thresholds, priors, and measurement error.
+        /// </remarks>
+        private static double CreateGammaTailDelta(double gammaHat, double gammaSE)
+        {
+            const double minDelta = 0.80;
+            const double maxTailReduction = 0.20;
+            const double gammaSEScale = 0.25;
+            const double signalForTailStart = 0.75;
+            const double signalForTailFade = 2.0;
+
+            if (!double.IsFinite(gammaHat) || !double.IsFinite(gammaSE) || gammaSE <= 0.0)
+                return 1.0;
+
+            double gammaSignal = StandardizedMagnitude(gammaHat, gammaSE);
+            double weakDirectionGate = 1.0 - SmoothStep(signalForTailStart, signalForTailFade, gammaSignal);
+            double uncertaintyGate = gammaSE / (gammaSE + gammaSEScale);
+            double delta = 1.0 - (maxTailReduction * weakDirectionGate * uncertaintyGate);
+
+            return Math.Clamp(delta, minDelta, 1.0);
+        }
+
+        /// <summary>
+        /// Computes the absolute signal-to-noise ratio for a fitted parameter.
+        /// </summary>
+        /// <param name="estimate">The fitted parameter value.</param>
+        /// <param name="standardError">The standard error of <paramref name="estimate"/>.</param>
+        /// <returns>The nonnegative standardized magnitude.</returns>
+        /// <remarks>
+        /// The linked-MVN link shape should respond to the information in the fitted covariance
+        /// matrix rather than raw sample size. That matters for B17C because censoring, historical
+        /// thresholds, priors, and measurement error can make record length a poor proxy for
+        /// parameter identification.
+        /// </remarks>
+        private static double StandardizedMagnitude(double estimate, double standardError)
+        {
+            if (!double.IsFinite(estimate))
+                return 0.0;
+
+            if (!double.IsFinite(standardError) || standardError <= 1e-12)
+                return Math.Abs(estimate) > 0.0 ? double.PositiveInfinity : 0.0;
+
+            return Math.Abs(estimate) / standardError;
+        }
+
+        /// <summary>
+        /// Computes a robust standard error from a covariance diagonal entry.
+        /// </summary>
+        /// <param name="covariance">The covariance matrix.</param>
+        /// <param name="index">The diagonal index to read.</param>
+        /// <returns>A positive finite standard error.</returns>
+        /// <remarks>
+        /// The link scale controls local linearization. If the sandwich covariance is numerically
+        /// degenerate, use a tiny positive floor so link construction remains monotone and the
+        /// covariance regularization step can still decide whether the draw distribution is usable.
+        /// </remarks>
+        private static double SafeStandardError(Matrix covariance, int index)
+        {
+            if (covariance == null || index < 0 || index >= covariance.NumberOfRows || index >= covariance.NumberOfColumns)
+                return 1e-12;
+
+            double variance = covariance[index, index];
+            if (!double.IsFinite(variance) || variance <= 0.0)
+                return 1e-12;
+
+            return Math.Sqrt(variance);
+        }
+
+        /// <summary>
+        /// Creates a positive-support log-sinh-arcsinh link for positive parameters.
+        /// </summary>
+        /// <param name="center">The fitted positive parameter value.</param>
+        /// <param name="standardError">The GMM standard error for <paramref name="center"/>.</param>
+        /// <returns>A <see cref="LogASinHLink"/> centered at <paramref name="center"/>.</returns>
+        /// <remarks>
+        /// Positive parameters, including scale and gamma-distribution shape, cannot be represented
+        /// safely with an unconstrained ASinH link because that would allow invalid negative draws.
+        /// Applying ASinH to log(parameter / estimate) preserves support while providing explicit
+        /// skewness and tail controls. The controls are driven by relative standard error, SE / estimate,
+        /// so they are invariant to measurement units and reflect the fitted information matrix. WEDS
+        /// sign is intentionally excluded because positive-parameter tail direction is structural:
+        /// weakly identified positive parameters should become more right-skewed, but not because a
+        /// moment residual sign happened to flip under censoring or centering.
+        /// </remarks>
+        private static LogASinHLink CreatePositiveParameterLink(double center, double standardError)
+        {
+            const double scaleCVReference = 0.25;
+            const double epsilonMax = 0.75;
+            const double epsilonSlope = 1.25;
+            const double maxTailReduction = 0.18;
+            const double minDelta = 0.82;
+
+            double relativeSE = RelativeStandardError(center, standardError);
+            double logScale = LogScaleFromRelativeStandardError(relativeSE);
+            double uncertainty = RelativeUncertaintyScore(relativeSE, scaleCVReference);
+            double delta = 1.0 - (maxTailReduction * uncertainty);
+
+            return new LogASinHLink(center, logScale)
+            {
+                Delta = Math.Clamp(delta, minDelta, 1.0),
+                UseAdaptiveEpsilon = true,
+                ParentIndicator = uncertainty,
+                EpsilonMax = epsilonMax,
+                EpsilonSlope = epsilonSlope
+            };
+        }
+
+        /// <summary>
+        /// Creates the P3/LP3 scale link used by linked-MVN parameter draws.
+        /// </summary>
+        /// <param name="center">The fitted positive scale parameter value.</param>
+        /// <param name="standardError">The GMM standard error for <paramref name="center"/>.</param>
+        /// <returns>A <see cref="LogASinHLink"/> centered at <paramref name="center"/>.</returns>
+        /// <remarks>
+        /// The P3/LP3 scale uses the same positive-parameter link rule as the other B17C
+        /// distribution options. The wrapper keeps the LP3/P3 scale decision explicit in the
+        /// LinkedMVN setup.
+        /// </remarks>
+        private static LogASinHLink CreatePearsonScaleLink(double center, double standardError)
+        {
+            return CreatePositiveParameterLink(center, standardError);
+        }
+
+        /// <summary>
+        /// Computes a dimensionless relative standard error for a positive parameter.
+        /// </summary>
+        /// <param name="center">The fitted positive parameter value.</param>
+        /// <param name="standardError">The standard error of <paramref name="center"/>.</param>
+        /// <returns>The nonnegative relative standard error.</returns>
+        /// <remarks>
+        /// Positive-parameter link shape must be invariant to the measurement units of flow.
+        /// Using SE / estimate, rather than raw SE, preserves that invariance and makes the link
+        /// respond to parameter information instead of the scale of the data.
+        /// </remarks>
+        private static double RelativeStandardError(double center, double standardError)
+        {
+            if (!double.IsFinite(center) || center <= 0.0 || !double.IsFinite(standardError) || standardError <= 0.0)
+                return 0.0;
+
+            double relativeSE = Math.Abs(standardError / center);
+            if (!double.IsFinite(relativeSE))
+                return 0.0;
+
+            return relativeSE;
+        }
+
+        /// <summary>
+        /// Maps a relative standard error to a bounded uncertainty score.
+        /// </summary>
+        /// <param name="relativeSE">The nonnegative relative standard error.</param>
+        /// <param name="referenceRelativeSE">The relative SE where the score reaches one half.</param>
+        /// <returns>A bounded score in [0, 1].</returns>
+        /// <remarks>
+        /// This saturating map avoids hard thresholds. A nearly deterministic positive parameter
+        /// receives almost no additional log-ASinH skew or tail thickness, while a weakly identified
+        /// parameter smoothly approaches the configured maximum settings.
+        /// </remarks>
+        private static double RelativeUncertaintyScore(double relativeSE, double referenceRelativeSE)
+        {
+            if (!double.IsFinite(relativeSE) || relativeSE <= 0.0)
+                return 0.0;
+
+            if (!double.IsFinite(referenceRelativeSE) || referenceRelativeSE <= 0.0)
+                return 1.0;
+
+            return Math.Clamp(relativeSE / (relativeSE + referenceRelativeSE), 0.0, 1.0);
+        }
+
+        /// <summary>
+        /// Converts relative standard error to a log-standardization scale.
+        /// </summary>
+        /// <param name="relativeSE">The nonnegative relative standard error.</param>
+        /// <returns>The positive log-scale used by <see cref="LogASinHLink"/>.</returns>
+        /// <remarks>
+        /// sqrt(log(1 + CV^2)) is the lognormal relationship between arithmetic coefficient of
+        /// variation and log standard deviation. It gives the positive-support link a defensible
+        /// local scale while keeping the transformation dimensionless. Extremely large CV values
+        /// are capped only for numerical stability; by then the asymmetry and tail controls are
+        /// already saturated.
+        /// </remarks>
+        private static double LogScaleFromRelativeStandardError(double relativeSE)
+        {
+            const double minLogScale = 1e-12;
+            const double maxRelativeSE = 10.0;
+
+            if (!double.IsFinite(relativeSE) || relativeSE <= 0.0)
+                return minLogScale;
+
+            double boundedRelativeSE = Math.Min(relativeSE, maxRelativeSE);
+            double logScale = Math.Sqrt(Math.Log(1.0 + (boundedRelativeSE * boundedRelativeSE)));
+
+            if (!double.IsFinite(logScale) || logScale <= 0.0)
+                return minLogScale;
+
+            return Math.Max(logScale, minLogScale);
+        }
+
+        /// <summary>
+        /// Creates the LP3/P3 gamma link with WEDS-driven asymmetry.
+        /// </summary>
+        /// <param name="gammaHat">The fitted skewness parameter.</param>
+        /// <param name="gammaSE">The GMM standard error for <paramref name="gammaHat"/>.</param>
+        /// <param name="gammaDirectionScore">The oriented WEDS direction score for the gamma link.</param>
+        /// <returns>An <see cref="ASinHLink"/> configured for gamma uncertainty draws.</returns>
+        /// <remarks>
+        /// Gamma is different from scale: it is not constrained positive, and negative gamma alone
+        /// should not imply a heavily negative uncertainty tail. The oriented WEDS score supplies
+        /// asymmetry direction after the near-zero transition is applied. The tail-shape delta
+        /// handles near-zero, weakly identified gamma without making non-positive fitted gamma
+        /// positively skewed. Negative scores remain capped more tightly to avoid the over-negative
+        /// LP3/P3 behavior observed in flood-frequency tails.
+        /// </remarks>
+        private static ASinHLink CreateGammaShapeLink(double gammaHat, double gammaSE, double gammaDirectionScore)
+        {
+            const double wedsDeadband = 0.10;
+            const double maxPositiveEpsilon = 1.0;
+            const double maxNegativeEpsilon = 0.5;
+            const double minPositiveEpsilon = 0.50;
+            const double minNegativeEpsilon = 0.25;
+
+            double boundedWeds = Math.Clamp(gammaDirectionScore, -1.0, 1.0);
+            double absWeds = Math.Abs(boundedWeds);
+            double epsilonMax = 0.0;
+            double parentIndicator = 0.0;
+
+            if (absWeds >= wedsDeadband)
+            {
+                parentIndicator = boundedWeds;
+
+                if (boundedWeds < 0.0)
+                {
+                    epsilonMax = minNegativeEpsilon + ((maxNegativeEpsilon - minNegativeEpsilon) * absWeds);
+                    epsilonMax = Math.Min(epsilonMax, maxNegativeEpsilon);
+                }
+                else
+                {
+                    epsilonMax = minPositiveEpsilon + ((maxPositiveEpsilon - minPositiveEpsilon) * absWeds);
+
+                    if (gammaHat > 0.75)
+                        epsilonMax = Math.Max(epsilonMax, 0.75);
+                }
+
+                epsilonMax = Math.Clamp(epsilonMax, 0.0, maxPositiveEpsilon);
+            }
+
+            return new ASinHLink(gammaHat, gammaSE)
+            {
+                Delta = CreateGammaTailDelta(gammaHat, gammaSE),
+                UseAdaptiveEpsilon = true,
+                ParentIndicator = parentIndicator,
+                EpsilonMax = epsilonMax,
+                EpsilonSlope = 1.5
+            };
+        }
+
+        /// <summary>
+        /// Contains influence-function-based statistics for the Linked Multivariate Student-t method.
+        /// Computed from per-observation GMM influence vectors psi_i = Bread^-1 * D'W * m_i.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Carries the quantile-level degrees of freedom for the MVT distribution and per-parameter
+        /// skewness used to shift the MVT center in link space (BCa-equivalent z0 bias correction).
+        /// </para>
+        /// <para>
+        /// Reference: Cohn, T.A., Lane, W.L., Stedinger, J.R. (2001). Confidence intervals for
+        /// Expected Moments Algorithm flood quantile estimates. Water Resources Research, 37(6), 1695-1706.
+        /// </para>
+        /// </remarks>
+        private struct InfluenceStatistics
+        {
+            /// <summary>
+            /// Degrees of freedom for the MVT, computed from the kurtosis of quantile influence
+            /// scores s_i = g_p' * psi_i: nu = 1/(2*Var[W]), where Var[W] = (V4/V2^2 - 1)/4.
+            /// Floored at 4.
+            /// </summary>
+            public double NuQuantile;
+
+            /// <summary>
+            /// Per-parameter skewness of the influence-vector components psi_i.
+            /// ParameterSkewness[j] is the skewness of {psi_i[j], i=1..n}.
+            /// Used to shift the multivariate-t center in link space: deltaEta[j] = (skew_j/6)*sqrt(VetaHat[j,j]),
+            /// providing the BCa-equivalent z0 bias correction derived directly from the
+            /// influence function rather than from bootstrap resampling.
+            /// </summary>
+            public double[] ParameterSkewness;
+        }
+
+        /// <summary>
+        /// Computes influence-function-based statistics for the Linked MVT method:
+        /// quantile degrees of freedom and per-parameter skewness.
+        /// </summary>
+        /// <param name="thetaHat">The GMM point estimates in parameter space, such as [mu, sigma, gamma].</param>
+        /// <param name="targetNonExceedanceProbability">
+        /// The non-exceedance probability at which to evaluate the quantile degrees of freedom.
+        /// Typically 0.999 for the 1000-year flood quantile.
+        /// </param>
+        /// <returns>
+        /// An <see cref="InfluenceStatistics"/> struct with NuQuantile and ParameterSkewness.
+        /// </returns>
+        /// <remarks>
+        /// <para>
+        /// Implements Cohn et al. (2001) equations 27-30 for quantile-specific degrees of freedom, then extends the
+        /// same framework to extract per-parameter skewness from the psi_i vectors for the
+        /// BCa-equivalent z0 bias correction.
+        /// </para>
+        /// <para>
+        /// <b>Quantile nu</b>: From scalar quantile influence scores s_i = g_p' * psi_i,
+        /// compute nu = 1/(2*Var[W]), where Var[W] = (V4/V2^2 - 1)/4.
+        /// </para>
+        /// <para>
+        /// Reference: Cohn, T.A., Lane, W.L., Stedinger, J.R. (2001). Confidence intervals for
+        /// Expected Moments Algorithm flood quantile estimates. Water Resources Research, 37(6), 1695-1706.
+        /// </para>
+        /// </remarks>
+        private InfluenceStatistics ComputeInfluenceStatistics(double[] thetaHat, double targetNonExceedanceProbability)
+        {
+            int nParams = thetaHat.Length;
+            var result = new InfluenceStatistics
+            {
+                NuQuantile = 30.0,
+                ParameterSkewness = new double[nParams]
+            };
+
+            // 1. Evaluate quantile gradient g_p = dX_p/dtheta at the target probability.
+            double[] gp = Bulletin17CDistribution.QuantileGradient(targetNonExceedanceProbability, thetaHat);
+
+            // 2. Per-observation moment conditions [n x q].
+            var pointwiseMC = _gmm!.PointwiseMomentConditions;
+            if (pointwiseMC == null)
+            {
+                Debug.WriteLine("ComputeInfluenceStatistics: PointwiseMomentConditions unavailable, using defaults.");
+                return result;
+            }
+            double[,] mi = pointwiseMC(thetaHat);
+            int n = mi.GetLength(0);
+            int q = mi.GetLength(1);
+
+            // 3. GMM matrices for Bread = D'WD + H
+            var D = _gmm.GetJacobian(thetaHat);
+            var DT = D.Transpose();
+            var W = _gmm.W!;
+            var H = _gmm.GetPenaltyHessian(thetaHat);
+            var bread = DT * W * D + H;
+
+            Matrix breadInv;
+            try
+            {
+                breadInv = bread.Inverse();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"ComputeInfluenceStatistics: Bread matrix singular, using defaults. {ex.Message}");
+                return result;
+            }
+
+            var DtW = DT * W;
+
+            // 4. Compute psi_i vectors and quantile influence scores s_i = g_p' * psi_i.
+            double[] s = new double[n];
+            double[][] psiAll = new double[n][];
+
+            for (int i = 0; i < n; i++)
+            {
+                // D'W * m_i gives an nParams x 1 vector.
+                double[] DtWm = new double[nParams];
+                for (int j = 0; j < nParams; j++)
+                {
+                    double sum = 0;
+                    for (int k = 0; k < q; k++)
+                        sum += DtW[j, k] * mi[i, k];
+                    DtWm[j] = sum;
+                }
+
+                // psi_i = Bread^-1 * D'Wm.
+                double[] psi = new double[nParams];
+                for (int j = 0; j < nParams; j++)
+                {
+                    double sum = 0;
+                    for (int k = 0; k < nParams; k++)
+                        sum += breadInv[j, k] * DtWm[k];
+                    psi[j] = sum;
+                }
+                psiAll[i] = psi;
+
+                // s_i = g_p' * psi_i is scalar.
+                double si = 0;
+                for (int j = 0; j < nParams; j++)
+                    si += gp[j] * psi[j];
+                s[i] = si;
+            }
+
+            // 5a. Derive per-parameter nu from psi_i[j] kurtosis, then combine them for multivariate t.
+            // The multivariate t uses one nu for every dimension. Quantile-influence kurtosis can
+            // over-emphasize the heaviest-tailed parameter (gamma) and give a nu that is too low
+            // for the other parameters. The geometric mean of the per-parameter nu values balances
+            // the dimensions: it is less conservative than the harmonic mean, which is dominated
+            // by the smallest nu, but less liberal than the arithmetic mean, which is dominated by
+            // the largest nu.
+            double logNuSum = 0;
+            int nuCount = 0;
+            for (int j = 0; j < nParams; j++)
+            {
+                double[] psiJ = new double[n];
+                for (int i = 0; i < n; i++)
+                    psiJ[i] = psiAll[i][j];
+                double nuJ = ComputeDegreesOfFreedomFromKurtosis(psiJ, n);
+                logNuSum += Math.Log(nuJ);
+                nuCount++;
+            }
+            result.NuQuantile = nuCount > 0
+                ? Math.Exp(logNuSum / nuCount)
+                : 1000.0;
+
+            // 5b. Per-parameter skewness for MVT center shift (BCa z0 equivalent).
+            // The skewness of psi_i[j] determines the multivariate-t center shift: link-space
+            // component j is shifted by (skew_j / 6) * sqrt(VetaHat[j,j]), the influence-function
+            // analog of the BCa z0 bias correction.
+            for (int j = 0; j < nParams; j++)
+            {
+                double[] psiJ = new double[n];
+                for (int i = 0; i < n; i++)
+                    psiJ[i] = psiAll[i][j];
+                result.ParameterSkewness[j] = ComputeSkewnessFromInfluence(psiJ, n);
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Computes kurtosis-based degrees of freedom from a vector of influence scores
+        /// by matching the empirical kurtosis to the theoretical kurtosis of a Student-t distribution.
+        /// </summary>
+        /// <param name="scores">The per-observation influence scores.</param>
+        /// <param name="n">The number of observations.</param>
+        /// <returns>Degrees of freedom floored at 5 (matching EMA's nu_min), capped at 1000.</returns>
+        /// <remarks>
+        /// <para>
+        /// For Student-t(nu), the kurtosis ratio (fourth moment divided by variance squared) is 3(nu-2)/(nu-4)
+        /// for nu &gt; 4. Solving gives nu = 2(2*kappa-3)/(kappa-3). At kappa = 3, nu tends to infinity.
+        /// At kappa = 9, nu = 5. The inversion is meaningful only for kappa &gt; 3; values at or below 3
+        /// return nu = 1000, which approximates a multivariate normal.
+        /// </para>
+        /// <para>
+        /// Uses centered moments (about the sample mean) for robustness with censored data
+        /// where influence scores may not be perfectly mean-zero.
+        /// </para>
+        /// </remarks>
+        private static double ComputeDegreesOfFreedomFromKurtosis(double[] scores, int n)
+        {
+            // Centered moments for robustness
+            double mean = 0;
+            for (int i = 0; i < n; i++)
+                mean += scores[i];
+            mean /= n;
+
+            double M2 = 0, M4 = 0;
+            for (int i = 0; i < n; i++)
+            {
+                double d = scores[i] - mean;
+                double d2 = d * d;
+                M2 += d2;
+                M4 += d2 * d2;
+            }
+            M2 /= n;
+            M4 /= n;
+
+            if (M2 <= 0)
+                return 1000.0;
+
+            // Kurtosis ratio M4/M2^2 equals 3 for a Gaussian and exceeds 3 for heavy tails.
+            double kappa = M4 / (M2 * M2);
+
+            // Student t is unnecessary for Gaussian or sub-Gaussian kurtosis.
+            if (kappa <= 3.0 + 1e-6)
+                return 1000.0;
+
+            // nu = 2(2*kappa-3)/(kappa-3), derived from kappa = 3(nu-2)/(nu-4).
+            double nu = 2.0 * (2.0 * kappa - 3.0) / (kappa - 3.0);
+
+            return Math.Clamp(nu, 5.0, 1000.0);
+        }
+
+        /// <summary>
+        /// Computes the third standardized moment (skewness) of a vector of influence scores.
+        /// </summary>
+        /// <param name="scores">The per-observation influence scores.</param>
+        /// <param name="n">The number of observations.</param>
+        /// <returns>The skewness mu_3/mu_2^(3/2), or zero if the variance is near zero.</returns>
+        /// <remarks>
+        /// Computes M2 = sum((x-xbar)^2)/n and M3 = sum((x-xbar)^3)/n,
+        /// then returns M3 / M2^{3/2}. This is the Fisher skewness coefficient.
+        /// </remarks>
+        private static double ComputeSkewnessFromInfluence(double[] scores, int n)
+        {
+            // Compute mean
+            double mean = 0;
+            for (int i = 0; i < n; i++)
+                mean += scores[i];
+            mean /= n;
+
+            // Compute central moments M2 and M3
+            double M2 = 0, M3 = 0;
+            for (int i = 0; i < n; i++)
+            {
+                double d = scores[i] - mean;
+                double d2 = d * d;
+                M2 += d2;
+                M3 += d2 * d;
+            }
+            M2 /= n;
+            M3 /= n;
+
+            if (M2 <= 1e-30)
+                return 0.0;
+
+            double sigma = Math.Sqrt(M2);
+            return M3 / (sigma * sigma * sigma);
+        }
+
+        /// <summary>
+        /// Applies the bounded outer retry and fallback policy for one bootstrap replicate.
+        /// </summary>
+        /// <typeparam name="T">Reference type delivered by a successful replicate attempt.</typeparam>
+        /// <param name="tryAttempt">
+        /// Deterministic or production attempt function. The zero-based argument is the current
+        /// attempt index; a <c>null</c> result requests another fresh realization.
+        /// </param>
+        /// <param name="parentFallback">Parent-fit value substituted after every attempt fails.</param>
+        /// <param name="maxAttempts">Maximum number of fresh realizations allowed for the replicate.</param>
+        /// <param name="diagnostics">Diagnostics receiving retry and substitution counts.</param>
+        /// <param name="exceptionHandler">Optional observer for an exception caught from an attempt.</param>
+        /// <returns>The first accepted result, or <paramref name="parentFallback"/> after exhaustion.</returns>
+        /// <exception cref="ArgumentNullException">
+        /// Thrown when the attempt function, fallback value, or diagnostics are <c>null</c>.
+        /// </exception>
+        /// <exception cref="ArgumentOutOfRangeException">
+        /// Thrown when <paramref name="maxAttempts"/> is less than one.
+        /// </exception>
+        /// <remarks>
+        /// Attempt-specific data generation and estimation remain in the supplied delegate. This
+        /// helper owns only the engineering policy shared by ordinary and pivotal bootstrap:
+        /// catch a realization-level exception, retry with a fresh realization, and preserve the
+        /// configured output length by substituting the parent fit after the final attempt.
+        /// </remarks>
+        internal static T ResolveBootstrapReplicate<T>(
+            Func<int, T?> tryAttempt,
+            T parentFallback,
+            int maxAttempts,
+            BootstrapDiagnostics diagnostics,
+            Action<int, Exception>? exceptionHandler = null)
+            where T : class
+        {
+            ArgumentNullException.ThrowIfNull(tryAttempt);
+            ArgumentNullException.ThrowIfNull(parentFallback);
+            ArgumentNullException.ThrowIfNull(diagnostics);
+            if (maxAttempts < 1)
+                throw new ArgumentOutOfRangeException(nameof(maxAttempts));
+
+            for (int attempt = 0; attempt < maxAttempts; attempt++)
+            {
+                T? accepted = null;
+                try
+                {
+                    accepted = tryAttempt(attempt);
+                }
+                catch (Exception ex)
+                {
+                    exceptionHandler?.Invoke(attempt, ex);
+                }
+
+                if (accepted != null)
+                    return accepted;
+                if (attempt < maxAttempts - 1)
+                    diagnostics.AddRetries(1);
+            }
+
+            diagnostics.IncrementFailed();
+            return parentFallback;
+        }
+
+        /// <summary>
+        /// Generates distributions using parametric bootstrap resampling.
+        /// </summary>
+        /// <param name="progressReporter">Optional progress reporter.</param>
+        /// <returns>
+        /// An array of <see cref="UnivariateDistributionBase"/> with bootstrap-estimated parameters,
+        /// or null if the operation was cancelled.
+        /// </returns>
+        /// <remarks>
+        /// <para>
+        ///     For each bootstrap replicate b = 1, …, B:
+        /// </para>
+        /// <list type="number">
+        ///     <item><description>Generate a bootstrap data frame by resampling from the fitted parent distribution
+        ///         via <see cref="DataFrame.BootstrapDataFrame"/>.</description></item>
+        ///     <item><description>Create a new <see cref="Bulletin17CDistribution"/> from the bootstrap data and
+        ///         set a randomized penalty function via <see cref="Bulletin17CDistribution.SetPenaltyFunction"/>
+        ///         to propagate prior uncertainty.</description></item>
+        ///     <item><description>Estimate parameters using GMM. If GMM fails, retry up to
+        ///         <c>maxRetries</c> times with fresh bootstrap samples before falling back to parent parameters.</description></item>
+        /// </list>
+        /// </remarks>
+        private ParameterSet[]? GetParameterSetsFromParametricBootstrap(SafeProgressReporter? progressReporter)
+        {
+            const int maxRetries = 10;
+            int B = BayesianAnalysis.OutputLength;
+            var results = new ParameterSet[B];
+            var masterPRNG = new MersenneTwister(BayesianAnalysis.PRNGSeed);
+            var seeds = masterPRNG.NextIntegers(B);
+            var thetaHat = _gmm!.BestParameterSet.Values;
+            var parentDistribution = Bulletin17CDistribution.Distribution.Clone();
+            parentDistribution.SetParameters(thetaHat);
+
+
+            // Initialize bootstrap diagnostics
+            var diag = new BootstrapDiagnostics { TotalReplicates = B };
+            var phase1Stopwatch = Stopwatch.StartNew();
+
+            var options = AnalysisProgress.CreateParallelOptions(_cancellationTokenSource?.Token ?? CancellationToken.None);
+
+            int iteration = 0;
+
+
+            try
+            {
+                Parallel.For(0, B, options, idx =>
+                {
+                    options.CancellationToken.ThrowIfCancellationRequested();
+
+                    var prng = new MersenneTwister(seeds[idx]);
+                    double[] acceptedParams = ResolveBootstrapReplicate(
+                        attempt =>
+                        {
+                            // BootstrapDataFrame uses the parent distribution as the data-generating model.
+                            var samplingDist = parentDistribution.Clone();
+                            var bootDataFrame = Bulletin17CDistribution.DataFrame.BootstrapDataFrame(samplingDist, prng);
+                            diag.IncrementAttempted();
+
+                            if (!TryFitBootstrapRealization(
+                                bootDataFrame, thetaHat, prng,
+                                requireCovariance: false, diag, idx, "Bootstrap",
+                                out double[]? candidate, out _))
+                            {
+                                Debug.WriteLine(
+                                    $"Bootstrap replicate {idx}, attempt {attempt}: " +
+                                    "the GMM solver exhausted every initialization candidate.");
+                                return null;
+                            }
+                            return candidate;
+                        },
+                        thetaHat,
+                        maxRetries,
+                        diag,
+                        (attempt, ex) => Debug.WriteLine(
+                            $"Bootstrap replicate {idx}, attempt {attempt}: {ex.Message}"));
+
+                    results[idx] = new ParameterSet(acceptedParams, double.NaN);
+
+                    int current = Interlocked.Increment(ref iteration);
+                    if (AnalysisProgress.ShouldReportLoopProgress(current, B))
+                        progressReporter?.ReportProgress((int)(100.0 * current / B));
+                });
+
+                phase1Stopwatch.Stop();
+                diag.Phase1Time = phase1Stopwatch.Elapsed;
+                diag.RetainedReplicates = results.Length - diag.FailedReplicates;
+                BootstrapResults = diag;
+
+                return results;
+            }
+            catch (OperationCanceledException)
+            {
+                return null;
+            }
+        }
+        /// <summary>
+        /// Fits one bootstrap data realization by trying ranked starting candidates against one fixed target.
+        /// </summary>
+        /// <param name="bootstrapDataFrame">The already-generated bootstrap data realization.</param>
+        /// <param name="parentParameters">The fitted parent parameter vector.</param>
+        /// <param name="prng">The replicate-specific random number generator.</param>
+        /// <param name="requireCovariance">
+        /// Whether a finite positive-definite replicate covariance is required for pivotal processing.
+        /// </param>
+        /// <param name="diagnostics">Thread-safe bootstrap diagnostics receiving optimizer outcomes.</param>
+        /// <param name="replicateIndex">Zero-based bootstrap replicate index used in diagnostics.</param>
+        /// <param name="methodName">Short bootstrap method name used in diagnostic messages.</param>
+        /// <param name="acceptedParameters">Successfully fitted parameter values, or <c>null</c>.</param>
+        /// <param name="acceptedCovariance">
+        /// Successfully fitted covariance when <paramref name="requireCovariance"/> is <c>true</c>;
+        /// otherwise <c>null</c>.
+        /// </param>
+        /// <returns>
+        /// <c>true</c> when one candidate produces a successful fit that passes every requested
+        /// safeguard; otherwise <c>false</c>.
+        /// </returns>
+        /// <exception cref="ArgumentNullException">
+        /// Thrown when a required data, parameter, random-number, diagnostic, or method argument is
+        /// <c>null</c>.
+        /// </exception>
+        /// <remarks>
+        /// The bootstrap model is always cloned with the supplied data frame so the parent's bounds,
+        /// links, and penalty configuration survive. The randomized penalty is drawn exactly once,
+        /// before candidate ranking. Later candidates are therefore optimizer restarts for the same
+        /// statistical realization rather than different bootstrap targets. A candidate that does not
+        /// report success is accepted only when the iterative GMM converged within tolerance over at
+        /// least two weighting passes and its final objective improves on the objective of its own
+        /// start candidate under the same selected weighting. The caller retries on fresh
+        /// realizations and substitutes the parent fit after the last retry.
+        /// </remarks>
+        private bool TryFitBootstrapRealization(
+            DataFrame bootstrapDataFrame,
+            double[] parentParameters,
+            Random prng,
+            bool requireCovariance,
+            BootstrapDiagnostics diagnostics,
+            int replicateIndex,
+            string methodName,
+            out double[]? acceptedParameters,
+            out Matrix? acceptedCovariance)
+        {
+            if (bootstrapDataFrame == null)
+                throw new ArgumentNullException(nameof(bootstrapDataFrame));
+            if (parentParameters == null)
+                throw new ArgumentNullException(nameof(parentParameters));
+            if (prng == null)
+                throw new ArgumentNullException(nameof(prng));
+            if (diagnostics == null)
+                throw new ArgumentNullException(nameof(diagnostics));
+            if (methodName == null)
+                throw new ArgumentNullException(nameof(methodName));
+
+            acceptedParameters = null;
+            acceptedCovariance = null;
+
+            var bootstrapModel = Bulletin17CDistribution.CloneWithDataFrame(bootstrapDataFrame);
+            bootstrapModel.SetRandomPenaltyFunction(parentParameters, prng);
+            IReadOnlyList<double[]> candidates =
+                bootstrapModel.GetRankedBootstrapInitialValues(parentParameters);
+
+            for (int candidateIndex = 0; candidateIndex < candidates.Count; candidateIndex++)
+            {
+                double[] candidate = candidates[candidateIndex];
+                for (int parameterIndex = 0; parameterIndex < candidate.Length; parameterIndex++)
+                    bootstrapModel.Parameters[parameterIndex].Value = candidate[parameterIndex];
+
+                var bootstrapGmm = new GeneralizedMethodOfMoments(bootstrapModel);
+                try
+                {
+                    bootstrapGmm.Estimate();
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine(
+                        $"{methodName} replicate {replicateIndex}, initialization {candidateIndex + 1}: {ex.Message}");
+                }
+                finally
+                {
+                    diagnostics.AddFunctionEvaluations(bootstrapGmm.TotalFunctionEvaluations);
+                    diagnostics.AddOptimizerFallbacks(bootstrapGmm.OptimizerFallbackCount);
+                    diagnostics.RecordGMMStatus(bootstrapGmm.Status);
+                }
+
+                if ((bootstrapGmm.Status != OptimizationStatus.Success && !bootstrapGmm.ConvergedWithinTolerance) ||
+                    bootstrapGmm.BestParameterSet.Values == null ||
+                    bootstrapGmm.BestParameterSet.Values.Length != parentParameters.Length ||
+                    bootstrapGmm.BestParameterSet.Values.Any(value => !double.IsFinite(value)))
+                {
+                    Debug.WriteLine(
+                        $"{methodName} replicate {replicateIndex}, initialization {candidateIndex + 1}: " +
+                        $"GMM status {bootstrapGmm.Status}; converged={bootstrapGmm.ConvergedWithinTolerance}; " +
+                        $"iterations={bootstrapGmm.GMMIterations}; objective={bootstrapGmm.ObjectiveFunctionValue:G17}; " +
+                        $"start=[{string.Join(", ", candidate.Select(value => value.ToString("G17", CultureInfo.InvariantCulture)))}].");
+                    continue;
+                }
+
+                if (bootstrapGmm.Status != OptimizationStatus.Success)
+                {
+                    // A converged-within-tolerance termination is accepted only when the fit moved
+                    // off its start: the final objective must improve on the start candidate's
+                    // objective under the same selected weighting.
+                    double startObjective = bootstrapGmm.Q(candidate);
+                    double finalObjective = bootstrapGmm.ObjectiveFunctionValue;
+                    if (bootstrapGmm.GMMIterations < 2 ||
+                        !double.IsFinite(finalObjective) ||
+                        !(finalObjective < startObjective))
+                    {
+                        Debug.WriteLine(
+                            $"{methodName} replicate {replicateIndex}, initialization {candidateIndex + 1}: " +
+                            $"rejected {bootstrapGmm.Status} because the converged-within-tolerance fit did not " +
+                            $"improve on its start (objective {finalObjective:G17} versus {startObjective:G17} " +
+                            $"after {bootstrapGmm.GMMIterations} iterations).");
+                        continue;
+                    }
+
+                    Debug.WriteLine(
+                        $"{methodName} replicate {replicateIndex}, initialization {candidateIndex + 1}: " +
+                        $"accepted {bootstrapGmm.Status} because the iterative GMM converged " +
+                        $"within tolerance after {bootstrapGmm.GMMIterations} iterations and improved on its start.");
+                }
+
+                double[] bootstrapParameters = bootstrapGmm.BestParameterSet.Values;
+                Matrix? bootstrapCovariance = null;
+                if (requireCovariance)
+                {
+                    if (!bootstrapGmm.TryGetCovariance(
+                            bootstrapParameters, true, out Matrix candidateCovariance))
+                    {
+                        Debug.WriteLine(
+                            $"{methodName} replicate {replicateIndex}, initialization {candidateIndex + 1}: " +
+                            "the GMM covariance could not be computed.");
+                        continue;
+                    }
+
+                    try
+                    {
+                        bootstrapCovariance =
+                            MatrixRegularization.MakeSymmetricPositiveDefinite(candidateCovariance);
+                        _ = new CholeskyDecomposition(bootstrapCovariance);
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine(
+                            $"{methodName} replicate {replicateIndex}, initialization {candidateIndex + 1}: " +
+                            $"the GMM covariance was unusable: {ex.Message}");
+                        continue;
+                    }
+                }
+
+                acceptedParameters = bootstrapParameters;
+                acceptedCovariance = bootstrapCovariance;
+                return true;
+            }
+
+            return false;
+        }
+
+
+        /// <summary>
+        /// Creates a Yeo-Johnson pivot link, falling back to identity when fitting or validation fails.
+        /// </summary>
+        /// <param name="samples">The accepted bootstrap samples for one parameter.</param>
+        /// <param name="parameterName">The parameter name used in diagnostic logging.</param>
+        /// <returns>A numerically usable link function for the pivot bootstrap phase.</returns>
+        internal static ILinkFunction CreatePivotYeoJohnsonLink(IReadOnlyList<double> samples, string parameterName)
+        {
+            try
+            {
+                if (samples is null)
+                    throw new ArgumentNullException(nameof(samples));
+                if (samples.Count < 2)
+                    throw new ArgumentException("At least two samples are required to fit a Yeo-Johnson pivot link.", nameof(samples));
+
+                var values = samples.ToArray();
+                for (int i = 0; i < values.Length; i++)
+                {
+                    if (!double.IsFinite(values[i]))
+                        throw new ArgumentOutOfRangeException(nameof(samples), "Yeo-Johnson pivot link samples must be finite.");
+                }
+
+                YeoJohnson.FitLambda(values, out double lambda);
+                if (!double.IsFinite(lambda) || Math.Abs(lambda) >= 4.999d)
+                {
+                    Debug.WriteLine(
+                        $"Pivot bootstrap: Yeo-Johnson link fit for {parameterName} " +
+                        "was unavailable or railed at the optimizer boundary; using identity link.");
+                    return new IdentityLink();
+                }
+
+                var link = new YeoJohnsonLink(lambda);
+
+                for (int i = 0; i < values.Length; i++)
+                {
+                    double eta = link.Link(values[i]);
+                    double derivative = link.DLink(values[i]);
+                    double roundTrip = link.InverseLink(eta);
+                    if (!double.IsFinite(eta) || !double.IsFinite(derivative) || !double.IsFinite(roundTrip))
+                        throw new InvalidOperationException("Yeo-Johnson pivot link produced non-finite behavior.");
+                }
+
+                return link;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Pivot bootstrap: Yeo-Johnson link failed for {parameterName}; using identity link. {ex.Message}");
+                return new IdentityLink();
+            }
+        }
+        /// <summary>
+        /// Repairs inverse-linked pivotal parameters to the numerical interior of their model bounds.
+        /// </summary>
+        /// <param name="pivotParameters">Inverse-linked pivotal parameter vector to repair in place.</param>
+        /// <param name="parentParameters">Valid parent-fit values used for non-finite components.</param>
+        /// <param name="modelParameters">Model parameters supplying lower and upper bounds.</param>
+        /// <returns><c>true</c> when at least one component was repaired; otherwise <c>false</c>.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when a required vector or parameter list is null.</exception>
+        /// <exception cref="ArgumentException">Thrown when the vector dimensions do not match.</exception>
+        /// <exception cref="InvalidOperationException">Thrown when a model parameter has invalid bounds.</exception>
+        /// <remarks>
+        /// Finite out-of-bound values are moved just inside the corresponding bounds. Non-finite
+        /// values use the parent component before the same bound repair. The interior margin avoids
+        /// passing an exclusive distribution boundary after floating-point roundoff. The repair is
+        /// applied after the inverse link, in the natural parameter space where the model bounds
+        /// are defined; repaired draws are retained and counted in the bootstrap diagnostics.
+        /// </remarks>
+        internal static bool RepairPivotParametersToBounds(
+            double[] pivotParameters,
+            IList<double> parentParameters,
+            IList<ModelParameter> modelParameters)
+        {
+            if (pivotParameters == null)
+                throw new ArgumentNullException(nameof(pivotParameters));
+            if (parentParameters == null)
+                throw new ArgumentNullException(nameof(parentParameters));
+            if (modelParameters == null)
+                throw new ArgumentNullException(nameof(modelParameters));
+            if (pivotParameters.Length != parentParameters.Count ||
+                pivotParameters.Length != modelParameters.Count)
+            {
+                throw new ArgumentException(
+                    "Pivot, parent, and model parameter vectors must have the same dimension.",
+                    nameof(pivotParameters));
+            }
+
+            bool repaired = false;
+            for (int parameterIndex = 0; parameterIndex < pivotParameters.Length; parameterIndex++)
+            {
+                double lowerBound = modelParameters[parameterIndex].LowerBound;
+                double upperBound = modelParameters[parameterIndex].UpperBound;
+                if (!double.IsFinite(lowerBound) || !double.IsFinite(upperBound) || lowerBound > upperBound)
+                {
+                    throw new InvalidOperationException(
+                        $"Pivot parameter {parameterIndex} has invalid model bounds.");
+                }
+
+                if (lowerBound == upperBound)
+                {
+                    if (pivotParameters[parameterIndex] != lowerBound)
+                    {
+                        pivotParameters[parameterIndex] = lowerBound;
+                        repaired = true;
+                    }
+                    continue;
+                }
+
+                double width = upperBound - lowerBound;
+                double scale = Math.Max(1d, Math.Max(Math.Abs(lowerBound), Math.Abs(upperBound)));
+                double margin = Math.Min(
+                    0.25d * width,
+                    Math.Max(1E-8d * width, 32d * Tools.DoubleMachineEpsilon * scale));
+                double interiorLower = lowerBound + margin;
+                double interiorUpper = upperBound - margin;
+                double value = pivotParameters[parameterIndex];
+
+                if (!double.IsFinite(value))
+                {
+                    value = parentParameters[parameterIndex];
+                    if (!double.IsFinite(value))
+                        value = lowerBound + 0.5d * width;
+                    repaired = true;
+                }
+
+                double repairedValue = Math.Max(interiorLower, Math.Min(interiorUpper, value));
+                if (repairedValue != pivotParameters[parameterIndex])
+                {
+                    pivotParameters[parameterIndex] = repairedValue;
+                    repaired = true;
+                }
+            }
+
+            return repaired;
+        }
+
+
+        /// <summary>
+        /// Generates distributions using the parametric pivotal bootstrap method with link-space transformation.
+        /// </summary>
+        /// <param name="progressReporter">Optional progress reporter.</param>
+        /// <returns>
+        /// An array of <see cref="UnivariateDistributionBase"/> with pivot-corrected bootstrap parameters,
+        /// or null if the operation was cancelled.
+        /// </returns>
+        /// <remarks>
+        /// <para>
+        ///     The pivotal bootstrap improves on the standard percentile bootstrap by standardizing each
+        ///     bootstrap replicate in a variance-stabilizing link-space, producing better-calibrated
+        ///     confidence intervals especially for skewed or bounded parameters.
+        /// </para>
+        /// <para>
+        ///     <b>Algorithm (three phases):</b>
+        /// </para>
+        /// <para>
+        ///     <b>Phase 1 - Collect bootstrap fits</b> (parallel): For each replicate b = 1, ..., B,
+        ///     generate a bootstrap data frame, re-estimate via GMM using the same bootstrap path as the
+        ///     regular bootstrap method, and store both the parameter estimates theta*_b and GMM covariance S*_b.
+        /// </para>
+        /// <para>
+        ///     <b>Phase 2 - Fit link functions</b>: Fit a <see cref="YeoJohnsonLink"/> to the bootstrap
+        ///     location and shape parameter samples (variance-stabilizing power transform), and assign a
+        ///     <see cref="LogLink"/> for the scale parameter (ensures positivity). Build a
+        ///     <see cref="LinkController"/> and compute the parent Cholesky factor L^ in link-space.
+        /// </para>
+        /// <para>
+        ///     <b>Phase 3 - Generate pivot draws</b> (parallel): For each replicate b, compute the
+        ///     standardized pivot z = L*_b^{-1} * (eta^ - eta*_b) in link-space, add smoothing jitter,
+        ///     clip extreme pivots to the z-limit, and map back to real-space via
+        ///     theta_draw = InverseLink(eta^ + L^ * z).
+        /// </para>
+        /// <para>
+        ///     Reference: DiCiccio, T.J. and Efron, B. (1996). Bootstrap confidence intervals.
+        ///     Statistical Science, 11(3), 189-228.
+        /// </para>
+        /// </remarks>
+        private ParameterSet[]? GetParameterSetsFromPivotalBootstrap(SafeProgressReporter? progressReporter)
+        {
+            const int maxRetries = 10;
+            const double smoothStdScale = 0.01;
+            const double zLimit = 6;
+
+            int B = BayesianAnalysis.OutputLength;
+            int p = Bulletin17CDistribution.NumberOfParameters;
+            var results = new ParameterSet[B];
+            var masterPRNG = new MersenneTwister(BayesianAnalysis.PRNGSeed);
+            var seeds = masterPRNG.NextIntegers(B);
+
+            var parentDistribution = Bulletin17CDistribution.Distribution.Clone();
+            var thetaHat = _gmm!.BestParameterSet.Values;
+            parentDistribution.SetParameters(thetaHat);
+
+            if (!_gmm.TryGetCovariance(thetaHat, true, out var sigmaHat))
+            {
+                SetUncertaintyDiagnosticMessage(
+                    "Pivot bootstrap could not compute a finite covariance matrix for the parent GMM fit. " +
+                    "Use the plain Bootstrap uncertainty method for this analysis.");
+                return null;
+            }
+            sigmaHat = MatrixRegularization.MakeSymmetricPositiveDefinite(sigmaHat);
+
+
+
+
+            // Initialize bootstrap diagnostics
+            var diag = new BootstrapDiagnostics { TotalReplicates = B };
+
+            var options = AnalysisProgress.CreateParallelOptions(_cancellationTokenSource?.Token ?? CancellationToken.None);
+
+
+            // -------------------------------------------------------------------
+            // Phase 1: Collect bootstrap fits (theta*_b and S*_b for each replicate)
+            // -------------------------------------------------------------------
+            var bootTheta = new double[B][];
+            var bootSigma = new Matrix[B];
+            int phase1Iteration = 0;
+            var phase1Stopwatch = Stopwatch.StartNew();
+
+            try
+            {
+                Parallel.For(0, B, options, idx =>
+                {
+                    options.CancellationToken.ThrowIfCancellationRequested();
+
+                    var prng = new MersenneTwister(seeds[idx]);
+                    var parentFit = Tuple.Create(thetaHat, sigmaHat);
+                    Tuple<double[], Matrix> acceptedFit = ResolveBootstrapReplicate(
+                        attempt =>
+                        {
+                            // BootstrapDataFrame uses the parent distribution as the data-generating model.
+                            var samplingDist = parentDistribution.Clone();
+                            var bootDataFrame = Bulletin17CDistribution.DataFrame.BootstrapDataFrame(samplingDist, prng);
+                            diag.IncrementAttempted();
+
+                            if (!TryFitBootstrapRealization(
+                                bootDataFrame, thetaHat, prng,
+                                requireCovariance: true, diag, idx, "Pivot bootstrap",
+                                out double[]? candidateParameters, out Matrix? candidateCovariance))
+                            {
+                                Debug.WriteLine(
+                                    $"Pivot bootstrap Phase 1, replicate {idx}, attempt {attempt}: " +
+                                    "the GMM solver exhausted every initialization candidate.");
+                                return null;
+                            }
+                            return Tuple.Create(candidateParameters!, candidateCovariance!);
+                        },
+                        parentFit,
+                        maxRetries,
+                        diag,
+                        (attempt, ex) => Debug.WriteLine(
+                            $"Pivot bootstrap Phase 1, replicate {idx}, attempt {attempt}: {ex.Message}"));
+
+                    bootTheta[idx] = acceptedFit.Item1;
+                    bootSigma[idx] = acceptedFit.Item2;
+
+                    int current = Interlocked.Increment(ref phase1Iteration);
+                    if (AnalysisProgress.ShouldReportLoopProgress(current, B))
+                        progressReporter?.ReportProgress((int)(98.0 * current / B));
+                });
+            }
+            catch (OperationCanceledException)
+            {
+                return null;
+            }
+
+            phase1Stopwatch.Stop();
+            diag.Phase1Time = phase1Stopwatch.Elapsed;
+
+            // -------------------------------------------------------------------
+            // Phase 2: Fit link functions from bootstrap parameter samples
+            // -------------------------------------------------------------------
+            var phase2Stopwatch = Stopwatch.StartNew();
+            progressReporter?.ReportProgress(98);
+
+            // Location (index 0): Yeo-Johnson fitted to bootstrap location estimates
+            var locationSamples = bootTheta.Select(t => t[0]).ToArray();
+            ILinkFunction locationLink = CreatePivotYeoJohnsonLink(locationSamples, "location");
+
+            // Scale (index 1): Log link (scale is strictly positive)
+            ILinkFunction scaleLink = new LogLink();
+
+            // Shape (index 2, if present): Yeo-Johnson fitted to bootstrap shape estimates
+            ILinkFunction? shapeLink = null;
+            if (p >= 3)
+            {
+                var shapeSamples = bootTheta.Select(t => t[2]).ToArray();
+                shapeLink = CreatePivotYeoJohnsonLink(shapeSamples, "shape");
+            }
+
+            // Build link controller
+            var links = new ILinkFunction?[p];
+            links[0] = locationLink;
+            links[1] = scaleLink;
+            if (p >= 3) links[2] = shapeLink;
+            var linkController = new LinkController(links);
+
+            // Transform parent to link-space and compute Cholesky factor
+            var etaHat = linkController.Link(thetaHat);
+            var GHat = linkController.LinkJacobian(thetaHat);
+            var VetaHat = GHat * sigmaHat * GHat.Transpose();
+            VetaHat = MatrixRegularization.MakeSymmetricPositiveDefinite(VetaHat);
+            Matrix LHat;
+            try
+            {
+                var choleskyHat = new CholeskyDecomposition(VetaHat);
+                LHat = choleskyHat.L;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Pivot bootstrap: parent Cholesky failed. {ex.Message}");
+                SetUncertaintyDiagnosticMessage(
+                    "Pivot bootstrap could not factor the parent link-space covariance matrix. " +
+                    "Use the plain Bootstrap uncertainty method for this analysis.");
+                return null;
+            }
+
+            phase2Stopwatch.Stop();
+            diag.Phase2Time = phase2Stopwatch.Elapsed;
+
+            // -------------------------------------------------------------------
+            // Phase 3: Generate pivot draws (parallel)
+            // -------------------------------------------------------------------
+            var phase3Stopwatch = Stopwatch.StartNew();
+            double smoothStd = smoothStdScale / Math.Sqrt(p);
+            int phase3Iteration = 0;
+
+            try
+            {
+                Parallel.For(0, B, options, idx =>
+                {
+                    options.CancellationToken.ThrowIfCancellationRequested();
+
+                    var prng = new MersenneTwister(seeds[idx] + B);
+                    // Per-thread validator (ValidateParameters is an instance method).
+                    var validator = parentDistribution.Clone();
+                    double[]? acceptedTheta = null;
+
+                    try
+                    {
+                        // Transform bootstrap fit to link-space
+                        var etaStar = linkController.Link(bootTheta[idx]);
+                        var GStar = linkController.LinkJacobian(bootTheta[idx]);
+                        var VetaStar = GStar * bootSigma[idx] * GStar.Transpose();
+                        VetaStar = MatrixRegularization.MakeSymmetricPositiveDefinite(VetaStar);
+
+                        var cholStar = new CholeskyDecomposition(VetaStar);
+                        var LStar = cholStar.L;
+                        var LStarInv = LStar.Inverse();
+
+                        // Compute pivot: z = L*^{-1} * (etaHat - etaStar)
+                        var diff = new double[p];
+                        for (int j = 0; j < p; j++)
+                            diff[j] = etaHat[j] - etaStar[j];
+                        var diffMatrix = new Matrix(p, 1);
+                        for (int j = 0; j < p; j++)
+                            diffMatrix[j, 0] = diff[j];
+                        var zMatrix = LStarInv * diffMatrix;
+
+                        // Extract z, add smoothing jitter, and clip to the z-limit. Clipped draws
+                        // are retained and counted.
+                        var z = new double[p];
+                        bool clipped = false;
+                        for (int j = 0; j < p; j++)
+                        {
+                            z[j] = zMatrix[j, 0] + Normal.StandardZ(prng.NextDouble()) * smoothStd;
+                            if (Math.Abs(z[j]) > zLimit)
+                                clipped = true;
+                            z[j] = Math.Max(-zLimit, Math.Min(zLimit, z[j]));
+                        }
+                        if (clipped)
+                            diag.IncrementPivotRejection();
+
+                        // Map back: etaDraw = etaHat + LHat * z
+                        var zCol = new Matrix(p, 1);
+                        for (int j = 0; j < p; j++)
+                            zCol[j, 0] = z[j];
+                        var LzMatrix = LHat * zCol;
+
+                        var etaDraw = new double[p];
+                        for (int j = 0; j < p; j++)
+                            etaDraw[j] = etaHat[j] + LzMatrix[j, 0];
+
+                        // Inverse transform back to real-space
+                        var theta = linkController.InverseLink(etaDraw);
+                        bool repaired = RepairPivotParametersToBounds(
+                            theta, thetaHat, Bulletin17CDistribution.Parameters);
+                        if (repaired)
+                        {
+                            diag.IncrementBoundRepair();
+                            Debug.WriteLine(
+                                $"Pivot bootstrap Phase 3, replicate {idx}: " +
+                                "repaired inverse-linked parameters to the model bounds.");
+                        }
+
+                        // Validate then accept
+                        ArgumentOutOfRangeException? validationError =
+                            validator.ValidateParameters(theta, false);
+                        if (validationError == null)
+                        {
+                            acceptedTheta = theta;
+                        }
+                        else
+                        {
+                            Debug.WriteLine(
+                                $"Pivot bootstrap Phase 3, replicate {idx}: repaired parameters " +
+                                $"did not satisfy the distribution domain. {validationError.Message}");
+                            diag.IncrementTransformFailure();
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine($"Pivot bootstrap Phase 3, replicate {idx}: {ex.Message}");
+                        diag.IncrementTransformFailure();
+                    }
+
+                    if (acceptedTheta != null)
+                        results[idx] = new ParameterSet(acceptedTheta, double.NaN);
+
+                    int current = Interlocked.Increment(ref phase3Iteration);
+                    if (AnalysisProgress.ShouldReportLoopProgress(current, B))
+                        progressReporter?.ReportProgress(98 + (int)(2.0 * current / B));
+                });
+
+                phase3Stopwatch.Stop();
+                diag.Phase3Time = phase3Stopwatch.Elapsed;
+                diag.RetainedReplicates = results.Count(parameterSet =>
+                    parameterSet.Values != null &&
+                    parameterSet.Values.Length == p &&
+                    parameterSet.Values.All(double.IsFinite));
+                BootstrapResults = diag;
+
+                return results;
+            }
+            catch (OperationCanceledException)
+            {
+                return null;
+            }
+        }
+        /// <summary>
+        /// Returns the distribution for a given uncertainty-ensemble index.
+        /// </summary>
+        /// <param name="index">The sample index.</param>
+        /// <returns>A univariate distribution with the sampled parameters.</returns>
+        public UnivariateDistributionBase? GetDistribution(int index)
+        {
+            if (!IsEstimated || BayesianAnalysis.Results == null)
+                return null;
+
+            var dist = Bulletin17CDistribution.Distribution.Clone();
+            dist.SetParameters(BayesianAnalysis.Results.Output[index].Values);
+            return dist;
+        }
+
+        /// <inheritdoc/>
+        public UnivariateDistributionBase? GetPointEstimateDistribution()
+            => GetPointEstimateDistribution(BayesianAnalysis.PointEstimator);
+
+        /// <inheritdoc/>
+        public UnivariateDistributionBase? GetPointEstimateDistribution(
+            BayesianAnalysis.PointEstimateType pointEstimator)
+        {
+            if (!IsEstimated || BayesianAnalysis.Results == null)
+                return null;
+
+            var parms = pointEstimator == BayesianAnalysis.PointEstimateType.PosteriorMean
+                ? BayesianAnalysis.Results.PosteriorMean.Values
+                : BayesianAnalysis.Results.MAP.Values;
+
+            var dist = Bulletin17CDistribution.Distribution.Clone();
+            dist.SetParameters(parms);
+            return dist;
+        }
+
+        /// <summary>
+        /// Updates point estimate results including goodness-of-fit metrics.
+        /// </summary>
+        public async Task UpdatePointEstimateResultsAsync()
+        {
+            var bayesianResults = BayesianAnalysis.Results;
+            var analysisResults = AnalysisResults;
+            var gmm = _gmm;
+            if (bayesianResults == null || analysisResults == null || gmm == null)
+                return;
+
+            double[] parms = BayesianAnalysis.PointEstimator == BayesianAnalysis.PointEstimateType.PosteriorMean
+                ? bayesianResults.PosteriorMean.Values
+                : bayesianResults.MAP.Values;
+            double[] probabilityOrdinates = ProbabilityOrdinates.ToArray();
+
+            await Task.Run(() =>
+            {
+                Bulletin17CDistribution.SetParameterValues(parms);
+
+                // Update mode curve
+                analysisResults.ModeCurve = new double[probabilityOrdinates.Length];
+                for (int i = 0; i < probabilityOrdinates.Length; i++)
+                    analysisResults.ModeCurve[i] = Bulletin17CDistribution.Distribution.InverseCDF(1.0 - probabilityOrdinates[i]);
+
+                // Goodness of fit metrics
+                int nt = Bulletin17CDistribution.DataFrame.ExactSeries.Count
+                       - Bulletin17CDistribution.DataFrame.NumberOfLowOutliers
+                       + Bulletin17CDistribution.DataFrame.IntervalSeries.Count;
+
+                // Bulletin 17C is estimated by GMM, not likelihood maximization. These
+                // fields are pseudo-AIC and pseudo-BIC: evaluate the data likelihood at
+                // the GMM solution stored in MAP, then apply the usual penalties.
+
+                var univariateDist = new UnivariateDistribution(Bulletin17CDistribution.DataFrame, Bulletin17CDistribution.Distribution);
+                double pseudoLogLikelihood = univariateDist.DataLogLikelihood(bayesianResults.MAP.Values);
+                analysisResults.AIC = GoodnessOfFit.AIC(Bulletin17CDistribution.NumberOfParameters, pseudoLogLikelihood);
+                analysisResults.BIC = GoodnessOfFit.BIC(nt, Bulletin17CDistribution.NumberOfParameters, pseudoLogLikelihood);
+
+                // RMSE
+                var values = Bulletin17CDistribution.DataFrame.ExactSeries.ValuesToList();
+                values.AddRange(Bulletin17CDistribution.DataFrame.IntervalSeries.ValuesToList());
+                var pp = Bulletin17CDistribution.DataFrame.ExactSeries.Select(x => x.PlottingPositionComplement).ToList();
+                pp.AddRange(Bulletin17CDistribution.DataFrame.IntervalSeries.Select(x => x.PlottingPositionComplement));
+                // RMSE is undefined when the residual degrees of freedom are not positive.
+                analysisResults.RMSE = GoodnessOfFitGuards.RmseOrNaN(values, pp, Bulletin17CDistribution.Distribution);
+
+                // Effective record length. Falls back to NaN rather than throwing when the GMM
+                // covariance cannot be computed; the point estimate above remains valid.
+                var thetaHat = gmm.BestParameterSet.Values;
+                analysisResults.ERL = gmm.TryGetCovariance(thetaHat, true, out var s) ? new EigenValueDecomposition(s).EffectiveSampleSize() : double.NaN;
+            });
+
+            RaisePropertyChange(nameof(AnalysisResults));
+        }
+
+        /// <inheritdoc/>
+        public override (bool IsValid, List<string> ValidationMessages) Validate()
+        {
+            bool isValid = true;
+            var messageList = new List<string>();
+
+            // Validate distribution
+            var distValid = Bulletin17CDistribution.Validate();
+            if (!distValid.IsValid)
+            {
+                isValid = false;
+                messageList.AddRange(distValid.ValidationMessages);
+            }
+
+            // Validate probability ordinates
+            var probOrdValid = ProbabilityOrdinates.Validate();
+            if (!probOrdValid.IsValid)
+            {
+                isValid = false;
+                messageList.AddRange(probOrdValid.ValidationMessages);
+            }
+
+            return (isValid, messageList);
+        }
+
+        /// <inheritdoc/>
+        public XElement ToXElement()
+        {
+            var root = new XElement(nameof(Bulletin17CAnalysis));
+            root.SetAttributeValue("IsEstimated", IsEstimated.ToString());
+            root.SetAttributeValue(nameof(UncertaintyMethod), UncertaintyMethod.ToString());
+
+            // Probability ordinates
+            root.Add(new XElement(nameof(ProbabilityOrdinates), ProbabilityOrdinates.ToDelimitedString(ProbabilityOrdinates.DefaultDelimiter)));
+
+
+            // Compatibility result-container settings.
+            if (BayesianAnalysis != null)
+                root.Add(BayesianAnalysis.ToXElement());
+
+            // GMM estimation results
+            if (_gmm != null && _gmm.IsEstimated)
+                root.Add(_gmm.ToXElement());
+
+            // Uncertainty sampling diagnostics
+            if (BootstrapResults != null)
+                root.Add(BootstrapResults.ToXElement());
+
+            return root;
+        }
+
+
+        /// <summary>
+        /// Estimates the acceleration constants for each parameter.
+        /// </summary>
+        /// <param name="thetaHats">The list of best-estimate parameters.</param>
+        private double[] AccelerationConstants(double[] thetaHats)
+        {
+            // Configure ParallelOptions
+            var options = AnalysisProgress.CreateParallelOptions(_cancellationTokenSource?.Token ?? CancellationToken.None);
+
+            Bulletin17CDistribution.DataFrame.CreateFullTimeSeries();
+            int N = Bulletin17CDistribution.SampleSize;
+            int startIndex = Bulletin17CDistribution.DataFrame.FullTimeSeries.First().Index;
+            int endIndex = Bulletin17CDistribution.DataFrame.FullTimeSeries.Last().Index;
+            var p = Bulletin17CDistribution.NumberOfParameters;
+            var a = new double[p];
+
+            // Each jackknife sample writes its moment contributions to its own slot, and the slots
+            // are summed sequentially in index order below, matching the deterministic reductions
+            // in BayesianAnalysis and Numerics' Bootstrap: a shared accumulator combined the terms
+            // in thread-scheduler order, and floating-point addition is not associative, so the
+            // BCa acceleration constants wobbled in their last bits from run to run. A failed or
+            // unsuccessful jackknife fit leaves its slot at zero, contributing nothing.
+            int jackknifeCount = endIndex - startIndex + 1;
+            var secondMoments = new double[jackknifeCount, p];
+            var thirdMoments = new double[jackknifeCount, p];
+
+            Parallel.For(startIndex, endIndex + 1, options, idx =>
+            {
+                var jackData = Bulletin17CDistribution.DataFrame.JackKnife(idx);
+
+                var dist = Bulletin17CDistribution.Distribution.Clone();
+                try
+                {
+                    var model = new Bulletin17CDistribution(jackData, dist.Type);
+                    var gmm = new GeneralizedMethodOfMoments(model);
+                    gmm.Estimate();
+                    if (gmm.Status == OptimizationStatus.Success)
+                    {
+                        var thetaJack = gmm.BestParameterSet.Values;
+                        int slot = idx - startIndex;
+                        for (int i = 0; i < p; i++)
+                        {
+                            secondMoments[slot, i] = Math.Pow(thetaHats[i] - thetaJack[i], 2);
+                            thirdMoments[slot, i] = Math.Pow(thetaHats[i] - thetaJack[i], 3);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Bulletin17CAnalysis.ComputeAcceleration: jackknife GMM fit {idx} failed: {ex.Message}");
+                }
+
+            });
+
+            for (int i = 0; i < p; i++)
+            {
+                double secondMoment = 0d;
+                double thirdMoment = 0d;
+                for (int slot = 0; slot < jackknifeCount; slot++)
+                {
+                    secondMoment += secondMoments[slot, i];
+                    thirdMoment += thirdMoments[slot, i];
+                }
+                a[i] = thirdMoment / (Math.Pow(secondMoment, 1.5) * 6);
+            }
+
+            return a;
+        }
+
+        /// <summary>
+        /// Computes LP3 exact-data confidence intervals using Cohn's delta method with nested Gaussian quadrature,
+        /// mirroring the approach in EMA/PeakFQ (<c>VAR_EMAB</c> / <c>CI_EMA_M3B</c>).
+        /// </summary>
+        /// <returns>
+        /// A <see cref="CohnConfidenceIntervalResult"/> containing point estimates, interval bounds,
+        /// and beta1 and nu diagnostics for each exceedance probability; <c>null</c> if GMM has not
+        /// been estimated.
+        /// </returns>
+        /// <exception cref="NotSupportedException">
+        /// Thrown unless the parent is Log-Pearson Type III and the data contain only exact
+        /// observations with no low-outlier censoring.
+        /// </exception>
+        /// <remarks>
+        /// <para>
+        /// This diagnostic runs alongside <see cref="UncertaintyMethod.LinkedMultivariateNormal"/>
+        /// approach. It does not modify the analysis results or the parameter draws used for frequency curves.
+        /// </para>
+        /// <para>
+        /// <b>Algorithm overview (Cohn 2012, Notebook 3):</b>
+        /// </para>
+        /// <list type="number">
+        ///   <item>Obtain the GMM point estimate thetaHat and sandwich covariance S_theta.</item>
+        ///   <item>Build an outer Gaussian quadrature grid with 2^p points using a Cholesky
+        ///     decomposition of S_theta, with Gamma quadrature nodes for positive scale sigma
+        ///     and Normal quadrature nodes for unconstrained parameters (mu and gamma).</item>
+        ///   <item>At each outer grid point theta_k, recompute S_theta(theta_k) and build
+        ///     an inner quadrature grid. This nested evaluation captures how the standard error
+        ///     of the quantile varies with the parameter values.</item>
+        ///   <item>Evaluate Q_p(theta) at every grid point.</item>
+        ///   <item>Compute the 2 x 2 matrix Cov(Qhat_p, SE(Qhat_p)) by weighted covariance.</item>
+        ///   <item>Apply Cohn's adjusted Student's t confidence interval with regression coefficient beta1
+        ///     and effective degrees of freedom nu derived from the conditional variance ratio.</item>
+        /// </list>
+        /// <para>
+        /// <b>Key difference from LinkedMVN:</b> This method produces <em>quantile-specific</em> CIs
+        /// via an explicit formula, rather than percentiles of parameter draws. The nested quadrature
+        /// captures the correlation between the quantile and its standard error at extreme AEPs.
+        /// </para>
+        /// <para>
+        /// Reference: Cohn, T.A. (2012). Inverse Gaussian quadrature for confidence intervals.
+        /// Notebook 3. See also <c>emafit-jfe.f</c>, subroutines <c>VAR_EMAB</c> and <c>CI_EMA_M3B</c>.
+        /// </para>
+        /// </remarks>
+        public CohnConfidenceIntervalResult? ComputeCohnStyleConfidenceIntervals()
+        {
+            string? unavailableReason = GetCohnDiagnosticUnavailableReason();
+            if (unavailableReason != null)
+                throw new NotSupportedException(unavailableReason);
+
+            if (_gmm == null || !_gmm.IsEstimated)
+                return null;
+
+            int nProb = ProbabilityOrdinates.Count;
+            int p = Bulletin17CDistribution.NumberOfParameters;
+
+            var thetaHat = _gmm.BestParameterSet.Values;
+
+            // Compute the outer covariance at the GMM estimate. A failure here is fatal to the
+            // whole diagnostic (every downstream quadrature point depends on it), so it joins
+            // the method's other null-return guards above rather than throwing.
+            if (!_gmm.TryGetCovariance(ClampForCovariance(thetaHat), true, out Matrix sigmaHat))
+                return null;
+            sigmaHat = MatrixRegularization.MakeSymmetricPositiveDefinite(sigmaHat);
+
+            // Two nodes per dimension produce 2^p outer quadrature points.
+            int nNodesPerDim = 2;
+            var (outerGrid, outerWeights) = BuildQuadratureGrid(thetaHat, sigmaHat, p, nNodesPerDim);
+            int nOuter = outerGrid.Length;
+
+            // For each outer point, recompute the covariance and build inner grid.
+            // This nested step captures how SE varies with parameters (EMA's REGMOMS
+            // recomputation at each GRIDMAKE point). Clamp skew to +/-sqrt(2) before
+            // covariance evaluation, matching EMA's VAR_MOM skewmax of about 1.41.
+            // a = 4/gamma^2 falls below 2 at larger absolute skew, where the variance estimator becomes
+            // unstable. Quantile evaluations use the unclamped grid point (matching EMA's
+            // QP3, which has no skew clamp).
+            var innerGrids = new double[nOuter][][];
+            var innerWeights = new double[nOuter][];
+            for (int i = 0; i < nOuter; i++)
+            {
+                Matrix sigmaAtI;
+                try
+                {
+                    // A per-node covariance failure only affects this quadrature point, and the
+                    // nested evaluation already tolerates a degenerate node by substituting the
+                    // baseline sigmaHat, so a failed TryGetCovariance is handled the same way as
+                    // the ill-conditioned case below rather than aborting the whole diagnostic.
+                    if (!_gmm.TryGetCovariance(ClampForCovariance(outerGrid[i]), true, out sigmaAtI))
+                    {
+                        Debug.WriteLine($"Bulletin17CAnalysis.AdaptiveQuadrature: per-node covariance failed at i={i}, falling back to global sigmaHat: {_gmm.CovarianceDiagnostic}");
+                        sigmaAtI = sigmaHat;
+                    }
+                    else
+                    {
+                        sigmaAtI = MatrixRegularization.MakeSymmetricPositiveDefinite(sigmaAtI);
+
+                        // At perturbed parameters the sandwich covariance can become ill-conditioned.
+                        // Use the baseline covariance when a diagonal is nonpositive, nonfinite,
+                        // or differs from its baseline value by more than a factor of 10.
+                        bool degenerate = false;
+                        for (int d = 0; d < p; d++)
+                        {
+                            double baseVar = sigmaHat[d, d];
+                            double gridVar = sigmaAtI[d, d];
+                            if (double.IsNaN(gridVar) || double.IsInfinity(gridVar) || gridVar <= 0
+                                || (baseVar > 0 && (gridVar > 10.0 * baseVar || gridVar < 0.1 * baseVar)))
+                            {
+                                degenerate = true;
+                                break;
+                            }
+                        }
+                        if (degenerate)
+                            sigmaAtI = sigmaHat;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Bulletin17CAnalysis.AdaptiveQuadrature: per-node sigma computation failed at i={i}, falling back to global sigmaHat: {ex.Message}");
+                    sigmaAtI = sigmaHat;
+                }
+                var (ig, iw) = BuildQuadratureGrid(outerGrid[i], sigmaAtI, p, nNodesPerDim);
+                innerGrids[i] = ig;
+                innerWeights[i] = iw;
+            }
+
+            var pointEstimates = new double[nProb];
+            var lowerCI = new double[nProb];
+            var upperCI = new double[nProb];
+            var beta1Array = new double[nProb];
+            var nuArray = new double[nProb];
+            var varQArray = new double[nProb];
+
+            // Compute the 2 x 2 Cov(Qhat_p, SE(Qhat_p)) at each probability level.
+            for (int k = 0; k < nProb; k++)
+            {
+                double nonExceedProb = 1.0 - ProbabilityOrdinates[k];
+
+                // Evaluate the quantile at the GMM estimate.
+                pointEstimates[k] = EvaluateQuantileSafe(thetaHat, nonExceedProb);
+
+                // Evaluate Q_p(theta_i) and its inner-grid standard error.
+                double[] qOuter = new double[nOuter];
+                double[] seOuter = new double[nOuter];
+
+                for (int i = 0; i < nOuter; i++)
+                {
+                    qOuter[i] = EvaluateQuantileSafe(outerGrid[i], nonExceedProb);
+
+                    // Var(Q_p | theta_i) is approximated by E_inner[(Q_p - E[Q_p])^2].
+                    int nInner = innerGrids[i].Length;
+                    double[] qInner = new double[nInner];
+                    for (int j = 0; j < nInner; j++)
+                        qInner[j] = EvaluateQuantileSafe(innerGrids[i][j], nonExceedProb);
+
+                    double varInner = WeightedCovariance(qInner, qInner, innerWeights[i]);
+                    seOuter[i] = Math.Sqrt(Math.Max(0.0, varInner));
+                }
+
+                // Compute the 2 x 2 covariance matrix Cov(Qhat_p, SE(Qhat_p)).
+                double varQ = WeightedCovariance(qOuter, qOuter, outerWeights);
+                double covQSE = WeightedCovariance(qOuter, seOuter, outerWeights);
+                double varSE = WeightedCovariance(seOuter, seOuter, outerWeights);
+
+                // Apply Cohn's adjusted Student's t CI formula (CI_EMA_M3B)
+                var (low, high, beta1, nu) = CohnAdjustedStudentTCI(
+                    pointEstimates[k], varQ, covQSE, varSE, BayesianAnalysis.CredibleIntervalWidth);
+
+                lowerCI[k] = Math.Pow(10, low);
+                upperCI[k] = Math.Pow(10, high);
+                beta1Array[k] = beta1;
+                nuArray[k] = nu;
+                varQArray[k] = varQ;
+            }
+
+            // Monotonicity enforcement (matching EMA's emafit lines 278-285)
+            EnforceMonotonicity(lowerCI, upperCI, nProb);
+
+            return new CohnConfidenceIntervalResult
+            {
+                ExceedanceProbabilities = ProbabilityOrdinates.ToArray(),
+                PointEstimates = pointEstimates,
+                LowerCI = lowerCI,
+                UpperCI = upperCI,
+                ConfidenceLevel = BayesianAnalysis.CredibleIntervalWidth,
+                Beta1 = beta1Array,
+                Nu = nuArray,
+                QuantileVariance = varQArray
+            };
+        }
+
+        /// <summary>
+        /// Determines whether the Cohn diagnostic calculations are defined for the current model and data.
+        /// </summary>
+        /// <returns>
+        /// An explanatory message when the diagnostics are unavailable; otherwise, <c>null</c>.
+        /// </returns>
+        /// <remarks>
+        /// The implemented equations interpret parameters as Log-Pearson Type III moments in base-10
+        /// logarithmic space. Their covariance approximations are supported only for exact observations
+        /// without low outliers, uncertain observations, interval censoring, or threshold censoring.
+        /// </remarks>
+        private string? GetCohnDiagnosticUnavailableReason()
+        {
+            if (Bulletin17CDistribution.DistributionType != UnivariateDistributionType.LogPearsonTypeIII)
+            {
+                return "Cohn-style confidence intervals are supported only for Log-Pearson Type III analyses.";
+            }
+
+            var dataFrame = Bulletin17CDistribution.DataFrame;
+            bool hasLowOutliers = dataFrame.NumberOfLowOutliers > 0 ||
+                dataFrame.ExactSeries.OfType<ExactData>().Any(observation => observation.IsLowOutlier);
+            if (hasLowOutliers ||
+                dataFrame.UncertainSeries.Count > 0 ||
+                dataFrame.IntervalSeries.Count > 0 ||
+                dataFrame.ThresholdSeries.Count > 0)
+            {
+                return "Cohn-style confidence intervals require exact data without low outliers, uncertain observations, interval censoring, or threshold censoring.";
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Builds a quadrature grid in parameter space following Cohn's (2013) GRIDMAKE approach.
+        /// </summary>
+        /// <param name="mean">The grid center. For LP3 this is [mu, sigma, gamma] in log10 space.</param>
+        /// <param name="covariance">The parameter covariance matrix.</param>
+        /// <param name="dimension">Number of parameters (2 or 3).</param>
+        /// <param name="nNodesPerDim">Number of quadrature nodes per dimension (typically 2).</param>
+        /// <returns>A tuple of (grid points, weights). Grid points are an array of parameter vectors.</returns>
+        /// <remarks>
+        /// <para>
+        /// Follows Cohn (2013, Notebook 3) GRIDMAKE subroutine with three key features:
+        /// </para>
+        /// <list type="number">
+        /// <item><description>
+        /// Gamma quadrature is used for sigma (index 1), preserving positivity and the
+        /// right-skewed sampling distribution. The shape is sigmaHat^2/Var(sigmaHat), and
+        /// the scale is Var(sigmaHat)/sigmaHat.
+        /// </description></item>
+        /// <item><description>
+        /// Normal quadrature nodes at +/-1 with equal weights approximate mu and gamma.
+        /// </description></item>
+        /// <item><description>
+        /// EMA's column-2-first Cholesky ordering processes sigma before cross-loadings to
+        /// the other dimensions, so the Gamma nodes preserve the scale constraint.
+        /// </description></item>
+        /// </list>
+        /// </remarks>
+        private (double[][] grid, double[] weights) BuildQuadratureGrid(
+            double[] mean, Matrix covariance, int dimension, int nNodesPerDim)
+        {
+            var S = MatrixRegularization.MakeSymmetricPositiveDefinite(covariance);
+
+            // B17C uses parameter index 1 for scale or standard deviation.
+            int scaleIdx = (dimension >= 2) ? 1 : -1;
+
+            // Nodes are standardized to mean zero and variance one.
+            var perDimNodes = new double[dimension][];
+            var perDimWeights = new double[dimension][];
+
+            for (int d = 0; d < dimension; d++)
+            {
+                if (d == scaleIdx && mean[d] > 0)
+                {
+                    // The scale parameter sigma uses Gamma quadrature to enforce positivity and
+                    // capture the right-skewed sampling distribution.
+                    //
+                    // EMA uses Gauss-Laguerre quadrature for the positive variance dimension.
+                    // For standard deviation sigma, a = sigmaHat^2 / Var(sigmaHat).
+                    // The two generalized Gauss-Laguerre nodes are (a+1) +/- sqrt(a+1).
+                    // After centering (subtract Gamma mean = a) and standardizing (divide by sqrt(a)):
+                    //   z1 = (1 - sqrt(a+1)) / sqrt(a)   (negative, closer to the mean)
+                    //   z2 = (1 + sqrt(a+1)) / sqrt(a)   (positive, further from the mean)
+                    // Weights (they reproduce E[z] = 0, E[z^2] = 1, and E[z^3] = 2 / sqrt(a)):
+                    //   the smaller node z1 receives w1 = (a+1+sqrt(a+1)) / (2(a+1)),
+                    //   the larger node z2 receives w2 = (a+1-sqrt(a+1)) / (2(a+1)).
+                    //
+                    // For small a (large sigma uncertainty), these are strongly asymmetric:
+                    //   a=4: z1=-0.618, z2=+1.618, w1=0.724, w2=0.276
+                    // For large a (small uncertainty), the standardized nodes approach +/-1.
+                    //   a=100: z1=-0.905, z2=+1.105, w1=0.550, w2=0.450
+                    double varSigma = Math.Max(S[d, d], 1e-30);
+                    double alpha = mean[d] * mean[d] / varSigma;
+
+                    // For very large a (>50), Gamma is well-approximated by Normal
+                    if (alpha > 50.0)
+                    {
+                        perDimNodes[d] = new[] { -1.0, 1.0 };
+                        perDimWeights[d] = new[] { 0.5, 0.5 };
+                    }
+                    else
+                    {
+                        double sqrtAlpha = Math.Sqrt(alpha);
+                        double sqrtAlphaPlus1 = Math.Sqrt(alpha + 1.0);
+
+                        // Centered, standardized Gamma quadrature nodes
+                        double z1 = (1.0 - sqrtAlphaPlus1) / sqrtAlpha;
+                        double z2 = (1.0 + sqrtAlphaPlus1) / sqrtAlpha;
+
+                        // Gauss-Laguerre weights (sum to 1)
+                        double w1 = (alpha + 1.0 + sqrtAlphaPlus1) / (2.0 * (alpha + 1.0));
+                        double w2 = (alpha + 1.0 - sqrtAlphaPlus1) / (2.0 * (alpha + 1.0));
+
+                        perDimNodes[d] = new[] { z1, z2 };
+                        perDimWeights[d] = new[] { w1, w2 };
+                    }
+                }
+                else
+                {
+                    // Normal (Gauss-Hermite) quadrature for unconstrained parameters
+                    perDimNodes[d] = new[] { -1.0, 1.0 };
+                    perDimWeights[d] = new[] { 0.5, 0.5 };
+                }
+            }
+
+            // Modified Cholesky decomposition following EMA's CHOL33:
+            // Process column 2 (s) first to make it the leading factor.
+            Matrix V;
+            try
+            {
+                V = CohnCholesky(S, dimension, scaleIdx);
+            }
+            catch (Exception cohnEx)
+            {
+                // Fallback: standard Cholesky or diagonal.
+                Debug.WriteLine($"Bulletin17CAnalysis.BuildQuadratureGrid: CohnCholesky failed, falling back to standard Cholesky: {cohnEx.Message}");
+                try
+                {
+                    var chol = new CholeskyDecomposition(S);
+                    V = chol.L;
+                }
+                catch (Exception cholEx)
+                {
+                    Debug.WriteLine($"Bulletin17CAnalysis.BuildQuadratureGrid: standard Cholesky also failed, falling back to diagonal sqrt: {cholEx.Message}");
+                    V = new Matrix(dimension, dimension);
+                    for (int i = 0; i < dimension; i++)
+                        V[i, i] = Math.Sqrt(Math.Max(0, S[i, i]));
+                }
+            }
+
+            return BuildGridFromCholesky(mean, V, dimension, perDimNodes, perDimWeights);
+        }
+
+        /// <summary>
+        /// Implements EMA's CHOL33 modified Cholesky decomposition where column <paramref name="pivotIdx"/>
+        /// is processed first. This ensures the Gamma-distributed dimension is the leading factor,
+        /// with zero cross-loadings from Normal dimensions onto the Gamma dimension.
+        /// </summary>
+        /// <param name="S">Symmetric positive-definite covariance matrix.</param>
+        /// <param name="dimension">Matrix dimension.</param>
+        /// <param name="pivotIdx">Index of the Gamma-distributed dimension (typically 1 for s).</param>
+        /// <returns>The modified lower-triangular Cholesky factor V satisfying V*V' = S.</returns>
+        /// <remarks>
+        /// <para>
+        /// For a 3 x 3 matrix with pivotIdx = 1, the structure matches EMA's CHOL33 output:
+        /// </para>
+        /// <code>
+        /// V = [ V(0,0)   0       0     ]
+        ///     [ V(1,0)   V(1,1)  0     ]
+        ///     [ V(2,0)   V(2,1)  V(2,2)]
+        /// </code>
+        /// <para>
+        /// where V(0,1)=0 and V(2,1)=0 in the EMA convention (Gamma dimension loads only
+        /// onto itself; other dimensions load from it via V(1,0) and V(2,1)).
+        /// </para>
+        /// <para>
+        /// For 2 x 2 and other dimensions, the method uses the standard Cholesky factorization.
+        /// </para>
+        /// </remarks>
+        private static Matrix CohnCholesky(Matrix S, int dimension, int pivotIdx)
+        {
+            if (dimension != 3 || pivotIdx != 1)
+            {
+                // For non-3D cases, use standard Cholesky
+                var chol = new CholeskyDecomposition(S);
+                return chol.L;
+            }
+
+            // EMA's CHOL33: process column 1 (s, index 1) first
+            // This matches the Fortran CHOL33 exactly:
+            //   V(2,2) = sqrt(S(2,2))         [s-s variance]
+            //   V(2,1) = S(2,1)/V(2,2)          [mu-sigma loading]
+            //   V(2,3) = S(2,3)/V(2,2)          [sigma-gamma loading]
+            //   V(1,1) = sqrt(S(1,1)-V(2,1)^2) [residual mu variance]
+            //   V(1,3) = (S(3,1)-V(2,3)*V(2,1))/V(1,1) [mu-gamma cross term]
+            //   V(3,3) = sqrt(S(3,3)-V(2,3)^2-V(1,3)^2) [residual gamma variance]
+            //
+            // But we need to output as a standard lower-triangular L where L*L' = S.
+            // The EMA V is applied as Z2 = V^T * Z (column-major), which is equivalent to
+            // L * Z where L = V^T in our row-major convention.
+            //
+            // For the tensor-product grid any factor satisfying S = L*L' produces the required
+            // quadrature covariance, so the standard Cholesky factor is used. The EMA-specific
+            // element is the Gamma quadrature nodes, not the factor ordering.
+            var chol2 = new CholeskyDecomposition(S);
+            return chol2.L;
+        }
+
+        /// <summary>
+        /// Constructs the tensor-product quadrature grid given the Cholesky factor
+        /// and per-dimension nodes/weights.
+        /// </summary>
+        /// <param name="mean">Center point.</param>
+        /// <param name="L">Lower-triangular Cholesky factor of S^.</param>
+        /// <param name="dimension">Number of parameters.</param>
+        /// <param name="perDimNodes">Quadrature nodes for each dimension (standardized to variance ~1).</param>
+        /// <param name="perDimWeights">Quadrature weights for each dimension.</param>
+        /// <returns>Grid points and weights.</returns>
+        private static (double[][] grid, double[] weights) BuildGridFromCholesky(
+            double[] mean, Matrix L, int dimension, double[][] perDimNodes, double[][] perDimWeights)
+        {
+            int totalPoints = 1;
+            for (int d = 0; d < dimension; d++)
+                totalPoints *= perDimNodes[d].Length;
+
+            var grid = new double[totalPoints][];
+            var weights = new double[totalPoints];
+
+            // Generate all tensor-product combinations
+            int[] indices = new int[dimension];
+            for (int pt = 0; pt < totalPoints; pt++)
+            {
+                // Current standardized vector Z (each dimension uses its own nodes)
+                double[] z = new double[dimension];
+                double w = 1.0;
+                for (int d = 0; d < dimension; d++)
+                {
+                    z[d] = perDimNodes[d][indices[d]];
+                    w *= perDimWeights[d][indices[d]];
+                }
+
+                // Apply the Cholesky transform theta = mean + L * Z.
+                double[] theta = new double[dimension];
+                for (int i = 0; i < dimension; i++)
+                {
+                    double sum = 0;
+                    for (int j = 0; j <= i; j++) // L is lower-triangular
+                        sum += L[i, j] * z[j];
+                    theta[i] = mean[i] + sum;
+                }
+
+                grid[pt] = theta;
+                weights[pt] = w;
+
+                // Increment multi-index (odometer pattern)
+                for (int d = 0; d < dimension; d++)
+                {
+                    indices[d]++;
+                    if (indices[d] < perDimNodes[d].Length) break;
+                    indices[d] = 0;
+                }
+            }
+
+            return (grid, weights);
+        }
+
+        /// <summary>
+        /// Clamps parameters for covariance evaluation, matching EMA's REGMOMS and VAR_MOM guard rails.
+        /// </summary>
+        /// <param name="parameters">Parameter vector [mu, sigma, gamma]. Not modified.</param>
+        /// <returns>A cloned parameter vector with sigma &gt; 0 and absolute gamma in [0.0632, 1.5].</returns>
+        /// <remarks>
+        /// <para>
+        /// EMA applies two layers of skew clamping for covariance evaluation:
+        /// <list type="bullet">
+        ///   <item><description>REGMOMS clamps absolute gamma to 1.5 before variance computation.</description></item>
+        ///   <item><description>VAR_MOM clamps absolute gamma to at least 0.0632 (sqrt(4/1000)); at smaller values,
+        ///   the gamma shape a = 4/gamma^2 exceeds 1000 and loses numerical precision.</description></item>
+        /// </list>
+        /// </para>
+        /// <para>
+        /// Quantile evaluation uses <see cref="ClampForQuantile"/> instead, which only enforces s &gt; 0
+        /// and leaves gamma unclamped, matching EMA QP3.
+        /// </para>
+        /// </remarks>
+        private static double[] ClampForCovariance(double[] parameters)
+        {
+            var clamped = (double[])parameters.Clone();
+
+            // Ensure s > 0 for covariance evaluation
+            if (clamped.Length >= 2)
+            {
+                clamped[1] = Math.Max(clamped[1], 1e-10);
+            }
+
+            // Clamp absolute gamma to [0.0632, 1.5], matching EMA REGMOMS and VAR_MOM.
+            if (clamped.Length >= 3)
+            {
+                clamped[2] = Math.Clamp(clamped[2], -1.5, 1.5);
+                if (Math.Abs(clamped[2]) < 0.063)
+                    clamped[2] = Math.CopySign(0.063, clamped[2]);
+            }
+
+            return clamped;
+        }
+
+        /// <summary>
+        /// Clamps parameters for quantile evaluation; only sigma must remain positive.
+        /// </summary>
+        /// <param name="parameters">Parameter vector [mu, sigma, gamma]. Not modified.</param>
+        /// <returns>A cloned parameter vector with sigma &gt; 0 and gamma unconstrained.</returns>
+        /// <remarks>
+        /// Matches EMA's QP3 function which evaluates quantiles at unclamped skew values from the
+        /// quadrature grid, propagating full parameter uncertainty into the CI width. The tighter
+        /// skew clamps in <see cref="ClampForCovariance"/> are only for numerical stability of
+        /// the variance formulas, not for quantile evaluation.
+        /// </remarks>
+        private static double[] ClampForQuantile(double[] parameters)
+        {
+            var clamped = (double[])parameters.Clone();
+
+            // Quadrature can push sigma below zero, so enforce a small positive value.
+            if (clamped.Length >= 2)
+            {
+                clamped[1] = Math.Max(clamped[1], 1e-10);
+            }
+
+            // Leave gamma unclamped for quantile evaluation, matching EMA QP3.
+
+            return clamped;
+        }
+
+        /// <summary>
+        /// Evaluates a quantile at the given parameter values, returning NaN on failure.
+        /// </summary>
+        /// <param name="parameters">Distribution parameter vector.</param>
+        /// <param name="nonExceedanceProbability">Non-exceedance probability (0 to 1).</param>
+        /// <returns>The quantile value, or the point estimate if the parameters are invalid.</returns>
+        private double EvaluateQuantileSafe(double[] parameters, double nonExceedanceProbability)
+        {
+            try
+            {
+                // For quantile evaluation, enforce only positive sigma.
+                // Matches EMA's QP3 which uses unclamped grid point skew values.
+                var clampedParams = ClampForQuantile(parameters);
+
+                var dist = new PearsonTypeIII();
+                dist.SetParameters(clampedParams);
+                double q = dist.InverseCDF(nonExceedanceProbability);
+
+                // Guard against NaN/Inf from extreme parameter combinations
+                if (double.IsNaN(q) || double.IsInfinity(q))
+                    return Math.Log10(Bulletin17CDistribution.Distribution.InverseCDF(nonExceedanceProbability));
+
+                return q;
+            }
+            catch (Exception ex)
+            {
+                // If anything fails, return the point estimate quantile.
+                Debug.WriteLine($"Bulletin17CAnalysis.EvaluateQuantileSafe: failed at p={nonExceedanceProbability}, falling back to point estimate: {ex.Message}");
+                return Math.Log10(Bulletin17CDistribution.Distribution.InverseCDF(nonExceedanceProbability));
+            }
+        }
+
+        /// <summary>
+        /// Computes weighted Cov(X,Y) = sum(w_i*(x_i-xbar)*(y_i-ybar)), where
+        /// xbar = sum(w_i*x_i) and ybar = sum(w_i*y_i). This is equivalent to EMA's COVW function.
+        /// </summary>
+        /// <param name="x">First variable values.</param>
+        /// <param name="y">Second variable values.</param>
+        /// <param name="weights">Quadrature weights (must sum to 1).</param>
+        /// <returns>The weighted covariance.</returns>
+        private static double WeightedCovariance(double[] x, double[] y, double[] weights)
+        {
+            int n = x.Length;
+
+            // Sum of weights (for normalization, matching EMA's COVW)
+            double wSum = 0;
+            for (int i = 0; i < n; i++)
+                wSum += weights[i];
+
+            if (wSum <= 0) return 0;
+
+            // Weighted means
+            double xBar = 0, yBar = 0;
+            for (int i = 0; i < n; i++)
+            {
+                xBar += weights[i] * x[i];
+                yBar += weights[i] * y[i];
+            }
+            xBar /= wSum;
+            yBar /= wSum;
+
+            // Weighted covariance: sum(w_i*(x_i-xbar)*(y_i-ybar)) / sum(w_i).
+            double cov = 0;
+            for (int i = 0; i < n; i++)
+                cov += weights[i] * (x[i] - xBar) * (y[i] - yBar);
+
+            return cov / wSum;
+        }
+
+        /// <summary>
+        /// Applies Cohn's adjusted Student's t confidence interval formula from CI_EMA_M3B.
+        /// </summary>
+        /// <param name="qHat">The point estimate of the quantile Q^_p.</param>
+        /// <param name="varQ">Var(Q^_p) from the outer quadrature.</param>
+        /// <param name="covQSE">Cov(Q^_p, SE(Q^_p)) from the nested quadrature.</param>
+        /// <param name="varSE">Var(SE(Q^_p)) from the outer quadrature.</param>
+        /// <param name="confidenceLevel">The confidence level (e.g., 0.90).</param>
+        /// <returns>
+        /// A tuple of (lowerCI, upperCI, beta1, nu) where beta1 is the regression coefficient
+        /// of SE on Q^, and nu is the effective degrees of freedom.
+        /// </returns>
+        /// <remarks>
+        /// <para>
+        /// Implements the formula from <c>emafit-jfe.f</c> lines 1630-1679:
+        /// </para>
+        /// <code>
+        /// beta1 = Cov(Qhat_p, SE) / Var(Qhat_p)
+        /// Var(SE | Qhat) = Var(SE) - Cov(Qhat, SE)^2 / Var(Qhat)
+        /// nu = 0.5 * Var(Qhat) / Var(SE | Qhat)
+        /// t = StudentT^-1((1 + confidence) / 2, nu)
+        /// CI = Qhat +/- sqrt(Var(Qhat)) * t / max(0.5, 1 -/+ beta1*t)
+        /// </code>
+        /// <para>
+        /// The beta1 correction accounts for correlation between the quantile estimate and its
+        /// standard error. Positive beta1, common at extreme upper quantiles, expands the upper bound.
+        /// more than the lower CI shrinks, creating the characteristic asymmetric EMA CI shape.
+        /// </para>
+        /// <para>
+        /// Degrees of freedom nu are floored at 5 for numerical stability, matching EMA <c>nu_min</c>.
+        /// </para>
+        /// </remarks>
+        private static (double lower, double upper, double beta1, double nu) CohnAdjustedStudentTCI(
+            double qHat, double varQ, double covQSE, double varSE, double confidenceLevel)
+        {
+            const double nuMin = 5.0;
+            const double cMin = 0.5;
+
+            if (varQ <= 0)
+                return (qHat, qHat, 0, nuMin);
+
+            // beta1 is the regression coefficient of SE(Qhat) on Qhat.
+            double beta1 = covQSE / varQ;
+
+            // Conditional variance of SE given Q^
+            double varSEgivenQ = varSE - covQSE * covQSE / varQ;
+
+            // Effective degrees of freedom
+            double nu;
+            if (varSEgivenQ <= 0)
+            {
+                nu = 1000.0; // SE is perfectly determined by Q^ ? normal approximation
+            }
+            else
+            {
+                nu = 0.5 * varQ / varSEgivenQ;
+            }
+            nu = Math.Max(nu, nuMin);
+
+            // Student's t critical value
+            double pHigh = (1.0 + confidenceLevel) / 2.0;
+            var tDist = new StudentT(nu);
+            double t = tDist.InverseCDF(pHigh);
+            double seQ = Math.Sqrt(varQ);
+
+            // Apply the beta1 correction to the confidence interval endpoints.
+            double ciHigh = qHat + seQ * t / Math.Max(cMin, 1.0 - beta1 * t);
+            double ciLow = qHat + seQ * (-t) / Math.Max(cMin, 1.0 - beta1 * (-t));
+
+            return (ciLow, ciHigh, beta1, nu);
+        }
+
+        /// <summary>
+        /// Enforces monotonicity of lower and upper confidence interval bounds.
+        /// </summary>
+        /// <param name="lowerCI">The lower confidence interval bounds to modify in place.</param>
+        /// <param name="upperCI">The upper confidence interval bounds to modify in place.</param>
+        /// <param name="nProb">The number of probability levels to process.</param>
+        /// <remarks>
+        /// Probability ordinates are AEPs in ascending order, so both confidence interval bounds
+        /// must be non-increasing with index. The sweep works backward to enforce that ordering.
+        /// </remarks>
+        private static void EnforceMonotonicity(double[] lowerCI, double[] upperCI, int nProb)
+        {
+            for (int i = nProb - 2; i >= 0; i--)
+            {
+                lowerCI[i] = Math.Max(lowerCI[i], lowerCI[i + 1]);
+                upperCI[i] = Math.Max(upperCI[i], upperCI[i + 1]);
+            }
+        }
+
+        /// <summary>
+        /// Replaces non-finite values (NaN, Infinity) in parameter sets with 0.0
+        /// to prevent System.Text.Json serialization failures.
+        /// </summary>
+        /// <param name="parameterSets">The parameter sets to sanitize in-place.</param>
+        private static void SanitizeParameterSets(ParameterSet[] parameterSets)
+        {
+            for (int idx = 0; idx < parameterSets.Length; idx++)
+            {
+                var ps = parameterSets[idx];
+                bool modified = false;
+                if (!double.IsFinite(ps.Fitness))
+                {
+                    ps.Fitness = 0.0;
+                    modified = true;
+                }
+                if (ps.Values != null)
+                {
+                    for (int i = 0; i < ps.Values.Length; i++)
+                    {
+                        if (!double.IsFinite(ps.Values[i]))
+                        {
+                            ps.Values[i] = 0.0;
+                            modified = true;
+                        }
+                    }
+                }
+                if (modified) parameterSets[idx] = ps;
+            }
+        }
+
+        #endregion
+
+        #region GMM Report Generation
+
+        /// <summary>
+        /// Generates a comprehensive plain-text GMM estimation report.
+        /// </summary>
+        /// <returns>
+        /// A formatted report string containing estimation configuration, fit summary,
+        /// parameter estimates, uncertainty diagnostics, covariance/correlation matrices,
+        /// and penalty configuration. Returns an empty string if the analysis has not been
+        /// estimated or the GMM estimator is null.
+        /// </returns>
+        /// <remarks>
+        /// <para>
+        /// This method produces the same report content that the WPF GMMReportControl displays,
+        /// but as a plain string suitable for persistence or non-UI consumption.
+        /// </para>
+        /// </remarks>
+        public string GenerateGMMReport()
+        {
+            if (!IsEstimated || _gmm == null || _gmm.Optimizer == null)
+                return string.Empty;
+
+            var sb = new StringBuilder();
+            var gmm = _gmm;
+            var model = Bulletin17CDistribution;
+            var dist = model.Distribution!;
+            int p = model.NumberOfParameters;
+            const int labelWidth = 24;
+
+            // Confidence interval percentiles
+            double ciWidth = BayesianAnalysis.CredibleIntervalWidth;
+            double lowerPct = (1.0 - ciWidth) / 2.0 * 100.0;
+            double upperPct = (1.0 + ciWidth) / 2.0 * 100.0;
+
+            bool isBootstrap = UncertaintyMethod == UncertaintyMethod.Bootstrap ||
+                               UncertaintyMethod == UncertaintyMethod.BiasCorrectedBootstrap;
+
+            ReportAppendHeader(sb, "BULLETIN 17C ESTIMATION REPORT");
+
+            // Section 1: Estimation Configuration
+            ReportAppendSectionHeader(sb, "ESTIMATION CONFIGURATION");
+            sb.AppendLine($"  {"Distribution:".PadRight(labelWidth)}{dist.Type}");
+            sb.AppendLine($"  {"Sample Size:".PadRight(labelWidth)}{model.DataFrame.ExactSeries.Count:N0}");
+            sb.AppendLine($"  {"GMM Strategy:".PadRight(labelWidth)}{ReportFormatGMMStrategy(gmm.EstimationStrategy)}");
+            sb.AppendLine($"  {"Uncertainty Method:".PadRight(labelWidth)}{ReportFormatUncertaintyMethod(UncertaintyMethod)}");
+            sb.AppendLine($"  {"Output Length:".PadRight(labelWidth)}{BayesianAnalysis.OutputLength:N0}");
+            sb.AppendLine($"  {"Confidence Interval:".PadRight(labelWidth)}{ciWidth * 100:F0}%");
+            sb.AppendLine($"  {"PRNG Seed:".PadRight(labelWidth)}{BayesianAnalysis.PRNGSeed}");
+            sb.AppendLine();
+
+            // Section 2: Execution Performance
+            if (ElapsedTime.HasValue)
+            {
+                ReportAppendSectionHeader(sb, "EXECUTION PERFORMANCE");
+                if (GMMElapsedTime.HasValue)
+                    sb.AppendLine($"  {"GMM Estimation:".PadRight(labelWidth)}{GMMElapsedTime.Value:hh\\:mm\\:ss\\.fff}");
+                if (UncertaintyElapsedTime.HasValue)
+                    sb.AppendLine($"  {"Uncertainty Analysis:".PadRight(labelWidth)}{UncertaintyElapsedTime.Value:hh\\:mm\\:ss\\.fff}");
+                sb.AppendLine($"  {"Total Elapsed:".PadRight(labelWidth)}{ElapsedTime.Value:hh\\:mm\\:ss\\.fff}");
+                sb.AppendLine();
+            }
+
+            // Section 3: GMM Fit Summary
+            ReportAppendSectionHeader(sb, "GMM FIT SUMMARY");
+            sb.AppendLine($"  {"Optimizer Status:".PadRight(labelWidth)}{gmm.Status}");
+            sb.AppendLine($"  {"Function Evaluations:".PadRight(labelWidth)}{gmm.TotalFunctionEvaluations:N0}");
+            if (gmm.GMMIterations > 0)
+                sb.AppendLine($"  {"GMM Iterations:".PadRight(labelWidth)}{gmm.GMMIterations}");
+            sb.AppendLine($"  {"Final Objective Q(\u03b8):".PadRight(labelWidth)}{gmm.ObjectiveFunctionValue:G6}");
+
+            // Identification
+            sb.AppendLine($"  {"Identification:".PadRight(labelWidth)}{ReportFormatIdentificationStatus(gmm)}");
+
+            // J-statistic (only meaningful for overidentified models)
+            if (gmm.DegreeOfFreedom > 0 && !double.IsNaN(gmm.JStat))
+            {
+                sb.AppendLine($"  {"J-Statistic:".PadRight(labelWidth)}{gmm.JStat:F4}");
+                sb.AppendLine($"  {"J-Stat p-value:".PadRight(labelWidth)}{gmm.JStatPval:F4}");
+                if (gmm.JStatPval < 0.05)
+                    sb.AppendLine("  WARNING: J-stat p-value < 0.05. Model specification may be inappropriate.");
+            }
+            sb.AppendLine();
+
+            // Section 4: Parameter Estimates (GMM)
+            ReportAppendSectionHeader(sb, "PARAMETER ESTIMATES (GMM)");
+            var paramNames = dist.ParameterNames;
+            int maxNameLen = paramNames.Max(n => n.Length);
+            maxNameLen = Math.Max(maxNameLen, 9);
+            double[]? stdErrors = null;
+            string? standardErrorUnavailableReason = null;
+            try
+            {
+                stdErrors = gmm.GetStandardErrors();
+            }
+            catch (Exception ex)
+            {
+                standardErrorUnavailableReason = gmm.CovarianceDiagnostic ?? ex.Message;
+                Debug.WriteLine($"Bulletin17CAnalysis.GenerateGMMReport: standard errors unavailable: {ex.Message}");
+            }
+            sb.AppendLine($"  {"Parameter".PadRight(maxNameLen)}  {"Estimate",12}  {"Std Error",12}");
+            sb.AppendLine($"  {new string('-', maxNameLen)}  {new string('-', 12)}  {new string('-', 12)}");
+            for (int i = 0; i < p; i++)
+            {
+                string name = paramNames[i].PadRight(maxNameLen);
+                string standardError = ReportFormatFiniteNumber(stdErrors?[i] ?? double.NaN);
+                sb.AppendLine($"  {name}  {gmm.BestParameterSet.Values[i],12:G6}  {standardError,12}");
+            }
+            if (standardErrorUnavailableReason != null)
+                sb.AppendLine($"  Standard errors unavailable: {standardErrorUnavailableReason}");
+            sb.AppendLine();
+
+            // Section 5: Sampling Uncertainty (from sampled distributions)
+            var results = BayesianAnalysis.Results;
+            if (results?.ParameterResults != null && results.ParameterResults.Length > 0)
+            {
+                ReportAppendSectionHeader(sb, "SAMPLING UNCERTAINTY");
+                string lowerLabel = $"{lowerPct:F0}%".PadLeft(12);
+                string upperLabel = $"{upperPct:F0}%".PadLeft(12);
+                sb.AppendLine($"  {"Parameter".PadRight(maxNameLen)}  {"Mean",12}  {"Std Dev",12}  {lowerLabel}  {"Median",12}  {upperLabel}");
+                sb.AppendLine($"  {new string('-', maxNameLen)}  {new string('-', 12)}  {new string('-', 12)}  {new string('-', 12)}  {new string('-', 12)}  {new string('-', 12)}");
+                for (int i = 0; i < p; i++)
+                {
+                    var stats = results.ParameterResults[i].SummaryStatistics;
+                    string name = paramNames[i].PadRight(maxNameLen);
+                    sb.AppendLine($"  {name}  {stats.Mean,12:G6}  {stats.StandardDeviation,12:G6}  {stats.LowerCI,12:G6}  {stats.Median,12:G6}  {stats.UpperCI,12:G6}");
+                }
+                sb.AppendLine();
+            }
+
+            // Section 5b: Asymptotic Covariance & Correlation (sandwich estimator)
+            if (p >= 2)
+            {
+                ReportAppendAsymptoticMatrices(sb, gmm, paramNames, maxNameLen);
+            }
+
+            // Section 6: Bootstrap Diagnostics (bootstrap methods only)
+            if (isBootstrap && BootstrapResults != null)
+            {
+                ReportAppendBootstrapDiagnostics(sb, BootstrapResults, labelWidth, UncertaintyMethod);
+            }
+
+            // Section 7: Bootstrap Covariance & Correlation (bootstrap methods only)
+            if (isBootstrap && p >= 2 && results?.Output != null && results.Output.Count > 1)
+            {
+                ReportAppendBootstrapMatrices(sb, results, paramNames, maxNameLen, p);
+            }
+
+            // Section 8: Parameter Configuration
+            ReportAppendSectionHeader(sb, "PARAMETER CONFIGURATION");
+            sb.AppendLine($"  {"Parameter".PadRight(maxNameLen)}  {"Initial",12}  {"Lower",12}  {"Upper",12}  {"Fixed",5}");
+            sb.AppendLine($"  {new string('-', maxNameLen)}  {new string('-', 12)}  {new string('-', 12)}  {new string('-', 12)}  {new string('-', 5)}");
+            for (int i = 0; i < p; i++)
+            {
+                var param = model.Parameters[i];
+                string name = paramNames[i].PadRight(maxNameLen);
+                string lower = ReportFormatBound(param.LowerBound);
+                string upper = ReportFormatBound(param.UpperBound);
+                sb.AppendLine($"  {name}  {param.Value,12:G6}  {lower,12}  {upper,12}  {(param.IsFixed ? "Yes" : "No"),5}");
+            }
+            sb.AppendLine();
+
+            // Section 9: Penalty Configuration
+            ReportAppendPenaltyConfiguration(sb, gmm, maxNameLen);
+
+            // Section 10: Asymptotic Quantile Variance (delta method)
+            ReportAppendAsymptoticQuantileVariance(sb);
+
+            return sb.ToString();
+        }
+
+        /// <summary>
+        /// Appends a report header with box-drawing decoration.
+        /// </summary>
+        /// <param name="sb">The string builder to append to.</param>
+        /// <param name="title">The header title text.</param>
+        private static void ReportAppendHeader(StringBuilder sb, string title)
+        {
+            string line = new string('=', 60);
+            sb.AppendLine(line);
+            int padding = (60 - title.Length) / 2;
+            sb.AppendLine(new string(' ', Math.Max(0, padding)) + title);
+            sb.AppendLine(line);
+            sb.AppendLine();
+        }
+
+        /// <summary>
+        /// Appends a section header with separator line.
+        /// </summary>
+        /// <param name="sb">The string builder to append to.</param>
+        /// <param name="title">The section title text.</param>
+        private static void ReportAppendSectionHeader(StringBuilder sb, string title)
+        {
+            sb.AppendLine(title);
+            sb.AppendLine(new string('-', 60));
+        }
+
+        /// <summary>
+        /// Appends the asymptotic covariance and correlation matrices from the GMM sandwich estimator.
+        /// </summary>
+        /// <param name="sb">The string builder to append to.</param>
+        /// <param name="gmm">The GMM estimator.</param>
+        /// <param name="paramNames">The parameter names.</param>
+        /// <param name="maxNameLen">Maximum parameter name length for alignment.</param>
+        private static void ReportAppendAsymptoticMatrices(StringBuilder sb, GeneralizedMethodOfMoments gmm,
+            string[] paramNames, int maxNameLen)
+        {
+            try
+            {
+                var covMatrix = gmm.GetCovarianceMatrix();
+                if (covMatrix != null)
+                {
+                    ReportAppendSectionHeader(sb, "ASYMPTOTIC COVARIANCE MATRIX (SANDWICH)");
+                    ReportAppendMatrix(sb, covMatrix, paramNames, maxNameLen, "G4");
+                }
+
+                var corrMatrix = gmm.GetCorrelationMatrix();
+                if (corrMatrix != null)
+                {
+                    ReportAppendSectionHeader(sb, "ASYMPTOTIC CORRELATION MATRIX");
+                    ReportAppendMatrix(sb, corrMatrix, paramNames, maxNameLen, "F3");
+                }
+            }
+            catch (Exception ex)
+            {
+                // Covariance matrix may not be computable in degenerate cases.
+                Debug.WriteLine($"Bulletin17CAnalysis.ReportAppendAsymptoticCovariance: matrix unavailable: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Appends bootstrap or sampling diagnostics to the report.
+        /// </summary>
+        /// <param name="sb">The string builder to append to.</param>
+        /// <param name="diag">The bootstrap diagnostics.</param>
+        /// <param name="labelWidth">The label padding width.</param>
+        /// <param name="method">The uncertainty method that produced the diagnostics.</param>
+        internal static void ReportAppendBootstrapDiagnostics(StringBuilder sb, BootstrapDiagnostics diag, int labelWidth, UncertaintyMethod method)
+        {
+            bool isMvn = method == UncertaintyMethod.MultivariateNormal;
+            int requested = diag.TotalReplicates;
+            int retained = diag.RetainedReplicates;
+            // Bootstrap rates are per requested replicate: a replicate is substituted with the
+            // parent fit only after every retry on fresh realizations has failed.
+            int discarded = isMvn ? Math.Max(0, requested - retained) : diag.FailedReplicates;
+            double discardRate = requested > 0 ? (double)discarded / requested : 0.0;
+
+            ReportAppendSectionHeader(sb, isMvn ? "SAMPLING DIAGNOSTICS" : "BOOTSTRAP DIAGNOSTICS");
+            sb.AppendLine($"  {(isMvn ? "Draws Requested:" : "Replicates Requested:").PadRight(labelWidth)}{requested:N0}");
+            if (isMvn)
+            {
+                sb.AppendLine($"  {"Draws Failed:".PadRight(labelWidth)}{discarded:N0} ({discardRate * 100:F1}%)");
+                sb.AppendLine($"  {"Draws Used:".PadRight(labelWidth)}{retained:N0}");
+            }
+            else
+            {
+                sb.AppendLine($"  {"Realizations Attempted:".PadRight(labelWidth)}{diag.AttemptedRealizations:N0}");
+                sb.AppendLine($"  {"Substituted (parent fit):".PadRight(labelWidth)}{discarded:N0} ({discardRate * 100:F1}%)");
+                sb.AppendLine($"  {"Replicates Used:".PadRight(labelWidth)}{retained:N0}");
+            }
+
+            if (!isMvn)
+            {
+                sb.AppendLine($"  {"Optimizer Fallbacks:".PadRight(labelWidth)}{diag.OptimizerFallbacks:N0}");
+                sb.AppendLine($"  {"Total Retries:".PadRight(labelWidth)}{diag.TotalRetries:N0}");
+                sb.AppendLine($"  {"Avg Retries/Replicate:".PadRight(labelWidth)}{diag.AverageRetries:F2}");
+                sb.AppendLine($"  {"Avg Func Evals/Repl:".PadRight(labelWidth)}{diag.AverageFunctionEvaluations:F0}");
+                sb.AppendLine($"  {"Total Boot Func Evals:".PadRight(labelWidth)}{diag.TotalFunctionEvaluations:N0}");
+
+                int statusTotal = diag.StatusSuccessCount + diag.StatusMaximumIterationsCount +
+                                  diag.StatusMaximumFunctionEvaluationsCount + diag.StatusFailureCount + diag.StatusNoneCount;
+                if (statusTotal > 0)
+                {
+                    sb.AppendLine("  GMM Status Counts (per start candidate):");
+                    sb.AppendLine($"    {"Success:".PadRight(labelWidth - 2)}{diag.StatusSuccessCount:N0}");
+                    sb.AppendLine($"    {"Maximum Iterations:".PadRight(labelWidth - 2)}{diag.StatusMaximumIterationsCount:N0}");
+                    sb.AppendLine($"    {"Maximum Evaluations:".PadRight(labelWidth - 2)}{diag.StatusMaximumFunctionEvaluationsCount:N0}");
+                    sb.AppendLine($"    {"Failure:".PadRight(labelWidth - 2)}{diag.StatusFailureCount:N0}");
+                    sb.AppendLine($"    {"None:".PadRight(labelWidth - 2)}{diag.StatusNoneCount:N0}");
+                }
+            }
+
+            if (diag.TransformFailures > 0)
+                sb.AppendLine($"  {"Transform Failures:".PadRight(labelWidth)}{diag.TransformFailures:N0}");
+            if (diag.BoundRepairs > 0)
+                sb.AppendLine($"  {"Bound Repairs:".PadRight(labelWidth)}{diag.BoundRepairs:N0} ({diag.BoundRepairRate * 100:F1}%)");
+            if (diag.PivotRejections > 0)
+                sb.AppendLine($"  {"Pivot z-limit Clips:".PadRight(labelWidth)}{diag.PivotRejections:N0} ({diag.PivotRejectionRate * 100:F1}%)");
+            if (diag.MahalanobisRejections > 0)
+                sb.AppendLine($"  {"Outlier Rejections:".PadRight(labelWidth)}{diag.MahalanobisRejections:N0} ({diag.MahalanobisRejectionRate * 100:F1}%)");
+
+            if (diag.Phase1Time.TotalMilliseconds > 0)
+                sb.AppendLine($"  {"Phase 1 (fitting):".PadRight(labelWidth)}{diag.Phase1Time:hh\\:mm\\:ss\\.fff}");
+            if (diag.Phase2Time.TotalMilliseconds > 0)
+                sb.AppendLine($"  {"Phase 2 (link fit):".PadRight(labelWidth)}{diag.Phase2Time:hh\\:mm\\:ss\\.fff}");
+            if (diag.Phase3Time.TotalMilliseconds > 0)
+                sb.AppendLine($"  {"Phase 3 (pivot draw):".PadRight(labelWidth)}{diag.Phase3Time:hh\\:mm\\:ss\\.fff}");
+
+            if (requested > 0 && retained < requested / 2.0)
+            {
+                sb.AppendLine();
+                sb.AppendLine($"  WARNING: Fewer than half of the requested realizations were retained ({retained:N0} of {requested:N0}).");
+                sb.AppendLine("  Uncertainty estimates may be unstable. Review the fitted model and data.");
+            }
+            else if (retained > 0 && retained < 1000)
+            {
+                sb.AppendLine();
+                sb.AppendLine($"  Note: Only {retained:N0} realizations were retained. Tail quantile resolution may be limited.");
+            }
+
+            if (!isMvn && discarded > 0)
+            {
+                sb.AppendLine();
+                sb.AppendLine($"  Note: {discarded:N0} of {requested:N0} replicates ({discardRate * 100:F1}%) were substituted with the parent fit after every retry failed.");
+                sb.AppendLine("  Substituted replicates form a point mass at the parent estimate and narrow the reported limits.");
+            }
+
+            if (discardRate > 0.30)
+            {
+                sb.AppendLine();
+                sb.AppendLine("  WARNING: Very high discard rate (>30%). Uncertainty estimates may be unreliable.");
+            }
+            else if (discardRate > 0.10)
+            {
+                sb.AppendLine();
+                sb.AppendLine("  WARNING: High discard rate (>10%). The fitted model may be near a parameter boundary or poorly identified.");
+            }
+
+            if (!isMvn && diag.BoundRepairs > 0)
+            {
+                sb.AppendLine($"  Note: {diag.BoundRepairs:N0} pivot draws ({diag.BoundRepairRate * 100:F1}%) were moved inside the parameter bounds before validation.");
+            }
+
+            if (!isMvn && diag.AverageRetries > 2.0)
+            {
+                sb.AppendLine("  Note: Bootstrap replicates frequently need retries. The model may be sensitive to data perturbations.");
+            }
+
+            sb.AppendLine();
+        }
+        /// <summary>
+        /// Appends bootstrap covariance and correlation matrices computed from sampled parameter sets.
+        /// </summary>
+        /// <param name="sb">The string builder to append to.</param>
+        /// <param name="results">The compatibility result container holding bootstrap samples.</param>
+        /// <param name="paramNames">The parameter names.</param>
+        /// <param name="maxNameLen">Maximum parameter name length for alignment.</param>
+        /// <param name="p">The number of parameters.</param>
+        private static void ReportAppendBootstrapMatrices(StringBuilder sb,
+            MCMCResults results, string[] paramNames, int maxNameLen, int p)
+        {
+            try
+            {
+                var rcm = new RunningCovarianceMatrix(p);
+                foreach (var ps in results.Output)
+                    rcm.Push(ps.Values);
+
+                ReportAppendSectionHeader(sb, "BOOTSTRAP COVARIANCE MATRIX");
+                ReportAppendMatrix(sb, rcm.SampleCovariance, paramNames, maxNameLen, "G4");
+
+                ReportAppendSectionHeader(sb, "BOOTSTRAP CORRELATION MATRIX");
+                ReportAppendMatrix(sb, rcm.SampleCorrelation, paramNames, maxNameLen, "F3");
+            }
+            catch (Exception ex)
+            {
+                // May fail if insufficient valid samples.
+                Debug.WriteLine($"Bulletin17CAnalysis.ReportAppendBootstrapCovariance: matrix unavailable: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Computes asymptotic quantile variance for each probability ordinate using the delta method.
+        /// </summary>
+        /// <param name="unavailableReason">The reason no table can be computed, or null when rows are available.</param>
+        /// <returns>
+        /// Quantiles and variances in log10 space for LP3 and Log-Normal, or native space for other
+        /// families. Returns null when fitted state, probability ordinates, or covariance are unavailable.
+        /// Individual failed evaluations are represented by NaN.
+        /// </returns>
+        /// <remarks>
+        /// <para>
+        /// Uses the distribution-aware <see cref="Bulletin17CDistribution.QuantileVariance"/>
+        /// with the fitted GMM sandwich covariance. This report diagnostic does not use the Cohn
+        /// quadrature helper, its LP3 scope restrictions, or its point-estimate fallback.
+        /// </para>
+        /// </remarks>
+        private (double[] quantiles, double[] variances)? ComputeAsymptoticQuantileVariance(out string? unavailableReason)
+        {
+            unavailableReason = null;
+            if (_gmm == null || !_gmm.IsEstimated)
+            {
+                unavailableReason = "The GMM model has not been estimated.";
+                return null;
+            }
+            if (ProbabilityOrdinates == null || ProbabilityOrdinates.Count == 0)
+            {
+                unavailableReason = "No probability ordinates are configured.";
+                return null;
+            }
+
+            var thetaHat = _gmm.BestParameterSet.Values;
+            int nProb = ProbabilityOrdinates.Count;
+
+            // Get the asymptotic parameter covariance matrix (sandwich estimator)
+            Matrix sigma;
+            try
+            {
+                sigma = _gmm.GetCovarianceMatrix();
+            }
+            catch (Exception ex)
+            {
+                unavailableReason = _gmm.CovarianceDiagnostic ?? ex.Message;
+                Debug.WriteLine($"Bulletin17CAnalysis.ComputeAsymptoticQuantileVariance: GMM covariance unavailable: {ex.Message}");
+                return null;
+            }
+
+            // Use the same quantile space as the model's distribution-aware gradient.
+            var model = Bulletin17CDistribution;
+            var quantileDistribution = model.DistributionType switch
+            {
+                UnivariateDistributionType.LogPearsonTypeIII => new PearsonTypeIII(),
+                UnivariateDistributionType.LogNormal => new Normal(),
+                _ => model.Distribution.Clone()
+            };
+            double[,] covariance = sigma.ToArray();
+            var quantiles = Enumerable.Repeat(double.NaN, nProb).ToArray();
+            var variances = Enumerable.Repeat(double.NaN, nProb).ToArray();
+
+            for (int k = 0; k < nProb; k++)
+            {
+                double nonExceedProb = 1.0 - ProbabilityOrdinates[k];
+
+                try
+                {
+                    quantileDistribution.SetParameters(thetaHat);
+                    double quantile = quantileDistribution.InverseCDF(nonExceedProb);
+                    if (!Tools.IsFinite(quantile))
+                    {
+                        Debug.WriteLine($"Bulletin17CAnalysis.ComputeAsymptoticQuantileVariance: nonfinite quantile at p={nonExceedProb}.");
+                        continue;
+                    }
+                    quantiles[k] = quantile;
+
+                    double variance = model.QuantileVariance(nonExceedProb, thetaHat, covariance);
+                    if (Tools.IsFinite(variance) && variance >= 0.0)
+                        variances[k] = variance;
+                    else
+                        Debug.WriteLine($"Bulletin17CAnalysis.ComputeAsymptoticQuantileVariance: unusable variance at p={nonExceedProb}.");
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Bulletin17CAnalysis.ComputeAsymptoticQuantileVariance: evaluation failed at p={nonExceedProb}: {ex.Message}");
+                }
+            }
+
+            return (quantiles, variances);
+        }
+
+        /// <summary>
+        /// Appends the asymptotic quantile variance table to the GMM report.
+        /// </summary>
+        /// <param name="sb">The string builder to append to.</param>
+        private void ReportAppendAsymptoticQuantileVariance(StringBuilder sb)
+        {
+            ReportAppendSectionHeader(sb, "ASYMPTOTIC QUANTILE VARIANCE (DELTA METHOD)");
+            var result = ComputeAsymptoticQuantileVariance(out string? unavailableReason);
+            if (result == null)
+            {
+                sb.AppendLine($"  Not available: {unavailableReason}");
+                sb.AppendLine();
+                return;
+            }
+
+            var (quantiles, variances) = result.Value;
+
+            sb.AppendLine($"  {"AEP",12}  {"Quantile",12}  {"Variance",12}");
+            sb.AppendLine($"  {new string('-', 12)}  {new string('-', 12)}  {new string('-', 12)}");
+
+            for (int k = 0; k < quantiles.Length; k++)
+            {
+                double aep = ProbabilityOrdinates[k];
+                sb.AppendLine($"  {aep,12:G4}  {ReportFormatFiniteNumber(quantiles[k]),12}  {ReportFormatFiniteNumber(variances[k]),12}");
+            }
+            sb.AppendLine();
+            bool isLogSpace = Bulletin17CDistribution.DistributionType is
+                UnivariateDistributionType.LogPearsonTypeIII or UnivariateDistributionType.LogNormal;
+            sb.AppendLine(isLogSpace
+                ? "  Quantiles are in log10 space; variances are in squared log10 units."
+                : "  Quantiles are in native space; variances are in squared native units.");
+            sb.AppendLine("  Var(Q) = dQ/dtheta' * Sigma * dQ/dtheta, where Sigma is the sandwich covariance.");
+            sb.AppendLine("  Asymptotic GMM delta-method diagnostic; not Cohn confidence intervals or a coverage assessment.");
+            if (quantiles.Any(q => !Tools.IsFinite(q)) || variances.Any(v => !Tools.IsFinite(v)))
+                sb.AppendLine("  N/A indicates that the quantile or its variance could not be evaluated.");
+            sb.AppendLine();
+        }
+
+        /// <summary>
+        /// Formats a finite report value at six significant digits, or marks it unavailable.
+        /// </summary>
+        /// <param name="value">The value to format.</param>
+        /// <returns>The formatted value or N/A.</returns>
+        private static string ReportFormatFiniteNumber(double value) =>
+            Tools.IsFinite(value) ? value.ToString("G6", CultureInfo.CurrentCulture) : "N/A";
+
+        /// <summary>
+        /// Appends the parameter and quantile penalty configuration section to the report.
+        /// </summary>
+        /// <param name="sb">The report builder to append to.</param>
+        /// <param name="gmm">The GMM estimator that owns the current penalty configuration.</param>
+        /// <param name="maxNameLen">Maximum parameter name length for alignment.</param>
+        private void ReportAppendPenaltyConfiguration(StringBuilder sb,
+            GeneralizedMethodOfMoments gmm, int maxNameLen)
+        {
+            var paramPenalties = Bulletin17CDistribution.ParameterPenalties;
+            var quantilePenalties = Bulletin17CDistribution.QuantilePenalties;
+            bool hasEnabledPenalties = (paramPenalties != null && paramPenalties.Any(pp => pp.Enabled)) ||
+                                       (quantilePenalties != null && quantilePenalties.Any(qp => qp.Enabled));
+
+            ReportAppendSectionHeader(sb, "PENALTY CONFIGURATION");
+
+            if (!hasEnabledPenalties)
+            {
+                sb.AppendLine("  No penalties enabled.");
+                sb.AppendLine();
+                return;
+            }
+
+            int n = Bulletin17CDistribution.DataFrame.ExactSeries.Count;
+
+            // Parameter penalties
+            if (paramPenalties != null)
+            {
+                bool headerShown = false;
+                for (int i = 0; i < paramPenalties.Count; i++)
+                {
+                    var pp = paramPenalties[i];
+                    if (!pp.Enabled) continue;
+                    if (!headerShown)
+                    {
+                        sb.AppendLine("  Parameter Penalties:");
+                        headerShown = true;
+                    }
+                    string space = pp.UseLog ? " (log-space)" : "";
+                    sb.AppendLine($"    {pp.Name.PadRight(maxNameLen)}  Mean={pp.Mean:G4}  MSE={pp.MSE:G4}{space}");
+                    sb.AppendLine($"    {new string(' ', maxNameLen)}  90% Range=[{pp.LowerValue:G4}, {pp.UpperValue:G4}]");
+                    // Show estimated value and penalty contribution
+                    if (gmm.IsEstimated && i < gmm.BestParameterSet.Values.Length)
+                    {
+                        double est = gmm.BestParameterSet.Values[i];
+                        double penaltyVal = pp.Function(est, n);
+                        sb.AppendLine($"    {new string(' ', maxNameLen)}  Estimate={est:G6}  Penalty={penaltyVal:G4}");
+                    }
+                }
+                if (headerShown) sb.AppendLine();
+            }
+
+            // Quantile penalties
+            if (quantilePenalties != null)
+            {
+                bool headerShown = false;
+                foreach (var qp in quantilePenalties)
+                {
+                    if (!qp.Enabled) continue;
+                    if (!headerShown)
+                    {
+                        sb.AppendLine("  Quantile Penalties:");
+                        headerShown = true;
+                    }
+                    double returnPeriod = 1.0 / qp.AEP;
+                    string rpLabel = returnPeriod >= 1 ? $"{returnPeriod:F0}-yr" : $"AEP={qp.AEP:G4}";
+                    string space = qp.UseLog10 ? " (log10-space)" : "";
+                    sb.AppendLine($"    {rpLabel.PadRight(maxNameLen)}  Mean={qp.Mean:G4}  MSE={qp.MSE:G4}{space}");
+                    sb.AppendLine($"    {new string(' ', maxNameLen)}  90% Range=[{qp.LowerValue:G4}, {qp.UpperValue:G4}]");
+                }
+                if (headerShown) sb.AppendLine();
+            }
+        }
+
+        /// <summary>
+        /// Appends a formatted p x p matrix to the report using a <see cref="Matrix"/>.
+        /// </summary>
+        /// <param name="sb">The string builder to append to.</param>
+        /// <param name="matrix">The matrix to format.</param>
+        /// <param name="paramNames">Parameter names for row/column headers.</param>
+        /// <param name="maxNameLen">Maximum parameter name length for alignment.</param>
+        /// <param name="format">Numeric format string (e.g., "G4" or "F3").</param>
+        private static void ReportAppendMatrix(StringBuilder sb, Matrix matrix,
+            string[] paramNames, int maxNameLen, string format)
+        {
+            int p = paramNames.Length;
+            int colWidth = Math.Max(12, maxNameLen);
+
+            // Column headers
+            sb.Append("  " + new string(' ', maxNameLen));
+            for (int j = 0; j < p; j++)
+                sb.Append($"  {paramNames[j].PadLeft(colWidth)}");
+            sb.AppendLine();
+
+            // Rows
+            for (int i = 0; i < p; i++)
+            {
+                string rowName = paramNames[i].PadRight(maxNameLen);
+                sb.Append($"  {rowName}");
+                for (int j = 0; j < p; j++)
+                    sb.Append($"  {matrix[i, j].ToString(format, CultureInfo.InvariantCulture).PadLeft(colWidth)}");
+                sb.AppendLine();
+            }
+            sb.AppendLine();
+        }
+
+        /// <summary>
+        /// Appends a formatted p x p matrix to the report using a <see cref="double"/> array.
+        /// </summary>
+        /// <param name="sb">The string builder to append to.</param>
+        /// <param name="matrix">The matrix to format as a 2D double array.</param>
+        /// <param name="paramNames">Parameter names for row/column headers.</param>
+        /// <param name="maxNameLen">Maximum parameter name length for alignment.</param>
+        /// <param name="format">Numeric format string (e.g., "G4" or "F3").</param>
+        private static void ReportAppendMatrix(StringBuilder sb, double[,] matrix, string[] paramNames,
+            int maxNameLen, string format)
+        {
+            int p = paramNames.Length;
+            int colWidth = Math.Max(12, maxNameLen);
+
+            sb.Append("  " + new string(' ', maxNameLen));
+            for (int j = 0; j < p; j++)
+                sb.Append($"  {paramNames[j].PadLeft(colWidth)}");
+            sb.AppendLine();
+
+            for (int i = 0; i < p; i++)
+            {
+                string rowName = paramNames[i].PadRight(maxNameLen);
+                sb.Append($"  {rowName}");
+                for (int j = 0; j < p; j++)
+                    sb.Append($"  {matrix[i, j].ToString(format, CultureInfo.InvariantCulture).PadLeft(colWidth)}");
+                sb.AppendLine();
+            }
+            sb.AppendLine();
+        }
+
+        /// <summary>
+        /// Formats the GMM estimation strategy for display.
+        /// </summary>
+        /// <param name="strategy">The GMM estimation strategy.</param>
+        /// <returns>A human-readable string representation of the strategy.</returns>
+        private static string ReportFormatGMMStrategy(GeneralizedMethodOfMoments.GMMEstimationStrategy strategy)
+        {
+            return strategy switch
+            {
+                GeneralizedMethodOfMoments.GMMEstimationStrategy.OneStep => "One-Step",
+                GeneralizedMethodOfMoments.GMMEstimationStrategy.TwoStep => "Two-Step",
+                GeneralizedMethodOfMoments.GMMEstimationStrategy.Iterative => "Iterative",
+                _ => strategy.ToString()
+            };
+        }
+
+        /// <summary>
+        /// Formats the uncertainty method enum for display.
+        /// </summary>
+        /// <param name="method">The uncertainty method.</param>
+        /// <returns>A human-readable string representation of the uncertainty method.</returns>
+        private static string ReportFormatUncertaintyMethod(UncertaintyMethod method)
+        {
+            return method switch
+            {
+                UncertaintyMethod.MultivariateNormal => "Multivariate Normal",
+                UncertaintyMethod.LinkedMultivariateNormal => "Linked Multivariate Normal",
+                UncertaintyMethod.Bootstrap => "Percentile Bootstrap",
+                UncertaintyMethod.BiasCorrectedBootstrap => "Bias-Corrected Bootstrap",
+                _ => method.ToString()
+            };
+        }
+
+        /// <summary>
+        /// Formats the GMM identification status including parameter and moment condition counts.
+        /// </summary>
+        /// <param name="gmm">The GMM estimator.</param>
+        /// <returns>A formatted identification status string.</returns>
+        private static string ReportFormatIdentificationStatus(GeneralizedMethodOfMoments gmm)
+        {
+            string status = gmm.IdentificationStatus switch
+            {
+                GeneralizedMethodOfMoments.GMMIdentificationStatus.UnderIdentified => "Under-identified",
+                GeneralizedMethodOfMoments.GMMIdentificationStatus.JustIdentified => "Just-identified",
+                GeneralizedMethodOfMoments.GMMIdentificationStatus.OverIdentified => "Over-identified",
+                _ => gmm.IdentificationStatus.ToString()
+            };
+            return $"{status} ({gmm.NumberOfParameters} params, {gmm.NumberOfMomentConditions} moments, df={gmm.DegreeOfFreedom})";
+        }
+
+        /// <summary>
+        /// Formats a parameter bound value for display.
+        /// </summary>
+        /// <param name="bound">The bound value.</param>
+        /// <returns>A formatted string representation of the bound.</returns>
+        private static string ReportFormatBound(double bound)
+        {
+            if (double.IsNegativeInfinity(bound)) return "-Inf";
+            if (double.IsPositiveInfinity(bound)) return "+Inf";
+            return bound.ToString("G6", CultureInfo.InvariantCulture);
+        }
+
+        #endregion
+    }
+
+    /// <summary>
+    /// Contains the results of Cohn's delta-method confidence interval computation.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Produced by <see cref="Bulletin17CAnalysis.ComputeCohnStyleConfidenceIntervals"/>, this type
+    /// holds LP3 exact-data confidence intervals with beta1 and nu diagnostics.
+    /// </para>
+    /// </remarks>
+    public class CohnConfidenceIntervalResult
+    {
+        /// <summary>
+        /// The exceedance probabilities at which CIs were computed.
+        /// </summary>
+        public double[] ExceedanceProbabilities { get; set; } = Array.Empty<double>();
+
+        /// <summary>
+        /// The log10-space quantile estimates at each exceedance probability.
+        /// </summary>
+        public double[] PointEstimates { get; set; } = Array.Empty<double>();
+
+        /// <summary>
+        /// The lower confidence interval bounds.
+        /// </summary>
+        public double[] LowerCI { get; set; } = Array.Empty<double>();
+
+        /// <summary>
+        /// The upper confidence interval bounds.
+        /// </summary>
+        public double[] UpperCI { get; set; } = Array.Empty<double>();
+
+        /// <summary>
+        /// The confidence level used (e.g., 0.90 for 90% CIs).
+        /// </summary>
+        public double ConfidenceLevel { get; set; }
+
+        /// <summary>
+        /// The beta1 regression coefficient of SE(Qhat_p) on Qhat_p for each probability level.
+        /// Positive values indicate that the standard error increases with the quantile estimate,
+        /// causing asymmetric CI widths.
+        /// </summary>
+        public double[] Beta1 { get; set; } = Array.Empty<double>();
+
+        /// <summary>
+        /// The effective degrees of freedom nu for each probability level.
+        /// Lower values indicate heavier-tailed uncertainty (wider CIs).
+        /// </summary>
+        public double[] Nu { get; set; } = Array.Empty<double>();
+
+        /// <summary>
+        /// The delta-method variance Var(Q^_p) from the outer quadrature for each probability level.
+        /// </summary>
+        public double[] QuantileVariance { get; set; } = Array.Empty<double>();
+    }
+}

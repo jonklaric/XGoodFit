@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <AssemblyTitle>RMC.BestFit.Api</AssemblyTitle>
+    <Description>REST API and MCP server for the Bayesian estimation and fitting software (RMC-BestFit).</Description>
+    <Company>U.S. Army Corps of Engineers</Company>
+    <Product>RMC-BestFit</Product>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
+    <!-- Direct reference lifts the transitive Microsoft.OpenApi above the vulnerable 2.0.0 (NU1903). -->
+    <PackageReference Include="Microsoft.OpenApi" />
+    <PackageReference Include="ModelContextProtocol.AspNetCore" />
+    <PackageReference Include="RMC.Numerics" Condition="'$(UseLocalRmcNumerics)' != 'true'" />
+    <ProjectReference Include="$(RmcNumericsProjectPath)" Condition="'$(UseLocalRmcNumerics)' == 'true'" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\RMC.BestFit\RMC.BestFit.csproj" />
+  </ItemGroup>
+
+</Project>

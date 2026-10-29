@@ -1,0 +1,4 @@
+# MSBuild reads this file for every command-line build in the repository.
+# Build RMC-BestFit's projects against the vendored RMC.Numerics source (upstream/Numerics, tag
+# v2.2.0, the exact source of the NuGet package RMC-BestFit uses) instead of the NuGet package.
+-p:UseLocalRmcNumerics=true

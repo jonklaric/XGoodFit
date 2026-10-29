@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <id>RMC.Wpf.Framework.Models</id>
+    <version>$version$</version>
+    <authors>C. Haden Smith, Woodrow L. Fields, Julian Gonzalez</authors>
+    <owners>USACE-RMC</owners>
+    <license type="expression">0BSD</license>
+    <projectUrl>https://github.com/USACE-RMC/WPF-Framework</projectUrl>
+    <repository type="git" url="https://github.com/USACE-RMC/WPF-Framework" />
+    <readme>README.md</readme>
+    <description>Model, graph, database, expression-parser, and vendored OxyPlot assemblies for the RMC WPF Framework.</description>
+    <releaseNotes>Version 1.0.5 releases SQLite connections when initialization or database operations fail.</releaseNotes>
+    <tags>RMC WPF framework database expression-parser DAG OxyPlot</tags>
+    <dependencies>
+      <group targetFramework="net10.0-windows7.0">
+        <dependency id="ClosedXML" version="$closedXmlVersion$" />
+        <dependency id="DocumentFormat.OpenXml" version="$documentFormatOpenXmlVersion$" />
+        <dependency id="ExcelNumberFormat" version="$excelNumberFormatVersion$" />
+        <dependency id="FastMember" version="$fastMemberVersion$" />
+        <dependency id="SourceGear.sqlite3" version="$sourceGearSqlite3Version$" />
+        <dependency id="System.Data.SQLite" version="$systemDataSQLiteVersion$" />
+      </group>
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="..\..\..\README.md" target="" />
+    <file src="..\..\DAG\bin\$configuration$\net10.0\DAG.dll" target="lib\net10.0-windows7.0" />
+    <file src="..\..\DAG\bin\$configuration$\net10.0\DAG.xml" target="lib\net10.0-windows7.0" />
+    <file src="..\..\DatabaseManager\bin\$configuration$\net10.0\DatabaseManager.dll" target="lib\net10.0-windows7.0" />
+    <file src="..\..\DatabaseManager\bin\$configuration$\net10.0\DatabaseManager.xml" target="lib\net10.0-windows7.0" />
+    <file src="..\..\ExpressionParser\bin\$configuration$\net10.0\ExpressionParser.dll" target="lib\net10.0-windows7.0" />
+    <file src="..\..\ExpressionParser\bin\$configuration$\net10.0\ExpressionParser.xml" target="lib\net10.0-windows7.0" />
+    <file src="..\..\OxyPlot\OxyPlot\bin\$configuration$\net10.0\OxyPlot.dll" target="lib\net10.0-windows7.0" />
+    <file src="..\..\OxyPlot\OxyPlot\bin\$configuration$\net10.0\OxyPlot.xml" target="lib\net10.0-windows7.0" />
+    <file src="..\..\OxyPlot\OxyPlot.Wpf\bin\$configuration$\net10.0-windows\OxyPlot.Wpf.dll" target="lib\net10.0-windows7.0" />
+    <file src="..\..\OxyPlot\OxyPlot.Wpf\bin\$configuration$\net10.0-windows\OxyPlot.Wpf.xml" target="lib\net10.0-windows7.0" />
+    <file src="..\..\OxyPlot\OxyPlot.Wpf.Shared\bin\$configuration$\net10.0-windows\OxyPlot.Wpf.Shared.dll" target="lib\net10.0-windows7.0" />
+    <file src="..\..\OxyPlot\OxyPlot.Wpf.Shared\bin\$configuration$\net10.0-windows\OxyPlot.Wpf.Shared.xml" target="lib\net10.0-windows7.0" />
+  </files>
+</package>

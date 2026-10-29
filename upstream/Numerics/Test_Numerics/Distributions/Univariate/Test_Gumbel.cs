@@ -1,0 +1,330 @@
+using System;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Numerics.Distributions;
+
+namespace Distributions.Univariate
+{
+    /// <summary>
+    /// Testing the Gumbel distribution algorithm.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    ///     <b> Authors: </b>
+    ///     <list type="bullet">
+    ///     <item> Haden Smith, USACE Risk Management Center, cole.h.smith@usace.army.mil </item>
+    ///     <item> Tiki Gonzalez, USACE Risk Management Center, julian.t.gonzalez@usace.army.mil</item>
+    ///     </list>
+    /// </para>
+    /// <para>
+    /// <b> References: </b>
+    /// </para>
+    /// <para>
+    /// <see href = "https://github.com/mathnet/mathnet-numerics/blob/master/src/Numerics.Tests/DistributionTests" />
+    /// </para>
+    /// </remarks>
+    [TestClass]
+    public class Test_Gumbel
+    {
+
+        // Reference: "Flood Frequency Analysis", A.R. Rao & K.H. Hamed, CRC Press, 2000.
+        // Table 7.2.1 Sugar Creek at Crawfordsville, IN
+        private double[] sample = new double[] { 17600d, 3660d, 903d, 5050d, 24000d, 11400d, 9470d, 8970d, 7710d, 14800d, 13900d, 20800d, 9470d, 7860d, 7860d, 2730d, 6480d, 18200d, 26300d, 15100d, 14600d, 7300d, 8580d, 15100d, 15100d, 21800d, 6200d, 2130d, 11100d, 14300d, 11200d, 6670d, 5440d, 9370d, 6900d, 9680d, 6810d, 7730d, 5290d, 12200d, 9750d, 7390d, 13100d, 7190d, 8850d, 6290d, 18800d, 9740d, 2990d, 6950d, 9390d, 12400d, 21200d };
+
+        /// <summary>
+        /// Verification of Gumbel Distribution fit with method of moments.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Reference: "Flood Frequency Analysis", A.R. Rao &amp; K.H. Hamed, CRC Press, 2000.
+        /// </para>
+        /// <para>
+        /// Example 7.2.1 page 234.
+        /// </para>
+        /// </remarks>
+        [TestMethod()]
+        public void Test_GUM_MOM_Fit()
+        {
+            var GUM = new Gumbel();
+            GUM.Estimate(sample, ParameterEstimationMethod.MethodOfMoments);
+            double x = GUM.Xi;
+            double a = GUM.Alpha;
+            double true_x = 8074.4d;
+            double true_a = 4441.4d;
+            Assert.IsLessThan(0.01d, (x - true_x) / true_x );
+            Assert.IsLessThan(0.01d, (a - true_a) / true_a );
+        }
+
+        /// <summary>
+        /// Verification of Gumbel Distribution fit with method of linear moments.
+        /// </summary>
+        [TestMethod()]
+        public void Test_GUM_LMOM_Fit()
+        {
+            var sample = new double[] { 1953d, 1939d, 1677d, 1692d, 2051d, 2371d, 2022d, 1521d, 1448d, 1825d, 1363d, 1760d, 1672d, 1603d, 1244d, 1521d, 1783d, 1560d, 1357d, 1673d, 1625d, 1425d, 1688d, 1577d, 1736d, 1640d, 1584d, 1293d, 1277d, 1742d, 1491d };
+            var GUM = new Gumbel();
+            GUM.Estimate(sample, ParameterEstimationMethod.MethodOfLinearMoments);
+            double x = GUM.Xi;
+            double a = GUM.Alpha;
+            double true_x = 1533.69d;
+            double true_a = 199.4332d;
+            Assert.AreEqual(true_x, x, 0.001d);
+            Assert.AreEqual(true_a, a, 0.001d);
+            var lmom = GUM.LinearMomentsFromParameters(GUM.GetParameters);
+            Assert.AreEqual(1648.806d, lmom[0],  0.001d);
+            Assert.AreEqual(138.2366d, lmom[1],  0.001d);
+            Assert.AreEqual(0.169925d, lmom[2], 0.001d);
+            Assert.AreEqual(0.150375d, lmom[3], 0.001d);
+        }
+
+        /// <summary>
+        /// Verification of Gumbel Distribution fit with method of maximum likelihood.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Reference: "Flood Frequency Analysis", A.R. Rao &amp; K.H. Hamed, CRC Press, 2000.
+        /// </para>
+        /// <para>
+        /// Example 7.2.1 page 234.
+        /// </para>
+        /// </remarks>
+        [TestMethod()]
+        public void Test_GUM_MLE_Fit()
+        {
+            var GUM = new Gumbel();
+            GUM.Estimate(sample, ParameterEstimationMethod.MaximumLikelihood);
+            double x = GUM.Xi;
+            double a = GUM.Alpha;
+            double true_x = 8049.6d;
+            double true_a = 4478.6d;
+            Assert.IsLessThan(0.01d, (x - true_x) / true_x);
+            Assert.IsLessThan(0.01d, (a - true_a) / true_a);
+        }
+
+        /// <summary>
+        /// Test the quantile function for the Gumbel Distribution.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Reference: "Flood Frequency Analysis", A.R. Rao &amp; K.H. Hamed, CRC Press, 2000.
+        /// </para>
+        /// <para>
+        /// Example 7.7.2 page 237.
+        /// </para>
+        /// </remarks>
+        [TestMethod()]
+        public void Test_Gumbel_Quantile()
+        {
+            var GUM = new Gumbel(8049.6d, 4478.6d);
+            double q100 = GUM.InverseCDF(0.99d);
+            double true_q100 = 28652d;
+            Assert.IsLessThan(0.01d, (q100 - true_q100) / true_q100);
+            double p = GUM.CDF(q100);
+            double true_p = 0.99d;
+            Assert.IsLessThan(0.01d, (p - true_p) / true_p);
+
+        }
+
+        /// <summary>
+        /// Test the standard error for the Gumbel Distribution.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Reference: "Flood Frequency Analysis", A.R. Rao &amp; K.H. Hamed, CRC Press, 2000.
+        /// </para>
+        /// <para>
+        /// Example 7.2.3 page 240.
+        /// </para>
+        /// </remarks>
+        [TestMethod()]
+        public void Test_Gumbel_StandardError()
+        {
+
+            // Maximum Likelihood
+            var GUM = new Gumbel(8049.6d, 4478.6d);
+            double qVar99 = Math.Sqrt(GUM.QuantileVariance(0.99d, 53, ParameterEstimationMethod.MaximumLikelihood));
+            double true_qVar99 = 2486.5d;
+            Assert.IsLessThan(0.01d, (qVar99 - true_qVar99) / true_qVar99);
+        }
+
+        /// <summary>
+        /// Checking Gumbel is created with inputs.
+        /// </summary>
+        [TestMethod()]
+        public void Test_Construction()
+        {
+            var GUM = new Gumbel();
+            Assert.AreEqual(100, GUM.Xi);
+            Assert.AreEqual(10, GUM.Alpha);
+
+            var GUM2 = new Gumbel(-100, 1);
+            Assert.AreEqual(-100, GUM2.Xi);
+            Assert.AreEqual(1, GUM2.Alpha);
+        }
+
+        /// <summary>
+        /// Testing Gumbel with bad parameters.
+        /// </summary>
+        [TestMethod()]
+        public void Test_InvalidParameters()
+        {
+            var GUM = new Gumbel(double.NaN,double.NaN);
+            Assert.IsFalse(GUM.ParametersValid);
+
+            var GUM2 = new Gumbel(double.PositiveInfinity,double.PositiveInfinity);
+            Assert.IsFalse(GUM2.ParametersValid);
+
+            var GUM3 = new Gumbel(100, 0);
+            Assert.IsFalse(GUM3.ParametersValid);
+        }
+
+        /// <summary>
+        /// Testing ParametersToString()
+        /// </summary>
+        [TestMethod()]
+        public void Test_ParametersToString()
+        {
+            var GUM = new Gumbel();
+            Assert.AreEqual("Location (ξ)",GUM.ParametersToString[0, 0]);
+            Assert.AreEqual("Scale (α)", GUM.ParametersToString[1, 0]);
+            Assert.AreEqual("100", GUM.ParametersToString[0, 1]);
+            Assert.AreEqual("10", GUM.ParametersToString[1, 1]);
+        }
+
+        /// <summary>
+        /// Compare analytical moments against numerical integration.
+        /// </summary>
+        [TestMethod()]
+        public void Test_Moments()
+        {
+            var dist = new Gumbel(10, 1);
+            var mom = dist.CentralMoments(1E-8);
+            Assert.AreEqual(dist.Mean, mom[0], 1E-2);
+            Assert.AreEqual(dist.StandardDeviation, mom[1], 1E-2);
+            Assert.AreEqual(dist.Skewness, mom[2], 1E-2);
+            Assert.AreEqual(dist.Kurtosis, mom[3], 1E-2);
+        }
+
+        /// <summary>
+        /// Testing mean function.
+        /// </summary>
+        [TestMethod()]
+        public void Test_Mean()
+        {
+            var GUM = new Gumbel();
+            Assert.AreEqual(105.77215, GUM.Mean,  1e-04);
+
+            var GUM2 = new Gumbel(10, 1);
+            Assert.AreEqual(10.577215, GUM2.Mean,  1e-04);
+        }
+
+        /// <summary>
+        /// Testing median function.
+        /// </summary>
+        [TestMethod()]
+        public void Test_Median()
+        {
+            var GUM = new Gumbel();
+            Assert.AreEqual(103.66512, GUM.Median,  1e-05);
+
+            var GUM2 = new Gumbel(10, 1);
+            Assert.AreEqual(10.366512, GUM2.Median,  1e-04);
+        }
+
+        /// <summary>
+        /// Testing Standard deviation.
+        /// </summary>
+        [TestMethod()]
+        public void Test_StandardDeviation()
+        {
+            var GUM = new Gumbel();
+            Assert.AreEqual(12.82549, GUM.StandardDeviation,  1e-04);
+
+            var GUM2 = new Gumbel(10, 1);
+            Assert.AreEqual(1.28254, GUM2.StandardDeviation,  1e-04);
+        }
+
+        /// <summary>
+        /// Testing skew is 1.1396.
+        /// </summary>
+        [TestMethod()]
+        public void Test_Skewness()
+        {
+            var GUM = new Gumbel();
+            Assert.AreEqual(1.1396, GUM.Skewness);
+
+            var GUM2 = new Gumbel(10, 1);
+            Assert.AreEqual(1.1396, GUM2.Skewness);
+        }
+
+        /// <summary>
+        /// Testing kurtosis 5.4.
+        /// </summary>
+        [TestMethod()]
+        public void Test_Kurtosis()
+        {
+            var GUM = new Gumbel();
+            Assert.AreEqual(5.4, GUM.Kurtosis);
+
+            var GUM2 = new Gumbel(10, 1);
+            Assert.AreEqual(5.4, GUM2.Kurtosis);
+        }
+
+        /// <summary>
+        /// Testing minimum and maximum of distribution.
+        /// </summary>
+        [TestMethod()]
+        public void Test_MinMax()
+        {
+            var GUM = new Gumbel();
+            Assert.AreEqual(double.NegativeInfinity,GUM.Minimum);
+            Assert.AreEqual(double.PositiveInfinity, GUM.Maximum);
+
+            var GUM2 = new Gumbel(10, 1);
+            Assert.AreEqual(double.NegativeInfinity, GUM2.Minimum);
+            Assert.AreEqual(double.PositiveInfinity, GUM2.Maximum);
+        }
+
+        /// <summary>
+        /// Testing PDF method at different locations and with different parameters.
+        /// </summary>
+        [TestMethod()]
+        public void Test_PDF()
+        {
+            var GUM = new Gumbel();
+            Assert.AreEqual(0.0367879, GUM.PDF(100),  1e-04);
+            Assert.AreEqual(0, GUM.PDF(0));
+            Assert.AreEqual(4.5397e-06, GUM.PDF(200),  1e-10);
+
+            var GUM2 = new Gumbel(10, 1);
+            Assert.AreEqual(9.1105e-04, GUM2.PDF(17),  1e-09);
+        }
+
+        /// <summary>
+        /// Testing CDF method at different locations and with different parameters.
+        /// </summary>
+        [TestMethod()]
+        public void Test_CDF()
+        {
+            var GUM = new Gumbel();
+            Assert.AreEqual(0.36787, GUM.CDF(100),  1e-04);
+            Assert.AreEqual(3.5073e-65, GUM.CDF(50),  1e-68);
+            Assert.AreEqual(0,GUM.CDF(-10));
+
+            var GUM2 = new Gumbel(10, 2);
+            Assert.AreEqual(5.11929e-06, GUM2.CDF(5),  1e-10);
+        }
+
+        /// <summary>
+        /// Testing InverseCDF with different probabilities.
+        /// </summary>
+        [TestMethod()]
+        public void Test_InverseCDF()
+        {
+            var GUM = new Gumbel();
+            Assert.AreEqual(double.NegativeInfinity, GUM.InverseCDF(0));
+            Assert.AreEqual(double.PositiveInfinity, GUM.InverseCDF(1));
+            Assert.AreEqual(98.14373, GUM.InverseCDF(0.3),  1e-04);
+            Assert.AreEqual(110.309304, GUM.InverseCDF(0.7),  1e-04);
+        }
+    }
+}

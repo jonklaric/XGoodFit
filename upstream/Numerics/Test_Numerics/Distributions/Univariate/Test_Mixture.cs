@@ -1,0 +1,656 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Numerics;
+using Numerics.Data;
+using Numerics.Distributions;
+
+namespace Distributions.Univariate
+{
+    ///<summary>
+    /// Unit testing for the Mixture distribution. 
+    ///</summary>
+    /// <remarks>
+    /// <para>
+    ///     <b> Authors: </b>
+    ///     <list type="bullet"> 
+    ///     <item> Haden Smith, USACE Risk Management Center, cole.h.smith@usace.army.mil </item>
+    /// </list>
+    /// </para>
+    /// </remarks>
+    [TestClass]
+    public class Test_Mixture
+    {
+        /// <summary>
+        /// Test the PDF and Log PDF with the R 'mistr' package.
+        /// </summary>
+        [TestMethod]
+        public void Test_Mixture_PDF()
+        {
+            var n1 = new Normal(10, 2);
+            var n2 = new Normal(20, 1);
+            var n3 = new Normal(30, 5);
+            var weights = new double[] { 0.3, 0.2, 0.5 };
+            var dists = new IUnivariateDistribution[] { n1, n2, n3 };
+            var mix = new Mixture(weights, dists);
+
+            var xVals = Tools.Sequence(0d, 60d, 1d);
+            var truePDF = new double[] { 0.0000002236155, 0.000002399538, 0.00002008072, 0.000130921, 0.0006648309, 0.002629394, 0.008099041, 0.01942865, 0.0362981, 0.05281569, 0.05985473, 0.05283899, 0.0363568, 0.01955086, 0.008337055, 0.003072727, 0.001483088, 0.002375569, 0.01305772, 0.051944, 0.08518778, 0.05628918, 0.02189028, 0.01585912, 0.01944537, 0.02419737, 0.02896916, 0.03332246, 0.03682701, 0.03910427, 0.03989423, 0.03910427, 0.03682701, 0.03332246, 0.02896916, 0.02419707, 0.01941861, 0.01497275, 0.01109208, 0.007895016, 0.005399097, 0.003547459, 0.002239453, 0.001358297, 0.0007915452, 0.0004431848, 0.0002384088, 0.0001232219, 0.00006119019, 0.00002919469, 0.00001338302, 0.000005894307, 0.000002494247, 0.000001014085, 0.0000003961299, 0.000000148672, 0.00000005361035, 0.00000001857362, 0.000000006182621, 0.00000000197732, 0.0000000006075883 };
+            var trueLogPDF = new double[] { -15.313338, -12.940234, -10.815751, -8.940917, -7.315978, -5.941002, -4.81601, -3.941006, -3.31599, -2.940947, -2.815835, -2.940506, -3.314374, -3.934736, -4.787045, -5.78519, -6.513629, -6.042518, -4.338376, -2.957589, -2.462897, -2.877253, -3.821713, -4.144011, -3.940146, -3.721511, -3.541524, -3.401524, -3.301524, -3.241524, -3.221524, -3.241524, -3.301524, -3.401524, -3.541524, -3.721524, -3.941524, -4.201524, -4.501524, -4.841524, -5.221524, -5.641524, -6.101524, -6.601524, -7.141524, -7.721524, -8.341524, -9.001524, -9.701524, -10.441524, -11.221524, -12.041524, -12.901524, -13.801524, -14.741524, -15.721524, -16.741524, -17.801524, -18.901524, -20.041524, -21.221524 };
+        
+            for (int i = 0; i < xVals.Length; i++)
+            {
+                Assert.AreEqual(truePDF[i], mix.PDF(xVals[i]), 1E-5);
+                Assert.AreEqual(trueLogPDF[i], mix.LogPDF(xVals[i]), 1E-5);
+            }
+        
+        }
+
+        /// <summary>
+        /// Test the CDF and Log CDF with the R 'mistr' package.
+        /// </summary>
+        [TestMethod]
+        public void Test_Mixture_CDF()
+        {
+            var n1 = new Normal(10, 2);
+            var n2 = new Normal(20, 1);
+            var n3 = new Normal(30, 5);
+            var weights = new double[] { 0.3, 0.2, 0.5 };
+            var dists = new IUnivariateDistribution[] { n1, n2, n3 };
+            var mix = new Mixture(weights, dists);
+
+            var xVals = Tools.Sequence(0d, 60d, 1d);
+            var trueCDF = new double[] { 0.00000008648877, 0.00000102096, 0.000009506731, 0.00006980538, 0.0004050192, 0.001863043, 0.006825436, 0.02004322, 0.04759928, 0.09256793, 0.1500158, 0.2074749, 0.252483, 0.2801263, 0.2935185, 0.2988121, 0.3008789, 0.3025308, 0.3086393, 0.3386818, 0.411375, 0.4862341, 0.5228496, 0.5401083, 0.5575285, 0.5793276, 0.6059277, 0.6371266, 0.6722891, 0.7103701, 0.75, 0.7896299, 0.8277109, 0.8628734, 0.8940723, 0.9206724, 0.9424652, 0.9596217, 0.9726004, 0.9820348, 0.9886249, 0.9930483, 0.9959012, 0.9976694, 0.9987224, 0.9993251, 0.9996564, 0.9998315, 0.9999204, 0.9999638, 0.9999842, 0.9999933, 0.9999973, 0.9999989, 0.9999996, 0.9999999, 1, 1, 1, 1, 1 };
+            var trueLogCDF = new double[] { -16.26325, -13.79477, -11.56351, -9.569799, -7.811576, -6.285544, -4.987099, -3.909865, -3.044938, -2.379812, -1.897014, -1.572745, -1.376411, -1.272515, -1.225815, -1.20794, -1.201047, -1.195572, -1.175582, -1.082694, -0.8882501, -0.7210651, -0.6484614, -0.6159855, -0.5842417, -0.5458872, -0.5009946, -0.450787, -0.3970668, -0.3419691, -0.2876821, -0.236191, -0.1890914, -0.1474872, -0.1119686, -0.08265104, -0.05925632, -0.04121617, -0.02778202, -0.01812849, -0.01144026, -0.006976, -0.004107191, -0.002333314, -0.001278382, -0.0006751769, -0.000343628, -0.0001684788, -0.00007955746, -0.00003617468, -0.00001583575, -0.000006672897, -0.000002706276, -0.000001056228, -0.0000003966642, -0.0000001433258, -0.00000004982213, -0.00000001666022, -0.000000005358795, -0.000000001657873, -0.0000000004932939 };
+            
+            for (int i = 0; i < xVals.Length; i++)
+            {
+                Assert.AreEqual(trueCDF[i], mix.CDF(xVals[i]), 1E-5);
+                Assert.AreEqual(trueLogCDF[i], mix.LogCDF(xVals[i]), 1E-5);
+            }
+
+        }
+
+        /// <summary>
+        /// Test the inverse CDF of the mixture.
+        /// </summary>
+        [TestMethod]
+        public void Test_Mixture_InverseCDF()
+        {
+            var n1 = new Normal(10, 2);
+            var n2 = new Normal(20, 1);
+            var n3 = new Normal(30, 5);
+            var weights = new double[] { 0.3, 0.2, 0.5 };
+            var dists = new IUnivariateDistribution[] { n1, n2, n3 };
+            var mix = new Mixture(weights, dists);
+
+            var xVals = Tools.Sequence(0d, 60d, 1d);
+            for (int i = 0; i < xVals.Length; i++)
+            {
+                Assert.AreEqual(xVals[i], mix.InverseCDF(mix.CDF(xVals[i])), 1E-6);
+            }
+
+        }
+
+        /// <summary>
+        /// Test the first two moments of the mixture.
+        /// </summary>
+        [TestMethod]
+        public void Test_Mixture_Moments()
+        {
+            var n1 = new Normal(10, 2);
+            var n2 = new Normal(20, 1);
+            var n3 = new Normal(30, 5);
+            var weights = new double[] { 0.3, 0.2, 0.5 };
+            var dists = new IUnivariateDistribution[] { n1, n2, n3 };
+            var mix = new Mixture(weights, dists);
+
+            // There are known solutions to the mean and standard deviation of a mixture
+            // μ_XYZ= ω_X∙μ_X + ω_Y∙μ_Y + ω_Z∙μ_Z
+            // σ_XYZ= √(ω_X∙(μ_X^2 + σ_X^2) + ω_Y∙(μ_Y^2 + σ_Y^2) + ω_Z∙(μ_Z^2 + σ_Z^2) - μ_XYZ^2)
+            var w = weights;
+            var u = new double[] { n1.Mean, n2.Mean, n3.Mean };
+            var s = new double[] { n1.Variance, n2.Variance, n3.Variance };
+            var trueMean = w[0] * u[0] + w[1] * u[1] + w[2] * u[2];
+            var trueSD = Math.Sqrt(w[0] * (u[0] * u[0] + s[0]) + w[1] * (u[1] * u[1] + s[1]) + w[2] * (u[2] * u[2] + s[2]) - trueMean * trueMean);
+
+            // Numerics computes the moments using numerical integration
+            Assert.AreEqual(trueMean, mix.Mean, 1E-4);
+            Assert.AreEqual(trueSD, mix.StandardDeviation, 1E-4);
+
+        }
+
+        /// <summary>
+        /// Test the MLE fit for a mixture of 2 Normal distributions.
+        /// </summary>
+        [TestMethod]
+        public void Test_2D_Mixture_MLE()
+        {
+            var mix = new Mixture(new[] { 0.3, 0.7 }, new[] { new Normal(0, 1), new Normal(3, 0.1) });
+            var sample = mix.GenerateRandomValues(1000, 12345);
+            mix.Estimate(sample, ParameterEstimationMethod.MaximumLikelihood);
+
+            var w = mix.Weights;
+            var d = mix.Distributions;
+            Array.Sort(w, d);
+
+            // Weights
+            Assert.AreEqual(0.3, w[0], 1E-1);
+            Assert.AreEqual(0.7, w[1], 1E-1);
+            // N1 parameters
+            Assert.AreEqual(0.0, d[0].GetParameters[0], 1E-1);
+            Assert.AreEqual(1.0, d[0].GetParameters[1], 1E-1);
+            // N2 parameters
+            Assert.AreEqual(3.0, d[1].GetParameters[0], 1E-1);
+            Assert.AreEqual(0.1, d[1].GetParameters[1], 1E-1);
+
+        }
+
+        /// <summary>
+        /// Test the MLE fit for a zero-inflated mixture of 2 Normal distributions.
+        /// </summary>
+        [TestMethod]
+        public void Test_2D_Mixture_MLE_ZeroInflated()
+        {
+            var mix = new Mixture(new[] { 0.3, 0.6 }, new[] { new Normal(3, 0.1), new Normal(5, 2) });
+            mix.IsZeroInflated = true;
+            mix.ZeroWeight = 0.1;
+            var sample = mix.GenerateRandomValues(1000, 12345);
+            mix.Estimate(sample, ParameterEstimationMethod.MaximumLikelihood);
+
+            var w = mix.Weights;
+            var d = mix.Distributions;
+            Array.Sort(w, d);
+
+            // Weights
+            Assert.AreEqual(0.3, w[0], 1E-1);
+            Assert.AreEqual(0.6, w[1], 1E-1);
+            // N1 parameters
+            Assert.AreEqual(3.0, d[0].GetParameters[0], 1E-1);
+            Assert.AreEqual(0.1, d[0].GetParameters[1], 1E-1);
+            // N2 parameters
+            Assert.AreEqual(5.0, d[1].GetParameters[0], 1E-1);
+            Assert.AreEqual(2.0, d[1].GetParameters[1], 1E-1);
+
+        }
+
+        /// <summary>
+        /// Test the MLE fit for a mixture of 3 Normal distributions.
+        /// </summary>
+        [TestMethod]
+        public void Test_3D_Mixture_MLE()
+        {
+            var mix = new Mixture(new[] { 0.2, 0.3, 0.5 }, new[] { new Normal(0, 1), new Normal(3, 0.1), new Normal(5, 2) });
+            var sample = mix.GenerateRandomValues(1000, 12345);
+            mix.Estimate(sample, ParameterEstimationMethod.MaximumLikelihood);
+
+            var w = mix.Weights;
+            var d = mix.Distributions;
+            Array.Sort(w, d);
+
+            // Weights
+            Assert.AreEqual(0.2, w[0], 1E-1);
+            Assert.AreEqual(0.3, w[1], 1E-1);
+            Assert.AreEqual(0.5, w[2], 1E-1);
+            // N1 parameters
+            Assert.AreEqual(0.0, d[0].GetParameters[0], 1E-1);
+            Assert.AreEqual(1.0, d[0].GetParameters[1], 1E-1);
+            // N2 parameters
+            Assert.AreEqual(3.0, d[1].GetParameters[0], 1E-1);
+            Assert.AreEqual(0.1, d[1].GetParameters[1], 1E-1);
+            // N3 parameters
+            Assert.AreEqual(5.0, d[2].GetParameters[0], 1E-1);
+            Assert.AreEqual(2.0, d[2].GetParameters[1], 1E-1);
+
+        }
+
+        /// <summary>
+        /// Test the inverse CDF of a zero-inflated mixture.
+        /// </summary>
+        [TestMethod]
+        public void Test_Mixture_InverseCDF_ZeroInflated()
+        {
+            // Test with 2 components and zero-inflation
+            var mix = new Mixture(new[] { 0.3, 0.6 }, new[] { new Normal(3, 0.1), new Normal(5, 2) });
+            mix.IsZeroInflated = true;
+            mix.ZeroWeight = 0.1;
+
+            // For probability <= ZeroWeight, InverseCDF should return 0
+            Assert.AreEqual(0, mix.InverseCDF(0.05));
+            Assert.AreEqual(0, mix.InverseCDF(0.1));
+
+            // For probability > ZeroWeight, verify InverseCDF inverts CDF
+            var xVals = Tools.Sequence(0.1d, 15d, 0.5d);
+            for (int i = 0; i < xVals.Length; i++)
+            {
+                double p = mix.CDF(xVals[i]);
+                if (p > mix.ZeroWeight && p < 1.0)
+                {
+                    Assert.AreEqual(xVals[i], mix.InverseCDF(p), 1E-4);
+                }
+            }
+
+            // Test with 1 component and zero-inflation
+            var mix1 = new Mixture(new[] { 0.7 }, new[] { new Normal(10, 2) });
+            mix1.IsZeroInflated = true;
+            mix1.ZeroWeight = 0.3;
+
+            // For probability <= ZeroWeight, InverseCDF should return 0
+            Assert.AreEqual(0, mix1.InverseCDF(0.15));
+            Assert.AreEqual(0, mix1.InverseCDF(0.3));
+
+            // For probability > ZeroWeight, verify InverseCDF inverts CDF
+            var xVals1 = Tools.Sequence(1d, 20d, 0.5d);
+            for (int i = 0; i < xVals1.Length; i++)
+            {
+                double p = mix1.CDF(xVals1[i]);
+                if (p > mix1.ZeroWeight && p < 1.0)
+                {
+                    Assert.AreEqual(xVals1[i], mix1.InverseCDF(p), 1E-4);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Test that enabling zero inflation rescales component weights to the remaining mass.
+        /// </summary>
+        [TestMethod]
+        public void Test_Mixture_ZeroInflation_RescalesComponentWeights()
+        {
+            var mix = new Mixture(
+                new[] { 0.25, 0.75 },
+                new UnivariateDistributionBase[] { new Normal(0, 1), new Normal(5, 2) });
+
+            mix.ZeroWeight = 0.2;
+            mix.IsZeroInflated = true;
+
+            Assert.IsTrue(mix.ParametersValid);
+            Assert.AreEqual(0.2, mix.Weights[0], 1E-12);
+            Assert.AreEqual(0.6, mix.Weights[1], 1E-12);
+            Assert.AreEqual(1.0, mix.ZeroWeight + mix.Weights[0] + mix.Weights[1], 1E-12);
+
+            mix.IsZeroInflated = false;
+
+            Assert.IsFalse(mix.ParametersValid);
+        }
+
+        /// <summary>
+        /// Test that cloning preserves a valid zero-inflated mixture and its evaluated values.
+        /// </summary>
+        [TestMethod]
+        public void Test_Mixture_Clone_PreservesZeroInflation()
+        {
+            var mix = new Mixture(
+                new[] { 1.0 },
+                new UnivariateDistributionBase[] { new Normal(100, 10) })
+            {
+                IsZeroInflated = true,
+                ZeroWeight = 0.5
+            };
+
+            var clone = (Mixture)mix.Clone();
+
+            Assert.IsTrue(mix.ParametersValid);
+            Assert.IsTrue(clone.ParametersValid);
+            Assert.IsTrue(clone.IsZeroInflated);
+            Assert.AreEqual(0.5, mix.Weights[0], 1E-12);
+            Assert.AreEqual(mix.ZeroWeight, clone.ZeroWeight, 0.0);
+            Assert.AreEqual(mix.Weights[0], clone.Weights[0], 0.0);
+            Assert.AreEqual(mix.PDF(100.0), clone.PDF(100.0), 1E-12);
+            Assert.AreEqual(mix.CDF(100.0), clone.CDF(100.0), 1E-12);
+            Assert.AreNotSame(mix.Distributions[0], clone.Distributions[0]);
+        }
+
+        /// <summary>
+        /// Test that a mixture with no component support at x returns log(0).
+        /// </summary>
+        [TestMethod]
+        public void Test_Mixture_LogPDF_InvalidSupport_ReturnsNegativeInfinity()
+        {
+            var mix = new Mixture(new[] { 1.0 }, new[] { new Exponential(1.0) });
+
+            Assert.AreEqual(double.NegativeInfinity, mix.LogPDF(-1.0));
+        }
+
+        /// <summary>
+        /// Test that the empirical CDF spans unbounded-below components with finite tail quantiles.
+        /// The stratification grid must open at a finite lower tail quantile of the components
+        /// rather than the distribution minimum of negative infinity, so quantile lookups on the
+        /// interpolated table return finite values.
+        /// </summary>
+        [TestMethod]
+        public void Test_Mixture_CreateEmpiricalCDF_FiniteQuantilesForUnboundedComponents()
+        {
+            var mix = new Mixture(new[] { 0.45, 0.55 }, new UnivariateDistributionBase[] { new Normal(100, 20), new Normal(60, 15) });
+            mix.CreateEmpiricalCDF();
+
+            double median = mix.InverseCDF(0.5);
+            Assert.IsTrue(Tools.IsFinite(median));
+            // The exact median lies strictly inside (60, 100): CDF(60) ≈ 0.285 and CDF(100) ≈ 0.773.
+            Assert.IsTrue(median > 60.0 && median < 100.0);
+            Assert.IsTrue(Tools.IsFinite(mix.InverseCDF(0.001)));
+            Assert.IsTrue(Tools.IsFinite(mix.InverseCDF(0.999)));
+        }
+
+        /// <summary>
+        /// Verifies that every public setter family copies caller-owned arrays and lists.
+        /// </summary>
+        [TestMethod]
+        public void Test_Mixture_Setters_DoNotMutateOrAliasCallerArrays()
+        {
+            var constructorWeights = new[] { 0.4, 0.6 };
+            var constructorDistributions = new UnivariateDistributionBase[]
+            {
+                new Normal(0.0, 1.0),
+                new Normal(3.0, 1.0)
+            };
+            var mixture = new Mixture(constructorWeights, constructorDistributions);
+            constructorWeights[0] = 0.9;
+            constructorDistributions[0] = new Normal(10.0, 1.0);
+            Assert.AreEqual(0.4, mixture.Weights[0], 0.0);
+            Assert.AreEqual(0.0, mixture.Distributions[0].Mean, 0.0);
+
+            var baseWeights = new[] { 0.25, 0.75 };
+            var baseDistributions = new UnivariateDistributionBase[]
+            {
+                new Normal(1.0, 1.0),
+                new Normal(4.0, 1.0)
+            };
+            mixture.SetParameters(baseWeights, baseDistributions);
+            baseWeights[0] = 0.8;
+            baseDistributions[0] = new Normal(20.0, 1.0);
+            Assert.AreEqual(0.25, mixture.Weights[0], 0.0);
+            Assert.AreEqual(1.0, mixture.Distributions[0].Mean, 0.0);
+
+            var interfaceWeights = new[] { 0.3, 0.7 };
+            var interfaceDistributions = new IUnivariateDistribution[]
+            {
+                new Normal(2.0, 1.0),
+                new Normal(5.0, 1.0)
+            };
+            mixture.SetParameters(interfaceWeights, interfaceDistributions);
+            interfaceWeights[0] = 0.6;
+            interfaceDistributions[0] = new Normal(30.0, 1.0);
+            Assert.AreEqual(0.3, mixture.Weights[0], 0.0);
+            Assert.AreEqual(2.0, mixture.Distributions[0].Mean, 0.0);
+
+            var parameterWeights = new[] { 0.2, 0.8 };
+            var distributionParameters = new[] { 6.0, 1.0, 9.0, 2.0 };
+            mixture.SetParameters(parameterWeights, distributionParameters);
+            parameterWeights[0] = 0.5;
+            distributionParameters[0] = 60.0;
+            Assert.AreEqual(0.2, mixture.Weights[0], 0.0);
+            Assert.AreEqual(6.0, mixture.Distributions[0].GetParameters[0], 0.0);
+
+            var listParameters = new List<double> { 0.35, 0.65, 7.0, 1.0, 10.0, 2.0 };
+            double[] listSnapshot = listParameters.ToArray();
+            mixture.SetParameters(listParameters);
+            CollectionAssert.AreEqual(listSnapshot, listParameters);
+            listParameters[0] = 0.9;
+            Assert.AreEqual(0.35, mixture.Weights[0], 0.0);
+
+            var referencedParameters = new[] { 2.0, 6.0, 8.0, 1.0, 11.0, 2.0 };
+            double[] referencedSnapshot = referencedParameters.ToArray();
+            mixture.SetParameters(ref referencedParameters);
+            CollectionAssert.AreEqual(referencedSnapshot, referencedParameters);
+            Assert.AreEqual(0.25, mixture.Weights[0], 1E-15);
+            Assert.AreEqual(0.75, mixture.Weights[1], 1E-15);
+        }
+
+        /// <summary>
+        /// Verifies ordinary and zero-inflated physical-simplex validation.
+        /// </summary>
+        [TestMethod]
+        public void Test_Mixture_ValidatesConfiguredPhysicalSimplex()
+        {
+            var ordinary = new Mixture(
+                new[] { 0.4, 0.4 },
+                new UnivariateDistributionBase[] { new Normal(0.0, 1.0), new Normal(3.0, 1.0) });
+            Assert.IsFalse(ordinary.ParametersValid);
+            Assert.Throws<ArgumentOutOfRangeException>(() => ordinary.PDF(1.0));
+
+            var zeroInflated = new Mixture(
+                new[] { 0.5, 0.5 },
+                new UnivariateDistributionBase[] { new Normal(0.0, 1.0), new Normal(3.0, 1.0) })
+            {
+                IsZeroInflated = true,
+                ZeroWeight = 0.1
+            };
+            Assert.IsTrue(zeroInflated.ParametersValid);
+            zeroInflated.SetParameters(
+                new[] { 0.4, 0.4 },
+                new UnivariateDistributionBase[] { new Normal(0.0, 1.0), new Normal(3.0, 1.0) });
+            Assert.IsFalse(zeroInflated.ParametersValid);
+            Assert.Throws<ArgumentOutOfRangeException>(() => zeroInflated.CDF(1.0));
+
+            zeroInflated.ZeroWeight = 1.0;
+            Assert.IsFalse(zeroInflated.ParametersValid);
+        }
+
+        /// <summary>
+        /// Verifies the analytical positive-hurdle Normal density, distribution, log, and quantile identities.
+        /// </summary>
+        [TestMethod]
+        public void Test_Mixture_ZeroInflatedNormal_UsesPositiveHurdleIdentities()
+        {
+            var normal = new Normal(0.0, 1.0);
+            var mixture = new Mixture(new[] { 1.0 }, new UnivariateDistributionBase[] { normal })
+            {
+                IsZeroInflated = true,
+                ZeroWeight = 0.2
+            };
+
+            const double x = 1.3;
+            double positiveMass = normal.CCDF(0.0);
+            double expectedPdf = 0.8 * normal.PDF(x) / positiveMass;
+            double expectedCdf = 0.2 + 0.8 * (normal.CDF(x) - normal.CDF(0.0)) / positiveMass;
+            double expectedCcdf = 0.8 * normal.CCDF(x) / positiveMass;
+
+            Assert.AreEqual(expectedPdf, mixture.PDF(x), 1E-14);
+            Assert.AreEqual(Math.Log(expectedPdf), mixture.LogPDF(x), 1E-14);
+            Assert.AreEqual(expectedCdf, mixture.CDF(x), 1E-14);
+            Assert.AreEqual(Math.Log(expectedCdf), mixture.LogCDF(x), 1E-14);
+            Assert.AreEqual(Math.Log(expectedCcdf), mixture.LogCCDF(x), 1E-14);
+
+            const double probability = 0.6;
+            double conditionalProbability = (probability - 0.2) / 0.8;
+            double expectedQuantile = normal.InverseCDF(normal.CDF(0.0) + conditionalProbability * positiveMass);
+            Assert.AreEqual(expectedQuantile, mixture.InverseCDF(probability), 1E-6);
+        }
+
+        /// <summary>
+        /// Verifies the positive-hurdle CDF uses a component's retained survival probability
+        /// when its CDF has rounded to one.
+        /// </summary>
+        [TestMethod]
+        public void Test_Mixture_ZeroInflatedCDF_UsesSurvivalRatio()
+        {
+            var distribution = new TailAwareDistribution();
+            var mixture = new Mixture(new[] { 1.0 }, new UnivariateDistributionBase[] { distribution })
+            {
+                IsZeroInflated = true,
+                ZeroWeight = 0.0
+            };
+
+            double expected = 1.0 - distribution.CCDF(1.0) / distribution.CCDF(0.0);
+
+            Assert.AreEqual(0.5, expected, 0.0);
+            // Logarithmic normalization introduces only final binary64 rounding.
+            Assert.AreEqual(expected, mixture.CDF(1.0), 2E-15);
+            Assert.IsTrue(mixture.CDF(1.0) >= 0.0 && mixture.CDF(1.0) <= 1.0);
+        }
+
+        /// <summary>
+        /// Verifies the atom at zero and absence of negative support under the hurdle model.
+        /// </summary>
+        [TestMethod]
+        public void Test_Mixture_ZeroInflatedModel_HasZeroJumpAndNoNegativeSupport()
+        {
+            var mixture = new Mixture(
+                new[] { 1.0 },
+                new UnivariateDistributionBase[] { new Normal(0.0, 1.0) })
+            {
+                IsZeroInflated = true,
+                ZeroWeight = 0.2
+            };
+
+            Assert.AreEqual(0.0, mixture.PDF(-1.0), 0.0);
+            Assert.AreEqual(double.NegativeInfinity, mixture.LogPDF(-1.0));
+            Assert.AreEqual(0.0, mixture.CDF(-1.0), 0.0);
+            Assert.AreEqual(0.2, mixture.PDF(0.0), 0.0);
+            Assert.AreEqual(Math.Log(0.2), mixture.LogPDF(0.0), 0.0);
+            Assert.AreEqual(0.2, mixture.CDF(0.0), 0.0);
+            Assert.AreEqual(Math.Log(0.8), mixture.LogCCDF(0.0), 1E-15);
+            Assert.AreEqual(0.0, mixture.InverseCDF(0.2), 0.0);
+        }
+
+        /// <summary>
+        /// Verifies simulation uses the atom and strictly positive conditioned components.
+        /// </summary>
+        [TestMethod]
+        public void Test_Mixture_ZeroInflatedSimulation_UsesAtomAndPositiveConditioning()
+        {
+            var mixture = new Mixture(
+                new[] { 1.0 },
+                new UnivariateDistributionBase[] { new Normal(0.0, 1.0) })
+            {
+                IsZeroInflated = true,
+                ZeroWeight = 0.2
+            };
+
+            double[] sample = mixture.GenerateRandomValues(20000, 12345);
+            double atomFrequency = sample.Count(value => value == 0.0) / (double)sample.Length;
+
+            Assert.AreEqual(0.2, atomFrequency, 0.015);
+            Assert.IsFalse(sample.Any(value => value < 0.0));
+            Assert.IsTrue(sample.Any(value => value > 0.0));
+        }
+
+        /// <summary>
+        /// Verifies a hurdle component must have finite, nonzero probability above zero.
+        /// </summary>
+        [TestMethod]
+        public void Test_Mixture_ZeroInflatedModel_RejectsComponentWithoutPositiveMass()
+        {
+            var mixture = new Mixture(
+                new[] { 1.0 },
+                new UnivariateDistributionBase[] { new Deterministic(0.0) });
+            mixture.ZeroWeight = 0.2;
+            mixture.IsZeroInflated = true;
+
+            Assert.IsFalse(mixture.ParametersValid);
+            ArgumentOutOfRangeException exception =
+                Assert.Throws<ArgumentOutOfRangeException>(() => mixture.PDF(1.0));
+            StringAssert.Contains(exception.Message, "positive probability above zero");
+        }
+
+        /// <summary>
+        /// Verifies zero-inflated EM rejects negative exact observations with row context.
+        /// </summary>
+        [TestMethod]
+        public void Test_Mixture_ZeroInflatedEM_RejectsNegativeExactObservationWithRowContext()
+        {
+            var mixture = new Mixture(
+                new[] { 1.0 },
+                new UnivariateDistributionBase[] { new Normal(1.0, 1.0) })
+            {
+                IsZeroInflated = true,
+                ZeroWeight = 0.1
+            };
+
+            InvalidOperationException exception =
+                Assert.Throws<InvalidOperationException>(() => mixture.MLE(new[] { 1.0, -2.5, 2.0 }));
+            StringAssert.Contains(exception.Message, "row 1");
+            StringAssert.Contains(exception.Message, "-2.5");
+        }
+
+        /// <summary>
+        /// Verifies EM reports an impossible row instead of silently continuing.
+        /// </summary>
+        [TestMethod]
+        public void Test_Mixture_EM_ImpossibleRowThrowsWithRowContext()
+        {
+            var mixture = new Mixture(
+                new[] { 1.0 },
+                new UnivariateDistributionBase[] { new Normal(1.0, 1.0) })
+            {
+                IsZeroInflated = true,
+                ZeroWeight = 0.0
+            };
+
+            InvalidOperationException exception =
+                Assert.Throws<InvalidOperationException>(() => mixture.MLE(new[] { 0.0, 1.0, 2.0 }));
+            StringAssert.Contains(exception.Message, "row 0");
+            StringAssert.Contains(exception.Message, "value 0");
+            StringAssert.Contains(exception.Message, "zero or nonfinite");
+        }
+
+        /// <summary>
+        /// Verifies ordinary mixture EM reports an observation outside every component support.
+        /// </summary>
+        [TestMethod]
+        public void Test_Mixture_EM_ObservationOutsideAllComponentSupportsThrowsWithRowContext()
+        {
+            var mixture = new Mixture(
+                new[] { 1.0 },
+                new UnivariateDistributionBase[] { new Weibull(1.0, 2.0) });
+
+            InvalidOperationException exception =
+                Assert.Throws<InvalidOperationException>(() => mixture.MLE(new[] { -1.0, 1.0, 2.0 }));
+            StringAssert.Contains(exception.Message, "row 0");
+            StringAssert.Contains(exception.Message, "value -1");
+            StringAssert.Contains(exception.Message, "zero or nonfinite");
+        }
+
+        /// <summary>
+        /// The empirical machinery under the hood is unchanged by the extrapolation property:
+        /// the internal empirical CDF keeps its default far-tail endpoint hold, no extrapolation
+        /// attribute appears in the serialized form, and an extension-enabled empirical child
+        /// governs itself through the mixture's direct CDF.
+        /// </summary>
+        [TestMethod]
+        public void Test_Mixture_EmpiricalUnderTheHood_NoRegression()
+        {
+            var mixture = new Mixture(new[] { 0.4d, 0.6d }, new UnivariateDistributionBase[] { new Normal(10, 2), new Normal(20, 3) });
+            mixture.CreateEmpiricalCDF();
+            // 1 - 1E-17 rounds to exactly 1.0, which takes the container's own support guard —
+            // so the far-tail hold is probed at the guard floor and the last double below one.
+            double low = mixture.InverseCDF(1E-17);
+            double high = mixture.InverseCDF(1d - 1E-16);
+            Assert.IsFalse(double.IsNaN(low) || double.IsInfinity(low));
+            Assert.IsFalse(double.IsNaN(high) || double.IsInfinity(high));
+            Assert.AreEqual(low, mixture.InverseCDF(1E-16), 0d);
+            Assert.DoesNotContain("Extrapolation", mixture.ToXElement().ToString());
+
+            // A policy-carrying empirical child composes through the mixture unchanged.
+            var child = new EmpiricalDistribution(new[] { 100d, 200d, 300d }, new[] { 0.1d, 0.5d, 0.9d })
+            {
+                Extrapolation = ExtrapolationSides.Both
+            };
+            var single = new Mixture(new[] { 1d }, new UnivariateDistributionBase[] { child });
+            Assert.AreEqual(child.CDF(400d), single.CDF(400d), 1E-12);
+            Assert.IsLessThan(1d, single.CDF(400d));
+        }
+
+        /// <summary>
+        /// Test distribution whose direct survival function retains a tail that its CDF cannot
+        /// represent after subtraction from one.
+        /// </summary>
+        private sealed class TailAwareDistribution : Cauchy
+        {
+            /// <inheritdoc/>
+            public override double CDF(double x)
+            {
+                return x <= 0.0 ? 0.9999999999999999 : 1.0;
+            }
+
+            /// <inheritdoc/>
+            public override double CCDF(double x)
+            {
+                return x <= 0.0 ? 1E-16 : 5E-17;
+            }
+        }
+
+    }
+}

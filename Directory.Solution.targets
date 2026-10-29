@@ -1,5 +1,0 @@
-<Project InitialTargets="XGoodFitCheckUpstream">
-
-  <Import Project="build/CheckUpstream.targets" />
-
-</Project>

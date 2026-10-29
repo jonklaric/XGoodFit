@@ -1,0 +1,82 @@
+<!-- FrameworkUI.Demo - Demo application for FrameworkUI -->
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <RootNamespace>FrameworkUI.Demo</RootNamespace>
+    <AssemblyName>FrameworkUI.Demo</AssemblyName>
+    <Description>A demonstration application for the FrameworkUI WPF framework, showcasing project management, AvalonDock layout, theming, and standard controls.</Description>
+    <Company>U.S. Army Corps of Engineers</Company>
+    <AssemblyTitle>WPF Framework Demo</AssemblyTitle>
+    <Product>WPF Framework Demo</Product>
+    <Version>1.0.0</Version>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <FileVersion>1.0.0.0</FileVersion>
+    <ApplicationIcon>Resources\FrameworkUIDemo.ico</ApplicationIcon>
+    <Nullable>disable</Nullable>
+    <UseWPF>true</UseWPF>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+  </PropertyGroup>
+
+  <ItemGroup>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DatabaseControls\DatabaseControls.csproj" />
+    <ProjectReference Include="..\ExpressionParserControls\ExpressionParserControls.csproj" />
+    <ProjectReference Include="..\FrameworkInterfaces\FrameworkInterfaces.csproj" />
+    <ProjectReference Include="..\FrameworkUI\FrameworkUI.csproj" />
+    <ProjectReference Include="..\GenericControls\GenericControls.csproj" />
+    <ProjectReference Include="..\NumericControls\NumericControls.csproj" />
+    <ProjectReference Include="..\OxyPlotControls\OxyPlotControls.csproj" />
+    <ProjectReference Include="..\Themes\Themes.csproj" />
+    <ProjectReference Include="..\SoftwareUpdate\SoftwareUpdate.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Properties\Settings.Designer.cs">
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Resources\*.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="RMC.Numerics" />
+    <ProjectReference Include="..\OxyPlot\OxyPlot\OxyPlot.csproj" />
+    <ProjectReference Include="..\OxyPlot\OxyPlot.Wpf\OxyPlot.Wpf.csproj" />
+    <ProjectReference Include="..\OxyPlot\OxyPlot.Wpf.Shared\OxyPlot.Wpf.Shared.csproj" />
+  </ItemGroup>
+
+  <!-- Post-build: Move supporting files to libraries subfolder and clean up -->
+  <Target Name="MoveToLibraries" AfterTargets="Build">
+    <ItemGroup>
+      <LibraryDlls Include="$(OutputPath)*.dll" Exclude="$(OutputPath)$(AssemblyName).dll" />
+      <LibraryPdbs Include="$(OutputPath)*.pdb" Exclude="$(OutputPath)$(AssemblyName).pdb" />
+      <LibraryXmls Include="$(OutputPath)*.xml" />
+      <LibraryConfigs Include="$(OutputPath)*.dll.config" />
+    </ItemGroup>
+    <MakeDir Directories="$(OutputPath)libraries" />
+    <Move SourceFiles="@(LibraryDlls)" DestinationFolder="$(OutputPath)libraries" />
+    <Move SourceFiles="@(LibraryPdbs)" DestinationFolder="$(OutputPath)libraries" />
+    <Move SourceFiles="@(LibraryXmls)" DestinationFolder="$(OutputPath)libraries" />
+    <Move SourceFiles="@(LibraryConfigs)" DestinationFolder="$(OutputPath)libraries" />
+    <!-- Remove AvalonDock satellite assembly locale folders (not needed for English-only apps) -->
+    <RemoveDir Directories="$(OutputPath)cs-CZ;$(OutputPath)de;$(OutputPath)es;$(OutputPath)fr;$(OutputPath)hu;$(OutputPath)it;$(OutputPath)ja-JP;$(OutputPath)nl-BE;$(OutputPath)pt-BR;$(OutputPath)ro;$(OutputPath)ru;$(OutputPath)sv;$(OutputPath)zh-Hans" />
+  </Target>
+
+</Project>

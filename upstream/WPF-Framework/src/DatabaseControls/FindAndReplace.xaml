@@ -1,0 +1,34 @@
+<cntrls:MetroWindow x:Class="DatabaseControls.FindAndReplace"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:DatabaseControls"
+        xmlns:cntrls="clr-namespace:GenericControls;assembly=GenericControls"
+        Title="Find" SizeToContent="WidthAndHeight" ResizeMode="NoResize">
+    <Grid Margin="5">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="1*"/>
+            <RowDefinition Height="26"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Name="FindTextPanel" Orientation="Vertical" Grid.Row="0">
+            <Label Content="Find:" HorizontalAlignment="Left" Name="FindLabel" />
+            <TextBox Height="23" HorizontalAlignment="Left" Name="FindText" Width="254" TextChanged="FindText_TextChanged"/>
+        </StackPanel>
+
+        <GroupBox Header="Options" Grid.Row="1" Name="FindOptions" Margin="0,0,0,5" Width="254">
+            <StackPanel Orientation="Vertical">
+                <CheckBox Content="Match Case" Height="16" Name="MatchCaseCheckbox" Margin="0,3,0,0" />
+                <CheckBox Content="Match Entire Text" Height="16" Name="MatchWordCheckbox" />
+            </StackPanel>
+        </GroupBox>
+        <Grid Grid.Row="2" Margin="5,0,0,0" HorizontalAlignment="Right">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <Button Content="Find Previous" Grid.Column="0" Height="23" HorizontalAlignment="Right" Name="FindPreviousButton" VerticalAlignment="Center" Width="87" Margin="0,0,5,0" Click="FindPreviousButton_Click"/>
+            <Button Content="Find Next" Grid.Column="1" Height="23" HorizontalAlignment="Right" Name="FindNextButton" VerticalAlignment="Center" Width="75" Click="FindNextButton_Click"/>
+        </Grid>
+    </Grid>
+</cntrls:MetroWindow>

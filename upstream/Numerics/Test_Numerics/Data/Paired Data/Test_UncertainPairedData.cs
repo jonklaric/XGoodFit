@@ -1,0 +1,318 @@
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Numerics.Data;
+using Numerics.Distributions;
+using System.Collections.Generic;
+using System.Linq;
+using System.Xml.Linq;
+
+namespace Data.PairedData
+{
+    /// <summary>
+    /// Unit tests for the UncertainOrderedPairedData class
+    /// </summary>
+    /// <remarks>
+    ///      <b> Authors: </b>
+    /// <list type="bullet">
+    /// <item><description>
+    ///     Haden Smith, USACE Risk Management Center, cole.h.smith@usace.army.mil
+    /// </description></item>
+    /// <item><description>
+    ///     Sadie Niblett, USACE Risk Management Center, sadie.s.niblett@usace.army.mil
+    /// </description></item>
+    /// </list>
+    /// </remarks>
+    [TestClass]
+    public class Test_UncertainPairedData
+    {
+        private readonly UncertainOrderedPairedData _dataset1;
+        private readonly UncertainOrderedPairedData _dataset2;
+        private readonly UncertainOrderedPairedData _dataset3;
+        private readonly UncertainOrderedPairedData _dataset4;
+
+        /// <summary>
+        /// Creating a set of UncertainOrderedPairObjects to run tests on
+        /// </summary>
+        public Test_UncertainPairedData()
+        {
+            double[] xVals = new double[] { 1, 2, 3, 5 };
+            UnivariateDistributionBase[] yVals = new UnivariateDistributionBase[] { new Triangular(1, 2, 3), new Triangular(2, 4, 5), new Triangular(6, 8, 12), new Triangular(13, 19, 20) };
+
+            _dataset1 = new UncertainOrderedPairedData(xVals, yVals, true, SortOrder.Ascending, true, SortOrder.Ascending, UnivariateDistributionType.Triangular);
+            _dataset2 = new UncertainOrderedPairedData(Enumerable.Reverse(xVals).ToArray(), yVals, true, SortOrder.Descending, true, SortOrder.Ascending, UnivariateDistributionType.Triangular);
+            _dataset3 = new UncertainOrderedPairedData(xVals, Enumerable.Reverse(yVals).ToArray(), true, SortOrder.Ascending, true, SortOrder.Descending, UnivariateDistributionType.Triangular);
+            _dataset4 = new UncertainOrderedPairedData(Enumerable.Reverse(xVals).ToArray(), Enumerable.Reverse(yVals).ToArray(), true, SortOrder.Descending, true, SortOrder.Descending, UnivariateDistributionType.Triangular);
+        }
+
+        /// <summary>
+        /// Test method the SaveToXElement(), which saves the UncertainOrderedPairedData object as an XElement, 
+        /// and test the conversion back to an OrderPairedData object from an XElement object
+        /// </summary>
+        [TestMethod]
+        public void Test_ReadWriteXElement()
+        {
+            var el1 = _dataset1.SaveToXElement();
+            var el2 = _dataset2.SaveToXElement();
+            var el3 = _dataset3.SaveToXElement();
+            var el4 = _dataset4.SaveToXElement();
+
+            UncertainOrderedPairedData newDataset1 = new UncertainOrderedPairedData(el1);
+            UncertainOrderedPairedData newDataset2 = new UncertainOrderedPairedData(el2);
+            UncertainOrderedPairedData newDataset3 = new UncertainOrderedPairedData(el3);
+            UncertainOrderedPairedData newDataset4 = new UncertainOrderedPairedData(el4);
+
+            Assert.IsTrue(_dataset1 == newDataset1);
+            Assert.IsTrue(_dataset2 == newDataset2);
+            Assert.IsTrue(_dataset3 == newDataset3);
+            Assert.IsTrue(_dataset4 == newDataset4);
+        }
+
+        /// <summary>
+        /// Test the CurveSample() method
+        /// </summary>
+        [TestMethod]
+        public void Test_CurveSample()
+        {
+            OrderedPairedData data1 = _dataset1.CurveSample();
+            OrderedPairedData data2 = _dataset2.CurveSample();
+            OrderedPairedData data3 = _dataset3.CurveSample();
+            OrderedPairedData data4 = _dataset4.CurveSample();
+
+            double[] xVals = new double[] { 1, 2, 3, 5 };
+            // mean = (min + max + mode) / 3
+            double[] yMeanVals = new double[] { 2, 3.66667, 8.66667, 17.33333 };
+
+            var data1Expected = new OrderedPairedData(xVals, yMeanVals, true, SortOrder.Ascending, true, SortOrder.Ascending);
+            var data2Expected = new OrderedPairedData(Enumerable.Reverse(xVals).ToArray(), yMeanVals, true, SortOrder.Descending, true, SortOrder.Ascending);
+            var data3Expected = new OrderedPairedData(xVals, Enumerable.Reverse(yMeanVals).ToArray(), true, SortOrder.Ascending, true, SortOrder.Descending);
+            var data4Expected = new OrderedPairedData(Enumerable.Reverse(xVals).ToArray(), Enumerable.Reverse(yMeanVals).ToArray(), true, SortOrder.Descending, true, SortOrder.Descending);
+
+            for (int i = 0; i < data1.Count; i++)
+            {
+                Assert.AreEqual(data1Expected[i].X, data1[i].X, 1E-5);
+                Assert.AreEqual(data1Expected[i].Y, data1[i].Y, 1E-5);
+
+                Assert.AreEqual(data2Expected[i].X, data2[i].X, 1E-5);
+                Assert.AreEqual(data2Expected[i].Y, data2[i].Y, 1E-5);
+
+                Assert.AreEqual(data3Expected[i].X, data3[i].X, 1E-5);
+                Assert.AreEqual(data3Expected[i].Y, data3[i].Y, 1E-5);
+
+                Assert.AreEqual(data4Expected[i].X, data4[i].X, 1E-5);
+                Assert.AreEqual(data4Expected[i].Y, data4[i].Y, 1E-5);
+            }
+        }
+
+        /// <summary>
+        /// Test the CurveSample() method that takes a probability sample. The output values were tested against R's "qtri()" function from the 
+        /// "EnvStats" package which calculates the inverse cdf of the triangular distribution.
+        /// </summary>
+        /// <remarks>
+        /// <b> References: </b>
+        /// Millard SP (2013). EnvStats: An R Package for Environmental Statistics. Springer, New York.
+        /// </remarks>
+        [TestMethod]
+        public void Test_Curve_Sample_Probability()
+        {
+            OrderedPairedData data1 = _dataset1.CurveSample(0.5);
+            OrderedPairedData data2 = _dataset2.CurveSample(0.5);
+            OrderedPairedData data3 = _dataset3.CurveSample(0.5);
+            OrderedPairedData data4 = _dataset4.CurveSample(0.5);
+
+            double[] xVals = new double[] { 1, 2, 3, 5 };
+            // inverse cdf at the given probability (0.5)
+            double[] yInverseVals = new double[] { 2, 3.732051, 8.535898, 17.58258 };
+
+            var data1Expected = new OrderedPairedData(xVals, yInverseVals, true, SortOrder.Ascending, true, SortOrder.Ascending);
+            var data2Expected = new OrderedPairedData(Enumerable.Reverse(xVals).ToArray(), yInverseVals, true, SortOrder.Descending, true, SortOrder.Ascending);
+            var data3Expected = new OrderedPairedData(xVals, Enumerable.Reverse(yInverseVals).ToArray(), true, SortOrder.Ascending, true, SortOrder.Descending);
+            var data4Expected = new OrderedPairedData(Enumerable.Reverse(xVals).ToArray(), Enumerable.Reverse(yInverseVals).ToArray(), true, SortOrder.Descending, true, SortOrder.Descending);
+
+            for (int i = 0; i < data1.Count; i++)
+            {
+                Assert.AreEqual(data1Expected[i].X, data1[i].X, 1E-5);
+                Assert.AreEqual(data1Expected[i].Y, data1[i].Y, 1E-5);
+
+                Assert.AreEqual(data2Expected[i].X, data2[i].X, 1E-5);
+                Assert.AreEqual(data2Expected[i].Y, data2[i].Y, 1E-5);
+
+                Assert.AreEqual(data3Expected[i].X, data3[i].X, 1E-5);
+                Assert.AreEqual(data3Expected[i].Y, data3[i].Y, 1E-5);
+
+                Assert.AreEqual(data4Expected[i].X, data4[i].X, 1E-5);
+                Assert.AreEqual(data4Expected[i].Y, data4[i].Y, 1E-5);
+            }
+        }
+
+        /// <summary>
+        /// Test the various UncertainOrderedPairedData IList methods
+        /// </summary>
+        [TestMethod]
+        public void Test_IList()
+        {
+            var pairedData = _dataset1.Clone();
+            var ordinate = pairedData[2];
+
+            // Test IndexOf
+            int test1 = pairedData.IndexOf(ordinate);
+            Assert.AreEqual(2, test1);
+
+            // Test Remove and Contains
+            pairedData.Remove(ordinate);
+            bool test2 = pairedData.Contains(ordinate);
+            Assert.IsFalse(test2);
+
+            // Test RemoveAt and Contains
+            pairedData.RemoveAt(2);
+            bool test3 = pairedData.Contains(ordinate);
+            Assert.IsFalse(test3);
+
+            // Test Insert and IndexOf
+            pairedData.Insert(2, ordinate);
+            int test4 = pairedData.IndexOf(ordinate);
+            Assert.AreEqual(2, test4);
+
+            // Test Add and IndexOf
+            var newOrdinate = new UncertainOrdinate(7, new Triangular(16, 22, 28));
+            pairedData.Add(newOrdinate);
+            int test5 = pairedData.IndexOf(newOrdinate);
+            Assert.AreEqual(pairedData.Count - 1, test5);
+
+            // Test RemoveRange
+            int prevCount = pairedData.Count();
+            ordinate = pairedData[2];
+            pairedData.RemoveRange(0, 2);
+            UncertainOrdinate test6 = pairedData[0];
+            int currCount = pairedData.Count();
+            Assert.AreEqual(prevCount - 2, currCount);
+            Assert.AreEqual(ordinate, test6);
+
+            // Test CopyTo
+            var array = new UncertainOrdinate[2];
+            pairedData.CopyTo(array, 0);
+            for (int i = 0; i < array.Length; i++)
+            {
+                Assert.AreEqual(pairedData[i], array[i]);
+            }
+
+            // Test InsertRange
+            var toInsert = new List<UncertainOrdinate>() { new UncertainOrdinate(1, new Triangular(1, 2, 3)), new UncertainOrdinate(2, new Triangular(2, 4, 5)) };
+            pairedData.InsertRange(0, toInsert);
+            for (int j = 0; j < toInsert.Count; j++)
+            {
+                Assert.IsTrue(pairedData.Contains(toInsert[j]));
+            }
+
+            // Test AddRange
+            var toAdd = new List<UncertainOrdinate>() { new UncertainOrdinate(3, new Triangular(6, 8, 12)), new UncertainOrdinate(5, new Triangular(13, 19, 20)), new UncertainOrdinate(7, new Triangular(16, 22, 28)) };
+            pairedData.AddRange(toAdd);
+            var test7 = pairedData.Count();
+            Assert.AreEqual(7, test7);
+            for (int k = 0; k < toAdd.Count(); k++)
+            {
+                Assert.IsTrue(pairedData.Contains(toAdd[k]));
+            }
+
+            // Test Clear
+            pairedData.Clear();
+            Assert.AreEqual(0, pairedData.Count());
+
+        }
+
+        /// <summary>
+        /// A NaN X query must not match or remove a finite ordinate through the collection's
+        /// equality-based membership operations.
+        /// </summary>
+        [TestMethod]
+        public void Test_NaNOrdinate_DoesNotMatchCollectionMember()
+        {
+            var pairedData = new UncertainOrderedPairedData(
+                new[] { 1d }, new UnivariateDistributionBase[] { new Deterministic(1d) },
+                false, SortOrder.Ascending, false, SortOrder.Ascending,
+                UnivariateDistributionType.Deterministic);
+            var nan = new UncertainOrdinate(double.NaN, new Deterministic(1d));
+
+            Assert.AreEqual(-1, pairedData.IndexOf(nan));
+            Assert.IsFalse(pairedData.Contains(nan));
+            Assert.IsFalse(pairedData.Remove(nan));
+            Assert.AreEqual(1, pairedData.Count);
+        }
+
+        /// <summary>
+        /// InsertRange validates every newly inserted position against its own neighbors. The old
+        /// loop re-tested the constant first insertion index on every pass, so a violation carried
+        /// by any later inserted ordinate left the collection reported as valid.
+        /// </summary>
+        [TestMethod]
+        public void Test_InsertRange_ValidatesEveryInsertedPosition()
+        {
+            var data = new UncertainOrderedPairedData(new double[] { 1, 10 }, new UnivariateDistributionBase[] { new Deterministic(1), new Deterministic(10) }, true, SortOrder.Ascending, true, SortOrder.Ascending, UnivariateDistributionType.Deterministic);
+            Assert.IsTrue(data.IsValid);
+
+            // The first inserted ordinate is valid at its position; the second breaks the
+            // ascending x-order against its successor.
+            var toInsert = new List<UncertainOrdinate>() { new UncertainOrdinate(2, new Deterministic(2)), new UncertainOrdinate(50, new Deterministic(50)) };
+            data.InsertRange(1, toInsert);
+            Assert.IsFalse(data.IsValid);
+        }
+
+        /// <summary>
+        /// Test the overloaded equality operators for the UncertainOrderedPairedData object
+        /// </summary>
+        [TestMethod]
+        public void Test_Equality()
+        {
+            var dataset5 = _dataset1.Clone();
+            bool test1 = (_dataset1 == dataset5);
+            Assert.IsTrue(test1);
+
+            bool test2 = (_dataset1 == _dataset2);
+            Assert.IsFalse(test2);
+
+            bool test3 = (_dataset2 != _dataset3);
+            Assert.IsTrue(test3);
+
+            bool test4 = (_dataset1 != dataset5);
+            Assert.IsFalse(test4);
+        }
+
+        /// <summary>
+        /// Sampled quantile-ladder curves extrapolate through the ordered-paired-data mechanism:
+        /// with slope-ordered Normal ordinates (shared standard deviation), every sampled curve is a
+        /// parallel line, so the extrapolated values are exact and remain monotone across the
+        /// quantile ladder. Slope-disordered ladders can cross beyond the data, which the consumer
+        /// validates.
+        /// </summary>
+        [TestMethod]
+        public void Test_CurveSample_Extrapolation_LadderMonotone()
+        {
+            var xs = new List<double> { 1d, 2d, 3d };
+            var dists = new List<UnivariateDistributionBase>
+            {
+                new Normal(10d, 2d),
+                new Normal(20d, 2d),
+                new Normal(30d, 2d)
+            };
+            var uopd = new UncertainOrderedPairedData(xs, dists, true, SortOrder.Ascending, true, SortOrder.Ascending, UnivariateDistributionType.Normal);
+
+            double previous = double.NegativeInfinity;
+            foreach (double p in new[] { 0.1d, 0.5d, 0.9d })
+            {
+                var curve = uopd.CurveSample(p);
+                // Each sampled curve is x -> 10x + 2z(p): at x = 5 the extension is 50 + 2z(p).
+                double expected = 50d + 2d * Normal.StandardZ(p);
+                double value = curve.GetYFromX(5d, Transform.None, Transform.None, ExtrapolationSides.Both);
+                Assert.AreEqual(expected, value, 1E-10);
+                Assert.IsGreaterThan(previous, value);
+                previous = value;
+
+                // The default lookup still holds the endpoint.
+                Assert.AreEqual(30d + 2d * Normal.StandardZ(p), curve.GetYFromX(5d), 1E-10);
+            }
+
+            // The mean curve (y = 10x) extrapolates through the same mechanism on both sides.
+            var mean = uopd.CurveSample();
+            Assert.AreEqual(50d, mean.GetYFromX(5d, Transform.None, Transform.None, ExtrapolationSides.Both), 1E-10);
+            Assert.AreEqual(-40d, mean.GetYFromX(-4d, Transform.None, Transform.None, ExtrapolationSides.Both), 1E-10);
+        }
+    }
+}

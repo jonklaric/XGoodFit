@@ -1,0 +1,54 @@
+name: Question
+description: Ask a specific question about using the project.
+title: "[Question]: "
+labels: ["question"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please use this form for specific usage questions.
+
+  - type: textarea
+    id: question
+    attributes:
+      label: What is your question?
+      description: Ask the question as clearly as possible.
+      placeholder: "Example: Which input file should I use for a frequency curve with historical information?"
+    validations:
+      required: true
+
+  - type: textarea
+    id: goal
+    attributes:
+      label: What are you trying to do?
+      description: Briefly describe your workflow or goal.
+      placeholder: "Example: I am trying to estimate a stage-frequency curve for a reservoir risk assessment."
+    validations:
+      required: false
+
+  - type: textarea
+    id: tried
+    attributes:
+      label: What have you already tried?
+      description: Optional. Tell us what documentation, settings, or examples you checked.
+      placeholder: "Example: I read the user guide and tried the sample dataset."
+    validations:
+      required: false
+
+  - type: input
+    id: affected-area
+    attributes:
+      label: Affected area or control
+      description: Name the project, window, tool, or control if you know it.
+      placeholder: "Example: Database controls, DAG demo, theme system"
+    validations:
+      required: false
+
+  - type: upload
+    id: files
+    attributes:
+      label: Screenshots or files
+      description: Upload files or screenshots if they help explain the question.
+    validations:
+      required: false
+      accept: ".png,.jpg,.jpeg,.gif,.webp,.svg,.log,.txt,.csv,.json,.zip,.pdf,.docx,.xlsx"

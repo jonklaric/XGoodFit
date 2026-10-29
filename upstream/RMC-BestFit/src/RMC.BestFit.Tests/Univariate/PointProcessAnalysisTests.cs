@@ -1,0 +1,496 @@
+using Numerics.Distributions;
+using Numerics.Mathematics.Optimization;
+using Numerics.Sampling.MCMC;
+using RMC.BestFit.Analyses;
+using RMC.BestFit.Estimation;
+using RMC.BestFit.Models;
+using System.Xml.Linq;
+using BestFitDataFrame = RMC.BestFit.Models.DataFrame;
+
+namespace RMC.BestFit.Tests.Univariate;
+
+/// <summary>
+/// Programmatic unit tests for the <c>PointProcessAnalysis</c> class.
+/// </summary>
+/// <remarks>
+/// Configuration, validation, and serialization tests live here.
+/// MCMC parameter-recovery and estimation tests live in <c>RMC.BestFit.Verification</c>.
+/// </remarks>
+[TestClass]
+public class PointProcessAnalysisTests
+{
+    #region Inline test fixtures
+
+    private const int FixtureSize = 30;
+
+    /// <summary>
+    /// Inline GeneralizedPareto-style POT data: shifted Gumbel(20000, 3000) above a 14000 threshold.
+    /// Generated from a fixed RNG seed so this file doesn't depend on the Verification project's
+    /// <c>TestData</c>.
+    /// </summary>
+    private static readonly double[] InlinePOTData = new Gumbel(20000.0, 3000.0)
+        .GenerateRandomValues(FixtureSize, 12345);
+
+    /// <summary>
+    /// Creates the inline POT data frame.
+    /// </summary>
+    /// <returns>The created test object.</returns>
+    /// <remarks>
+    /// This helper keeps fixture setup local to the tests that use it.
+    /// </remarks>
+    private static BestFitDataFrame CreateTestDataFrame()
+    {
+        var df = new BestFitDataFrame();
+        for (int i = 0; i < InlinePOTData.Length; i++)
+        {
+            df.ExactSeries.Add(new ExactData(100 + i * 10, InlinePOTData[i]));
+        }
+        return df;
+    }
+
+    /// <summary>
+    /// Creates the inline nonseasonal point-process model.
+    /// </summary>
+    /// <returns>The created test object.</returns>
+    /// <remarks>
+    /// This helper keeps fixture setup local to the tests that use it.
+    /// </remarks>
+    private static PointProcessModel CreateTestModel()
+    {
+        var df = CreateTestDataFrame();
+        var model = new PointProcessModel
+        { DataFrame = df,
+            Threshold = 14000
+        };
+        return model;
+    }
+
+    /// <summary>
+    /// Creates an estimated point-process analysis with stub uncertainty results.
+    /// </summary>
+    /// <param name="model">The point-process model to attach to the analysis.</param>
+    /// <returns>An analysis whose stale estimated state can be invalidated without running MCMC.</returns>
+    /// <remarks>
+    /// The helper uses the XML constructor so tests stay fast and avoid computational verification.
+    /// </remarks>
+    private static PointProcessAnalysis CreateEstimatedAnalysis(PointProcessModel model)
+    {
+        var xElement = new XElement("PointProcessAnalysis", new XAttribute("IsEstimated", true));
+        return new PointProcessAnalysis(model, xElement, analysisResults: new UncertaintyAnalysisResults());
+    }
+
+    #endregion
+
+    #region Constructor Tests
+
+    /// <summary>Verifies the model constructor initializes analysis state.</summary>
+    [TestMethod]
+    public void Constructor_WithModel_InitializesCorrectly()
+    {
+        var model = CreateTestModel();
+
+        var analysis = new PointProcessAnalysis(model);
+
+        Assert.IsNotNull(analysis.PointProcess, "PointProcessModel should not be null.");
+        Assert.IsNotNull(analysis.BayesianAnalysis, "BayesianAnalysis should not be null.");
+        Assert.IsNotNull(analysis.ProbabilityOrdinates, "ProbabilityOrdinates should not be null.");
+        Assert.IsFalse(analysis.IsEstimated, "IsEstimated should be false initially.");
+        Assert.IsNull(analysis.AnalysisResults, "AnalysisResults should be null initially.");
+    }
+
+    /// <summary>Verifies the model constructor rejects a null model.</summary>
+    [TestMethod]
+    [ExpectedException(typeof(ArgumentNullException))]
+    public void Constructor_WithNullModel_ThrowsArgumentNullException()
+    {
+        _ = new PointProcessAnalysis(null!);
+    }
+
+    /// <summary>Verifies Bayesian estimation references the supplied model.</summary>
+    [TestMethod]
+    public void Constructor_BayesianAnalysis_HasCorrectModel()
+    {
+        var model = CreateTestModel();
+
+        var analysis = new PointProcessAnalysis(model);
+
+        Assert.AreSame(model, analysis.BayesianAnalysis.Model,
+            "BayesianAnalysis.Model should reference the point process model.");
+    }
+
+    #endregion
+
+    #region XML Serialization Tests
+
+    /// <summary>Verifies XML round-trip preserves the analysis configuration.</summary>
+    [TestMethod]
+    public void XmlSerialization_RoundTrip_PreservesConfiguration()
+    {
+        var model = CreateTestModel();
+        var analysis = new PointProcessAnalysis(model);
+        analysis.ProbabilityOrdinates.Clear();
+        analysis.ProbabilityOrdinates.Add(0.5);
+        analysis.ProbabilityOrdinates.Add(0.1);
+        analysis.ProbabilityOrdinates.Add(0.01);
+
+        var xElement = analysis.ToXElement();
+        var restoredAnalysis = new PointProcessAnalysis(model, xElement);
+
+        Assert.IsNotNull(restoredAnalysis, "Restored analysis should not be null.");
+        Assert.AreEqual(analysis.ProbabilityOrdinates.Count, restoredAnalysis.ProbabilityOrdinates.Count,
+            "Probability ordinates count should be preserved.");
+    }
+
+    /// <summary>Verifies the XML constructor rejects a null element.</summary>
+    [TestMethod]
+    [ExpectedException(typeof(ArgumentNullException))]
+    public void Constructor_WithNullXElement_ThrowsArgumentNullException()
+    {
+        var model = CreateTestModel();
+        _ = new PointProcessAnalysis(model, null!);
+    }
+
+    #endregion
+
+    #region Validation Tests
+
+    /// <summary>Verifies a valid point-process analysis passes validation.</summary>
+    [TestMethod]
+    public void Validate_WithValidConfiguration_ReturnsValid()
+    {
+        var model = CreateTestModel();
+        var analysis = new PointProcessAnalysis(model);
+
+        var (isValid, messages) = analysis.Validate();
+
+        Assert.IsTrue(isValid, $"Validation should pass. Messages: {string.Join(", ", messages)}");
+    }
+
+    #endregion
+
+    #region ClearResults Tests
+
+    /// <summary>Verifies clearing results resets the estimated state and outputs.</summary>
+    [TestMethod]
+    public void ClearResults_ResetsAllResults()
+    {
+        var model = CreateTestModel();
+        var analysis = new PointProcessAnalysis(model);
+
+        analysis.ClearResults();
+
+        Assert.IsFalse(analysis.IsEstimated, "IsEstimated should be false after clearing.");
+        Assert.IsNull(analysis.AnalysisResults, "AnalysisResults should be null after clearing.");
+    }
+
+    #endregion
+
+    #region Property Change Tests
+
+    /// <summary>Verifies ordinate edits raise the analysis property-change event.</summary>
+    [TestMethod]
+    public void ProbabilityOrdinates_Change_RaisesPropertyChanged()
+    {
+        var model = CreateTestModel();
+        var analysis = new PointProcessAnalysis(model);
+        bool propertyChanged = false;
+        analysis.PropertyChanged += (s, e) =>
+        {
+            if (e.PropertyName == nameof(PointProcessAnalysis.ProbabilityOrdinates))
+                propertyChanged = true;
+        };
+
+        analysis.ProbabilityOrdinates.Add(0.001);
+
+        Assert.IsTrue(propertyChanged, "PropertyChanged should be raised for ProbabilityOrdinates.");
+    }
+
+    /// <summary>Verifies that enabling quantile priors clears stale analysis results.</summary>
+    [TestMethod]
+    public void EnableQuantilePriors_ClearsResults()
+    {
+        var model = CreateTestModel();
+        var analysis = CreateEstimatedAnalysis(model);
+        bool analysisResultsChanged = false;
+        analysis.PropertyChanged += (s, e) =>
+        {
+            if (e.PropertyName == nameof(PointProcessAnalysis.AnalysisResults))
+                analysisResultsChanged = true;
+        };
+
+        model.EnableQuantilePriors = true;
+
+        Assert.IsTrue(analysisResultsChanged, "AnalysisResults should be raised when quantile priors are enabled.");
+        Assert.IsNull(analysis.AnalysisResults, "Quantile prior changes should clear stale AnalysisResults.");
+        Assert.IsFalse(analysis.IsEstimated, "Quantile prior changes should invalidate the estimated state.");
+        Assert.IsTrue(model.QuantilePriors.Count > 0, "Enabling quantile priors should create default prior rows.");
+    }
+
+    /// <summary>Verifies that editing an existing quantile prior clears stale analysis results.</summary>
+    [TestMethod]
+    public void QuantilePriorEdit_ClearsResults()
+    {
+        var model = CreateTestModel();
+        model.EnableQuantilePriors = true;
+        var analysis = CreateEstimatedAnalysis(model);
+        bool analysisResultsChanged = false;
+        analysis.PropertyChanged += (s, e) =>
+        {
+            if (e.PropertyName == nameof(PointProcessAnalysis.AnalysisResults))
+                analysisResultsChanged = true;
+        };
+
+        model.QuantilePriors[0].Alpha = 0.02;
+
+        Assert.IsTrue(analysisResultsChanged, "AnalysisResults should be raised when a quantile prior is edited.");
+        Assert.IsNull(analysis.AnalysisResults, "Quantile prior edits should clear stale AnalysisResults.");
+        Assert.IsFalse(analysis.IsEstimated, "Quantile prior edits should invalidate the estimated state.");
+    }
+
+    /// <summary>Verifies that prior-related option changes clear stale analysis results.</summary>
+    [TestMethod]
+    public void PriorOptionChange_ClearsResults()
+    {
+        var model = CreateTestModel();
+        var analysis = CreateEstimatedAnalysis(model);
+        bool analysisResultsChanged = false;
+        analysis.PropertyChanged += (s, e) =>
+        {
+            if (e.PropertyName == nameof(PointProcessAnalysis.AnalysisResults))
+                analysisResultsChanged = true;
+        };
+
+        model.UseJeffreysRuleForScale = !model.UseJeffreysRuleForScale;
+
+        Assert.IsTrue(analysisResultsChanged, "AnalysisResults should be raised when prior options change.");
+        Assert.IsNull(analysis.AnalysisResults, "Prior option changes should clear stale AnalysisResults.");
+        Assert.IsFalse(analysis.IsEstimated, "Prior option changes should invalidate the estimated state.");
+    }
+
+    #endregion
+
+    #region GetDistribution Tests
+
+    /// <summary>Verifies indexed distribution retrieval returns null before estimation.</summary>
+    [TestMethod]
+    public void GetDistribution_WhenNotEstimated_ReturnsNull()
+    {
+        var model = CreateTestModel();
+        var analysis = new PointProcessAnalysis(model);
+
+        var result = analysis.GetDistribution(0);
+
+        Assert.IsNull(result, "GetDistribution should return null when not estimated.");
+    }
+
+    /// <summary>Verifies point-estimate distribution retrieval returns null before estimation.</summary>
+    [TestMethod]
+    public void GetPointEstimateDistribution_WhenNotEstimated_ReturnsNull()
+    {
+        var model = CreateTestModel();
+        var analysis = new PointProcessAnalysis(model);
+
+        var result = analysis.GetPointEstimateDistribution();
+
+        Assert.IsNull(result, "GetPointEstimateDistribution should return null when not estimated.");
+    }
+    /// <summary>Verifies seasonal posterior retrieval applies the analytical exposure transform.</summary>
+    [TestMethod]
+    public void GetDistribution_SeasonalResultsApplyExposureTransform()
+    {
+        var frame = new BestFitDataFrame();
+        for (int year = 2000; year < 2010; year++)
+        {
+            frame.ExactSeries.Add(new ExactData(new DateTime(year, 1, 15), 100.0 + year - 2000));
+            frame.ExactSeries.Add(new ExactData(new DateTime(year, 7, 15), 120.0 + year - 2000));
+        }
+
+        var model = new PointProcessModel
+        {
+            UseDefaults = false,
+            IsSeasonal = true,
+            TimeBlock = Numerics.Data.TimeBlockWindow.CalendarYear,
+            StartMonth = 1,
+            DataFrame = frame,
+            Threshold = 80.0,
+            TotalYears = 10.0
+        };
+        model.SetDefaultParameters();
+        double[] values = { 80.5, 260.5, 100.0, 20.0, -0.10, 120.0, 25.0, 0.05 };
+        var output = new List<ParameterSet> { new ParameterSet((double[])values.Clone(), 0.0) };
+        var results = new MCMCResults(new ParameterSet((double[])values.Clone(), 0.0), output, 0.10);
+        var analysis = new PointProcessAnalysis(model);
+        analysis.BayesianAnalysis.SetCustomMCMCResults(results, skipInformationCriteria: true);
+
+        var indexed = (CompetingRisks)analysis.GetDistribution(0)!;
+        var pointEstimate = (CompetingRisks)analysis.GetPointEstimateDistribution(BayesianAnalysis.PointEstimateType.PosteriorMode)!;
+
+        double firstWeight = (80.0 + 366.0 - 260.0) / 366.0;
+        double secondWeight = (260.0 - 80.0) / 366.0;
+        double[] expected =
+        {
+            100.0 + 20.0 / -0.10 * (1.0 - Math.Pow(firstWeight, 0.10)),
+            20.0 * Math.Pow(firstWeight, 0.10),
+            -0.10,
+            120.0 + 25.0 / 0.05 * (1.0 - Math.Pow(secondWeight, -0.05)),
+            25.0 * Math.Pow(secondWeight, -0.05),
+            0.05
+        };
+        for (int i = 0; i < expected.Length; i++)
+        {
+            Assert.AreEqual(expected[i], indexed.GetParameters[i], 1E-12, $"Indexed parameter {i} was not annualized.");
+            Assert.AreEqual(expected[i], pointEstimate.GetParameters[i], 1E-12, $"Point-estimate parameter {i} was not annualized.");
+        }
+    }
+
+    #endregion
+
+    #region CancelAnalysis Tests
+
+    /// <summary>Verifies cancellation is safe when no analysis is running.</summary>
+    [TestMethod]
+    public void CancelAnalysis_WhenNotRunning_DoesNotThrow()
+    {
+        var model = CreateTestModel();
+        var analysis = new PointProcessAnalysis(model);
+
+        analysis.CancelAnalysis();
+    }
+
+    #endregion
+
+    #region Event Tests
+
+    /// <summary>Verifies RunAsync raises the starting event before estimation.</summary>
+    [TestMethod]
+    public async Task RunAsync_RaisesAnalysisStartingEvent()
+    {
+        var model = CreateTestModel();
+        var analysis = new PointProcessAnalysis(model);
+        analysis.BayesianAnalysis.Iterations = 100;
+
+        bool eventRaised = false;
+        analysis.AnalysisStarting += (s, e) =>
+        {
+            eventRaised = true;
+            e.Cancel = true; // Cancel immediately to keep test fast.
+        };
+
+        await analysis.RunAsync();
+
+        Assert.IsTrue(eventRaised, "AnalysisStarting event should be raised.");
+    }
+
+    /// <summary>Verifies cancellation raises the completed event with canceled status.</summary>
+    [TestMethod]
+    public async Task RunAsync_RaisesAnalysisCompletedEvent()
+    {
+        var model = CreateTestModel();
+        var analysis = new PointProcessAnalysis(model);
+
+        bool eventRaised = false;
+        analysis.AnalysisStarting += (s, e) => e.Cancel = true;
+        analysis.AnalysisCompleted += (s, e) =>
+        {
+            eventRaised = true;
+            Assert.IsTrue(e.Cancelled, "Cancelled should be true when canceled.");
+        };
+
+        await analysis.RunAsync();
+
+        Assert.IsTrue(eventRaised, "AnalysisCompleted event should be raised.");
+    }
+
+    #endregion
+
+    #region Threshold Tests
+
+    /// <summary>Verifies threshold configuration delegates to the model.</summary>
+    [TestMethod]
+    public void Threshold_CanBeSet()
+    {
+        var model = CreateTestModel();
+        var analysis = new PointProcessAnalysis(model);
+
+        analysis.PointProcess.Threshold = 15000;
+
+        Assert.AreEqual(15000, analysis.PointProcess.Threshold);
+    }
+
+    /// <summary>Verifies exposure configuration delegates to the model.</summary>
+    [TestMethod]
+    public void ObservationPeriod_CanBeSet()
+    {
+        var model = CreateTestModel();
+        var analysis = new PointProcessAnalysis(model);
+
+        analysis.PointProcess.TotalYears = 365.25;
+
+        Assert.AreEqual(365.25, analysis.PointProcess.TotalYears, 0.01);
+    }
+
+    #endregion
+
+    #region Probability Ordinates Tests
+
+    /// <summary>Verifies default probability ordinates are populated.</summary>
+    [TestMethod]
+    public void ProbabilityOrdinates_DefaultInitialization_HasDefaultValues()
+    {
+        var model = CreateTestModel();
+
+        var analysis = new PointProcessAnalysis(model);
+
+        Assert.IsNotNull(analysis.ProbabilityOrdinates, "ProbabilityOrdinates should not be null.");
+        Assert.IsTrue(analysis.ProbabilityOrdinates.Count > 0, "Default probability ordinates should have values.");
+    }
+
+    #endregion
+
+    #region Edge Cases
+
+    /// <summary>Verifies serialization creates the expected XML structure.</summary>
+    [TestMethod]
+    public void ToXElement_CreatesValidXmlStructure()
+    {
+        var model = CreateTestModel();
+        var analysis = new PointProcessAnalysis(model);
+
+        var xElement = analysis.ToXElement();
+
+        Assert.IsNotNull(xElement, "XElement should not be null.");
+        Assert.AreEqual("PointProcessAnalysis", xElement.Name.LocalName, "Root element should be PointProcessAnalysis.");
+        Assert.IsNotNull(xElement.Attribute("IsEstimated"), "Should have IsEstimated attribute.");
+    }
+
+    /// <summary>Verifies Bayesian estimation receives nonzero default iterations.</summary>
+    [TestMethod]
+    public void BayesianAnalysis_HasDefaultSettings()
+    {
+        var model = CreateTestModel();
+
+        var analysis = new PointProcessAnalysis(model);
+
+        Assert.IsTrue(analysis.BayesianAnalysis.Iterations > 0,
+            "Iterations should have a default value.");
+    }
+
+    #endregion
+
+    #region IUnivariateAnalysis Interface Tests
+
+    /// <summary>Verifies probability ordinates are available through IUnivariateAnalysis.</summary>
+    [TestMethod]
+    public void IUnivariateAnalysis_ProbabilityOrdinates_IsAccessible()
+    {
+        var model = CreateTestModel();
+        var analysis = new PointProcessAnalysis(model);
+
+        IUnivariateAnalysis iface = analysis;
+        var ordinates = iface.ProbabilityOrdinates;
+
+        Assert.IsNotNull(ordinates, "ProbabilityOrdinates should be accessible via interface.");
+    }
+
+    #endregion
+}

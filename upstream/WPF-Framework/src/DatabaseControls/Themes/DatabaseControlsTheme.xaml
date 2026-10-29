@@ -1,0 +1,267 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:local="clr-namespace:DatabaseControls">
+
+    <!--
+    =====================================================================================
+      DatabaseControls Theme Resource Dictionary
+    =====================================================================================
+      Contains theme-aware styles for all DatabaseControls components that use
+      DynamicResource bindings to respond to runtime theme changes.
+
+      CONTENTS:
+      - TableViewer Styles    - Column headers, row headers, cells, and grid styles
+      - FindAndReplace Styles - Find and replace dialog styling
+      - FieldCalculator       - Field calculator window styling
+      - Column Statistics     - Column statistics window styling
+
+      THEME SUPPORT:
+      All colors use DynamicResource bindings to the Themes library.
+      Common theme resources referenced:
+      - EnvironmentWindowText/Background - Window text and background colors
+      - DataGrid.*                       - DataGrid-specific theming
+      - Button.MouseOver/Pressed.*       - Interactive button states
+
+      USAGE:
+      Styles are automatically applied to controls via implicit styling.
+      Named styles can be explicitly referenced:
+      <local:TableViewer Style="{StaticResource TableViewerStyle}"/>
+    =====================================================================================
+    -->
+
+    <!-- Merge Icon Dictionary for centralized vector icons -->
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="/DatabaseControls;component/Resources/IconDictionary.xaml"/>
+    </ResourceDictionary.MergedDictionaries>
+
+    <!-- =============================================================================== -->
+    <!-- TABLEVIEWER COLUMN HEADER STYLES                                                 -->
+    <!-- =============================================================================== -->
+
+    <!-- Column Header TextBlock Style -->
+    <Style x:Key="ColumnHeaderTextStyle" TargetType="{x:Type TextBlock}">
+        <Setter Property="HorizontalAlignment" Value="Stretch"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+        <Setter Property="TextAlignment" Value="Center"/>
+        <Setter Property="TextWrapping" Value="NoWrap"/>
+        <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+        <Setter Property="FontWeight" Value="Bold"/>
+        <Setter Property="Foreground" Value="{DynamicResource DataGrid.Header.Foreground}"/>
+        <Setter Property="Margin" Value="6,3,6,3"/>
+    </Style>
+
+    <!-- Column Header Border Style with gradient background -->
+    <Style x:Key="ColumnHeaderBorderStyle" TargetType="{x:Type Border}">
+        <Setter Property="BorderBrush" Value="{DynamicResource DataGrid.Header.Border}"/>
+        <Setter Property="BorderThickness" Value="0,1,1,1"/>
+        <Setter Property="Background">
+            <Setter.Value>
+                <LinearGradientBrush StartPoint="0 0" EndPoint="0 1">
+                    <GradientStop Offset="0.25" Color="{DynamicResource DataGrid.Header.Background}"/>
+                    <GradientStop Offset="1" Color="{DynamicResource DataGrid.Header.GradientEnd}"/>
+                </LinearGradientBrush>
+            </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="{DynamicResource DataGrid.Header.MouseOver.Background}"/>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <!-- =============================================================================== -->
+    <!-- TABLEVIEWER ROW HEADER STYLES                                                    -->
+    <!-- =============================================================================== -->
+
+    <!-- Row Header TextBlock Style -->
+    <Style x:Key="RowHeaderTextStyle" TargetType="{x:Type TextBlock}">
+        <Setter Property="HorizontalAlignment" Value="Center"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+        <Setter Property="TextAlignment" Value="Center"/>
+        <Setter Property="TextWrapping" Value="NoWrap"/>
+        <Setter Property="FontWeight" Value="Bold"/>
+        <Setter Property="Foreground" Value="{DynamicResource DataGrid.Header.Foreground}"/>
+        <Setter Property="Margin" Value="4,0,4,0"/>
+    </Style>
+
+    <!-- Row Header Border Style with gradient background -->
+    <Style x:Key="RowHeaderBorderStyle" TargetType="{x:Type Border}">
+        <Setter Property="BorderBrush" Value="{DynamicResource DataGrid.Header.Border}"/>
+        <Setter Property="BorderThickness" Value="0,0,1,1"/>
+        <Setter Property="Background">
+            <Setter.Value>
+                <LinearGradientBrush StartPoint="0 0" EndPoint="1 0">
+                    <GradientStop Offset="0.25" Color="{DynamicResource DataGrid.Header.Background}"/>
+                    <GradientStop Offset="1" Color="{DynamicResource DataGrid.Header.GradientEnd}"/>
+                </LinearGradientBrush>
+            </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="{DynamicResource DataGrid.Header.MouseOver.Background}"/>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <!-- =============================================================================== -->
+    <!-- TABLEVIEWER CELL STYLES                                                          -->
+    <!-- =============================================================================== -->
+
+    <!-- Default Cell TextBlock Style -->
+    <Style x:Key="CellTextStyle" TargetType="{x:Type TextBlock}">
+        <Setter Property="HorizontalAlignment" Value="Stretch"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+        <Setter Property="TextAlignment" Value="Left"/>
+        <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Foreground" Value="{DynamicResource DataGrid.Static.Foreground}"/>
+        <Setter Property="IsHitTestVisible" Value="False"/>
+        <Setter Property="Margin" Value="4,0,4,0"/>
+    </Style>
+
+    <!-- Right-aligned Cell TextBlock Style -->
+    <Style x:Key="CellTextStyleRight" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource CellTextStyle}">
+        <Setter Property="TextAlignment" Value="Right"/>
+    </Style>
+
+    <!-- Center-aligned Cell TextBlock Style -->
+    <Style x:Key="CellTextStyleCenter" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource CellTextStyle}">
+        <Setter Property="TextAlignment" Value="Center"/>
+    </Style>
+
+    <!-- =============================================================================== -->
+    <!-- TABLEVIEWER TOOLBAR STYLES                                                       -->
+    <!-- =============================================================================== -->
+
+    <!-- Toolbar Button Style Base -->
+    <Style x:Key="TableViewerToolbarButtonStyle" TargetType="{x:Type Button}" BasedOn="{StaticResource {x:Static ToolBar.ButtonStyleKey}}">
+        <Setter Property="Height" Value="24"/>
+        <Setter Property="Width" Value="24"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderBrush" Value="Transparent"/>
+        <Setter Property="Padding" Value="2"/>
+        <Style.Triggers>
+            <Trigger Property="IsEnabled" Value="False">
+                <Setter Property="Opacity" Value="0.5"/>
+            </Trigger>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="{DynamicResource Button.MouseOver.Background}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource Button.MouseOver.Border}"/>
+            </Trigger>
+            <Trigger Property="IsPressed" Value="True">
+                <Setter Property="Background" Value="{DynamicResource Button.Pressed.Background}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource Button.Pressed.Border}"/>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <!-- Vertical Separator Style for Toolbar -->
+    <Style x:Key="TableViewerVerticalSeparatorStyle" TargetType="{x:Type Separator}">
+        <Setter Property="Margin" Value="2,4,2,4"/>
+        <Setter Property="Background" Value="{DynamicResource SeparatorBorder}"/>
+        <Setter Property="LayoutTransform">
+            <Setter.Value>
+                <RotateTransform Angle="90"/>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- =============================================================================== -->
+    <!-- TABLEVIEWER MAIN STYLE                                                           -->
+    <!-- =============================================================================== -->
+
+    <Style x:Key="TableViewerStyle" TargetType="{x:Type local:TableViewer}">
+        <!-- Header Styles -->
+        <Setter Property="ColumnHeaderTextblockStyle" Value="{StaticResource ColumnHeaderTextStyle}"/>
+        <Setter Property="ColumnHeaderBorderStyle" Value="{StaticResource ColumnHeaderBorderStyle}"/>
+        <Setter Property="RowHeaderTextblockStyle" Value="{StaticResource RowHeaderTextStyle}"/>
+        <Setter Property="RowHeaderBorderStyle" Value="{StaticResource RowHeaderBorderStyle}"/>
+        <Setter Property="CellTextblockStyle" Value="{StaticResource CellTextStyle}"/>
+        <!-- Theme-aware colors -->
+        <Setter Property="Foreground" Value="{DynamicResource DataGrid.Static.Foreground}"/>
+        <Setter Property="Background" Value="{DynamicResource DataGrid.Static.Background}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource DataGrid.Static.Border}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <!-- Row Colors -->
+        <Setter Property="RowColor" Value="{DynamicResource DataGrid.Row.Background}"/>
+        <Setter Property="AlternateRowColor" Value="{DynamicResource DataGrid.Row.Alternating.Background}"/>
+        <!-- Grid Line Colors -->
+        <Setter Property="RowLineColor" Value="{DynamicResource DataGrid.GridLines}"/>
+        <Setter Property="ColumnLineColor" Value="{DynamicResource DataGrid.GridLines}"/>
+        <Setter Property="RowLineThickness" Value="1"/>
+        <Setter Property="ColumnLineThickness" Value="1"/>
+        <!-- Selection Colors -->
+        <Setter Property="SelectedColor" Value="{DynamicResource DataGrid.Row.Selection.Background}"/>
+        <Setter Property="SelectedForegroundColor" Value="{DynamicResource DataGrid.Row.Selection.Foreground}"/>
+        <Setter Property="InactiveSelectedColor" Value="{DynamicResource DataGrid.Row.Selection.Inactive.Background}"/>
+        <Setter Property="InactiveSelectedForegroundColor" Value="{DynamicResource DataGrid.Row.Selection.Inactive.Foreground}"/>
+        <Setter Property="DeSelectedColor" Value="Transparent"/>
+        <Setter Property="DeSelectedForegroundColor" Value="{DynamicResource DataGrid.Static.Foreground}"/>
+        <Setter Property="ActiveCellBackground" Value="{DynamicResource DataGrid.Cell.Focus.Border}"/>
+        <Setter Property="ActiveCellForeground" Value="{DynamicResource DataGrid.Row.Selection.Foreground}"/>
+        <!-- Default Row Height -->
+        <Setter Property="RowHeight" Value="22"/>
+    </Style>
+
+    <Style TargetType="{x:Type local:TableViewer}" BasedOn="{StaticResource TableViewerStyle}"/>
+
+    <!-- =============================================================================== -->
+    <!-- FIND AND REPLACE WINDOW STYLES                                                   -->
+    <!-- =============================================================================== -->
+
+    <Style x:Key="FindAndReplaceStyle" TargetType="{x:Type local:FindAndReplace}">
+        <Setter Property="Background" Value="{DynamicResource EnvironmentWindowBackground}"/>
+        <Setter Property="Foreground" Value="{DynamicResource EnvironmentWindowText}"/>
+    </Style>
+
+    <Style TargetType="{x:Type local:FindAndReplace}" BasedOn="{StaticResource FindAndReplaceStyle}"/>
+
+    <!-- =============================================================================== -->
+    <!-- COLUMN STATS WINDOW STYLES                                                       -->
+    <!-- =============================================================================== -->
+
+    <!-- Note: Background/Foreground are also set directly on the XAML element alongside
+         Style="{DynamicResource MetroWindowStyle}" for Metro chrome. The explicit Style
+         attribute takes precedence over this implicit style, so these serve as fallback. -->
+    <Style x:Key="ColumnStatsWindowStyle" TargetType="{x:Type local:ColumnStatsWindow}">
+        <Setter Property="Background" Value="{DynamicResource EnvironmentWindowBackground}"/>
+        <Setter Property="Foreground" Value="{DynamicResource EnvironmentWindowText}"/>
+    </Style>
+
+    <Style TargetType="{x:Type local:ColumnStatsWindow}" BasedOn="{StaticResource ColumnStatsWindowStyle}"/>
+
+    <!-- =============================================================================== -->
+    <!-- FIELD CALCULATOR STYLES                                                          -->
+    <!-- =============================================================================== -->
+
+    <Style x:Key="FieldCalculatorStyle" TargetType="{x:Type local:FieldCalculator}">
+        <Setter Property="Background" Value="{DynamicResource EnvironmentWindowBackground}"/>
+        <Setter Property="Foreground" Value="{DynamicResource EnvironmentWindowText}"/>
+    </Style>
+
+    <Style TargetType="{x:Type local:FieldCalculator}" BasedOn="{StaticResource FieldCalculatorStyle}"/>
+
+    <!-- =============================================================================== -->
+    <!-- SELECT BY ATTRIBUTE STYLES                                                       -->
+    <!-- =============================================================================== -->
+
+    <Style x:Key="SelectByAttributeStyle" TargetType="{x:Type local:SelectByAttribute}">
+        <Setter Property="Background" Value="{DynamicResource EnvironmentWindowBackground}"/>
+        <Setter Property="Foreground" Value="{DynamicResource EnvironmentWindowText}"/>
+    </Style>
+
+    <Style TargetType="{x:Type local:SelectByAttribute}" BasedOn="{StaticResource SelectByAttributeStyle}"/>
+
+    <!-- =============================================================================== -->
+    <!-- CALCULATOR HELP WINDOW STYLES                                                    -->
+    <!-- =============================================================================== -->
+
+    <Style x:Key="CalculatorHelpWindowStyle" TargetType="{x:Type local:CalculatorHelpWindow}">
+        <Setter Property="Background" Value="{DynamicResource EnvironmentWindowBackground}"/>
+        <Setter Property="Foreground" Value="{DynamicResource EnvironmentWindowText}"/>
+    </Style>
+
+    <Style TargetType="{x:Type local:CalculatorHelpWindow}" BasedOn="{StaticResource CalculatorHelpWindowStyle}"/>
+
+</ResourceDictionary>

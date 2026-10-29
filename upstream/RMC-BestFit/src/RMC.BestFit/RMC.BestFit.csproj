@@ -1,0 +1,62 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net10.0</TargetFrameworks>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AssemblyTitle>RMC.BestFit</AssemblyTitle>
+    <Title>RMC.BestFit</Title>
+    <Description>Portable model library for RMC-BestFit Bayesian estimation, distribution fitting, and frequency analysis in flood risk and water resources engineering.</Description>
+    <Authors>C. Haden Smith; Woodrow L. Fields; Brian Skahill</Authors>
+    <Company>USACE-RMC</Company>
+    <Product>RMC-BestFit</Product>
+    <PackageId>RMC.BestFit</PackageId>
+    <PackageProjectUrl>https://github.com/USACE-RMC/RMC-BestFit</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/USACE-RMC/RMC-BestFit</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>Bayesian inference;flood frequency analysis;hydrology;probability distributions;MCMC;risk assessment;water resources engineering;.NET;C#</PackageTags>
+    <PackageLicenseExpression>0BSD</PackageLicenseExpression>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageReleaseNotes>RMC.BestFit 2.0.1 maintenance release of the model library, built against RMC.Numerics 2.2.0. It keeps saved ARIMAX parameters and priors when a model with covariates is restored, copied, or cloned; conditions ARIMAX on max(q, p + b) with covariates; corrects differenced time-series training, reintegration, and transform windows; derives the default time-series training window from its degrees of freedom; keeps Bulletin 17C point estimates when the GMM covariance fails; clears a stale peaks-over-threshold exposure when the input source changes; and now ships its IntelliSense XML documentation. Full notes: https://github.com/USACE-RMC/RMC-BestFit/releases/tag/v2.0.1</PackageReleaseNotes>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <IsPackable>true</IsPackable>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <DebugType>embedded</DebugType>
+    <!-- Ship the IntelliSense documentation with the package; the XML documentation gate keeps it complete. -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+  
+  <!-- Otherwise targets C# 7.3 which does not have global usings and some other syntactic sugar utilized here. -->
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net481'">
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Analyses\TimeSeries\Support\**" />
+    <Compile Remove="Analyses\Univariate\Support\**" />
+    <EmbeddedResource Remove="Analyses\TimeSeries\Support\**" />
+    <EmbeddedResource Remove="Analyses\Univariate\Support\**" />
+    <None Remove="Analyses\TimeSeries\Support\**" />
+    <None Remove="Analyses\Univariate\Support\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="RMC.Numerics" Condition="'$(UseLocalRmcNumerics)' != 'true'" />
+    <ProjectReference Include="$(RmcNumericsProjectPath)" Condition="'$(UseLocalRmcNumerics)' == 'true'" />
+    <PackageReference Include="DotNet.ReproducibleBuilds">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.SourceLink.GitHub">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+    <None Include="..\..\LICENSE" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+</Project>

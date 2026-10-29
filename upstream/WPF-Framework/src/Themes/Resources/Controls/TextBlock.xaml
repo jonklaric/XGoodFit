@@ -1,0 +1,15 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!--
+    Themed TextBlock Style
+
+    Sets the default Foreground for all TextBlock elements to the theme-aware
+    EnvironmentWindowText brush. Without this, TextBlock defaults to black text
+    which is invisible in dark mode.
+    -->
+
+    <Style x:Key="BasicTextBlockStyle" TargetType="{x:Type TextBlock}">
+        <Setter Property="Foreground" Value="{DynamicResource EnvironmentWindowText}"/>
+    </Style>
+</ResourceDictionary>

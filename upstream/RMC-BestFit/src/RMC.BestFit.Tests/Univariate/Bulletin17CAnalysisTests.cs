@@ -1,0 +1,1218 @@
+using Numerics;
+using Numerics.Distributions;
+using Numerics.Functions;
+using Numerics.Mathematics.Optimization;
+using Numerics.Sampling.MCMC;
+using RMC.BestFit.Analyses;
+using RMC.BestFit.Estimation;
+using RMC.BestFit.Models;
+using RMC.BestFit.Models.LinkFunctions;
+using System.Reflection;
+using System.Xml.Linq;
+using BestFitDataFrame = RMC.BestFit.Models.DataFrame;
+
+namespace RMC.BestFit.Tests.Univariate;
+
+/// <summary>
+/// Programmatic unit tests for the <c>Bulletin17CAnalysis</c> class.
+/// </summary>
+/// <remarks>
+/// Covers construction, property round-trip, validation, XElement serialization, deterministic
+/// bootstrap retry policy, and the supporting <c>UncertaintyMethod</c> enum plus
+/// <c>CohnConfidenceIntervalResult</c> DTO. GMM estimation, bootstrap refits, and Cohn-style CI
+/// computations are computationally expensive and live in <c>RMC.BestFit.Verification</c>.
+/// </remarks>
+[TestClass]
+public class Bulletin17CAnalysisTests
+{
+    #region Inline test fixtures
+
+    private const int FixtureSize = 50;
+
+    // Deterministic flood-like fixture. Inline (fixed RNG seed) so this file does not
+    // depend on the Verification project's TestData.
+    private static readonly double[] InlineFloodData = new LogNormal(8.0, 0.4)
+        .GenerateRandomValues(FixtureSize, 12345);
+
+    /// <summary>
+    /// Creates flood Data Frame.
+    /// </summary>
+    /// <returns>The created test object.</returns>
+    /// <remarks>
+    /// This helper keeps fixture setup local to the tests that use it.
+    /// </remarks>
+    private static BestFitDataFrame CreateFloodDataFrame()
+    {
+        var df = new BestFitDataFrame();
+        for (int i = 0; i < InlineFloodData.Length; i++)
+        {
+            df.ExactSeries.Add(new ExactData(1970 + i, InlineFloodData[i]));
+        }
+        return df;
+    }
+
+    /// <summary>
+    /// Creates lP3 Model.
+    /// </summary>
+    /// <returns>The created test object.</returns>
+    /// <remarks>
+    /// This helper keeps fixture setup local to the tests that use it.
+    /// </remarks>
+    private static Bulletin17CDistribution CreateLP3Model()
+    {
+        var df = CreateFloodDataFrame();
+        return new Bulletin17CDistribution(df, UnivariateDistributionType.LogPearsonTypeIII);
+    }
+
+    #endregion
+
+    #region Constructor
+
+    /// <summary>
+    /// Default analysis constructor wires a Bulletin17CDistribution model, owns its own
+    /// BayesianAnalysis (point estimator defaulting to PosteriorMode), and starts un-estimated.
+    /// </summary>
+    [TestMethod]
+    public void Constructor_WithModel_InitializesAllRequiredState()
+    {
+        var model = CreateLP3Model();
+
+        var analysis = new Bulletin17CAnalysis(model);
+
+        Assert.AreSame(model, analysis.Bulletin17CDistribution);
+        Assert.IsNotNull(analysis.BayesianAnalysis,
+            "BayesianAnalysis is used as the GMM result container per the wrapper-class invariants.");
+        Assert.IsNotNull(analysis.ProbabilityOrdinates);
+        Assert.IsFalse(analysis.IsEstimated, "Newly constructed analysis should not be estimated.");
+        Assert.IsNull(analysis.AnalysisResults, "Pre-run AnalysisResults must be null.");
+        Assert.IsNull(analysis.GMM, "GMM is created lazily during RunAsync — null until then.");
+    }
+
+    /// <summary>
+    /// Default constructor sets the point estimator to <c>PosteriorMode</c> because GMM
+    /// produces a point estimate rather than a chain — using the chain mean would average
+    /// over warm-up jitter that doesn't apply to GMM output.
+    /// </summary>
+    [TestMethod]
+    public void Constructor_DefaultPointEstimator_IsPosteriorMode()
+    {
+        var analysis = new Bulletin17CAnalysis(CreateLP3Model());
+
+        Assert.AreEqual(BayesianAnalysis.PointEstimateType.PosteriorMode,
+            analysis.BayesianAnalysis.PointEstimator);
+    }
+
+    /// <summary>
+    /// Default uncertainty method is <c>LinkedMultivariateNormal</c> — the production
+    /// calibrated default. Tests should pin this so an accidental flip in production code
+    /// surfaces here rather than silently changing computed CIs.
+    /// </summary>
+    [TestMethod]
+    public void Constructor_DefaultUncertaintyMethod_IsLinkedMultivariateNormal()
+    {
+        var analysis = new Bulletin17CAnalysis(CreateLP3Model());
+
+        Assert.AreEqual(UncertaintyMethod.LinkedMultivariateNormal, analysis.UncertaintyMethod);
+    }
+
+    /// <summary>
+    /// Null-arg guard: a B17C analysis without a B17C model is non-sensical.
+    /// </summary>
+    [TestMethod]
+    public void Constructor_NullModel_Throws()
+    {
+        Assert.ThrowsException<ArgumentNullException>(
+            () => new Bulletin17CAnalysis(null!));
+    }
+
+    /// <summary>
+    /// XElement constructor null-arg guards — both arguments are required.
+    /// </summary>
+    [TestMethod]
+    public void Constructor_NullXmlOrModel_Throws()
+    {
+        var model = CreateLP3Model();
+
+        // Null XElement
+        Assert.ThrowsException<ArgumentNullException>(
+            () => new Bulletin17CAnalysis(model, null!));
+
+        // Null model
+        var any = new Bulletin17CAnalysis(model);
+        Assert.ThrowsException<ArgumentNullException>(
+            () => new Bulletin17CAnalysis(null!, any.ToXElement()));
+    }
+
+    #endregion
+
+    #region UncertaintyMethod property
+
+    /// <summary>
+    /// Setting <c>Bulletin17CAnalysis.UncertaintyMethod</c> to a new value clears
+    /// existing results: the prior CIs no longer reflect the chosen method.
+    /// </summary>
+    [TestMethod]
+    public void UncertaintyMethod_SettingDifferentValue_RaisesPropertyChange()
+    {
+        var analysis = new Bulletin17CAnalysis(CreateLP3Model());
+        bool propertyChangedFired = false;
+        analysis.PropertyChanged += (s, e) =>
+        {
+            if (e.PropertyName == nameof(Bulletin17CAnalysis.UncertaintyMethod))
+                propertyChangedFired = true;
+        };
+
+        analysis.UncertaintyMethod = UncertaintyMethod.Bootstrap;
+
+        Assert.AreEqual(UncertaintyMethod.Bootstrap, analysis.UncertaintyMethod);
+        Assert.IsTrue(propertyChangedFired);
+    }
+
+    /// <summary>
+    /// Setting <c>Bulletin17CAnalysis.UncertaintyMethod</c> to the same value is a no-op:
+    /// no PropertyChanged event, no result clearing — protects against unnecessary recomputes.
+    /// </summary>
+    [TestMethod]
+    public void UncertaintyMethod_SettingSameValue_DoesNotRaisePropertyChange()
+    {
+        var analysis = new Bulletin17CAnalysis(CreateLP3Model());
+        var original = analysis.UncertaintyMethod;
+        bool propertyChangedFired = false;
+        analysis.PropertyChanged += (s, e) =>
+        {
+            if (e.PropertyName == nameof(Bulletin17CAnalysis.UncertaintyMethod))
+                propertyChangedFired = true;
+        };
+
+        analysis.UncertaintyMethod = original;
+
+        Assert.IsFalse(propertyChangedFired);
+    }
+
+    #endregion
+
+    #region ClearResults
+
+    /// <summary>
+    /// ClearResults transitions the analysis back to the un-estimated state and frees
+    /// downstream results. The model itself is preserved.
+    /// </summary>
+    [TestMethod]
+    public void ClearResults_NullsResultsAndUnsetsIsEstimated()
+    {
+        var model = CreateLP3Model();
+        var analysis = new Bulletin17CAnalysis(model);
+
+        analysis.ClearResults();
+
+        Assert.IsFalse(analysis.IsEstimated);
+        Assert.IsNull(analysis.AnalysisResults);
+        Assert.AreSame(model, analysis.Bulletin17CDistribution,
+            "ClearResults must not detach the model — only its computed results.");
+    }
+
+    #endregion
+
+    #region Validation
+
+    /// <summary>
+    /// A B17C analysis with a valid LP3 model and the default probability ordinates
+    /// should validate cleanly.
+    /// </summary>
+    [TestMethod]
+    public void Validate_GoodFixture_IsValid()
+    {
+        var analysis = new Bulletin17CAnalysis(CreateLP3Model());
+
+        var (isValid, messages) = analysis.Validate();
+
+        Assert.IsTrue(isValid, $"Validation failed: {string.Join("; ", messages)}");
+    }
+
+    /// <summary>
+    /// Validate must propagate failures from the underlying distribution: if the model is
+    /// invalid (e.g., null BestFitDataFrame) the analysis is invalid too.
+    /// </summary>
+    [TestMethod]
+    public void Validate_InvalidModel_PropagatesFailure()
+    {
+        // Default constructor has no BestFitDataFrame, which the distribution's Validate flags.
+        var modelWithoutData = new Bulletin17CDistribution();
+        var analysis = new Bulletin17CAnalysis(modelWithoutData);
+
+        var (isValid, messages) = analysis.Validate();
+
+        Assert.IsFalse(isValid);
+        Assert.IsTrue(messages.Count > 0);
+    }
+
+    #endregion
+
+    #region Serialization
+
+    /// <summary>
+    /// ToXElement / FromXElement must preserve the configured uncertainty method,
+    /// probability ordinates, and core BayesianAnalysis settings (iterations, warmup).
+    /// </summary>
+    [TestMethod]
+    public void XmlSerialization_RoundTrip_PreservesConfiguration()
+    {
+        var model = CreateLP3Model();
+        var analysis = new Bulletin17CAnalysis(model);
+        analysis.UncertaintyMethod = UncertaintyMethod.BiasCorrectedBootstrap;
+        analysis.BayesianAnalysis.Iterations = 4000;
+        analysis.BayesianAnalysis.WarmupIterations = 800;
+
+        analysis.ProbabilityOrdinates.Clear();
+        analysis.ProbabilityOrdinates.Add(0.5);
+        analysis.ProbabilityOrdinates.Add(0.1);
+        analysis.ProbabilityOrdinates.Add(0.01);
+
+        var xml = analysis.ToXElement();
+
+        var restored = new Bulletin17CAnalysis(model, xml);
+
+        Assert.AreEqual(UncertaintyMethod.BiasCorrectedBootstrap, restored.UncertaintyMethod,
+            "UncertaintyMethod must round-trip.");
+        Assert.AreEqual(3, restored.ProbabilityOrdinates.Count,
+            "ProbabilityOrdinates must round-trip.");
+        Assert.AreEqual(4000, restored.BayesianAnalysis.Iterations);
+        Assert.AreEqual(800, restored.BayesianAnalysis.WarmupIterations);
+        Assert.IsFalse(restored.IsEstimated, "Pre-run analysis must restore as non-estimated.");
+    }
+
+    /// <summary>
+    /// Serialized XElement uses the analysis class name as its root tag.
+    /// </summary>
+    [TestMethod]
+    public void ToXElement_HasExpectedRootName()
+    {
+        var analysis = new Bulletin17CAnalysis(CreateLP3Model());
+
+        var xml = analysis.ToXElement();
+
+        Assert.AreEqual(nameof(Bulletin17CAnalysis), xml.Name.LocalName);
+    }
+
+    #endregion
+
+    #region Linked Multivariate Normal link helpers
+
+    /// <summary>
+    /// Location uses signed WEDS because censoring direction has a direct location interpretation.
+    /// </summary>
+    [TestMethod]
+    public void LocationLink_UsesSignedWedsForCensoringDirection()
+    {
+        var method = typeof(Bulletin17CAnalysis).GetMethod(
+            "CreateLocationLink",
+            BindingFlags.NonPublic | BindingFlags.Static);
+
+        Assert.IsNotNull(method, "Location WEDS handling should remain explicit and defensible.");
+
+        var leftCensoredLink = (ASinHLink)method!.Invoke(null, [100.0, 5.0, -0.7])!;
+        var rightCensoredLink = (ASinHLink)method!.Invoke(null, [100.0, 5.0, 0.7])!;
+
+        Assert.AreEqual(-0.7, leftCensoredLink.ParentIndicator, 1e-12,
+            "Signed WEDS must preserve left-censoring direction for the location marginal.");
+        Assert.AreEqual(0.7, rightCensoredLink.ParentIndicator, 1e-12,
+            "Signed WEDS must preserve right-censoring direction for the location marginal.");
+        Assert.AreEqual(0.50, leftCensoredLink.EpsilonMax, 1e-12);
+        Assert.AreEqual(0.50, rightCensoredLink.EpsilonMax, 1e-12);
+        Assert.AreEqual(1.0, leftCensoredLink.Delta, 1e-12,
+            "Location WEDS changes asymmetry, not tail thickness.");
+    }
+
+    /// <summary>
+    /// LP3/P3 location retains the theory-calibrated fitted-gamma blend and conservative cap.
+    /// </summary>
+    [TestMethod]
+    public void PearsonLocationLink_RetainsGammaBlendAndConservativeCap()
+    {
+        var method = typeof(Bulletin17CAnalysis).GetMethod(
+            "CreatePearsonLocationLink",
+            BindingFlags.NonPublic | BindingFlags.Static);
+
+        Assert.IsNotNull(method, "Pearson location behavior should remain separate from the generic location link.");
+
+        var link = (ASinHLink)method!.Invoke(null, [100.0, 5.0, 0.4, -0.1])!;
+
+        Assert.AreEqual(0.10, link.ParentIndicator, 1e-12,
+            "LP3/P3 location should preserve the prior 0.5*gammaHat + WEDS blend.");
+        Assert.AreEqual(0.50, link.EpsilonMax, 1e-12,
+            "LP3/P3 location should keep its fixed asymmetry cap.");
+        Assert.AreEqual(1.0, link.EpsilonSlope, 1e-12);
+        Assert.AreEqual(1.0, link.Delta, 1e-12,
+            "LP3/P3 location should not be the tail-thickening knob.");
+    }
+
+    /// <summary>
+    /// Raw WEDS for the gamma moment is magnitude evidence, not direction evidence. A
+    /// positive fitted skew such as gamma = 0.5 can produce negative raw WEDS, but the
+    /// ASinH link must still receive a positive direction score because gammaHat supplies
+    /// the theory-based sign.
+    /// </summary>
+    [TestMethod]
+    public void GammaWeds_PositiveGamma_UsesWedsMagnitudeWithPositiveDirection()
+    {
+        var orientMethod = typeof(Bulletin17CAnalysis).GetMethod(
+            "OrientGammaWedsForLink",
+            BindingFlags.NonPublic | BindingFlags.Static);
+        var linkMethod = typeof(Bulletin17CAnalysis).GetMethod(
+            "CreateGammaShapeLink",
+            BindingFlags.NonPublic | BindingFlags.Static);
+
+        Assert.IsNotNull(orientMethod, "Gamma WEDS orientation helper should remain explicit.");
+        Assert.IsNotNull(linkMethod, "Gamma ASinH link helper should remain explicit.");
+
+        double orientedScore = (double)orientMethod!.Invoke(null, [0.5, -0.8])!;
+        var link = (ASinHLink)linkMethod!.Invoke(null, [0.5, 0.2, orientedScore])!;
+
+        Assert.IsTrue(orientedScore > 0.65,
+            "Positive gamma should orient a large raw WEDS magnitude into strong positive gamma-link evidence.");
+        Assert.AreEqual(orientedScore, link.ParentIndicator, 1e-12,
+            "The ASinH parent indicator should use the oriented gamma direction score.");
+        Assert.IsTrue(link.EpsilonMax > 0.75,
+            "A strong positive gamma direction should permit strong positive ASinH asymmetry.");
+    }
+
+    /// <summary>
+    /// Negative fitted gamma uses the same WEDS magnitude but flips the ASinH direction negative.
+    /// </summary>
+    [TestMethod]
+    public void GammaWeds_NegativeGamma_UsesWedsMagnitudeWithNegativeDirection()
+    {
+        var orientMethod = typeof(Bulletin17CAnalysis).GetMethod(
+            "OrientGammaWedsForLink",
+            BindingFlags.NonPublic | BindingFlags.Static);
+        var linkMethod = typeof(Bulletin17CAnalysis).GetMethod(
+            "CreateGammaShapeLink",
+            BindingFlags.NonPublic | BindingFlags.Static);
+
+        Assert.IsNotNull(orientMethod);
+        Assert.IsNotNull(linkMethod);
+
+        double orientedScore = (double)orientMethod!.Invoke(null, [-0.5, 0.8])!;
+        var link = (ASinHLink)linkMethod!.Invoke(null, [-0.5, 0.2, orientedScore])!;
+
+        Assert.IsTrue(orientedScore < -0.65,
+            "Negative gamma should orient a large raw WEDS magnitude into negative gamma-link evidence.");
+        Assert.AreEqual(orientedScore, link.ParentIndicator, 1e-12);
+        Assert.AreEqual(0.45, link.EpsilonMax, 1e-12,
+            "Negative gamma asymmetry remains lower than the positive side to avoid over-negative LP3/P3 uncertainty tails.");
+    }
+
+    /// <summary>
+    /// A fitted zero gamma remains symmetric; high-quantile support comes from heavier tails.
+    /// </summary>
+    [TestMethod]
+    public void GammaWeds_ZeroGamma_UsesSymmetricHeavyTails()
+    {
+        var orientMethod = typeof(Bulletin17CAnalysis).GetMethod(
+            "OrientGammaWedsForLink",
+            BindingFlags.NonPublic | BindingFlags.Static);
+        var linkMethod = typeof(Bulletin17CAnalysis).GetMethod(
+            "CreateGammaShapeLink",
+            BindingFlags.NonPublic | BindingFlags.Static);
+
+        Assert.IsNotNull(orientMethod);
+        Assert.IsNotNull(linkMethod);
+
+        double orientedScore = (double)orientMethod!.Invoke(null, [0.0, 0.0])!;
+        var link = (ASinHLink)linkMethod!.Invoke(null, [0.0, 0.2, orientedScore])!;
+
+        Assert.AreEqual(0.0, orientedScore, 1e-12,
+            "Exactly zero fitted gamma should remain symmetric rather than receiving positive asymmetry.");
+        Assert.AreEqual(0.0, link.ParentIndicator, 1e-12);
+        Assert.AreEqual(0.0, link.EpsilonMax, 1e-12);
+        Assert.IsTrue(link.Delta < 1.0 && link.Delta > 0.90,
+            "Near-zero gamma should use symmetric tail thickening through Delta instead of epsilon.");
+    }
+
+    /// <summary>
+    /// Slight positive gamma should preserve positive skew direction; near-zero tail spread is handled by Delta.
+    /// </summary>
+    [TestMethod]
+    public void GammaWeds_SlightPositiveGamma_UsesPositiveDirectionAndHeavyTails()
+    {
+        var orientMethod = typeof(Bulletin17CAnalysis).GetMethod(
+            "OrientGammaWedsForLink",
+            BindingFlags.NonPublic | BindingFlags.Static);
+        var linkMethod = typeof(Bulletin17CAnalysis).GetMethod(
+            "CreateGammaShapeLink",
+            BindingFlags.NonPublic | BindingFlags.Static);
+
+        Assert.IsNotNull(orientMethod);
+        Assert.IsNotNull(linkMethod);
+
+        double orientedScore = (double)orientMethod!.Invoke(null, [0.03, 1.0])!;
+        var link = (ASinHLink)linkMethod!.Invoke(null, [0.03, 0.2, orientedScore])!;
+
+        Assert.AreEqual(1.0, orientedScore, 1e-12,
+            "Positive fitted gamma should use positive WEDS magnitude immediately rather than being gated by gammaSE.");
+        Assert.AreEqual(1.0, link.ParentIndicator, 1e-12,
+            "Positive fitted gamma should always receive positive ASinH skew direction.");
+        Assert.AreEqual(1.0, link.EpsilonMax, 1e-12);
+        Assert.IsTrue(link.Delta < 1.0 && link.Delta > 0.90,
+            "Near-zero positive gamma can still receive symmetric tail thickness through Delta.");
+    }
+
+    /// <summary>
+    /// Heavy censoring can make raw WEDS large when gamma is only slightly negative. The
+    /// negative-side gate should suppress ASinH asymmetry in that case.
+    /// </summary>
+    [TestMethod]
+    public void GammaWeds_SlightNegativeGamma_DampensLargeWedsMagnitude()
+    {
+        var orientMethod = typeof(Bulletin17CAnalysis).GetMethod(
+            "OrientGammaWedsForLink",
+            BindingFlags.NonPublic | BindingFlags.Static);
+        var linkMethod = typeof(Bulletin17CAnalysis).GetMethod(
+            "CreateGammaShapeLink",
+            BindingFlags.NonPublic | BindingFlags.Static);
+
+        Assert.IsNotNull(orientMethod);
+        Assert.IsNotNull(linkMethod);
+
+        double orientedScore = (double)orientMethod!.Invoke(null, [-0.03, 1.0])!;
+        var link = (ASinHLink)linkMethod!.Invoke(null, [-0.03, 0.2, orientedScore])!;
+
+        Assert.IsTrue(Math.Abs(orientedScore) < 0.02,
+            "Slight negative gamma should strongly damp even maximal raw WEDS magnitude.");
+        Assert.AreEqual(0.0, link.ParentIndicator, 1e-12);
+        Assert.AreEqual(0.0, link.EpsilonMax, 1e-12);
+        Assert.IsTrue(link.Delta < 1.0 && link.Delta > 0.90,
+            "Slight negative gamma should remain symmetric but gain near-zero tail thickness.");
+    }
+
+    /// <summary>
+    /// Moderate negative gamma should re-enter the negative ASinH direction smoothly.
+    /// </summary>
+    [TestMethod]
+    public void GammaWeds_ModerateNegativeGamma_SmoothlyRestoresNegativeDirection()
+    {
+        var orientMethod = typeof(Bulletin17CAnalysis).GetMethod(
+            "OrientGammaWedsForLink",
+            BindingFlags.NonPublic | BindingFlags.Static);
+        var linkMethod = typeof(Bulletin17CAnalysis).GetMethod(
+            "CreateGammaShapeLink",
+            BindingFlags.NonPublic | BindingFlags.Static);
+
+        Assert.IsNotNull(orientMethod);
+        Assert.IsNotNull(linkMethod);
+
+        double orientedScore = (double)orientMethod!.Invoke(null, [-0.35, 1.0])!;
+        var link = (ASinHLink)linkMethod!.Invoke(null, [-0.35, 0.2, orientedScore])!;
+
+        Assert.AreEqual(-0.784, orientedScore, 1e-12,
+            "Negative gamma asymmetry should enter smoothly as |gammaHat| moves away from zero.");
+        Assert.AreEqual(-0.784, link.ParentIndicator, 1e-12);
+        Assert.AreEqual(0.446, link.EpsilonMax, 1e-12,
+            "Moderate negative gamma should remain below the positive-side epsilon floor.");
+        Assert.IsTrue(link.Delta > 0.95,
+            "Gamma tail thickening should fade as fitted gamma moves away from zero.");
+    }
+
+    /// <summary>
+    /// Positive fitted gamma still receives a small positive direction when WEDS is balanced.
+    /// </summary>
+    [TestMethod]
+    public void GammaWeds_PositiveGammaWithBalancedWeds_UsesPositiveFloor()
+    {
+        var orientMethod = typeof(Bulletin17CAnalysis).GetMethod(
+            "OrientGammaWedsForLink",
+            BindingFlags.NonPublic | BindingFlags.Static);
+        var linkMethod = typeof(Bulletin17CAnalysis).GetMethod(
+            "CreateGammaShapeLink",
+            BindingFlags.NonPublic | BindingFlags.Static);
+
+        Assert.IsNotNull(orientMethod);
+        Assert.IsNotNull(linkMethod);
+
+        double orientedScore = (double)orientMethod!.Invoke(null, [0.03, 0.0])!;
+        var link = (ASinHLink)linkMethod!.Invoke(null, [0.03, 0.2, orientedScore])!;
+
+        Assert.AreEqual(0.10, orientedScore, 1e-12,
+            "Positive fitted gamma should retain a small positive ASinH direction even when WEDS magnitude is balanced.");
+        Assert.AreEqual(0.10, link.ParentIndicator, 1e-12);
+        Assert.AreEqual(0.55, link.EpsilonMax, 1e-12);
+        Assert.IsTrue(link.Delta < 1.0,
+            "GammaSE remains available for symmetric tail thickening.");
+    }
+
+    /// <summary>
+    /// Larger gamma standard error should produce heavier symmetric gamma tails near zero.
+    /// </summary>
+    [TestMethod]
+    public void GammaTailDelta_NearZeroGamma_DecreasesAsGammaUncertaintyIncreases()
+    {
+        var linkMethod = typeof(Bulletin17CAnalysis).GetMethod(
+            "CreateGammaShapeLink",
+            BindingFlags.NonPublic | BindingFlags.Static);
+
+        Assert.IsNotNull(linkMethod);
+
+        var wellIdentified = (ASinHLink)linkMethod!.Invoke(null, [0.0, 0.1, 0.0])!;
+        var weaklyIdentified = (ASinHLink)linkMethod!.Invoke(null, [0.0, 0.8, 0.0])!;
+
+        Assert.IsTrue(weaklyIdentified.Delta < wellIdentified.Delta,
+            "GammaSE is used as an effective-information surrogate; larger gammaSE should thicken tails.");
+        Assert.IsTrue(weaklyIdentified.Delta >= 0.80,
+            "Adaptive gamma tail thickening should respect the configured minimum delta.");
+        Assert.AreEqual(0.0, weaklyIdentified.EpsilonMax, 1e-12,
+            "Tail thickening near zero should not introduce positive or negative skewness by itself.");
+    }
+
+    /// <summary>
+    /// Positive-parameter links use relative standard error so shape is invariant to flow units.
+    /// </summary>
+    [TestMethod]
+    public void PositiveParameterLink_UsesRelativeStandardErrorDrivenLogASinH()
+    {
+        var method = typeof(Bulletin17CAnalysis).GetMethod(
+            "CreatePositiveParameterLink",
+            BindingFlags.NonPublic | BindingFlags.Static);
+
+        Assert.IsNotNull(method);
+
+        var baselineUnits = (LogASinHLink)method!.Invoke(null, [10.0, 1.0])!;
+        var scaledUnits = (LogASinHLink)method!.Invoke(null, [100.0, 10.0])!;
+        var weaklyIdentified = (LogASinHLink)method!.Invoke(null, [10.0, 5.0])!;
+
+        Assert.AreEqual(Math.Sqrt(Math.Log(1.01)), baselineUnits.LogScale, 1e-12,
+            "Positive-parameter log-standardization should be derived from SE / estimate.");
+        Assert.AreEqual(baselineUnits.LogScale, scaledUnits.LogScale, 1e-12,
+            "Changing measurement units should not change positive-parameter link shape.");
+        Assert.AreEqual(baselineUnits.ParentIndicator, scaledUnits.ParentIndicator, 1e-12,
+            "Relative uncertainty, not raw SE, should drive adaptive asymmetry.");
+        Assert.IsTrue(weaklyIdentified.ParentIndicator > baselineUnits.ParentIndicator,
+            "Larger relative SE should strengthen positive-parameter right-tail asymmetry.");
+        Assert.IsTrue(weaklyIdentified.Delta < baselineUnits.Delta,
+            "Larger relative SE should produce fatter symmetric log-space tails.");
+    }
+
+    /// <summary>
+    /// LP3/P3 scale uses a positive-support log-ASinH link driven by relative standard error.
+    /// </summary>
+    [TestMethod]
+    public void PearsonScaleLink_UsesRelativeStandardErrorDrivenLogASinH()
+    {
+        var method = typeof(Bulletin17CAnalysis).GetMethod(
+            "CreatePearsonScaleLink",
+            BindingFlags.NonPublic | BindingFlags.Static);
+
+        Assert.IsNotNull(method, "P3/LP3 scale handling should remain isolated from generic positive-parameter links.");
+
+        var link = (LogASinHLink)method!.Invoke(null, [10.0, 1.0])!;
+
+        Assert.AreEqual(10.0, link.Sigma0, 1e-12);
+        Assert.AreEqual(Math.Sqrt(Math.Log(1.01)), link.LogScale, 1e-12,
+            "Scale log-standardization should be derived from scaleSE / scaleHat.");
+        Assert.AreEqual(1.0 / 3.5, link.ParentIndicator, 1e-12,
+            "Relative scale uncertainty should drive adaptive positive asymmetry.");
+        Assert.IsTrue(link.UseAdaptiveEpsilon,
+            "LP3/P3 scale should adapt asymmetry to relative standard error.");
+        Assert.AreEqual(0.75, link.EpsilonMax, 1e-12);
+        Assert.AreEqual(1.25, link.EpsilonSlope, 1e-12);
+        Assert.IsTrue(link.Delta < 1.0 && link.Delta > 0.90,
+            "Scale tail thickness should increase modestly with relative standard error.");
+    }
+
+    #endregion
+
+    /// <summary>
+    /// Pivot bootstrap uses Numerics Yeo-Johnson links for well-behaved samples.
+    /// </summary>
+    [TestMethod]
+    public void PivotYeoJohnsonLink_ValidSamples_UsesNumericsLink()
+    {
+        var link = Bulletin17CAnalysis.CreatePivotYeoJohnsonLink(
+            new[] { -2.0, -1.0, -0.25, 0.0, 0.5, 1.0, 3.0 },
+            "location");
+
+        Assert.IsInstanceOfType(link, typeof(YeoJohnsonLink));
+    }
+
+    /// <summary>
+    /// Pivot bootstrap falls back to identity when Yeo-Johnson fitting fails.
+    /// </summary>
+    [TestMethod]
+    public void PivotYeoJohnsonLink_FitFailure_UsesIdentityLink()
+    {
+        var link = Bulletin17CAnalysis.CreatePivotYeoJohnsonLink(
+            new[] { -double.MaxValue, -double.MaxValue / 2d, -double.MaxValue / 4d },
+            "shape");
+
+        Assert.IsInstanceOfType(link, typeof(IdentityLink));
+        Assert.AreEqual(12.5, link.Link(12.5), 1e-12);
+    }
+
+    /// <summary>
+    /// Pivot repair moves non-finite and out-of-bound values into each model parameter's interior.
+    /// </summary>
+    [TestMethod]
+    public void RepairPivotParametersToBounds_InvalidComponents_RepairsInPlace()
+    {
+        double[] pivot = [double.NaN, -1d, -6.1364298074617105d];
+        double[] parent = [3.25d, 0.5d, -0.9d];
+        var parameters = new List<ModelParameter>
+        {
+            new() { LowerBound = 0d, UpperBound = 5d },
+            new() { LowerBound = 1E-12d, UpperBound = 4d },
+            new() { LowerBound = -6d, UpperBound = 6d }
+        };
+
+        bool repaired = Bulletin17CAnalysis.RepairPivotParametersToBounds(
+            pivot, parent, parameters);
+
+        Assert.IsTrue(repaired);
+        Assert.AreEqual(parent[0], pivot[0], 1E-12d);
+        for (int i = 0; i < pivot.Length; i++)
+        {
+            Assert.IsTrue(double.IsFinite(pivot[i]));
+            Assert.IsTrue(pivot[i] > parameters[i].LowerBound);
+            Assert.IsTrue(pivot[i] < parameters[i].UpperBound);
+        }
+    }
+
+    /// <summary>
+    /// Pivot repair leaves an already valid parameter vector unchanged.
+    /// </summary>
+    [TestMethod]
+    public void RepairPivotParametersToBounds_ValidComponents_RemainsUnchanged()
+    {
+        double[] pivot = [3.25d, 0.5d, -0.9d];
+        double[] expected = pivot.ToArray();
+        double[] parent = [3d, 0.4d, 0d];
+        var parameters = new List<ModelParameter>
+        {
+            new() { LowerBound = 0d, UpperBound = 5d },
+            new() { LowerBound = 1E-12d, UpperBound = 4d },
+            new() { LowerBound = -6d, UpperBound = 6d }
+        };
+
+        bool repaired = Bulletin17CAnalysis.RepairPivotParametersToBounds(
+            pivot, parent, parameters);
+
+        Assert.IsFalse(repaired);
+        CollectionAssert.AreEqual(expected, pivot);
+    }
+
+    #region Cohn diagnostic scope
+
+    /// <summary>
+    /// An unestimated LP3 analysis with exact data retains the existing null result contract.
+    /// </summary>
+    [TestMethod]
+    public void ComputeCohnStyleConfidenceIntervals_Lp3ExactDataBeforeEstimation_ReturnsNull()
+    {
+        var analysis = new Bulletin17CAnalysis(CreateLP3Model());
+
+        Assert.IsNull(analysis.ComputeCohnStyleConfidenceIntervals());
+    }
+
+    /// <summary>
+    /// Cohn diagnostics reject every supported non-LP3 parent before interpreting its parameters
+    /// as LP3 moments or applying a base-10 transformation.
+    /// </summary>
+    /// <param name="distributionType">The unsupported Bulletin 17C parent family.</param>
+    [DataTestMethod]
+    [DataRow(UnivariateDistributionType.Exponential)]
+    [DataRow(UnivariateDistributionType.GammaDistribution)]
+    [DataRow(UnivariateDistributionType.LogNormal)]
+    [DataRow(UnivariateDistributionType.Normal)]
+    [DataRow(UnivariateDistributionType.PearsonTypeIII)]
+    public void ComputeCohnStyleConfidenceIntervals_NonLp3Family_ThrowsNotSupported(
+        UnivariateDistributionType distributionType)
+    {
+        var model = new Bulletin17CDistribution(CreateFloodDataFrame(), distributionType);
+        var analysis = new Bulletin17CAnalysis(model);
+
+        var exception = Assert.ThrowsException<NotSupportedException>(
+            () => analysis.ComputeCohnStyleConfidenceIntervals());
+
+        StringAssert.Contains(exception.Message, "Log-Pearson Type III");
+    }
+
+    /// <summary>
+    /// LP3 Cohn diagnostics reject low outliers and every non-exact observation type.
+    /// </summary>
+    [TestMethod]
+    public void ComputeCohnStyleConfidenceIntervals_Lp3CensoredOrUncertainData_ThrowsNotSupported()
+    {
+        var cases = new (string Name, Action<BestFitDataFrame> Configure)[]
+        {
+            ("low outlier", dataFrame =>
+                ((ExactData)dataFrame.ExactSeries[0]).IsLowOutlier = true),
+            ("uncertain observation", dataFrame =>
+                dataFrame.UncertainSeries.Add(new UncertainData(1900, new Normal(1000d, 100d)))),
+            ("interval-censored observation", dataFrame =>
+                dataFrame.IntervalSeries.Add(new IntervalData(1900, 800d, 1000d, 1200d))),
+            ("threshold-censored period", dataFrame =>
+                dataFrame.ThresholdSeries.Add(new ThresholdData(1800, 1810, 1000d))),
+        };
+
+        foreach (var testCase in cases)
+        {
+            var dataFrame = CreateFloodDataFrame();
+            testCase.Configure(dataFrame);
+            var analysis = new Bulletin17CAnalysis(new Bulletin17CDistribution(
+                dataFrame, UnivariateDistributionType.LogPearsonTypeIII));
+
+            var exception = Assert.ThrowsException<NotSupportedException>(
+                () => analysis.ComputeCohnStyleConfidenceIntervals(), testCase.Name);
+
+            StringAssert.Contains(exception.Message, "require exact data", testCase.Name);
+        }
+    }
+
+    /// <summary>
+    /// Unestimated analyses do not publish a report, including non-LP3 and censored LP3 models.
+    /// </summary>
+    [TestMethod]
+    public void GenerateGMMReport_UnestimatedNonLp3AndCensoredLp3_ReturnsEmpty()
+    {
+        var nonLp3Analysis = new Bulletin17CAnalysis(new Bulletin17CDistribution(
+            CreateFloodDataFrame(), UnivariateDistributionType.Normal));
+        var censoredData = CreateFloodDataFrame();
+        censoredData.ThresholdSeries.Add(new ThresholdData(1800, 1810, 1000d));
+        var censoredLp3Analysis = new Bulletin17CAnalysis(new Bulletin17CDistribution(
+            censoredData, UnivariateDistributionType.LogPearsonTypeIII));
+
+        Assert.AreEqual(string.Empty, nonLp3Analysis.GenerateGMMReport());
+        Assert.AreEqual(string.Empty, censoredLp3Analysis.GenerateGMMReport());
+    }
+
+    #endregion
+
+    #region UncertaintyMethod enum surface
+
+    /// <summary>
+    /// Pin the production set of uncertainty methods. Adding a new entry should be a
+    /// deliberate change paired with downstream UI / report changes — failing here flags
+    /// the contract change.
+    /// </summary>
+    [TestMethod]
+    public void UncertaintyMethod_EnumHasFourMembers()
+    {
+        var members = Enum.GetValues<UncertaintyMethod>();
+
+        // MultivariateNormal, LinkedMultivariateNormal, Bootstrap, BiasCorrectedBootstrap
+        // (LinkedMultivariateStudentT was removed — see source comment.)
+        Assert.AreEqual(4, members.Length,
+            "UncertaintyMethod is expected to have exactly four members; flag a deliberate API change here.");
+    }
+
+    #endregion
+
+    #region CohnConfidenceIntervalResult DTO
+
+    /// <summary>
+    /// CohnConfidenceIntervalResult is a plain DTO. Default-constructed instance should
+    /// have empty arrays (not null) so consumers can iterate without null checks.
+    /// </summary>
+    [TestMethod]
+    public void CohnConfidenceIntervalResult_DefaultArraysAreEmpty()
+    {
+        var dto = new CohnConfidenceIntervalResult();
+
+        Assert.IsNotNull(dto.ExceedanceProbabilities);
+        Assert.IsNotNull(dto.PointEstimates);
+        Assert.IsNotNull(dto.LowerCI);
+        Assert.IsNotNull(dto.UpperCI);
+        Assert.IsNotNull(dto.Beta1);
+        Assert.IsNotNull(dto.Nu);
+        Assert.IsNotNull(dto.QuantileVariance);
+
+        Assert.AreEqual(0, dto.ExceedanceProbabilities.Length);
+        Assert.AreEqual(0, dto.PointEstimates.Length);
+        Assert.AreEqual(0, dto.LowerCI.Length);
+        Assert.AreEqual(0, dto.UpperCI.Length);
+        Assert.AreEqual(0, dto.Beta1.Length);
+        Assert.AreEqual(0, dto.Nu.Length);
+        Assert.AreEqual(0, dto.QuantileVariance.Length);
+
+        Assert.AreEqual(0.0, dto.ConfidenceLevel);
+    }
+
+    /// <summary>
+    /// CohnConfidenceIntervalResult round-trips its set values directly — it has no
+    /// custom equality / immutability semantics, so a property setter test is enough.
+    /// </summary>
+    [TestMethod]
+    public void CohnConfidenceIntervalResult_PropertyRoundTrip()
+    {
+        double[] aeps = [0.5, 0.1, 0.01];
+        double[] points = [100, 200, 400];
+        double[] lower = [80, 160, 320];
+        double[] upper = [120, 240, 480];
+
+        var dto = new CohnConfidenceIntervalResult
+        {
+            ExceedanceProbabilities = aeps,
+            PointEstimates = points,
+            LowerCI = lower,
+            UpperCI = upper,
+            ConfidenceLevel = 0.90,
+            Beta1 = [0.1, 0.2, 0.3],
+            Nu = [10, 8, 6],
+            QuantileVariance = [1.0, 4.0, 16.0],
+        };
+
+        CollectionAssert.AreEqual(aeps, dto.ExceedanceProbabilities);
+        CollectionAssert.AreEqual(points, dto.PointEstimates);
+        CollectionAssert.AreEqual(lower, dto.LowerCI);
+        CollectionAssert.AreEqual(upper, dto.UpperCI);
+        Assert.AreEqual(0.90, dto.ConfidenceLevel);
+        Assert.AreEqual(3, dto.Beta1.Length);
+        Assert.AreEqual(3, dto.Nu.Length);
+        Assert.AreEqual(3, dto.QuantileVariance.Length);
+    }
+
+    #endregion
+
+    #region Uncertainty diagnostic message
+
+    /// <summary>
+    /// The uncertainty diagnostic message defaults to empty and is reset by ClearResults,
+    /// so a stale abort reason can never survive into the next run's report.
+    /// </summary>
+    [TestMethod]
+    public void UncertaintyDiagnosticMessage_DefaultsEmpty_AndClearedByClearResults()
+    {
+        var analysis = new Bulletin17CAnalysis(CreateLP3Model());
+        Assert.AreEqual(string.Empty, analysis.UncertaintyDiagnosticMessage);
+
+        analysis.ClearResults();
+
+        Assert.AreEqual(string.Empty, analysis.UncertaintyDiagnosticMessage);
+    }
+
+    #endregion
+
+    #region Sampling diagnostics persistence
+
+    /// <summary>
+    /// Sampling diagnostics round-trip through the analysis XElement: absent when no
+    /// uncertainty run has produced them, restored when present, and re-emitted on save.
+    /// Projects saved before diagnostics persistence restore with null diagnostics.
+    /// </summary>
+    [TestMethod]
+    public void BootstrapResults_XElementRoundTrip_RestoresAndReEmitsDiagnostics()
+    {
+        var analysis = new Bulletin17CAnalysis(CreateLP3Model());
+        var legacyXml = analysis.ToXElement();
+        Assert.IsNull(legacyXml.Element(nameof(BootstrapDiagnostics)),
+            "No diagnostics element is written before an uncertainty run.");
+
+        var legacyRestored = new Bulletin17CAnalysis(CreateLP3Model(), legacyXml);
+        Assert.IsNull(legacyRestored.BootstrapResults,
+            "Projects saved before diagnostics persistence restore with null diagnostics.");
+
+        var diag = new BootstrapDiagnostics { TotalReplicates = 500 };
+        diag.IncrementFailed();
+        diag.RetainedReplicates = 480;
+        var xmlWithDiag = analysis.ToXElement();
+        xmlWithDiag.Add(diag.ToXElement());
+
+        var restored = new Bulletin17CAnalysis(CreateLP3Model(), xmlWithDiag);
+        Assert.IsNotNull(restored.BootstrapResults);
+        Assert.AreEqual(500, restored.BootstrapResults.TotalReplicates);
+        Assert.AreEqual(1, restored.BootstrapResults.FailedReplicates);
+        Assert.AreEqual(480, restored.BootstrapResults.RetainedReplicates);
+
+        var reSaved = restored.ToXElement();
+        Assert.IsNotNull(reSaved.Element(nameof(BootstrapDiagnostics)),
+            "Restored diagnostics must be re-emitted on the next save.");
+    }
+
+    #endregion
+
+    #region Bootstrap retry policy
+
+    /// <summary>
+    /// A thrown attempt and a rejected attempt are both retried before a later valid result is returned.
+    /// </summary>
+    /// <remarks>
+    /// This protects the outer bootstrap policy from letting a realization-level exception abort the
+    /// uncertainty run or from treating a rejected fit as a delivered parameter vector. The injected
+    /// attempt delegate supplies deterministic state and performs no data resampling or estimation.
+    /// </remarks>
+    [TestMethod]
+    public void ResolveBootstrapReplicate_ExceptionThenRejection_RetriesUntilSuccess()
+    {
+        var diagnostics = new BootstrapDiagnostics { TotalReplicates = 1 };
+        double[] parent = [1.0, 2.0, 3.0];
+        double[] accepted = [4.0, 5.0, 6.0];
+        int attempts = 0;
+
+        double[] actual = Bulletin17CAnalysis.ResolveBootstrapReplicate(
+            attemptIndex =>
+            {
+                attempts++;
+                diagnostics.IncrementAttempted();
+                return attemptIndex switch
+                {
+                    0 => throw new InvalidOperationException("deterministic attempt failure"),
+                    1 => null,
+                    _ => accepted
+                };
+            },
+            parent,
+            maxAttempts: 3,
+            diagnostics);
+
+        Assert.AreSame(accepted, actual);
+        Assert.AreEqual(3, attempts);
+        Assert.AreEqual(2, diagnostics.TotalRetries);
+        Assert.AreEqual(0, diagnostics.FailedReplicates);
+    }
+
+    /// <summary>
+    /// Exhausting the bounded retry policy substitutes the parent fit and records one failed replicate.
+    /// </summary>
+    /// <remarks>
+    /// This protects configured output delivery and substitution accounting without invoking a bootstrap
+    /// refit. A regression that returned <c>null</c>, exceeded the attempt bound, or omitted the failure
+    /// counter would fail this deterministic test.
+    /// </remarks>
+    [TestMethod]
+    public void ResolveBootstrapReplicate_ExhaustedAttempts_SubstitutesParentAndAccountsFailure()
+    {
+        var diagnostics = new BootstrapDiagnostics { TotalReplicates = 1 };
+        double[] parent = [1.0, 2.0, 3.0];
+        int attempts = 0;
+
+        double[] actual = Bulletin17CAnalysis.ResolveBootstrapReplicate<double[]>(
+            _ =>
+            {
+                attempts++;
+                diagnostics.IncrementAttempted();
+                return null;
+            },
+            parent,
+            maxAttempts: 3,
+            diagnostics);
+
+        Assert.AreSame(parent, actual);
+        Assert.AreEqual(3, attempts);
+        Assert.AreEqual(2, diagnostics.TotalRetries);
+        Assert.AreEqual(1, diagnostics.FailedReplicates);
+        Assert.AreEqual(0, diagnostics.RetainedReplicates);
+    }
+
+    #endregion
+
+    #region Covariance failure graceful degradation
+
+    /// <summary>
+    /// Builds a <see cref="GeneralizedMethodOfMoments"/> whose moment-condition function always
+    /// throws, deterministically forcing every covariance computation to fail without requiring
+    /// an optimizer run.
+    /// </summary>
+    /// <param name="bestParameterValues">
+    /// The finite parameter vector to expose as <see cref="GeneralizedMethodOfMoments.BestParameterSet"/>.
+    /// The delegate ignores its input and always throws, so these values only need to be finite
+    /// and correctly sized for the caller's distribution.
+    /// </param>
+    /// <returns>A GMM instance flagged as estimated, whose covariance always fails.</returns>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when <see cref="GeneralizedMethodOfMoments"/> no longer exposes the
+    /// <see cref="GeneralizedMethodOfMoments.IsEstimated"/> or
+    /// <see cref="GeneralizedMethodOfMoments.BestParameterSet"/> property this fixture sets by reflection.
+    /// </exception>
+    /// <remarks>
+    /// Mirrors the fixture pattern in
+    /// <c>RMC.BestFit.Tests.ModelEstimation.CovarianceFailureStatusTests.GeneralizedMethodOfMoments_MomentFailure_ReportsFailureAndThrows</c>,
+    /// which forces the same failure mode directly against <c>GetCovariance</c>/<c>TryGetCovariance</c>.
+    /// The moment-condition delegate's own <see cref="InvalidOperationException"/> is raised only when
+    /// a caller evaluates the covariance, not by this method.
+    /// </remarks>
+    private static GeneralizedMethodOfMoments CreateThrowingCovarianceGmm(double[] bestParameterValues)
+    {
+        var gmm = new GeneralizedMethodOfMoments(
+            _ => throw new InvalidOperationException("Forced GMM covariance failure for test fixture."),
+            numberOfParameters: bestParameterValues.Length,
+            numberOfMomentConditions: bestParameterValues.Length,
+            sampleSize: 50,
+            initialValues: bestParameterValues,
+            lowerBounds: bestParameterValues.Select(v => v - 100.0).ToArray(),
+            upperBounds: bestParameterValues.Select(v => v + 100.0).ToArray());
+
+        SetPrivateProperty(gmm, nameof(GeneralizedMethodOfMoments.IsEstimated), true);
+        SetPrivateProperty(gmm, nameof(GeneralizedMethodOfMoments.BestParameterSet), new ParameterSet(bestParameterValues, 0.0));
+        return gmm;
+    }
+
+    /// <summary>
+    /// Replaces an analysis's private GMM field with a fixture instance via reflection,
+    /// simulating a restored, already-fitted GMM state without running the optimizer.
+    /// </summary>
+    /// <param name="analysis">The analysis to modify.</param>
+    /// <param name="gmm">The GMM instance to install.</param>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when <see cref="Bulletin17CAnalysis"/> has no private instance field named <c>_gmm</c>.
+    /// </exception>
+    private static void InjectGmm(Bulletin17CAnalysis analysis, GeneralizedMethodOfMoments gmm)
+    {
+        FieldInfo field = typeof(Bulletin17CAnalysis).GetField("_gmm", BindingFlags.Instance | BindingFlags.NonPublic)
+            ?? throw new InvalidOperationException("Field '_gmm' was not found.");
+        field.SetValue(analysis, gmm);
+    }
+
+    /// <summary>
+    /// Sets a property with a non-public setter for deterministic failure-path setup.
+    /// </summary>
+    /// <param name="target">The object containing the property.</param>
+    /// <param name="propertyName">The property name.</param>
+    /// <param name="value">The value to assign.</param>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when <paramref name="target"/> has no public instance property named
+    /// <paramref name="propertyName"/>.
+    /// </exception>
+    /// <remarks>
+    /// Mirrors <c>CovarianceFailureStatusTests.SetPrivateProperty</c> so both suites arrange
+    /// deterministic GMM covariance failures the same way.
+    /// </remarks>
+    private static void SetPrivateProperty(object target, string propertyName, object value)
+    {
+        PropertyInfo property = target.GetType().GetProperty(
+            propertyName,
+            BindingFlags.Instance | BindingFlags.Public)
+            ?? throw new InvalidOperationException($"Property '{propertyName}' was not found.");
+        property.SetValue(target, value);
+    }
+
+    /// <summary>
+    /// Computes a finite, data-informed parameter vector for the given model without running
+    /// the GMM optimizer, matching the moment-based initialization <c>RunAsync</c> performs
+    /// before estimation.
+    /// </summary>
+    /// <param name="model">The model to initialize.</param>
+    /// <returns>A finite parameter vector safe to use as a stand-in GMM point estimate.</returns>
+    private static double[] CreateThetaHatForModel(Bulletin17CDistribution model)
+    {
+        model.SetInitialParameters();
+        return model.Parameters.Select(p => p.Value).ToArray();
+    }
+
+    /// <summary>
+    /// Builds a small, deterministic spread of parameter sets around <paramref name="thetaHat"/>
+    /// suitable for <see cref="MCMCResults"/>'s output sample.
+    /// </summary>
+    /// <param name="thetaHat">The center point to jitter around.</param>
+    /// <param name="count">The number of parameter sets to generate.</param>
+    /// <returns>Finite parameter sets clustered tightly around <paramref name="thetaHat"/>.</returns>
+    /// <remarks>
+    /// Kernel-density-based summary statistics (e.g., posterior mode) can degenerate to
+    /// <see cref="double.NaN"/> when every draw is identical or the sample is too small
+    /// (see project memory: "KDE posterior-mean NaN with 2 draws"). A small deterministic
+    /// spread avoids that degeneracy without requiring an MCMC run.
+    /// </remarks>
+    private static ParameterSet[] CreateJitteredParameterSets(double[] thetaHat, int count = 30)
+    {
+        var sets = new ParameterSet[count];
+        for (int i = 0; i < count; i++)
+        {
+            double offset = 0.001 * (i - count / 2);
+            var values = thetaHat.Select(v => v + offset * Math.Max(Math.Abs(v), 1.0)).ToArray();
+            sets[i] = new ParameterSet(values, 0.0);
+        }
+        return sets;
+    }
+
+    /// <summary>
+    /// Builds an analysis whose <c>IsEstimated</c> flag is restored true without an optimizer
+    /// run, using the XElement restoration constructor the way a deserialized project would.
+    /// </summary>
+    /// <param name="model">The Bulletin 17C model to attach.</param>
+    /// <param name="mcmcResults">Optional compatibility results to restore into BayesianAnalysis.</param>
+    /// <param name="analysisResults">Optional frequency analysis results to restore.</param>
+    /// <returns>A restored analysis with <c>IsEstimated == true</c> and no live GMM yet.</returns>
+    private static Bulletin17CAnalysis CreateRestoredEstimatedAnalysis(
+        Bulletin17CDistribution model,
+        MCMCResults? mcmcResults = null,
+        UncertaintyAnalysisResults? analysisResults = null)
+    {
+        var xElement = new XElement(nameof(Bulletin17CAnalysis), new XAttribute("IsEstimated", true));
+        return new Bulletin17CAnalysis(model, xElement, mcmcResults: mcmcResults, analysisResults: analysisResults);
+    }
+
+    /// <summary>
+    /// MVN and LinkedMVN uncertainty sampling must degrade gracefully when the GMM covariance
+    /// fails: publish no parameter sets, record the "point estimate is still valid" diagnostic,
+    /// and leave the analysis's own <c>IsEstimated</c> flag untouched.
+    /// </summary>
+    /// <param name="methodName">
+    /// The private sampling method under test (<c>GetParameterSetsFromMultivariateNormal</c> or
+    /// <c>GetParameterSetsFromLinkedMultivariateNormal</c>), invoked via reflection since both
+    /// are private implementation details of <see cref="Bulletin17CAnalysis"/>.
+    /// </param>
+    /// <remarks>
+    /// Before the fix, the unguarded <c>GetCovariance</c> call in each method threw
+    /// <see cref="InvalidOperationException"/>, which faulted the enclosing
+    /// <c>RunUncertaintyQuantificationAsync</c> Task.Run and propagated into <c>RunAsync</c>'s
+    /// catch block (Bulletin17CAnalysis.cs, RunAsync), which reset <c>IsEstimated</c> to
+    /// <see langword="false"/> and cleared the whole analysis via <c>ClearResults()</c>. Proving
+    /// the call no longer throws, and that <c>IsEstimated</c> is unaffected by the call itself,
+    /// establishes that the outer catch block is never reached for a covariance-only failure.
+    /// </remarks>
+    [DataTestMethod]
+    [DataRow("GetParameterSetsFromMultivariateNormal")]
+    [DataRow("GetParameterSetsFromLinkedMultivariateNormal")]
+    public void UncertaintySampling_CovarianceFails_ReturnsNoSetsAndDegradesGracefully(string methodName)
+    {
+        var model = CreateLP3Model();
+        var thetaHat = CreateThetaHatForModel(model);
+        var analysis = CreateRestoredEstimatedAnalysis(model);
+        InjectGmm(analysis, CreateThrowingCovarianceGmm(thetaHat));
+
+        MethodInfo method = typeof(Bulletin17CAnalysis).GetMethod(methodName, BindingFlags.Instance | BindingFlags.NonPublic)
+            ?? throw new InvalidOperationException($"Method '{methodName}' was not found.");
+        var rawSets = (ParameterSet[]?)method.Invoke(analysis, new object?[] { null });
+
+        Assert.IsNull(rawSets, "A failing covariance must publish no parameter sets.");
+        StringAssert.Contains(analysis.UncertaintyDiagnosticMessage, "point estimate is still valid");
+        Assert.IsTrue(analysis.IsEstimated, "A covariance-only failure must not clear the analysis's estimated state.");
+    }
+
+    /// <summary>
+    /// The effective record length falls back to <see cref="double.NaN"/> instead of throwing
+    /// when the GMM covariance cannot be computed.
+    /// </summary>
+    [TestMethod]
+    public async Task UpdatePointEstimateResultsAsync_CovarianceFails_SetsEffectiveRecordLengthToNaN()
+    {
+        var model = CreateLP3Model();
+        var thetaHat = CreateThetaHatForModel(model);
+        var bestPs = new ParameterSet(thetaHat, 0.0);
+        var mcmcResults = new MCMCResults(bestPs, CreateJitteredParameterSets(thetaHat), alpha: 0.1);
+        var analysis = CreateRestoredEstimatedAnalysis(model, mcmcResults, new UncertaintyAnalysisResults());
+        InjectGmm(analysis, CreateThrowingCovarianceGmm(thetaHat));
+
+        await analysis.UpdatePointEstimateResultsAsync();
+
+        Assert.IsNotNull(analysis.AnalysisResults);
+        Assert.IsTrue(double.IsNaN(analysis.AnalysisResults!.ERL),
+            "A failing GMM covariance must leave ERL as NaN rather than throwing.");
+    }
+
+    /// <summary>
+    /// The Cohn-style confidence interval diagnostic returns null instead of throwing when the
+    /// GMM covariance at the point estimate cannot be computed.
+    /// </summary>
+    [TestMethod]
+    public void ComputeCohnStyleConfidenceIntervals_CovarianceFails_ReturnsNull()
+    {
+        var model = CreateLP3Model();
+        var thetaHat = CreateThetaHatForModel(model);
+        var analysis = new Bulletin17CAnalysis(model);
+        InjectGmm(analysis, CreateThrowingCovarianceGmm(thetaHat));
+
+        Assert.IsNull(analysis.ComputeCohnStyleConfidenceIntervals(),
+            "A failing GMM covariance must return null rather than throwing.");
+    }
+
+    #endregion
+
+}

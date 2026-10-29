@@ -1,0 +1,388 @@
+using System;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Numerics.Distributions;
+
+namespace Distributions.Univariate
+{
+    /// <summary>
+    /// Testing the Exponential distribution algorithm.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    ///     <b> Authors: </b>
+    ///     <list type="bullet">
+    ///     <item> Haden Smith, USACE Risk Management Center, cole.h.smith@usace.army.mil </item>
+    ///     <item> Tiki Gonzalez, USACE Risk Management Center, julian.t.gonzalez@usace.army.mil</item>
+    ///     </list>
+    /// </para>
+    /// <para>
+    /// <b> References: </b>
+    /// </para>
+    /// <para>
+    /// <see href = "https://github.com/mathnet/mathnet-numerics/blob/master/src/Numerics.Tests/DistributionTests" />
+    /// </para>
+    /// </remarks>
+
+    [TestClass]
+    public class Test_Exponential
+    {
+        // Reference: "Flood Frequency Analysis", A.R. Rao & K.H. Hamed, CRC Press, 2000.
+        // Table 1.8.1 Wabash River at Lafayette, IN
+        private double[] sample = new double[] { 41500d, 57000d, 44000d, 49000d, 31000d, 45900d, 19000d, 41100d, 37300d, 76000d, 33200d, 61200d, 76000d, 59800d, 44400d, 58400d, 53600d, 59800d, 63300d, 57700d, 64000d, 63500d, 38000d, 74600d, 13100d, 37600d, 67500d, 21700d, 37000d, 93500d, 58500d, 63300d, 74400d, 34200d, 14600d, 44200d, 13100d, 73300d, 46600d, 39400d, 41200d, 41300d, 62000d, 90000d, 50600d, 41900d, 35000d, 16500d, 35300d, 30000d, 52600d, 99000d, 89000d, 39500d, 55400d, 46000d, 63000d, 58300d, 36500d, 14600d, 64900d, 68500d, 69100d, 42600d, 31000d, 39400d, 40700d, 53400d, 36000d, 43900d, 23600d, 50500d, 49700d, 48100d, 44500d, 56400d, 60800d, 40400d, 80400d, 41600d, 14700d, 33300d, 40700d, 53300d, 77400d };
+
+        /// <summary>
+        /// Verification of Exponential Distribution fit with method of moments.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Reference: "Flood Frequency Analysis", A.R. Rao &amp; K.H. Hamed, CRC Press, 2000.
+        /// </para>
+        /// <para>
+        /// Example 6.1.1 page 132.
+        /// </para>
+        /// </remarks>
+        [TestMethod()]
+        public void Test_EXP_MOM_Fit()
+        {
+            var EXP = new Exponential();
+            EXP.Estimate(sample, ParameterEstimationMethod.MethodOfMoments);
+            double x = EXP.Xi;
+            double a = EXP.Alpha;
+            double true_x = 30314.48d;
+            double true_a = 18907.87d;
+            Assert.IsLessThan(0.01d, (x - true_x) / true_x);
+            Assert.IsLessThan(0.01d, (a - true_a) / true_a);
+        }
+
+        /// <summary>
+        /// Test the fit against the R 'lmom' package.
+        /// </summary>
+        [TestMethod()]
+        public void Test_EXP_LMOM_Fit()
+        {
+            var sample = new double[] { 1953d, 1939d, 1677d, 1692d, 2051d, 2371d, 2022d, 1521d, 1448d, 1825d, 1363d, 1760d, 1672d, 1603d, 1244d, 1521d, 1783d, 1560d, 1357d, 1673d, 1625d, 1425d, 1688d, 1577d, 1736d, 1640d, 1584d, 1293d, 1277d, 1742d, 1491d };
+            var EXP = new Exponential();
+            EXP.Estimate(sample, ParameterEstimationMethod.MethodOfLinearMoments);
+            double x = EXP.Xi;
+            double a = EXP.Alpha;
+            double true_x = 1372.333d;
+            double true_a = 276.4731d;
+            Assert.AreEqual(true_x, x, 0.001d);
+            Assert.AreEqual(true_a, a, 0.001d);
+            var lmom = EXP.LinearMomentsFromParameters(EXP.GetParameters);
+            Assert.AreEqual(1648.806d, lmom[0], 0.001d);
+            Assert.AreEqual(138.2366d, lmom[1], 0.001d);
+            Assert.AreEqual(0.3333333d, lmom[2], 0.001d);
+            Assert.AreEqual(0.1666667d, lmom[3], 0.001d);
+        }
+
+        /// <summary>
+        /// Verification of Exponential Distribution fit with method of maximum likelihood.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Reference: "Flood Frequency Analysis", A.R. Rao &amp; K.H. Hamed, CRC Press, 2000.
+        /// </para>
+        /// <para>
+        /// Example 6.1.1 page 132.
+        /// </para>
+        /// </remarks>
+        [TestMethod()]
+        public void Test_EXP_MLE_Fit()
+        {
+            var EXP = new Exponential();
+            EXP.Estimate(sample, ParameterEstimationMethod.MaximumLikelihood);
+            double x = EXP.Xi;
+            double a = EXP.Alpha;
+            double true_x = 13100d;
+            double true_a = 36122.35d;
+            Assert.IsLessThan(0.01d, (x - true_x) / true_x);
+            Assert.IsLessThan(0.01d, (a - true_a) / true_a);
+        }
+
+        /// <summary>
+        /// Verifies that a negative maximum-likelihood location initializer receives finite bounds.
+        /// </summary>
+        [TestMethod()]
+        public void Test_EXP_ParameterConstraints_NegativeLocationInitial_HasFiniteBounds()
+        {
+            var exponential = new Exponential();
+            double[] values = [0.1d, 10d, 20d, 30d];
+
+            var constraints = exponential.GetParameterConstraints(values);
+
+            Assert.IsLessThan(0d, constraints.Item1[0]);
+            Assert.IsFalse(double.IsNaN(constraints.Item2[0]) || double.IsInfinity(constraints.Item2[0]));
+            Assert.IsFalse(double.IsNaN(constraints.Item3[0]) || double.IsInfinity(constraints.Item3[0]));
+            // Repinned to 2bba500: the sample minimum plus machine epsilon.
+            Assert.AreEqual(0.10000000000000012d, constraints.Item3[0]);
+            Assert.IsLessThan(constraints.Item3[0], constraints.Item1[0]);
+            Assert.IsGreaterThan(constraints.Item2[0], constraints.Item1[0]);
+        }
+
+        /// <summary>
+        /// Test the quantile function for the Exponential Distribution.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Reference: "Flood Frequency Analysis", A.R. Rao &amp; K.H. Hamed, CRC Press, 2000.
+        /// </para>
+        /// <para>
+        /// Example 6.1.2 page 134.
+        /// </para>
+        /// </remarks>
+        [TestMethod()]
+        public void Test_EXP_Quantile()
+        {
+            var EXP = new Exponential(27421d, 25200d);
+            double q100 = EXP.InverseCDF(0.99d);
+            double true_100 = 143471d;
+            Assert.IsLessThan(0.01d, (q100 - true_100) / true_100);
+            double p = EXP.CDF(q100);
+            double true_p = 0.99d;
+            Assert.AreEqual(true_p, p);
+        }
+
+        /// <summary>
+        /// Test the standard error for the Exponential Distribution.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Reference: "Flood Frequency Analysis", A.R. Rao &amp; K.H. Hamed, CRC Press, 2000.
+        /// </para>
+        /// <para>
+        /// Example 6.1.3 page 138.
+        /// </para>
+        /// </remarks>
+        [TestMethod()]
+        public void Test_EXP_StandardError()
+        {
+
+            // Method of Moments
+            var EXP = new Exponential(27421d, 25200d);
+            double se100 = Math.Sqrt(EXP.QuantileVariance(0.99d, 85, ParameterEstimationMethod.MethodOfMoments));
+            double true_se100 = 15986d;
+            Assert.IsLessThan(0.01d,(se100 - true_se100) / true_se100);
+
+            // Maximum Likelihood
+            EXP = new Exponential(12629d, 39991d);
+            se100 = Math.Sqrt(EXP.QuantileVariance(0.99d, 85, ParameterEstimationMethod.MaximumLikelihood));
+            true_se100 = 20048d;
+            Assert.IsLessThan(0.01d, (se100 - true_se100) / true_se100);
+        }
+
+        /// <summary>
+        /// Test the partial derivatives for the Exponential Distribution.
+        /// </summary>
+        [TestMethod()]
+        public void Test_EXP_Partials()
+        {
+            var EXP = new Exponential(30314.48d, 18907.87d);
+            double dQdLocation = EXP.QuantileGradient(0.99d)[0];
+            double dQdScale = EXP.QuantileGradient(0.99d)[1];
+            double true_dLocation = 1.0d;
+            double true_dScale = 4.60517d;
+            Assert.IsLessThan(0.01d, (dQdLocation - true_dLocation) / true_dLocation);
+            Assert.IsLessThan(0.01d, (dQdScale - true_dScale) / true_dScale);
+        }
+
+        /// <summary>
+        /// Validating parameters can create exponential function
+        /// </summary>
+        [TestMethod()]
+        public void Test_Construction()
+        {
+            var EXP = new Exponential(-5, 100);
+            Assert.AreEqual(-5,EXP.Xi);
+            Assert.AreEqual(100,EXP.Alpha);
+
+            var EXP2 = new Exponential(0, 1);
+            Assert.AreEqual(0,EXP2.Xi);
+            Assert.AreEqual(1, EXP2.Alpha);
+        }
+
+        /// <summary>
+        /// Testing Exponential distribution with bad parameters.
+        /// </summary>
+        [TestMethod()]
+        public void Test_InvalidParameters()
+        {
+            var EXP = new Exponential(double.NaN, 5);
+            Assert.IsFalse(EXP.ParametersValid);
+
+            var EXP2 = new Exponential(double.PositiveInfinity, 100);
+            Assert.IsFalse(EXP2.ParametersValid);
+
+            var EXP3 = new Exponential(0, double.NegativeInfinity);
+            Assert.IsFalse(EXP3.ParametersValid);
+
+            var EXP4 = new Exponential(1,double.NaN);
+            Assert.IsFalse(EXP4.ParametersValid);
+        }
+
+        /// <summary>
+        /// Checking parameters to string function.
+        /// </summary>
+        [TestMethod()]
+        public void Test_ParametersToString()
+        {
+            var EXP = new Exponential(1, 1);
+            Assert.AreEqual("Location (ξ)",EXP.ParametersToString[0, 0] );
+            Assert.AreEqual("Scale (α)", EXP.ParametersToString[1, 0]);
+            Assert.AreEqual("1", EXP.ParametersToString[0, 1]);
+            Assert.AreEqual("1", EXP.ParametersToString[1, 1]);
+        }
+
+        /// <summary>
+        /// Compare analytical moments against numerical integration.
+        /// </summary>
+        [TestMethod()]
+        public void Test_Moments()
+        {
+            var dist = new Exponential(1, 1);
+            var mom = dist.CentralMoments(1E-8);
+            Assert.AreEqual(dist.Mean, mom[0], 1E-2);
+            Assert.AreEqual(dist.StandardDeviation, mom[1], 1E-2);
+            Assert.AreEqual(dist.Skewness, mom[2], 1E-2);
+            Assert.AreEqual(dist.Kurtosis, mom[3], 1E-2);
+        }
+
+        /// <summary>
+        /// Checking Mean of exponential distribution.
+        /// </summary>
+        [TestMethod()]
+        public void Test_Mean()
+        {
+            var EXP = new Exponential(1, 1);
+            Assert.AreEqual(2, EXP.Mean);
+
+            var EXP2 = new Exponential(-100, 4);
+            Assert.AreEqual(-96, EXP2.Mean);
+        }
+
+        /// <summary>
+        /// Checking median of distribution.
+        /// </summary>
+        [TestMethod()]
+        public void Test_Median()
+        {
+            var EXP = new Exponential(0,1);
+            Assert.AreEqual(0.693147, EXP.Median,  1e-04);
+
+            var EXP2 = new Exponential(-100, 1);
+            Assert.AreEqual(-99.306852, EXP2.Median,  1e-04);
+        }
+
+        /// <summary>
+        /// Checking mode of Exponential is equal to the location parameter.
+        /// </summary>
+        [TestMethod()]
+        public void Test_Mode()
+        {
+            var EXP = new Exponential(0,1);
+            Assert.AreEqual(0, EXP.Mode);
+
+            var EXP2 = new Exponential(-100,1);
+            Assert.AreEqual(-100, EXP2.Mode);
+        }
+
+        /// <summary>
+        /// Checking Standard deviation is equal to the scale parameter.
+        /// </summary>
+        [TestMethod()]
+        public void Test_StandardDeviation()
+        {
+            var EXP = new Exponential(0,1);
+            Assert.AreEqual(1, EXP.StandardDeviation);
+
+            var EXP2 = new Exponential(-100, 1);
+            Assert.AreEqual(1, EXP2.StandardDeviation);
+        }
+
+        /// <summary>
+        /// Checking skew is equal to 2 regardless of parameters.
+        /// </summary>
+        [TestMethod()]
+        public void Test_Skewness()
+        {
+            var EXP = new Exponential(0, 1);
+            Assert.AreEqual(2, EXP.Skewness);
+        }
+
+        /// <summary>
+        /// Checking Kurtosis is equal to 9 regardless of parameters.
+        /// </summary>
+        [TestMethod()]
+        public void Test_Kurtosis()
+        {
+            var EXP = new Exponential(0, 1);
+            Assert.AreEqual(9, EXP.Kurtosis);
+        }
+
+        /// <summary>
+        /// Checking minimum function.
+        /// </summary>
+        [TestMethod()]
+        public void Test_Minimum()
+        {
+            var EXP = new Exponential(0, 1);
+            Assert.AreEqual(0, EXP.Minimum);
+
+            var EXP2 = new Exponential(-100, 1);
+            Assert.AreEqual(-100, EXP2.Minimum);
+        }
+
+        /// <summary>
+        /// Checking maximum function.
+        /// </summary>
+        [TestMethod()]
+        public void Test_Maximum()
+        {
+            var EXP = new Exponential(0, 1);
+            Assert.AreEqual(double.PositiveInfinity,EXP.Maximum);
+        }
+
+        /// <summary>
+        /// Checking PDF function with different points in the distribution range.
+        /// </summary>
+        [TestMethod()]
+        public void Test_PDF()
+        {
+            var EXP = new Exponential(0, 3);
+            Assert.AreEqual(0.33333, EXP.PDF(0),1e-04);
+            Assert.AreEqual(0.23884377, EXP.PDF(1),1e-04);
+            Assert.AreEqual(0.171139, EXP.PDF(2),1e-04);
+            Assert.AreEqual(0.122626, EXP.PDF(3),1e-04);
+        }
+
+        /// <summary>
+        /// Checking CDF function with different points in the distribution range.
+        /// </summary>
+        [TestMethod()]
+        public void Test_CDF()
+        {
+            var EXP = new Exponential(0, 3);
+            Assert.AreEqual(0, EXP.CDF(0));
+            Assert.AreEqual(0.2834686, EXP.CDF(1), 1e-04);
+            Assert.AreEqual(0.4865828, EXP.CDF(2), 1e-04);
+            Assert.AreEqual(0.632120, EXP.CDF(3), 1e-04);
+        }
+
+        /// <summary>
+        /// Test the inverse CDF.
+        /// </summary>
+        [TestMethod()]
+        public void Test_InverseCDF()
+        {
+            var EXP = new Exponential(0, 1);
+            Assert.AreEqual(0,EXP.InverseCDF(0));
+            Assert.AreEqual(double.PositiveInfinity, EXP.InverseCDF(1));
+            Assert.AreEqual(0.693147, EXP.InverseCDF(0.5), 1e-04);
+
+            var EXP2 = new Exponential();
+            Assert.AreEqual(103.5667494, EXP2.InverseCDF(0.3), 1e-04);
+            Assert.AreEqual(106.93147, EXP2.InverseCDF(0.5), 1e-04);
+            Assert.AreEqual(112.039728, EXP2.InverseCDF(0.7), 1e-04);
+        }
+    }
+}

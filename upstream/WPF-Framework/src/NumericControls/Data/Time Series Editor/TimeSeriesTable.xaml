@@ -1,0 +1,274 @@
+﻿<UserControl x:Class="NumericControls.TimeSeriesTable"
+             x:Name="TimeSeriesTableControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:NumericControls"
+             xmlns:cntrls="clr-namespace:GenericControls;assembly=GenericControls"
+             xmlns:nmrcs="clr-namespace:Numerics.Data;assembly=Numerics"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+    <Control.Resources>
+        <!-- Column header style with wrapped text and sorting support -->
+        <Style x:Key="WrappedColumnHeaderStyle" TargetType="{x:Type DataGridColumnHeader}" BasedOn="{StaticResource {x:Type DataGridColumnHeader}}">
+            <Setter Property="ContentTemplate">
+                <Setter.Value>
+                    <DataTemplate>
+                        <TextBlock TextWrapping="Wrap" TextAlignment="Center" VerticalAlignment="Bottom" FontWeight="Bold" HorizontalAlignment="Stretch" Text="{Binding}"></TextBlock>
+                    </DataTemplate>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Bottom" />
+            <EventSetter Event="Click" Handler="DataGridColumnHeader_Click"/>
+        </Style>
+
+        <!-- Cell style for read-only/disabled cells -->
+        <Style x:Key="Right_CellStyleDisabled" TargetType="{x:Type DataGridCell}">
+            <Setter Property="TextBlock.TextAlignment" Value="Right"/>
+            <Setter Property="Foreground" Value="{DynamicResource EnvironmentWindowText}"/>
+            <Style.Triggers>
+                <Trigger Property="DataGridCell.IsSelected" Value="False">
+                    <Setter Property="Background" Value="{DynamicResource DataGrid.Row.Alternating.Background}"/>
+                </Trigger>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="{DynamicResource DataGrid.Row.Selection.Background}"/>
+                    <Setter Property="Foreground" Value="{DynamicResource DataGrid.Row.Selection.Foreground}"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Cell style for editable cells -->
+        <Style x:Key="Right_CellStyle" TargetType="{x:Type DataGridCell}">
+            <Setter Property="TextBlock.TextAlignment" Value="Right"/>
+            <Setter Property="Foreground" Value="{DynamicResource EnvironmentWindowText}"/>
+            <Style.Triggers>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="{DynamicResource DataGrid.Row.Selection.Background}"/>
+                    <Setter Property="Foreground" Value="{DynamicResource DataGrid.Row.Selection.Foreground}"/>
+                </Trigger>
+                <MultiTrigger>
+                    <MultiTrigger.Conditions>
+                        <Condition Property="IsSelected" Value="True"/>
+                        <Condition Property="Selector.IsSelectionActive" Value="False"/>
+                    </MultiTrigger.Conditions>
+                    <Setter Property="Background" Value="{DynamicResource DataGrid.Row.Selection.Inactive.Background}"/>
+                    <Setter Property="Foreground" Value="{DynamicResource DataGrid.Row.Selection.Inactive.Foreground}"/>
+                </MultiTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="DateTime_CellStyleDisabled" TargetType="{x:Type DataGridCell}" BasedOn="{StaticResource Right_CellStyleDisabled}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding RuleMap[DateTime].HasError}" Value="True">
+                    <Setter Property="ToolTip" Value="{Binding RuleMap[DateTime].ErrorMessage}"/>
+                    <Setter Property="BorderBrush" Value="{Binding ErrorCellBorderBrush, RelativeSource={RelativeSource AncestorType={x:Type cntrls:ValidationDataGrid}}}"/>
+                    <Setter Property="Background" Value="{Binding ErrorCellBackgroundBrush, RelativeSource={RelativeSource AncestorType={x:Type cntrls:ValidationDataGrid}}}"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="DateTime_CellStyle" TargetType="{x:Type DataGridCell}" BasedOn="{StaticResource Right_CellStyle}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding RuleMap[DateTime].HasError}" Value="True">
+                    <Setter Property="ToolTip" Value="{Binding RuleMap[DateTime].ErrorMessage}"/>
+                    <Setter Property="BorderBrush" Value="{Binding ErrorCellBorderBrush, RelativeSource={RelativeSource AncestorType={x:Type cntrls:ValidationDataGrid}}}"/>
+                    <Setter Property="Background" Value="{Binding ErrorCellBackgroundBrush, RelativeSource={RelativeSource AncestorType={x:Type cntrls:ValidationDataGrid}}}"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="Value_CellStyle" TargetType="{x:Type DataGridCell}" BasedOn="{StaticResource Right_CellStyle}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding RuleMap[Value].HasError}" Value="True">
+                    <Setter Property="ToolTip" Value="{Binding RuleMap[Value].ErrorMessage}"/>
+                    <Setter Property="BorderBrush" Value="{Binding ErrorCellBorderBrush, RelativeSource={RelativeSource AncestorType={x:Type cntrls:ValidationDataGrid}}}"/>
+                    <Setter Property="Background" Value="{Binding ErrorCellBackgroundBrush, RelativeSource={RelativeSource AncestorType={x:Type cntrls:ValidationDataGrid}}}"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="DataGridCellStyle1" TargetType="{x:Type DataGridCell}">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type DataGridCell}">
+                        <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" SnapsToDevicePixels="True">
+                            <ContentPresenter SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+
+        </Style>
+
+        <!-- Converters for date/time and numeric value formatting -->
+        <local:DateToStringConverter x:Key="DateConverter"/>
+        <local:DoubleToFontFamilyConverter x:Key="DoubleToItalicsConverter"/>
+        <cntrls:DoubleToNAConverter x:Key="NAConverter"/>
+        <cntrls:ReverseBooleanConverter x:Key="ReverseBoolConverter"/>
+    </Control.Resources>
+
+    <Grid DataContext="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Toolbar with math calculator popup -->
+        <StackPanel Orientation="Horizontal">
+            <cntrls:DataGridToolbar 
+                Name="TimeSeriesDataGridToolBar" 
+                DataGrid="{Binding ElementName=TimeSeriesDataGrid, Mode=OneTime}" 
+                ToolOrientation="Horizontal"/>
+
+            <!--Separator-->
+            <Separator x:Name="MathFunctionSeparator" Style="{DynamicResource VerticalSeparatorStyle}" />
+
+            
+            <ToggleButton
+                x:Name="PresetToggleButton"
+                Width="24" Height="24"
+                Padding="0"
+                Background="Transparent"
+                BorderThickness="0"
+                Cursor="Hand"
+                ToolTip="Math Functions"
+                Style="{DynamicResource StackPanelToggleButtonStyle}"
+                IsHitTestVisible="{Binding ElementName=PresetsPopup, Path=IsOpen, Converter={StaticResource ReverseBoolConverter}}">
+                <ContentControl
+                    Content="{DynamicResource MathFunctionIcon}"
+                    Width="16" Height="16"/>
+            </ToggleButton>
+
+            <!-- Invisible anchor element for popup placement -->
+            <Rectangle 
+                x:Name="PART_PopPlacer" 
+                Fill="Transparent" 
+                Height="0" Width="0" 
+                HorizontalAlignment="Right" VerticalAlignment="Bottom" 
+                Focusable="False" 
+                Visibility="Hidden" 
+                IsHitTestVisible="False"/>
+
+            <Popup 
+                x:Name="MathPopup"
+                PlacementTarget="{Binding ElementName=PART_PopPlacer}"
+                IsOpen="{Binding ElementName=PresetToggleButton, Path=IsChecked, Mode=TwoWay}"
+                StaysOpen="False" 
+                Width="Auto"
+                Height="Auto"
+                AllowsTransparency="True" 
+                Placement="Left"
+                Opened="MathPopup_Opened">
+                <Border
+                    BorderBrush="{DynamicResource MenuPopupDefaultBorder}"
+                    Background="{DynamicResource EnvironmentWindowBackground}"
+                    BorderThickness="1">
+                    <local:MathEditorControl Margin="5"/>
+                </Border>
+            </Popup>
+        </StackPanel>
+
+        <!-- Time series data grid with date/time and value columns -->
+        <cntrls:ValidationDataGrid
+            x:Name="TimeSeriesDataGrid"
+            Grid.Row="1"
+            RowHeight="25"
+            AutoGenerateColumns="False"
+            IsReadOnly="{Binding IsReadOnly, UpdateSourceTrigger=PropertyChanged}"
+            PreviewAddRows="TimeSeriesDataGrid_PreviewAddRows"
+            RowsAdded="TimeSeriesDataGrid_RowsAdded"
+            PreviewDeleteRows="TimeSeriesDataGrid_PreviewDeleteRows"
+            RowsDeleted="TimeSeriesDataGrid_RowsDeleted"
+            PreviewPasteData="TimeSeriesDataGrid_PreviewPasteData"
+            DataPasted="TimeSeriesDataGrid_DataPasted"
+            PreviewKeyDown="TimeSeriesDataGrid_PreviewKeyDown">
+            <cntrls:ValidationDataGrid.Columns>
+                <DataGridTemplateColumn 
+                    x:Name="DateTimeSelectorColumn"  
+                    Header="" 
+                    Width="24" 
+                    MinWidth="24"
+                    Visibility="Collapsed"
+                    HeaderStyle="{StaticResource WrappedColumnHeaderStyle}"
+                    CellStyle="{StaticResource Right_CellStyle}">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Grid>
+                                <RadioButton 
+                                    x:Name="DateTimeRadioButton" 
+                                    Height="24"
+                                    Width="24"
+                                    Padding="0"
+                                    Style="{StaticResource {x:Static ToolBar.RadioButtonStyleKey}}" 
+                                    VerticalAlignment="Center"  
+                                    IsChecked="False" 
+                                    ToolTip="Click to select a date and time from selector."
+                                    IsHitTestVisible="{Binding ElementName=DateTimePopup, Path=IsOpen, Converter={StaticResource ReverseBoolConverter}}">
+
+                                    <ContentControl
+                                        Margin="-1"
+                                        Width="16" Height="16"
+                                        Content="{DynamicResource CalendarIcon}"/>
+                                </RadioButton>
+
+                                <Rectangle 
+                                    x:Name="DummyRect" 
+                                    Fill="Transparent" 
+                                    Stroke="Transparent" 
+                                    IsHitTestVisible="False"
+                                    Visibility="Hidden"
+                                    StrokeThickness="0" 
+                                    Height="0" 
+                                    Width="0" 
+                                    HorizontalAlignment="Right" 
+                                    VerticalAlignment="Bottom"/>
+
+                                <Popup
+                                    x:Name="DateTimePopup"
+                                    IsOpen="{Binding ElementName=DateTimeRadioButton, Path=IsChecked, Mode=TwoWay}"
+                                    StaysOpen="False"
+                                    AllowsTransparency="True"
+                                    Placement="Bottom"
+                                    PlacementTarget="{Binding ElementName=DummyRect}">
+                                    <Border BorderBrush="{DynamicResource Button.Static.Border}"
+                                            BorderThickness="1"
+                                            Background="{DynamicResource EnvironmentWindowBackground}">
+                                        <cntrls:DateAndTimePickerControl
+                                            HasSeconds="True"
+                                            SetToHoursOnLoad="True"
+                                            Background="{DynamicResource EnvironmentWindowBackground}"
+                                            DateAndTime="{Binding DateTime, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                                            Is24Hour="True"/>
+                                    </Border>
+                                </Popup>
+                            </Grid>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+
+                <DataGridTextColumn 
+                    x:Name="DateTimeColumn" 
+                    Width="130" 
+                    MinWidth="30"
+                    Binding="{Binding DateTime, NotifyOnTargetUpdated=True, Mode=TwoWay, FallbackValue=N/A, TargetNullValue=N/A, Converter={StaticResource DateConverter}}" 
+                    HeaderStyle="{StaticResource WrappedColumnHeaderStyle}"
+                    CellStyle="{StaticResource DateTime_CellStyleDisabled}"/>
+
+                <DataGridTextColumn
+                    x:Name="ValueColumn"
+                    MinWidth="30"
+                    Width="*"
+                    Binding="{Binding Value, UpdateSourceTrigger=LostFocus, Mode=TwoWay, FallbackValue=N/A, TargetNullValue=N/A, Converter={StaticResource NAConverter}}"
+                    HeaderStyle="{StaticResource WrappedColumnHeaderStyle}"
+                    CellStyle="{StaticResource Value_CellStyle}"
+                    EditingElementStyle="{StaticResource DataGridEditingTextBoxStyle}"/>
+
+            </cntrls:ValidationDataGrid.Columns>
+        </cntrls:ValidationDataGrid>
+    </Grid>
+</UserControl>

@@ -1,0 +1,275 @@
+<UserControl x:Class="DatabaseControls.TableViewer"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:DatabaseControls"
+             xmlns:cntrls="clr-namespace:GenericControls;assembly=GenericControls"
+             mc:Ignorable="d"
+             UseLayoutRounding="True"
+             d:DesignHeight="400" d:DesignWidth="600"
+             x:Name="TableViewerControl"
+             Loaded="TableViewer_Loaded"
+             Unloaded="TableViewer_Unloaded">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Resources/TableViewerResources.xaml"/>
+                <ResourceDictionary Source="/GenericControls;component/Resources/IconDictionary.xaml"/>
+                <ResourceDictionary Source="/DatabaseControls;component/Resources/IconDictionary.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+            <cntrls:BooleanToVisibilityConverter x:Key="BooleanToVisibility" TrueValue="Visible" FalseValue="Collapsed"/>
+            <Style x:Key="ToolbarButton" TargetType="Button" BasedOn="{StaticResource {x:Static ToolBar.ButtonStyleKey}}">
+                <Setter Property="Cursor" Value="Hand"/>
+                <Setter Property="Height" Value="24"/>
+                <Setter Property="Width" Value="24"/>
+                <Setter Property="Padding" Value="2"/>
+                <Style.Triggers>
+                    <Trigger Property="IsEnabled" Value="False">
+                        <Setter Property="Opacity" Value="0.5"/>
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <Grid DataContext="{Binding ElementName=TableViewerControl}" PreviewKeyDown="Grid_PreviewKeyDown" KeyDown="Grid_KeyDown">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!--Toolbar tray is made public to allow developer to add custom tools-->
+        <StackPanel x:Name="TableToolbarTray" x:FieldModifier="public" Orientation="Horizontal" Grid.Row="0" Background="{DynamicResource EnvironmentWindowBackground}">
+
+            <!--Cell Select/Copy/Paste-->
+            <StackPanel
+                x:Name="ExportCopyToolbar"
+                Background="Transparent"
+                ToolTip="Export and Copy Tools"
+                ToolTipService.ShowOnDisabled="True"
+                Orientation="Horizontal"
+                VerticalAlignment="Bottom"
+                HorizontalAlignment="Left"
+                IsEnabled="True">
+
+                <Button
+                    x:Name="SelectAllButton"
+                    ToolTip="Select all cells"
+                    ToolTipService.ShowOnDisabled="True"
+                    Click="SelectAllButton_Click"
+                    Style="{StaticResource ToolbarButton}">
+                    <ContentControl Content="{StaticResource SelectAllIcon}"/>
+                </Button>
+
+                <Button
+                    x:Name="CopyButton"
+                    ToolTip="Copy selected cells"
+                    ToolTipService.ShowOnDisabled="True"
+                    Click="CopyButton_Click"
+                    Style="{StaticResource ToolbarButton}"
+                    Content="{StaticResource CopyIcon}"/>
+
+                <Button
+                    x:Name="CopyWithHeadersButton"
+                    ToolTip="Copy selected cells with table headers"
+                    ToolTipService.ShowOnDisabled="True"
+                    Click="CopyWithHeadersButton_Click"
+                    Style="{StaticResource ToolbarButton}"
+                    Content="{StaticResource CopyWithHeadersIcon}"/>
+
+                <Button
+                    x:Name="PasteButton"
+                    ToolTip="Paste from the clipboard into the table"
+                    ToolTipService.ShowOnDisabled="True"
+                    Click="PasteButton_Click"
+                    IsEnabled="False"
+                    Style="{StaticResource ToolbarButton}"
+                    Content="{StaticResource PasteIcon}"/>
+
+                <Button
+                    x:Name="ExportTableButton"
+                    ToolTip="Export Table"
+                    ToolTipService.ShowOnDisabled="True"
+                    Click="ExportTableButton_Click"
+                    Style="{StaticResource ToolbarButton}"
+                    Content="{StaticResource ExportTableIcon}"/>
+
+            </StackPanel>
+
+            <Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" Height="16" VerticalAlignment="Center" Visibility="{Binding RowSelectable, Converter={StaticResource BooleanToVisibility}, TargetNullValue=Visible}"/>
+
+            <!--Attribution Row Select-->
+            <StackPanel
+                x:Name="SelectionToolbar"
+                Background="Transparent"
+                ToolTip="Selection Tools"
+                ToolTipService.ShowOnDisabled="True"
+                Orientation="Horizontal"
+                VerticalAlignment="Bottom"
+                IsEnabled="False"
+                Visibility="{Binding RowSelectable, Converter={StaticResource BooleanToVisibility}, TargetNullValue=Visible}">
+
+                <Button
+                    x:Name="SelectByAttribute"
+                    ToolTip="Select Rows By Attribute"
+                    ToolTipService.ShowOnDisabled="True"
+                    Click="SelectByAttribute_Click"
+                    Style="{StaticResource ToolbarButton}"
+                    Content="{StaticResource SelectByAttributeIcon}"/>
+
+                <Button
+                    x:Name="ShowAll"
+                    ToolTip="Show All Rows"
+                    ToolTipService.ShowOnDisabled="True"
+                    Click="ShowAll_Checked"
+                    IsEnabled="False"
+                    Style="{StaticResource ToolbarButton}"
+                    Content="{StaticResource ShowAllIcon}"/>
+
+                <Button
+                    x:Name="ShowSelected"
+                    ToolTip="Show Selected Rows Only"
+                    ToolTipService.ShowOnDisabled="True"
+                    Click="ShowSelected_Checked"
+                    IsEnabled="False"
+                    Style="{StaticResource ToolbarButton}"
+                    Content="{StaticResource ShowSelectedIcon}"/>
+
+                <Button
+                    x:Name="DeSelectAll"
+                    ToolTip="Deselect All Rows"
+                    ToolTipService.ShowOnDisabled="True"
+                    Click="DeSelectAll_Click"
+                    IsEnabled="False"
+                    Style="{StaticResource ToolbarButton}"
+                    Content="{StaticResource ClearSelectionIcon}"/>
+
+            </StackPanel>
+
+            <Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" Height="16" VerticalAlignment="Center" Visibility="{Binding Editable, Converter={StaticResource BooleanToVisibility}, TargetNullValue=Visible}"/>
+
+            <!--Editing-->
+            <StackPanel
+                x:Name="EditorToolbar"
+                Background="Transparent"
+                IsEnabled="False"
+                ToolTip="Editor Toolbar"
+                ToolTipService.ShowOnDisabled="True"
+                VerticalAlignment="Bottom"
+                Orientation="Horizontal"
+                Visibility="{Binding Editable, Converter={StaticResource BooleanToVisibility}, TargetNullValue=Visible}">
+
+                <Button
+                    x:Name="OpenFC"
+                    ToolTip="Open Field Calculator"
+                    ToolTipService.ShowOnDisabled="True"
+                    Click="OpenFC_Click"
+                    Visibility="{Binding HasFieldCalculator, Converter={StaticResource BooleanToVisibility}, TargetNullValue=Visible}"
+                    Style="{StaticResource ToolbarButton}"
+                    Content="{StaticResource CalculatorIcon}"/>
+
+                <Button
+                    x:Name="Undo"
+                    ToolTip="Undo"
+                    ToolTipService.ShowOnDisabled="True"
+                    Click="Undo_Click"
+                    IsEnabled="False"
+                    Visibility="{Binding HasUndoRedoButtons, Converter={StaticResource BooleanToVisibility}, TargetNullValue=Visible}"
+                    Style="{StaticResource ToolbarButton}"
+                    Content="{StaticResource UndoIcon}"/>
+
+                <Button
+                    x:Name="Redo"
+                    ToolTip="Redo"
+                    ToolTipService.ShowOnDisabled="True"
+                    Click="Redo_Click"
+                    IsEnabled="False"
+                    Visibility="{Binding HasUndoRedoButtons, Converter={StaticResource BooleanToVisibility}, TargetNullValue=Visible}"
+                    Style="{StaticResource ToolbarButton}"
+                    Content="{StaticResource RedoIcon}"/>
+
+                <Button
+                    x:Name="SaveButton"
+                    ToolTip="Save All Edits"
+                    ToolTipService.ShowOnDisabled="True"
+                    Click="Save_Click"
+                    IsEnabled="False"
+                    Visibility="{Binding HasSaveButton, Converter={StaticResource BooleanToVisibility}, TargetNullValue=Visible}"
+                    Style="{StaticResource ToolbarButton}"
+                    Content="{StaticResource SaveIcon}"/>
+
+            </StackPanel>
+
+        </StackPanel>
+
+        <Grid x:Name="TableControlGrid" Grid.Row="1" Grid.IsSharedSizeScope="True" Background="{DynamicResource EnvironmentWindowBackground}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" x:Name="ColumnHeadersRowDefinition" SharedSizeGroup="A"/>
+                <RowDefinition Height="1*" x:Name="RowsRowDefinition"/>
+                <RowDefinition Height="Auto" x:Name="HorizontalScrollBarRowDefinition"/>
+            </Grid.RowDefinitions>
+
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" x:Name="RowHeadersColumnDefinition"/>
+                <ColumnDefinition Width="*" x:Name="ColumnsColumnDefintion"/>
+                <ColumnDefinition Width="Auto" x:Name="VerticalScrollBarColumnDefinition"/>
+            </Grid.ColumnDefinitions>
+
+            <Border x:Name="SelectAllBorder"
+                    Style="{Binding ElementName=TableViewerControl, Path=ColumnHeaderBorderStyle}"
+                    BorderThickness="0,1,1,1"
+                    Margin="0"
+                    MouseLeftButtonDown="SelectAllLeftMouseDown"
+                    MouseLeftButtonUp="SelectAllLeftMouseUp"
+                    Visibility="{Binding ShowRowHeaders, Converter={StaticResource BooleanToVisibility}, TargetNullValue=Visible}"/>
+
+            <Grid
+                x:Name="RowHeadersGrid"
+                Grid.Row="1"
+                Grid.Column="0"
+                VerticalAlignment="Top"
+                HorizontalAlignment="Stretch"
+                MouseLeftButtonDown="RowsGrid_MouseLeftButtonDown"
+                MouseLeftButtonUp="RowsGrid_MouseLeftButtonUp"
+                MouseMove="RowsGrid_MouseMove"
+                MouseRightButtonUp="RowsGrid_MouseRightButtonUp"
+                MouseWheel="RowsGrid_MouseWheel"
+                Visibility="{Binding ShowRowHeaders, Converter={StaticResource BooleanToVisibility}, TargetNullValue=Visible}"/>
+
+            <ScrollViewer
+                x:Name="HorizontalScrollViewer"
+                HorizontalAlignment="Stretch"
+                VerticalScrollBarVisibility="Disabled"
+                HorizontalScrollBarVisibility="Auto"
+                Grid.Row="0"
+                Grid.RowSpan="3"
+                Grid.Column="1">
+                <Grid x:Name="HorizontalViewerGrid" SizeChanged="HorizontalScrollViewer_SizeChanged">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="{Binding ColumnHeaderHeight}" x:Name="ColumnHeadersRow" SharedSizeGroup="A"/>
+                        <RowDefinition Height="*" x:Name="RowsAr"/>
+                    </Grid.RowDefinitions>
+                    <Grid x:Name="ColumnHeadersGrid" HorizontalAlignment="Left" VerticalAlignment="Stretch" Grid.Row="0" MouseLeftButtonDown="ColumnsGrid_MouseLeftButtonDown" MouseMove="ColumnsGrid_MouseMove" MouseLeftButtonUp="ColumnsGrid_MouseLeftButtonUp"/>
+                    <Grid x:Name="RowColorGrid" Grid.Row="1" HorizontalAlignment="Left" Width="{Binding ElementName=GridPanel, Path=ActualWidth}" VerticalAlignment="Top" Background="Transparent" Focusable="False" IsHitTestVisible="False"/>
+                    <Grid x:Name="GridPanel"  Grid.Row="1" HorizontalAlignment="Left" Background="Transparent" 
+                          MouseWheel="TestGridPanel_MouseWheel" 
+                          MouseLeftButtonDown="GridPanel_MouseLeftButtonDown" 
+                          MouseLeftButtonUp="GridPanel_MouseLeftButtonUp" 
+                          MouseRightButtonUp="GridPanel_RightMouseUp"
+                          MouseMove="GridPanel_MouseMove"                       
+                          VerticalAlignment="Top" Focusable="True"/>
+                    <Canvas x:Name="GridLinesCanvas" Grid.Row="1" IsHitTestVisible="False" HorizontalAlignment="Left"/>
+                </Grid>
+            </ScrollViewer>
+
+            <ScrollBar
+                Grid.Row="1"
+                Grid.Column="2"
+                Margin="0,0,0,0"
+                x:Name="VerticalScrollbar"
+                VerticalAlignment="Stretch"
+                Minimum="0" Maximum="0" SmallChange="1" ValueChanged="VerticalScrollBar_ValueChanged" IsEnabledChanged="VerticalScrollbar_IsEnabledChanged"/>
+        </Grid>
+    </Grid>
+</UserControl>

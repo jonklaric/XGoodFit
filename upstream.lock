@@ -1,20 +1,25 @@
-# Pinned upstream sources, fetched into upstream/<name> by scripts/fetch-upstream.sh.
-# Bumping a pin is a deliberate change: update the commit here, then port the upstream
-# delta to the mirrored files (docs/migration-plan.md §10).
+# Upstream source code vendored into upstream/<name> by scripts/vendor-upstream.sh.
+# Each folder is a byte-for-byte copy of the pinned commit, never edited by hand.
+# upstream/README.md cites each source repository with its version and licence.
+# Bumping a pin is a deliberate change (docs/migration-plan.md §10): update the commit here, run
+# scripts/vendor-upstream.sh <name>, review the staged diff, and port the upstream changes.
 #
-# Columns: name  git-url  commit  sparse-paths  optional-paths
-#   sparse-paths    comma-separated folders to check out ('*' = whole tree, '-' = only with
-#                   --with-examples); root files are always included
-#   optional-paths  extra folders fetched only with --with-examples ('*' = whole tree, '-' = none)
+# Columns: name  git-url  commit  folders  excluded
+#   folders   comma-separated folders to copy ('*' = whole tree); root files are always copied
+#   excluded  comma-separated paths left out, relative to the repository root, where '*' also
+#             matches '/' ('-' = none)
 #
-# HEC-DSS: hec-dss is release 7-JA-7, the newest release, which builds with CMake and no Fortran.
-# Five functions declared by hec-dss-dotnet 2.0.3 (written for 7-IU-6) have since gained trailing
-# parameters, so the wrapper is compiled with corrected declarations (docs/migration-plan.md §7).
-# zlib is v1.3.1, the version hec-dss 7-JA-7 builds with. dss-test-data is the sample data for
-# HEC's own C and .NET tests.
-RMC-BestFit     https://github.com/USACE-RMC/RMC-BestFit.git                      bfce2ddbebb8d75e6cf6e21c4fef8ecfb5058269  src,docs,tools/PlotReferenceExporter  examples
+# - Numerics: tag v2.2.0, the exact source of the RMC.Numerics 2.2.0 NuGet package that RMC-BestFit
+#   2.0.1 uses (the package records this commit). Left out: instructions for AI coding agents.
+# - hec-dss: tag 7-JA-7, the newest release, which builds with CMake and needs no Fortran. Five
+#   functions declared by hec-dss-dotnet 2.0.3 (written for 7-IU-6) have since gained trailing
+#   parameters, so the wrapper is compiled with corrected declarations (docs/migration-plan.md §7).
+#   Left out: a prebuilt tool and the Visual Studio solution and project files of HEC's old
+#   Windows build, which CMake replaces.
+# - zlib: tag v1.3.1, the version hec-dss 7-JA-7 builds with. Left out: the optional contrib/ extras.
+RMC-BestFit     https://github.com/USACE-RMC/RMC-BestFit.git                      bfce2ddbebb8d75e6cf6e21c4fef8ecfb5058269  src,docs,tools/PlotReferenceExporter  -
 WPF-Framework   https://github.com/USACE-RMC/WPF-Framework.git                    7f897e107db4a25cca29127ce9d564898c5fde93  *                                     -
-hec-dss         https://github.com/HydrologicEngineeringCenter/hec-dss.git        1da59764e509b31fe790133acc757cab8a6b846c  deps,heclib,test                      -
+Numerics        https://github.com/USACE-RMC/Numerics.git                         7e8e8d1c5f26e045a35ec9fc09367de95ed05b02  Numerics,Test_Numerics,docs           AGENTS.md,CLAUDE.md
+hec-dss         https://github.com/HydrologicEngineeringCenter/hec-dss.git        1da59764e509b31fe790133acc757cab8a6b846c  deps,heclib,test                      DssVersion.exe,*.sln,*.vcxproj,*.vcxproj.filters
 hec-dss-dotnet  https://github.com/HydrologicEngineeringCenter/hec-dss-dotnet.git f8f576ff98b524a4a6b5a2f17735adf5f144b9fd  dotnet/Hec.Dss,dotnet/DotNetTests     -
-zlib            https://github.com/madler/zlib.git                                51b7f2abdade71cd9bb0e7a373ef2610ec6f9daf  *                                     -
-dss-test-data   https://github.com/HydrologicEngineeringCenter/dss-test-data.git  5df48cee088f8af6466ddaf581220257cca61f59  -                                     *
+zlib            https://github.com/madler/zlib.git                                51b7f2abdade71cd9bb0e7a373ef2610ec6f9daf  *                                     contrib

@@ -1,0 +1,885 @@
+using Numerics;
+using Numerics.Distributions;
+using Numerics.Mathematics.Optimization;
+using Numerics.Sampling.MCMC;
+using RMC.BestFit.Analyses;
+using RMC.BestFit.Models;
+using System.Xml.Linq;
+using BestFitDataFrame = RMC.BestFit.Models.DataFrame;
+
+namespace RMC.BestFit.Tests.Univariate;
+
+/// <summary>
+/// Programmatic unit tests for the <c>MixtureAnalysis</c> class.
+/// </summary>
+/// <remarks>
+/// Configuration, validation, and serialization tests live here.
+/// MCMC parameter-recovery and estimation tests live in <c>RMC.BestFit.Verification</c>.
+/// </remarks>
+[TestClass]
+public class MixtureAnalysisTests
+{
+    #region Inline test fixtures
+
+    private const int LowSize = 10;
+    private const int HighSize = 10;
+
+    /// <summary>
+    /// Inline bimodal flood data: a Normal(5500, 600) "snowmelt" component plus a
+    /// Normal(20000, 3000) "rainfall" component. Generated from fixed seeds so the
+    /// fixture is deterministic and independent of the Verification project's <c>TestData</c>.
+    /// </summary>
+    private static readonly double[] InlineLowComponent = new Normal(5500.0, 600.0)
+        .GenerateRandomValues(LowSize, 12345);
+
+    private static readonly double[] InlineHighComponent = new Normal(20000.0, 3000.0)
+        .GenerateRandomValues(HighSize, 67890);
+
+    /// <summary>
+    /// Creates bimodal Test Data Frame.
+    /// </summary>
+    /// <returns>The created test object.</returns>
+    /// <remarks>
+    /// This helper keeps fixture setup local to the tests that use it.
+    /// </remarks>
+    private static BestFitDataFrame CreateBimodalTestDataFrame()
+    {
+        var df = new BestFitDataFrame();
+        int year = 1980;
+        for (int i = 0; i < InlineLowComponent.Length; i++)
+            df.ExactSeries.Add(new ExactData(year++, InlineLowComponent[i]));
+        for (int i = 0; i < InlineHighComponent.Length; i++)
+            df.ExactSeries.Add(new ExactData(year++, InlineHighComponent[i]));
+        return df;
+    }
+
+    /// <summary>
+    /// Creates test Mixture Model.
+    /// </summary>
+    /// <returns>The created test object.</returns>
+    /// <remarks>
+    /// This helper keeps fixture setup local to the tests that use it.
+    /// </remarks>
+    private static MixtureModel CreateTestMixtureModel()
+    {
+        var df = CreateBimodalTestDataFrame();
+        var distributionTypes = new List<UnivariateDistributionType>
+        {
+            UnivariateDistributionType.Normal,
+            UnivariateDistributionType.Normal
+        };
+        return new MixtureModel(df, distributionTypes);
+    }
+
+    /// <summary>
+    /// Creates gEV Mixture Model.
+    /// </summary>
+    /// <returns>The created test object.</returns>
+    /// <remarks>
+    /// This helper keeps fixture setup local to the tests that use it.
+    /// </remarks>
+    private static MixtureModel CreateGEVMixtureModel()
+    {
+        var df = CreateBimodalTestDataFrame();
+        var distributionTypes = new List<UnivariateDistributionType>
+        {
+            UnivariateDistributionType.GeneralizedExtremeValue,
+            UnivariateDistributionType.GeneralizedExtremeValue
+        };
+        return new MixtureModel(df, distributionTypes);
+    }
+
+    /// <summary>
+    /// Creates an estimated mixture analysis with stub uncertainty results.
+    /// </summary>
+    /// <param name="model">The mixture model to attach to the analysis.</param>
+    /// <returns>An analysis whose stale estimated state can be invalidated without running MCMC.</returns>
+    /// <remarks>
+    /// The helper uses the XML constructor so tests stay fast and avoid computational verification.
+    /// </remarks>
+    private static MixtureAnalysis CreateEstimatedAnalysis(MixtureModel model)
+    {
+        var xElement = new XElement("MixtureAnalysis", new XAttribute("IsEstimated", true));
+        return new MixtureAnalysis(model, xElement, analysisResults: new UncertaintyAnalysisResults());
+    }
+
+    #endregion
+
+    #region Constructor Tests
+
+    /// <summary>Verifies that constructor with mixture model initializes correctly.</summary>
+    [TestMethod]
+    public void Constructor_WithMixtureModel_InitializesCorrectly()
+    {
+        var model = CreateTestMixtureModel();
+
+        var analysis = new MixtureAnalysis(model);
+
+        Assert.IsNotNull(analysis.MixtureDistribution, "MixtureDistribution should not be null.");
+        Assert.IsNotNull(analysis.BayesianAnalysis, "BayesianAnalysis should not be null.");
+        Assert.IsNotNull(analysis.ProbabilityOrdinates, "ProbabilityOrdinates should not be null.");
+        Assert.IsFalse(analysis.IsEstimated, "IsEstimated should be false initially.");
+        Assert.IsNull(analysis.AnalysisResults, "AnalysisResults should be null initially.");
+    }
+
+    /// <summary>Verifies that constructor throws when with null model.</summary>
+    [TestMethod]
+    [ExpectedException(typeof(ArgumentNullException))]
+    public void Constructor_WithNullModel_ThrowsArgumentNullException()
+    {
+        _ = new MixtureAnalysis(null!);
+    }
+
+    /// <summary>Verifies that constructor bayesian analysis has correct model.</summary>
+    [TestMethod]
+    public void Constructor_BayesianAnalysis_HasCorrectModel()
+    {
+        var model = CreateTestMixtureModel();
+
+        var analysis = new MixtureAnalysis(model);
+
+        Assert.AreSame(model, analysis.BayesianAnalysis.Model,
+            "BayesianAnalysis.Model should reference the mixture model.");
+    }
+
+    #endregion
+
+    #region XML Serialization Tests
+
+    /// <summary>Verifies that xml serialization preserves configuration for round trip.</summary>
+    [TestMethod]
+    public void XmlSerialization_RoundTrip_PreservesConfiguration()
+    {
+        var model = CreateTestMixtureModel();
+        var analysis = new MixtureAnalysis(model);
+
+        analysis.ProbabilityOrdinates.Clear();
+        analysis.ProbabilityOrdinates.Add(0.5);
+        analysis.ProbabilityOrdinates.Add(0.1);
+        analysis.ProbabilityOrdinates.Add(0.01);
+
+        var xElement = analysis.ToXElement();
+        var restoredAnalysis = new MixtureAnalysis(model, xElement);
+
+        Assert.IsNotNull(restoredAnalysis, "Restored analysis should not be null.");
+        Assert.AreEqual(analysis.ProbabilityOrdinates.Count, restoredAnalysis.ProbabilityOrdinates.Count,
+            "Probability ordinates count should be preserved.");
+    }
+
+    /// <summary>Verifies that constructor throws when with null X element.</summary>
+    [TestMethod]
+    [ExpectedException(typeof(ArgumentNullException))]
+    public void Constructor_WithNullXElement_ThrowsArgumentNullException()
+    {
+        var model = CreateTestMixtureModel();
+
+        _ = new MixtureAnalysis(model, null!);
+    }
+
+    /// <summary>Verifies that xml serialization preserves settings for with bayesian settings.</summary>
+    [TestMethod]
+    public void XmlSerialization_WithBayesianSettings_PreservesSettings()
+    {
+        var model = CreateTestMixtureModel();
+        var analysis = new MixtureAnalysis(model);
+        analysis.BayesianAnalysis.Iterations = 8000;
+        analysis.BayesianAnalysis.WarmupIterations = 2000;
+
+        var xElement = analysis.ToXElement();
+        var restoredAnalysis = new MixtureAnalysis(model, xElement);
+
+        Assert.AreEqual(8000, restoredAnalysis.BayesianAnalysis.Iterations,
+            "Iterations should be preserved.");
+        Assert.AreEqual(2000, restoredAnalysis.BayesianAnalysis.WarmupIterations,
+            "WarmupIterations should be preserved.");
+    }
+
+    /// <summary>
+    /// Verifies persisted full-K posterior vectors are restored and consumed without re-estimation.
+    /// </summary>
+    [TestMethod]
+    public async Task Constructor_WithLegacyFullKResults_OpensAndCreatesFrequencyCurvesAsIs()
+    {
+        var model = CreateTestMixtureModel();
+        double[] values = model.Parameters.Select(parameter => parameter.Value).ToArray();
+        var output = Enumerable.Range(0, 6)
+            .Select(_ => new ParameterSet(values.ToArray(), model.LogLikelihood(values)))
+            .ToList();
+        var results = new MCMCResults(output[0], output, alpha: 0.10);
+        XElement analysisXml = new MixtureAnalysis(model).ToXElement();
+        analysisXml.SetAttributeValue("IsEstimated", true);
+
+        var restored = new MixtureAnalysis(model, analysisXml, results);
+        var distribution = (Mixture)restored.GetDistribution(0)!;
+
+        Assert.IsTrue(restored.IsEstimated);
+        Assert.AreEqual(model.NumberOfParameters, restored.BayesianAnalysis.Results!.Output[0].Values.Length);
+        Assert.AreEqual(1.0, distribution.Weights.Sum(), 1E-12);
+        CollectionAssert.AreEqual(model.Mixture!.Weights, distribution.Weights);
+
+        await restored.CreateFrequencyAnalysisResultsAsync();
+
+        Assert.IsNotNull(restored.AnalysisResults);
+        Assert.IsTrue(restored.AnalysisResults!.ModeCurve!.All(double.IsFinite));
+        Assert.IsTrue(restored.AnalysisResults.MeanCurve!.All(double.IsFinite));
+        Assert.IsTrue(restored.AnalysisResults.ConfidenceIntervals!.Cast<double>().All(double.IsFinite));
+    }
+
+    #endregion
+
+    #region Validation Tests
+
+    /// <summary>Verifies that validate returns valid when with valid configuration.</summary>
+    [TestMethod]
+    public void Validate_WithValidConfiguration_ReturnsValid()
+    {
+        var model = CreateTestMixtureModel();
+        var analysis = new MixtureAnalysis(model);
+
+        var (isValid, messages) = analysis.Validate();
+
+        Assert.IsTrue(isValid, $"Validation should pass. Messages: {string.Join(", ", messages)}");
+    }
+
+    /// <summary>Verifies that validate propagates model validation.</summary>
+    [TestMethod]
+    public void Validate_PropagatesModelValidation()
+    {
+        var model = CreateTestMixtureModel();
+        var analysis = new MixtureAnalysis(model);
+
+        var (isValid, _) = analysis.Validate();
+
+        Assert.IsTrue(isValid, "Validation should pass for valid mixture model.");
+    }
+
+    #endregion
+
+    #region ClearResults Tests
+
+    /// <summary>Verifies that clear results resets all results.</summary>
+    [TestMethod]
+    public void ClearResults_ResetsAllResults()
+    {
+        var model = CreateTestMixtureModel();
+        var analysis = new MixtureAnalysis(model);
+
+        analysis.ClearResults();
+
+        Assert.IsFalse(analysis.IsEstimated, "IsEstimated should be false after clearing.");
+        Assert.IsNull(analysis.AnalysisResults, "AnalysisResults should be null after clearing.");
+    }
+
+    #endregion
+
+    #region Property Change Tests
+
+    /// <summary>Verifies that probability ordinates change raises property changed.</summary>
+    [TestMethod]
+    public void ProbabilityOrdinates_Change_RaisesPropertyChanged()
+    {
+        var model = CreateTestMixtureModel();
+        var analysis = new MixtureAnalysis(model);
+        bool propertyChanged = false;
+        analysis.PropertyChanged += (s, e) =>
+        {
+            if (e.PropertyName == nameof(MixtureAnalysis.ProbabilityOrdinates))
+                propertyChanged = true;
+        };
+
+        analysis.ProbabilityOrdinates.Add(0.001);
+
+        Assert.IsTrue(propertyChanged, "PropertyChanged should be raised for ProbabilityOrdinates.");
+    }
+
+    /// <summary>Verifies that model property change clears results.</summary>
+    [TestMethod]
+    public void ModelPropertyChange_ClearsResults()
+    {
+        var model = CreateTestMixtureModel();
+        var analysis = new MixtureAnalysis(model);
+        bool resultsCleared = false;
+        analysis.PropertyChanged += (s, e) =>
+        {
+            if (e.PropertyName == nameof(MixtureAnalysis.AnalysisResults))
+                resultsCleared = true;
+        };
+
+        var newDistributions = new List<UnivariateDistributionBase>
+        {
+            new Normal(5000, 500),
+            new Normal(20000, 2000),
+            new Normal(30000, 3000)
+        };
+        model.Mixture = new Mixture(new[] { 0.33, 0.34, 0.33 }, newDistributions.ToArray());
+
+        Assert.IsTrue(resultsCleared || analysis.AnalysisResults == null,
+            "Results should be cleared when model changes.");
+    }
+
+    /// <summary>Verifies that enabling quantile priors clears stale analysis results.</summary>
+    [TestMethod]
+    public void EnableQuantilePriors_ClearsResults()
+    {
+        var model = CreateTestMixtureModel();
+        var analysis = CreateEstimatedAnalysis(model);
+        bool analysisResultsChanged = false;
+        analysis.PropertyChanged += (s, e) =>
+        {
+            if (e.PropertyName == nameof(MixtureAnalysis.AnalysisResults))
+                analysisResultsChanged = true;
+        };
+
+        model.EnableQuantilePriors = true;
+
+        Assert.IsTrue(analysisResultsChanged, "AnalysisResults should be raised when quantile priors are enabled.");
+        Assert.IsNull(analysis.AnalysisResults, "Quantile prior changes should clear stale AnalysisResults.");
+        Assert.IsFalse(analysis.IsEstimated, "Quantile prior changes should invalidate the estimated state.");
+        Assert.IsTrue(model.QuantilePriors.Count > 0, "Enabling quantile priors should create default prior rows.");
+    }
+
+    /// <summary>Verifies that editing an existing quantile prior clears stale analysis results.</summary>
+    [TestMethod]
+    public void QuantilePriorEdit_ClearsResults()
+    {
+        var model = CreateTestMixtureModel();
+        model.EnableQuantilePriors = true;
+        var analysis = CreateEstimatedAnalysis(model);
+        bool analysisResultsChanged = false;
+        analysis.PropertyChanged += (s, e) =>
+        {
+            if (e.PropertyName == nameof(MixtureAnalysis.AnalysisResults))
+                analysisResultsChanged = true;
+        };
+
+        model.QuantilePriors[0].Alpha = 0.02;
+
+        Assert.IsTrue(analysisResultsChanged, "AnalysisResults should be raised when a quantile prior is edited.");
+        Assert.IsNull(analysis.AnalysisResults, "Quantile prior edits should clear stale AnalysisResults.");
+        Assert.IsFalse(analysis.IsEstimated, "Quantile prior edits should invalidate the estimated state.");
+    }
+
+    /// <summary>Verifies that prior-related option changes clear stale analysis results.</summary>
+    [TestMethod]
+    public void PriorOptionChange_ClearsResults()
+    {
+        var model = CreateTestMixtureModel();
+        var analysis = CreateEstimatedAnalysis(model);
+        bool analysisResultsChanged = false;
+        analysis.PropertyChanged += (s, e) =>
+        {
+            if (e.PropertyName == nameof(MixtureAnalysis.AnalysisResults))
+                analysisResultsChanged = true;
+        };
+
+        model.UseJeffreysRuleForScale = !model.UseJeffreysRuleForScale;
+
+        Assert.IsTrue(analysisResultsChanged, "AnalysisResults should be raised when prior options change.");
+        Assert.IsNull(analysis.AnalysisResults, "Prior option changes should clear stale AnalysisResults.");
+        Assert.IsFalse(analysis.IsEstimated, "Prior option changes should invalidate the estimated state.");
+    }
+
+    #endregion
+
+    #region GetDistribution Tests
+
+    /// <summary>Verifies that get distribution returns null when when not estimated.</summary>
+    [TestMethod]
+    public void GetDistribution_WhenNotEstimated_ReturnsNull()
+    {
+        var model = CreateTestMixtureModel();
+        var analysis = new MixtureAnalysis(model);
+
+        var result = analysis.GetDistribution(0);
+
+        Assert.IsNull(result, "GetDistribution should return null when not estimated.");
+    }
+
+    /// <summary>Verifies that get point estimate distribution returns null when when not estimated.</summary>
+    [TestMethod]
+    public void GetPointEstimateDistribution_WhenNotEstimated_ReturnsNull()
+    {
+        var model = CreateTestMixtureModel();
+        var analysis = new MixtureAnalysis(model);
+
+        var result = analysis.GetPointEstimateDistribution();
+
+        Assert.IsNull(result, "GetPointEstimateDistribution should return null when not estimated.");
+    }
+
+    #endregion
+
+    #region CancelAnalysis Tests
+
+    /// <summary>Verifies that cancel analysis does not throw for when not running.</summary>
+    [TestMethod]
+    public void CancelAnalysis_WhenNotRunning_DoesNotThrow()
+    {
+        var model = CreateTestMixtureModel();
+        var analysis = new MixtureAnalysis(model);
+
+        analysis.CancelAnalysis();
+    }
+
+    #endregion
+
+    #region Event Tests
+
+    /// <summary>Verifies that run async raises analysis starting event.</summary>
+    [TestMethod]
+    public async Task RunAsync_RaisesAnalysisStartingEvent()
+    {
+        var model = CreateTestMixtureModel();
+        var analysis = new MixtureAnalysis(model);
+        analysis.BayesianAnalysis.Iterations = 100;
+        analysis.BayesianAnalysis.WarmupIterations = 50;
+
+        bool eventRaised = false;
+        analysis.AnalysisStarting += (s, e) =>
+        {
+            eventRaised = true;
+            e.Cancel = true; // Cancel immediately to keep test fast.
+        };
+
+        await analysis.RunAsync();
+
+        Assert.IsTrue(eventRaised, "AnalysisStarting event should be raised.");
+    }
+
+    /// <summary>Verifies that run async raises analysis completed event.</summary>
+    [TestMethod]
+    public async Task RunAsync_RaisesAnalysisCompletedEvent()
+    {
+        var model = CreateTestMixtureModel();
+        var analysis = new MixtureAnalysis(model);
+
+        bool eventRaised = false;
+        analysis.AnalysisStarting += (s, e) => e.Cancel = true;
+        analysis.AnalysisCompleted += (s, e) =>
+        {
+            eventRaised = true;
+            Assert.IsTrue(e.Cancelled, "Cancelled should be true when canceled.");
+        };
+
+        await analysis.RunAsync();
+
+        Assert.IsTrue(eventRaised, "AnalysisCompleted event should be raised.");
+    }
+
+    #endregion
+
+    #region Integration Tests
+
+    /// <summary>Verifies that validate returns valid when with GEV components.</summary>
+    [TestMethod]
+    public void Validate_WithGEVComponents_ReturnsValid()
+    {
+        var model = CreateGEVMixtureModel();
+        var analysis = new MixtureAnalysis(model);
+
+        var (isValid, messages) = analysis.Validate();
+
+        Assert.IsTrue(isValid, $"Validation should pass for GEV mixture. Messages: {string.Join(", ", messages)}");
+    }
+
+    /// <summary>Verifies that constructor with various component types initializes correctly.</summary>
+    [TestMethod]
+    [DataRow(UnivariateDistributionType.Normal)]
+    [DataRow(UnivariateDistributionType.LogNormal)]
+    [DataRow(UnivariateDistributionType.Gumbel)]
+    [DataRow(UnivariateDistributionType.GeneralizedExtremeValue)]
+    public void Constructor_WithVariousComponentTypes_InitializesCorrectly(UnivariateDistributionType distType)
+    {
+        var df = CreateBimodalTestDataFrame();
+        var distributionTypes = new List<UnivariateDistributionType> { distType, distType };
+        var model = new MixtureModel(df, distributionTypes);
+
+        var analysis = new MixtureAnalysis(model);
+
+        Assert.IsNotNull(analysis, "Analysis should be created successfully.");
+        Assert.AreEqual(distType, analysis.MixtureDistribution.Mixture!.Distributions[0].Type,
+            "Component distribution type should match.");
+    }
+
+    /// <summary>Verifies that constructor with various component counts initializes correctly.</summary>
+    [TestMethod]
+    [DataRow(2)]
+    [DataRow(3)]
+    public void Constructor_WithVariousComponentCounts_InitializesCorrectly(int componentCount)
+    {
+        var df = CreateBimodalTestDataFrame();
+        var distributionTypes = Enumerable.Repeat(UnivariateDistributionType.Normal, componentCount).ToList();
+        var model = new MixtureModel(df, distributionTypes);
+
+        var analysis = new MixtureAnalysis(model);
+
+        Assert.IsNotNull(analysis, "Analysis should be created successfully.");
+        Assert.AreEqual(componentCount, analysis.MixtureDistribution.Mixture!.Distributions.Length,
+            "Number of components should match.");
+    }
+
+    #endregion
+
+    #region Probability Ordinates Tests
+
+    /// <summary>Verifies that probability ordinates default initialization has default values.</summary>
+    [TestMethod]
+    public void ProbabilityOrdinates_DefaultInitialization_HasDefaultValues()
+    {
+        var model = CreateTestMixtureModel();
+
+        var analysis = new MixtureAnalysis(model);
+
+        Assert.IsNotNull(analysis.ProbabilityOrdinates, "ProbabilityOrdinates should not be null.");
+        Assert.IsTrue(analysis.ProbabilityOrdinates.Count > 0, "Default probability ordinates should have values.");
+    }
+
+    /// <summary>Verifies that probability ordinates can be modified.</summary>
+    [TestMethod]
+    public void ProbabilityOrdinates_CanBeModified()
+    {
+        var model = CreateTestMixtureModel();
+        var analysis = new MixtureAnalysis(model);
+        analysis.ProbabilityOrdinates.Clear();
+
+        analysis.ProbabilityOrdinates.Add(0.5);
+        analysis.ProbabilityOrdinates.Add(0.1);
+        analysis.ProbabilityOrdinates.Add(0.01);
+
+        Assert.AreEqual(3, analysis.ProbabilityOrdinates.Count, "Should have 3 probability ordinates.");
+        Assert.AreEqual(0.5, analysis.ProbabilityOrdinates[0], 1e-10, "First ordinate should be 0.5.");
+    }
+
+    #endregion
+
+    #region Initialization Tests
+
+    /// <summary>
+    /// Verifies the sampler omits only the derived final weight from the full-K public model.
+    /// </summary>
+    [TestMethod]
+    public void SetUpSampler_UsesIdentifiedKMinusOneCoordinates()
+    {
+        var model = CreateTestMixtureModel();
+        var analysis = new MixtureAnalysis(model);
+
+        analysis.BayesianAnalysis.SetUpSampler();
+
+        Assert.AreEqual(6, model.NumberOfParameters);
+        Assert.AreEqual(model.NumberOfParameters - 1, analysis.BayesianAnalysis.Sampler!.NumberOfParameters);
+        Assert.AreSame(model, analysis.BayesianAnalysis.Model);
+    }
+
+    /// <summary>
+    /// Verifies the standard MCMC result path preserves K-1 sampled vectors across persistence.
+    /// </summary>
+    [TestMethod]
+    public void StandardMCMCResults_PreservesKMinusOneVectorsAcrossPersistence()
+    {
+        var model = CreateTestMixtureModel();
+        double[] center = model.Parameters.Select(parameter => parameter.Value)
+            .Where((_, index) => index != 1)
+            .ToArray();
+        var output = new List<ParameterSet>();
+        for (int drawIndex = 0; drawIndex < 100; drawIndex++)
+        {
+            double[] values = center.ToArray();
+            values[0] = 0.4 + 0.001 * drawIndex;
+            output.Add(new ParameterSet(values, model.SamplingLogLikelihood(values)));
+        }
+
+        var results = new MCMCResults(
+            output.OrderByDescending(parameterSet => parameterSet.Fitness).First(),
+            output,
+            alpha: 0.10);
+        MCMCResults roundTrip = MCMCResults.FromByteArray(MCMCResults.ToByteArray(results))!;
+
+        Assert.AreEqual(model.NumberOfParameters - 1, roundTrip.MAP.Values.Length);
+        Assert.AreEqual(model.NumberOfParameters - 1, roundTrip.PosteriorMean.Values.Length);
+        Assert.AreEqual(model.NumberOfParameters - 1, roundTrip.ParameterResults.Length);
+        Assert.IsTrue(roundTrip.Output.All(parameterSet => parameterSet.Values.Length == model.NumberOfParameters - 1));
+    }
+
+    /// <summary>
+    /// Verifies reports and covariance diagnostics use sampled names while prior configuration remains full K.
+    /// </summary>
+    [TestMethod]
+    public void SampledDiagnostics_OmitDerivedWeightAndRetainItsPriorConfiguration()
+    {
+        var model = CreateTestMixtureModel();
+        double[] center = model.Parameters.Select(parameter => parameter.Value)
+            .Where((_, index) => index != 1)
+            .ToArray();
+        var output = Enumerable.Range(0, 20)
+            .Select(drawIndex =>
+            {
+                double[] values = center.ToArray();
+                values[0] = 0.35 + drawIndex * 0.01;
+                values[1] += drawIndex * 0.001;
+                return new ParameterSet(values, model.SamplingLogLikelihood(values));
+            })
+            .ToList();
+        var results = new MCMCResults(
+            output.OrderByDescending(parameterSet => parameterSet.Fitness).First(),
+            output,
+            alpha: 0.10);
+        var analysis = new MixtureAnalysis(model);
+        analysis.BayesianAnalysis.SetCustomMCMCResults(results, skipInformationCriteria: false);
+
+        string report = analysis.BayesianAnalysis.GenerateReport();
+        int mapStart = report.IndexOf("POSTERIOR MODE (MAP)", StringComparison.Ordinal);
+        int summaryStart = report.IndexOf("PARAMETER SUMMARY STATISTICS", StringComparison.Ordinal);
+        int priorStart = report.IndexOf("PRIOR CONFIGURATION", StringComparison.Ordinal);
+        string mapSection = report.Substring(mapStart, summaryStart - mapStart);
+        string priorSection = report.Substring(priorStart);
+        double[,] covariance = analysis.BayesianAnalysis.GetPosteriorCovarianceMatrix()!;
+
+        StringAssert.Contains(mapSection, "Weight (w₁)");
+        Assert.IsFalse(mapSection.Contains("Weight (w₂)", StringComparison.Ordinal));
+        StringAssert.Contains(priorSection, "Weight (w₁)");
+        StringAssert.Contains(priorSection, "Weight (w₂)");
+        Assert.AreEqual(model.NumberOfParameters, analysis.BayesianAnalysis.ParameterNames!.Count);
+        Assert.AreEqual(model.NumberOfParameters, analysis.BayesianAnalysis.NumberOfEstimatedParameters);
+        Assert.AreEqual(model.NumberOfParameters - 1, covariance.GetLength(0));
+        Assert.AreEqual(model.NumberOfParameters - 1, covariance.GetLength(1));
+        Assert.IsTrue(double.IsFinite(analysis.BayesianAnalysis.DIC));
+        Assert.IsTrue(double.IsFinite(analysis.BayesianAnalysis.WAIC));
+        Assert.IsTrue(double.IsFinite(analysis.BayesianAnalysis.LOOIC));
+    }
+
+    /// <summary>
+    /// Verifies K-1 posterior draws create complete physical frequency curves without result conversion.
+    /// </summary>
+    [TestMethod]
+    public async Task CreateFrequencyAnalysisResultsAsync_WithKMinusOneResults_CreatesFiniteCurves()
+    {
+        var model = CreateTestMixtureModel();
+        double[] center = model.Parameters.Select(parameter => parameter.Value)
+            .Where((_, index) => index != 1)
+            .ToArray();
+        var output = new List<ParameterSet>();
+        for (int drawIndex = 0; drawIndex < 100; drawIndex++)
+        {
+            double[] values = center.ToArray();
+            values[0] = 0.4 + 0.001 * drawIndex;
+            output.Add(new ParameterSet(values, model.SamplingLogLikelihood(values)));
+        }
+
+        var results = new MCMCResults(
+            output.OrderByDescending(parameterSet => parameterSet.Fitness).First(),
+            output,
+            alpha: 0.10);
+        XElement analysisXml = new MixtureAnalysis(model).ToXElement();
+        analysisXml.SetAttributeValue("IsEstimated", true);
+        var restored = new MixtureAnalysis(model, analysisXml, results);
+
+        await restored.CreateFrequencyAnalysisResultsAsync();
+
+        Assert.IsNotNull(restored.AnalysisResults);
+        UncertaintyAnalysisResults analysisResults = restored.AnalysisResults!;
+        double[] modeCurve = analysisResults.ModeCurve!;
+        Assert.IsTrue(modeCurve.All(double.IsFinite));
+        Assert.IsTrue(analysisResults.MeanCurve!.All(double.IsFinite));
+        Assert.IsTrue(analysisResults.ConfidenceIntervals!.Cast<double>().All(double.IsFinite));
+        Assert.AreEqual(restored.ProbabilityOrdinates.Count, modeCurve.Length);
+    }
+
+    /// <summary>
+    /// Verifies EM-approximation population construction is deterministic, resets stale
+    /// state, scores the full posterior, and seeds chains from the best population members.
+    /// </summary>
+    [TestMethod]
+    public void PopulateSamplerFromEmApproximation_UsesSeedPosteriorAndBestStates()
+    {
+        var model = CreateTestMixtureModel();
+        model.Parameters[2].PriorDistribution = new Normal(model.Parameters[2].Value, 100d);
+        double[] publicCenter = model.Parameters.Select(parameter => parameter.Value).ToArray();
+        double[] center = publicCenter.Where((_, index) => index != 1).ToArray();
+        var covariance = new double[center.Length, center.Length];
+        for (int index = 0; index < center.Length; index++)
+        {
+            double standardDeviation = Math.Max(1E-4, Math.Abs(center[index]) * 1E-5);
+            covariance[index, index] = standardDeviation * standardDeviation;
+        }
+
+        var firstAnalysis = new MixtureAnalysis(model);
+        firstAnalysis.BayesianAnalysis.SetUpSampler();
+        MCMCSampler firstSampler = firstAnalysis.BayesianAnalysis.Sampler!;
+        firstSampler.InitialIterations = Math.Max(20, firstSampler.NumberOfChains);
+        firstSampler.PopulationMatrix.Add(new ParameterSet(center, double.PositiveInfinity));
+        firstSampler.MarkovChains[0].Add(new ParameterSet(center, double.PositiveInfinity));
+
+        var secondAnalysis = new MixtureAnalysis(model);
+        secondAnalysis.BayesianAnalysis.SetUpSampler();
+        MCMCSampler secondSampler = secondAnalysis.BayesianAnalysis.Sampler!;
+        secondSampler.InitialIterations = firstSampler.InitialIterations;
+
+        MixtureAnalysis.PopulateSamplerFromEmApproximation(
+            model,
+            firstSampler,
+            center,
+            covariance,
+            CancellationToken.None);
+        MixtureAnalysis.PopulateSamplerFromEmApproximation(
+            model,
+            secondSampler,
+            center,
+            covariance,
+            CancellationToken.None);
+
+        Assert.AreEqual(MCMCSampler.InitializationType.UserDefined, firstSampler.Initialize);
+        Assert.AreEqual(firstSampler.InitialIterations, firstSampler.PopulationMatrix.Count);
+        Assert.AreEqual(firstSampler.PopulationMatrix.Count, secondSampler.PopulationMatrix.Count);
+        for (int populationIndex = 0; populationIndex < firstSampler.PopulationMatrix.Count; populationIndex++)
+        {
+            ParameterSet first = firstSampler.PopulationMatrix[populationIndex];
+            ParameterSet second = secondSampler.PopulationMatrix[populationIndex];
+            Assert.IsTrue(double.IsFinite(first.Fitness));
+            double[] physicalValues = model.GetPhysicalParameters(first.Values);
+            Assert.AreEqual(model.LogLikelihood(physicalValues), first.Fitness, 1E-10);
+            Assert.AreNotEqual(model.DataLogLikelihood(physicalValues), first.Fitness);
+            CollectionAssert.AreEqual(
+                first.Values,
+                second.Values,
+                $"Population draw {populationIndex} changed with the same sampler seed.");
+        }
+
+        ParameterSet[] expectedInitialStates = firstSampler.PopulationMatrix
+            .OrderByDescending(parameterSet => parameterSet.Fitness)
+            .Take(firstSampler.NumberOfChains)
+            .ToArray();
+        for (int chainIndex = 0; chainIndex < firstSampler.NumberOfChains; chainIndex++)
+        {
+            Assert.AreEqual(1, firstSampler.MarkovChains[chainIndex].Count);
+            CollectionAssert.AreEqual(
+                expectedInitialStates[chainIndex].Values,
+                firstSampler.MarkovChains[chainIndex][0].Values,
+                $"Chain {chainIndex} was not seeded by the expected population member.");
+        }
+    }
+
+    /// <summary>
+    /// Verifies mismatched approximation dimensions fail before a population is installed.
+    /// </summary>
+    [TestMethod]
+    public void PopulateSamplerFromEmApproximation_WithMismatchedCovariance_Throws()
+    {
+        var model = CreateTestMixtureModel();
+        var analysis = new MixtureAnalysis(model);
+        analysis.BayesianAnalysis.SetUpSampler();
+        MCMCSampler sampler = analysis.BayesianAnalysis.Sampler!;
+        double[] center = model.Parameters.Select(parameter => parameter.Value)
+            .Where((_, index) => index != 1)
+            .ToArray();
+
+        Assert.ThrowsException<ArgumentException>(() =>
+            MixtureAnalysis.PopulateSamplerFromEmApproximation(
+                model,
+                sampler,
+                center,
+                new double[center.Length - 1, center.Length - 1],
+                CancellationToken.None));
+        Assert.AreEqual(0, sampler.PopulationMatrix.Count);
+        Assert.IsTrue(sampler.MarkovChains.All(chain => chain.Count == 0));
+    }
+
+    /// <summary>
+    /// Verifies the final initialization fallback removes partial custom state and restores randomization.
+    /// </summary>
+    [TestMethod]
+    public void ResetSamplerToRandomizedInitialization_ClearsCustomState()
+    {
+        var model = CreateTestMixtureModel();
+        var analysis = new MixtureAnalysis(model);
+        analysis.BayesianAnalysis.SetUpSampler();
+        MCMCSampler sampler = analysis.BayesianAnalysis.Sampler!;
+        double[] values = model.Parameters.Select(parameter => parameter.Value).ToArray();
+        sampler.Initialize = MCMCSampler.InitializationType.UserDefined;
+        sampler.PopulationMatrix.Add(new ParameterSet(values, model.LogLikelihood(values)));
+        sampler.MarkovChains[0].Add(new ParameterSet(values, model.LogLikelihood(values)));
+
+        MixtureAnalysis.ResetSamplerToRandomizedInitialization(sampler);
+
+        Assert.AreEqual(MCMCSampler.InitializationType.Randomize, sampler.Initialize);
+        Assert.AreEqual(0, sampler.PopulationMatrix.Count);
+        Assert.IsTrue(sampler.MarkovChains.All(chain => chain.Count == 0));
+    }
+
+    #endregion
+
+    #region Edge Cases
+
+    /// <summary>Verifies that constructor with single component initializes correctly.</summary>
+    [TestMethod]
+    public void Constructor_WithSingleComponent_InitializesCorrectly()
+    {
+        var df = CreateBimodalTestDataFrame();
+        var distributionTypes = new List<UnivariateDistributionType> { UnivariateDistributionType.Normal };
+        var model = new MixtureModel(df, distributionTypes);
+
+        var analysis = new MixtureAnalysis(model);
+
+        Assert.IsNotNull(analysis, "Analysis should be created with single component.");
+        Assert.AreEqual(1, analysis.MixtureDistribution.Mixture!.Distributions.Length);
+    }
+
+    /// <summary>Verifies that to X element creates valid xml structure.</summary>
+    [TestMethod]
+    public void ToXElement_CreatesValidXmlStructure()
+    {
+        var model = CreateTestMixtureModel();
+        var analysis = new MixtureAnalysis(model);
+
+        var xElement = analysis.ToXElement();
+
+        Assert.IsNotNull(xElement, "XElement should not be null.");
+        Assert.AreEqual("MixtureAnalysis", xElement.Name.LocalName, "Root element should be MixtureAnalysis.");
+        Assert.IsNotNull(xElement.Attribute("IsEstimated"), "Should have IsEstimated attribute.");
+    }
+
+    /// <summary>Verifies that bayesian analysis has default settings.</summary>
+    [TestMethod]
+    public void BayesianAnalysis_HasDefaultSettings()
+    {
+        var model = CreateTestMixtureModel();
+
+        var analysis = new MixtureAnalysis(model);
+
+        Assert.IsTrue(analysis.BayesianAnalysis.Iterations > 0,
+            "Iterations should have a default value.");
+        Assert.IsTrue(analysis.BayesianAnalysis.WarmupIterations >= 0,
+            "WarmupIterations should have a default value.");
+    }
+
+    #endregion
+
+    #region IUnivariateAnalysis Interface Tests
+
+    /// <summary>Verifies that i univariate analysis is accessible when probability ordinates.</summary>
+    [TestMethod]
+    public void IUnivariateAnalysis_ProbabilityOrdinates_IsAccessible()
+    {
+        var model = CreateTestMixtureModel();
+        var analysis = new MixtureAnalysis(model);
+
+        IUnivariateAnalysis iface = analysis;
+        var ordinates = iface.ProbabilityOrdinates;
+
+        Assert.IsNotNull(ordinates, "ProbabilityOrdinates should be accessible via interface.");
+    }
+
+    /// <summary>Verifies that i univariate analysis is accessible when get distribution.</summary>
+    [TestMethod]
+    public void IUnivariateAnalysis_GetDistribution_IsAccessible()
+    {
+        var model = CreateTestMixtureModel();
+        var analysis = new MixtureAnalysis(model);
+
+        IUnivariateAnalysis iface = analysis;
+        var dist = iface.GetDistribution(0);
+
+        Assert.IsNull(dist, "GetDistribution should return null when not estimated.");
+    }
+
+    #endregion
+}

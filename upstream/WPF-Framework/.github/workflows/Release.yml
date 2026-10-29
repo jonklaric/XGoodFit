@@ -1,0 +1,64 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+    timeout-minutes: 90
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Create version number
+        shell: pwsh
+        run: |
+          $tag = $env:GITHUB_REF -replace 'refs/tags/', ''
+          $version = $tag -replace '^v', ''
+          "VERSION=$version" >> $env:GITHUB_ENV
+
+      - name: Restore
+        run: dotnet restore WPF-Framework.sln
+
+      - name: Build
+        shell: pwsh
+        run: dotnet build WPF-Framework.sln -c Release --no-restore /p:Version=$env:VERSION
+
+      - name: Test
+        env:
+          VSTEST_CONNECTION_TIMEOUT: '600'
+        run: dotnet test WPF-Framework.sln -c Release --no-build
+
+      - name: Pack
+        shell: pwsh
+        run: .\scripts\pack-wpf-framework.ps1 -Configuration Release -Version $env:VERSION -OutputDirectory packages -SkipRestore -SkipBuild
+
+      - name: Validate artifact contracts
+        shell: pwsh
+        run: .\scripts\test-release-artifact-contract.ps1
+
+      - name: Write immutable release manifest
+        shell: pwsh
+        run: .\scripts\write-release-manifest.ps1 -Directory packages -Repository $env:GITHUB_REPOSITORY -Tag $env:GITHUB_REF_NAME -Version $env:VERSION -CommitSHA $env:GITHUB_SHA -RunID $env:GITHUB_RUN_ID -RunAttempt $env:GITHUB_RUN_ATTEMPT
+
+      - name: Upload packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: wpf-framework-packages-${{ github.run_id }}-${{ github.run_attempt }}
+          path: packages/*
+          if-no-files-found: error
+          retention-days: 90

@@ -1,0 +1,65 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <RootNamespace>DatabaseControls</RootNamespace>
+    <AssemblyName>DatabaseControls</AssemblyName>
+    <OutputType>Library</OutputType>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+
+    <IsWpfFrameworkLibrary>true</IsWpfFrameworkLibrary>
+    <PackageId>RMC.DatabaseControls</PackageId>
+    <Title>DatabaseControls</Title>
+    <Description>WPF controls for viewing, editing, searching, and analyzing database tables backed by DatabaseManager. Includes a virtualized table viewer, find-and-replace, column statistics, and an expression-based field calculator.</Description>
+    <PackageTags>wpf; database; table-viewer; field-calculator; column-stats; find-replace; usace-rmc</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Page Update="Resources\TableViewerResources.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Resources\IconDictionary.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Themes\DatabaseControlsTheme.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Resources\*.png" />
+    <Resource Include="Resources\*.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="FieldCalculator\ExpressionTextBox.cs" />
+    <Compile Remove="FieldCalculator\ErrorWindow.xaml.cs" />
+    <Compile Remove="FieldCalculator\ErrorItem.cs" />
+    <Page Remove="FieldCalculator\ErrorWindow.xaml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\Help\FieldCalculator\*" />
+    <EmbeddedResource Include="Resources\Help\SelectByAttribute\*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DatabaseManager\DatabaseManager.csproj" />
+    <ProjectReference Include="..\ExpressionParserControls\ExpressionParserControls.csproj" />
+    <ProjectReference Include="..\ExpressionParser\ExpressionParser.csproj" />
+    <ProjectReference Include="..\GenericControls\GenericControls.csproj" />
+    <ProjectReference Include="..\OxyPlotControls\OxyPlotControls.csproj" />
+    <ProjectReference Include="..\Themes\Themes.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="RMC.Numerics" />
+    <ProjectReference Include="..\OxyPlot\OxyPlot\OxyPlot.csproj" />
+    <ProjectReference Include="..\OxyPlot\OxyPlot.Wpf\OxyPlot.Wpf.csproj" />
+    <ProjectReference Include="..\OxyPlot\OxyPlot.Wpf.Shared\OxyPlot.Wpf.Shared.csproj" />
+  </ItemGroup>
+
+</Project>

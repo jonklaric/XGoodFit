@@ -1,0 +1,51 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:po="http://schemas.microsoft.com/winfx/2006/xaml/presentation/options">
+
+    <!--
+    ╔═══════════════════════════════════════════════════════════════════════════════╗
+    ║  FrameworkUI.Demo Icon Dictionary                                             ║
+    ╠═══════════════════════════════════════════════════════════════════════════════╣
+    ║  Theme-aware vector icons for demo project elements. Icons use                ║
+    ║  DynamicResource bindings to adapt to light/dark/blue themes.                 ║
+    ║                                                                               ║
+    ║  THEME RESOURCES USED:                                                        ║
+    ║  • ToolbarIconForeground    - Main stroke/fill (dark in light, light in dark) ║
+    ║  • ToolbarIconDocumentFill  - Cell/document background fill                   ║
+    ║  • ToolbarIconAccent        - Accent color (blue node marker)                 ║
+    ║                                                                               ║
+    ║  ICON FORMAT:                                                                 ║
+    ║  Icons are defined as DrawingImage with po:Freeze="False" and x:Shared="False"║
+    ║  so each resolution creates a fresh unfrozen instance whose DynamicResource   ║
+    ║  bindings remain active. Element nodes use SetResourceReference to bind to    ║
+    ║  these icons, which re-resolves on theme change.                              ║
+    ║                                                                               ║
+    ║  USAGE (code-behind):                                                         ║
+    ║  image.SetResourceReference(Image.SourceProperty, "HazardElementIcon");       ║
+    ╚═══════════════════════════════════════════════════════════════════════════════╝
+    -->
+
+    <!-- Hazard Element Icon - Frequency curve band with node marker (16x16) -->
+    <!-- Motif from the RMC-TotalRisk parametric hazard icon: L-shaped plot axes,   -->
+    <!-- an ascending confidence band, and a diamond node marker lower-right.       -->
+    <DrawingImage x:Key="HazardElementIcon" x:Shared="False" po:Freeze="False">
+        <DrawingImage.Drawing>
+            <DrawingGroup>
+                <DrawingGroup.Children>
+                    <!-- Transparent background -->
+                    <GeometryDrawing Brush="#00FFFFFF" Geometry="F1M16,16L0,16 0,0 16,0z" />
+                    <!-- L-shaped axes: left vertical (1x16) + bottom horizontal (15x1) (foreground) -->
+                    <GeometryDrawing Brush="{DynamicResource ToolbarIconForeground}" Geometry="F1M0,0L1,0 1,15 16,15 16,16 0,16z" />
+                    <!-- Confidence band fill, ascending left to right (document fill) -->
+                    <GeometryDrawing Brush="{DynamicResource ToolbarIconDocumentFill}" Geometry="F1M2,5L14,1 14,3.5 2,7.5z" />
+                    <!-- Band edge lines (foreground) -->
+                    <GeometryDrawing Brush="{DynamicResource ToolbarIconForeground}" Geometry="F1M2,5L14,1 14,1.75 2,5.75z M2,6.75L14,2.75 14,3.5 2,7.5z" />
+                    <!-- Diamond node marker (accent) with light center (document fill) -->
+                    <GeometryDrawing Brush="{DynamicResource ToolbarIconAccent}" Geometry="F1M12,8L15,11 12,14 9,11z" />
+                    <GeometryDrawing Brush="{DynamicResource ToolbarIconDocumentFill}" Geometry="F1M12,9.5L13.5,11 12,12.5 10.5,11z" />
+                </DrawingGroup.Children>
+            </DrawingGroup>
+        </DrawingImage.Drawing>
+    </DrawingImage>
+
+</ResourceDictionary>

@@ -1,0 +1,8 @@
+# Sample data for the compatibility and HEC-DSS test suites, downloaded into sample-data/<name>
+# by scripts/fetch-sample-data.sh. It isn't code and isn't needed to build XGoodFit, so it isn't
+# vendored. RMC-BestFit's example projects are about 455 MB, and HEC's sample DSS files have no
+# licence.
+#
+# Columns: name  git-url  commit  folders ('*' = whole tree; root files are always included)
+RMC-BestFit     https://github.com/USACE-RMC/RMC-BestFit.git                      bfce2ddbebb8d75e6cf6e21c4fef8ecfb5058269  examples
+dss-test-data   https://github.com/HydrologicEngineeringCenter/dss-test-data.git  5df48cee088f8af6466ddaf581220257cca61f59  *

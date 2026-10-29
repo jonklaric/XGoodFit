@@ -1,0 +1,342 @@
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Numerics.Data.Statistics;
+using Numerics.Distributions;
+using Numerics.Distributions.Copulas;
+
+namespace Distributions.BivariateCopulas
+{
+    /// <summary>
+    /// Unit tests for the Gumbel Copula. Reference values come from the R 'copula' package for the original methods and from pyvinecopulib 0.7.6 and mpmath 1.4.1 for the conditional-distribution methods.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    ///     <b> Authors: </b>
+    ///     <list type="bullet">
+    ///     <item>Haden Smith, USACE Risk Management Center, cole.h.smith@usace.army.mil</item>
+    ///     </list>
+    /// </para>
+    /// </remarks>
+    [TestClass]
+    public class Test_GumbelCopula
+    {
+        /// <summary>
+        /// Test PDF
+        /// </summary>
+        [TestMethod]
+        public void Test_PDF()
+        {
+            var copula = new GumbelCopula(10);
+            Assert.AreEqual(1.559981e-07, copula.PDF(0.2, 0.8), 1E-6);
+
+            copula = new GumbelCopula(20);
+            Assert.AreEqual(7.954156e-16, copula.PDF(0.2, 0.8), 1E-6);
+
+            copula = new GumbelCopula(1.1);
+            Assert.AreEqual(0.9004251, copula.PDF(0.2, 0.8), 1E-6);
+
+            copula = new GumbelCopula(5);
+            Assert.AreEqual(0.001609717, copula.PDF(0.2, 0.8), 1E-6);
+
+            // Test symmetry
+            copula = new GumbelCopula(10);
+            Assert.AreEqual(1.559981e-07, copula.PDF(0.8, 0.2), 1E-6);
+
+            copula = new GumbelCopula(20);
+            Assert.AreEqual(7.954156e-16, copula.PDF(0.8, 0.2), 1E-6);
+
+            copula = new GumbelCopula(1.1);
+            Assert.AreEqual(0.9004251, copula.PDF(0.8, 0.2), 1E-6);
+
+            copula = new GumbelCopula(5);
+            Assert.AreEqual(0.001609717, copula.PDF(0.8, 0.2), 1E-6);
+
+        }
+
+        /// <summary>
+        /// Test CDF
+        /// </summary>
+        [TestMethod]
+        public void Test_CDF()
+        {
+            var copula = new GumbelCopula(10);
+            Assert.AreEqual(0.2, copula.CDF(0.2, 0.8), 1E-6);
+
+            copula = new GumbelCopula(20);
+            Assert.AreEqual(0.2, copula.CDF(0.2, 0.8), 1E-6);
+
+            copula = new GumbelCopula(1.1);
+            Assert.AreEqual(0.1694668, copula.CDF(0.2, 0.8), 1E-6);
+
+            copula = new GumbelCopula(5);
+            Assert.AreEqual(0.1999967, copula.CDF(0.2, 0.8), 1E-6);
+
+            // Test symmetry
+            copula = new GumbelCopula(10);
+            Assert.AreEqual(0.2, copula.CDF(0.8, 0.2), 1E-6);
+
+            copula = new GumbelCopula(20);
+            Assert.AreEqual(0.2, copula.CDF(0.8, 0.2), 1E-6);
+
+            copula = new GumbelCopula(1.1);
+            Assert.AreEqual(0.1694668, copula.CDF(0.8, 0.2), 1E-6);
+
+            copula = new GumbelCopula(5);
+            Assert.AreEqual(0.1999967, copula.CDF(0.8, 0.2), 1E-6);
+
+        }
+
+        private double[] data1 = new double[] { 112.472889925526, 108.197032461095, 113.64666688938, 113.965212991957, 117.333562148345, 100.559345907851, 102.180053944561, 110.97067894608, 104.077049999534, 102.473973961948, 107.113945888296, 106.082540016705, 87.0978719961949, 75.1150155332284, 112.802882878613, 138.120743213339, 79.1789109173273, 106.623115297302, 110.92063481489, 109.543820203885, 73.138959971343, 98.3431545632918, 102.952511132798, 93.0465814076382, 111.688341287489, 79.2581834425453, 103.249260938183, 85.8316965436919, 84.6132137548954, 110.962644400059, 84.0087454428379, 107.223748328677, 121.506255972552, 123.73645847787, 79.0481183395772, 146.264725342603, 95.3276983471542, 107.603210240998, 99.9974503587899, 90.8379276433018, 104.67679932997, 73.4569986162982, 113.260163491206, 97.0605626966906, 89.0374440090811, 133.729158410007, 78.9190177023254, 108.345190856042, 108.953076977455, 97.0704392084539, 86.2765535028879, 102.219521216094, 63.2511232136125, 76.7529568677982, 74.1684311723453, 84.3685879177063, 94.7059136752836, 92.5916995697557, 107.923148783474, 105.261642868879, 84.7155767681601, 105.132628194701, 102.500956437438, 88.5763924520429, 95.9492723947193, 131.375734529198, 123.260221112319, 73.5681907570129, 93.1887735334748, 106.007277431115, 100.356675515534, 91.4930966213857, 122.640033750305, 107.143857399285, 91.0914154936143, 69.1482456631603, 122.434236175527, 111.906044824347, 111.632367993799, 84.6813208809395, 99.4489764877588, 106.884486176956, 95.3274691248045, 107.839259276592, 90.3967465603013, 76.5485833533036, 98.4847265047609, 96.2342050639354, 91.963420241494, 101.351308748786, 95.4725609428008, 145.010119874994, 88.3665385050844, 109.704283131981, 81.2884314113531, 109.836099370176, 102.386450396465, 93.0092098477109, 83.7158456419459, 89.7486244037052 };
+        private double[] data2 = new double[] { 101.222248773938, 81.7313758478523, 123.411631899952, 93.2413907814405, 102.50494017697, 96.5306123268502, 18.1227322903384, 74.307009995493, 82.2705528425937, 89.6693353083137, 87.2256413770307, 81.1744664866471, 81.2165207417765, 81.4927985171313, 100.651709224046, 130.599135003894, 45.4442163124226, 66.6919540534553, 83.5881809451671, 88.4770416926437, 75.1039197272015, 52.1553833221993, 49.528146406319, 66.3900605051234, 97.2816608378485, 26.5831021290638, 88.5107383079526, 78.4085272967254, 70.7569274155408, 109.703373315445, 87.4165170640218, 85.6182893046897, 110.738685438064, 119.768351328997, 21.6161419679033, 154.357497576718, 53.8795395966417, 75.943071862762, 105.35244272571, 86.5868773757059, 76.4752235253919, 48.5832730671902, 84.6605006576596, 77.1067893953142, 46.6141185543174, 126.161273608663, 67.6305173666572, 94.9907772124782, 112.133285294602, 72.9506266499651, 37.128394091496, 63.4492833651505, 59.0759448691672, 56.0401720089048, 74.4223335518519, 43.9584062661215, 64.1266855983013, 103.095921282224, 107.649317301385, 72.9193080139833, 91.8847445373411, 75.1454442126996, 76.9540119546376, 64.9699411254905, 55.4012215444807, 118.83302426895, 106.302264714345, 48.1415318738189, 62.2914940564682, 84.5812336961348, 80.3688979491351, 47.5308700972038, 107.759633266225, 95.6723525891828, 27.2716316191787, 99.1054148896251, 82.2568018516306, 96.0432032275742, 96.3923733319187, 62.287551336599, 47.541023973346, 95.9802695805108, 80.2482799857865, 88.743034379118, 51.9583360652995, 73.0816610190799, 33.729130931116, 55.4771104609277, 93.3789037599054, 90.0234978870232, 62.3635712815712, 146.062306846747, 54.4992333698561, 89.1013264737916, 80.1329566564616, 123.235472480686, 73.4015267834993, 49.6295804684941, 74.6326460427444, 64.7088795224836 };
+
+
+        /// <summary>
+        /// Estimate using the method of moments.
+        /// </summary>
+        [TestMethod]
+        public void Test_MOM_Fit()
+        {
+            var copula = new GumbelCopula();
+            copula.SetThetaFromTau(data1, data2);
+            Assert.AreEqual(1.978417, copula.Theta, 1E-4);
+        }
+
+        /// <summary>
+        /// Test fitting with the method of maximum pseudo likelihood.
+        /// </summary>
+        [TestMethod]
+        public void Test_MPL_Fit()
+        {
+            // get ranks of data
+            var rank1 = Statistics.RanksInPlace(data1);
+            var rank2 = Statistics.RanksInPlace(data2);
+            // get plotting positions
+            for (int i = 0; i < data1.Length; i++)
+            {
+                rank1[i] = rank1[i] / (rank1.Length + 1d);
+                rank2[i] = rank2[i] / (rank2.Length + 1d);
+            }
+            // Fit copula
+            BivariateCopula copula = new GumbelCopula();
+            BivariateCopulaEstimation.Estimate(ref copula, rank1, rank2, CopulaEstimationMethod.PseudoLikelihood);
+            Assert.AreEqual(2.097953, copula.Theta, 1E-4);
+        }
+
+        /// <summary>
+        /// Estimate using the inference from margins method.
+        /// </summary>
+        [TestMethod]
+        public void Test_IFM_Fit()
+        {
+            BivariateCopula copula = new GumbelCopula();
+            copula.MarginalDistributionX = new Normal();
+            copula.MarginalDistributionY = new Normal();
+            // Fit marginals
+            ((IEstimation)copula.MarginalDistributionX).Estimate(data1, ParameterEstimationMethod.MaximumLikelihood);
+            ((IEstimation)copula.MarginalDistributionY).Estimate(data2, ParameterEstimationMethod.MaximumLikelihood);
+            // Fit copula
+            BivariateCopulaEstimation.Estimate(ref copula, data1, data2, CopulaEstimationMethod.InferenceFromMargins);
+            Assert.AreEqual(2.031034, copula.Theta, 1E-4);
+        }
+
+        /// <summary>
+        /// Estimate using the method of maximum likelihood estimation.
+        /// </summary>
+        [TestMethod]
+        public void Test_MLE_Fit()
+        {
+            BivariateCopula copula = new GumbelCopula();
+            copula.MarginalDistributionX = new Normal();
+            copula.MarginalDistributionY = new Normal();
+            // Fit copula and marginals
+            BivariateCopulaEstimation.Estimate(ref copula, data1, data2, CopulaEstimationMethod.FullLikelihood);
+            // Theta
+            Assert.AreEqual(1.999167, copula.Theta, 1E-3);
+            // Marginal-X
+            Assert.AreEqual(99.90953, ((Normal)copula.MarginalDistributionX).Mu, 1E-1);
+            Assert.AreEqual(15.80668, ((Normal)copula.MarginalDistributionX).Sigma, 1E-1);
+            // Marginal-Y
+            Assert.AreEqual(78.36136, ((Normal)copula.MarginalDistributionY).Mu, 1E-1);
+            Assert.AreEqual(24.83673, ((Normal)copula.MarginalDistributionY).Sigma, 1E-1);
+        }
+
+        /// <summary>
+        /// Test the tail dependence coefficients.
+        /// Gumbel copula: λ_U = 2 - 2^(1/θ), λ_L = 0.
+        /// </summary>
+        [TestMethod]
+        public void Test_TailDependence()
+        {
+            // θ = 2: λ_U = 2 - 2^(1/2) ≈ 0.58579
+            var copula = new GumbelCopula(2.0);
+            Assert.AreEqual(0.0, copula.LowerTailDependence, 1E-10, "Gumbel copula should have no lower tail dependence.");
+            Assert.AreEqual(2.0 - Math.Pow(2.0, 0.5), copula.UpperTailDependence, 1E-6, "λ_U should equal 2 - 2^(1/θ) for θ=2.");
+
+            // θ = 4: λ_U = 2 - 2^(1/4) ≈ 0.81079
+            var copula4 = new GumbelCopula(4.0);
+            Assert.AreEqual(2.0 - Math.Pow(2.0, 0.25), copula4.UpperTailDependence, 1E-6, "λ_U should equal 2 - 2^(1/θ) for θ=4.");
+
+            // θ = 1 (independence): λ_U = 2 - 2 = 0
+            var copulaIndep = new GumbelCopula(1.0);
+            Assert.AreEqual(0.0, copulaIndep.UpperTailDependence, 1E-10, "λ_U should be 0 for θ=1 (independence).");
+
+            // θ → ∞: λ_U → 1
+            var copulaLarge = new GumbelCopula(100.0);
+            Assert.IsGreaterThan(0.99, copulaLarge.UpperTailDependence, "λ_U should approach 1 for large θ.");
+        }
+
+        /// <summary>
+        /// Test that ParametersValid tracks the dependency parameter's valid range.
+        /// ValidateParameter returns null for a valid dependence parameter and a non-null
+        /// exception otherwise, so ParametersValid follows the parameter.
+        /// </summary>
+        [TestMethod]
+        public void Test_ParametersValid()
+        {
+            var copula = new GumbelCopula(2.0);
+            Assert.IsTrue(copula.ParametersValid);
+
+            copula.Theta = 0.5; // below the minimum of 1
+            Assert.IsFalse(copula.ParametersValid);
+
+            copula.Theta = 3.0;
+            Assert.IsTrue(copula.ParametersValid);
+        }
+
+        /// <summary>
+        /// Test Clone produces an independent copy with deep-copied marginals.
+        /// </summary>
+        [TestMethod]
+        public void Test_Clone()
+        {
+            var copula = new GumbelCopula(2.0, new Normal(100, 10), new Gumbel(50, 5));
+            var clone = copula.Clone() as GumbelCopula;
+            Assert.IsNotNull(clone);
+            Assert.AreEqual(copula.Theta, clone.Theta);
+            Assert.IsTrue(clone.ParametersValid);
+
+            // Marginals are deep-copied (distributions memoize lazily, so clones must
+            // not share marginal instances), with identical quantiles
+            Assert.AreNotSame(copula.MarginalDistributionX, clone.MarginalDistributionX);
+            Assert.AreNotSame(copula.MarginalDistributionY, clone.MarginalDistributionY);
+            Assert.AreEqual(copula.MarginalDistributionY.InverseCDF(0.9), clone.MarginalDistributionY.InverseCDF(0.9));
+
+            // Mutating the clone should not affect the original
+            clone.Theta = 3.0;
+            Assert.AreEqual(2.0, copula.Theta);
+        }
+
+        /// <summary>
+        /// Test the forward conditional CDF (h-function), h(v|u) = ∂C(u,v)/∂u.
+        /// Reference values were computed with the Python package pyvinecopulib 0.7.6
+        /// (Bicop.hfunc1, family gumbel), cross-checked at generation against a 50-digit
+        /// numerical ∂C/∂u of the Gumbel CDF computed with mpmath 1.4.1 (agreement ≤ 1E-15).
+        /// The analytic conditional is also cross-checked against a central finite difference
+        /// of the closed-form CDF (ε = 1E-6; noise floor ~1E-9, so 1E-7 is asserted) and
+        /// pinned at the exact upper edge h(1|u) = 1.
+        /// </summary>
+        [TestMethod]
+        public void Test_ConditionalCDF()
+        {
+            var copula = new GumbelCopula(2d);
+            Assert.AreEqual(0.9104803864754554, copula.ConditionalCDF(0.3, 0.7), 1E-10);
+            Assert.AreEqual(0.11559784394154599, copula.ConditionalCDF(0.7, 0.3), 1E-10);
+            Assert.AreEqual(0.9975327563905108, copula.ConditionalCDF(0.05, 0.9), 1E-10);
+            Assert.AreEqual(0.001949079483034616, copula.ConditionalCDF(0.9, 0.05), 1E-10);
+
+            copula = new GumbelCopula(3.5);
+            Assert.AreEqual(0.9852294418984343, copula.ConditionalCDF(0.3, 0.7), 1E-10);
+            Assert.AreEqual(0.0201697450039637, copula.ConditionalCDF(0.7, 0.3), 1E-10);
+            Assert.AreEqual(0.9999871895213038, copula.ConditionalCDF(0.05, 0.9), 1E-10);
+            Assert.AreEqual(1.2887217392734802E-05, copula.ConditionalCDF(0.9, 0.05), 1E-10);
+
+            foreach (double theta in new[] { 2d, 3.5 })
+            {
+                var c = new GumbelCopula(theta);
+                foreach (double u in new[] { 0.1, 0.3, 0.5, 0.7, 0.9 })
+                {
+                    foreach (double v in new[] { 0.1, 0.5, 0.9 })
+                    {
+                        double fd = (c.CDF(u + 1E-6, v) - c.CDF(u - 1E-6, v)) / 2E-6;
+                        Assert.AreEqual(fd, c.ConditionalCDF(u, v), 1E-7);
+                    }
+                    Assert.AreEqual(1d, c.ConditionalCDF(u, 1d), 1E-12);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Test the scalar inverse conditional CDF. Reference values were computed with the
+        /// Python package pyvinecopulib 0.7.6 (Bicop.hinv1, family gumbel). The Gumbel inverse
+        /// is a Brent solve with tolerance 1E-8, so 1E-6 absolute deltas are asserted for the
+        /// reference pins and for the round trip h(InverseConditionalCDF(u, t) | u) = t.
+        /// InverseCDF(u, t)[1] must recompose the scalar bit-for-bit.
+        /// </summary>
+        [TestMethod]
+        public void Test_InverseConditionalCDF()
+        {
+            var copula = new GumbelCopula(2d);
+            Assert.AreEqual(0.48403043854946104, copula.InverseConditionalCDF(0.3, 0.7), 1E-6);
+            Assert.AreEqual(0.39821464719708766, copula.InverseConditionalCDF(0.9, 0.05), 1E-6);
+
+            copula = new GumbelCopula(3.5);
+            Assert.AreEqual(0.39761414717848886, copula.InverseConditionalCDF(0.3, 0.7), 1E-6);
+            Assert.AreEqual(0.7272049794715586, copula.InverseConditionalCDF(0.9, 0.05), 1E-6);
+
+            foreach (double theta in new[] { 2d, 3.5 })
+            {
+                var c = new GumbelCopula(theta);
+                foreach (double u in new[] { 0.1, 0.3, 0.5, 0.7, 0.9 })
+                {
+                    foreach (double t in new[] { 0.1, 0.5, 0.9 })
+                    {
+                        double v = c.InverseConditionalCDF(u, t);
+                        Assert.AreEqual(t, c.ConditionalCDF(u, v), 1E-6);
+                        Assert.AreEqual(v, c.InverseCDF(u, t)[1], 0d);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Test the inverse conditional at conditional probabilities within rounding distance
+        /// of the boundaries. In exact arithmetic h(1|u) = 1, but the floating-point objective
+        /// rounds below 1 by roughly |ln u| ulps, so a requested level of t = 1 − 1E-16 can exceed the
+        /// attainable maximum of the objective for u values with |ln u| ≳ 1; the solver must still
+        /// complete. The asserted contract is the inverse relationship, not a
+        /// particular value: every call returns a probability in [0, 1] whose value is monotone
+        /// in the conditional level. That phrasing is deliberate — in the far tail under
+        /// strong dependence the conditional CDF is numerically saturated across a band of v,
+        /// so several values satisfy h(v|u) = 1 − 1E-16 to full double precision and the
+        /// solver may legitimately return any of them. The asserted contract is therefore
+        /// completion, range, and monotonicity in the conditional level — deliberately not a
+        /// round trip through <see cref="BivariateCopula.ConditionalCDF"/>, which the
+        /// Archimedean families evaluate through the generator ratio φ′(u)/φ′(C(u,v)) rather
+        /// than the closed form this inverse solves, and whose precision degrades at v = 1 for
+        /// large θ. Interior levels are pinned against reference values above, which is where
+        /// the round trip belongs.
+        /// </summary>
+        [TestMethod]
+        public void Test_InverseConditionalCDF_BoundaryConditionals()
+        {
+            foreach (double theta in new[] { 1.2, 2d, 3.5, 10d, 20d })
+            {
+                var copula = new GumbelCopula(theta);
+                for (int i = 1; i < 2000; i++)
+                {
+                    double u = i / 2000d;
+                    double top = copula.InverseConditionalCDF(u, 1d - 1E-16);
+                    Assert.IsTrue(top >= 0d && top <= 1d,
+                        $"Top-edge inverse left [0, 1] at θ = {theta}, u = {u}: {top}.");
+                    Assert.IsGreaterThanOrEqualTo(copula.InverseConditionalCDF(u, 0.999), top,
+                        $"The top-edge inverse must not fall below an interior level at θ = {theta}, u = {u}.");
+                    double bottom = copula.InverseConditionalCDF(u, 1E-16);
+                    Assert.IsTrue(bottom >= 0d && bottom <= 1d,
+                        $"Bottom-edge inverse left [0, 1] at θ = {theta}, u = {u}: {bottom}.");
+                    Assert.IsLessThanOrEqualTo(copula.InverseConditionalCDF(u, 0.001), bottom,
+                        $"The bottom-edge inverse must not exceed an interior level at θ = {theta}, u = {u}.");
+                }
+            }
+        }
+
+    }
+}

@@ -1,0 +1,49 @@
+name: Publish validated release to NuGet.org
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+  actions: read
+  id-token: write
+
+concurrency:
+  group: nuget-${{ github.event.release.tag_name }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: ${{ !github.event.release.prerelease && !github.event.release.draft }}
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout release tag
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.release.tag_name }}
+          fetch-depth: 0
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Download and validate exact downstream-approved artifact
+        shell: pwsh
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+        run: .\scripts\download-validated-release.ps1 -Repository $env:GITHUB_REPOSITORY -Tag $env:RELEASE_TAG -Directory validated-packages
+      - name: Verify existing package versions before login
+        shell: pwsh
+        run: .\scripts\publish-validated-release.ps1 -Directory validated-packages -ReceiptPath downstream-validation.json
+      - name: NuGet login
+        uses: NuGet/login@v1
+        id: login
+        with:
+          user: USACE-RMC
+      - name: Publish validated packages
+        shell: pwsh
+        env:
+          NUGET_API_KEY: ${{ steps.login.outputs.NUGET_API_KEY }}
+        run: .\scripts\publish-validated-release.ps1 -Directory validated-packages -ReceiptPath downstream-validation.json -Push

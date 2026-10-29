@@ -1,0 +1,162 @@
+#include <stdio.h>
+
+
+#include "hecdssInternal.h"
+#include "zdssKeys.h"
+#include "zdssVals.h"
+#include "heclib.h"
+
+
+/**
+*  Function:	zmessageLen
+*				zmessageNoNlLen
+*				zmessage2Len
+*				zmessageFlush
+*
+*  Use:			Private
+*
+*  Description:	Write a message to message or log file for C and/or Fortran
+*
+*  Declaration: void zmessageLen(long long *ifltab, const char *message, size_t length)
+*				void zmessageNoNlLen(long long *ifltab, const char *message, size_t length)
+*				void zmessage2Len(long long *ifltab, const char *message1, size_t len1, const char *message2, size_t len2)
+*				void zmessageFlush(long long *ifltab)
+*
+*
+*  Parameters:	long long *ifltab:  The ifltab array
+*				const char *message:  The message to show
+*				size_t length:  The length (number of characters) in message to write
+*				const char *message1:  First part of message
+*				const char *message2:  Second part of message
+*				size_t len1, len2:  Lengths of messages to write
+*
+*
+*  Notes:	These function preform physical writing and are library dependent
+*
+*			zmessageLen writes to message/log appending New Line character
+*			zmessageNoNlLen writes to message/log without New Line character
+*			zmessage2Len combines messages and appends CR/LF, then writes to message/log.
+*			zmessageFlush flushes messages to disk.  Note, this is resource intensive and
+*						  should only be called when necessary.
+*
+*  See Also:	zmessage
+*
+*
+*	Author:			Bill Charley
+*	Date:			2012
+*   Organization:	US Army Corps of Engineers, Hydrologic Engineering Center (USACE HEC)
+*					All Rights Reserved
+*
+**/
+
+// Private
+int zmessHandle(long long *ifltab, int *messHandle);
+
+
+//  Message with new line
+void zmessageLen(long long *ifltab, const char *message, size_t length)
+{
+	int handle;
+
+	zmessHandle(ifltab, &handle);
+
+	if (handle > 0) {
+		writeBytes(handle, message, (unsigned int)length);
+		writeBytes(handle, "\n", (unsigned int)1);
+	}
+
+	if (handle <= 0) {
+		fwrite(message, sizeof(char), length, stdout);
+		fwrite("\n", (size_t)1, (size_t)1, stdout);
+	}
+
+}
+
+//  Message with no new line
+void zmessageNoNlLen(long long *ifltab, const char *message, size_t length)
+{
+	int handle;
+
+	zmessHandle(ifltab, &handle);
+
+	if (handle > 0) {
+		writeBytes(handle, message, (unsigned int)length);
+	}
+
+	if (handle <= 0) {
+		fwrite(message, sizeof(char), length, stdout);
+	}
+
+}
+
+
+
+void zmessage2Len(long long *ifltab, const char *message1, size_t len1, const char *message2, size_t len2)
+{
+	int handle;
+
+	zmessHandle(ifltab, &handle);
+	zmessageNoNlLen(ifltab, message1, len1);
+	zmessageLen(ifltab, message2, len2);
+}
+
+void zmessageFlush(long long *ifltab)
+{
+	//  This makes sure that messages are flushed to output
+	int handle;
+
+	zmessHandle(ifltab, &handle);
+
+	if (handle > 0){
+		flushFile(handle);
+	}
+}
+
+
+//  A PRIVATE function to get the C handle for messages / logs
+//  Returns STATUS_OKAY if defined
+//  Returns STATUS_NOT_OKAY and zeros for handle / unit if not defined
+//  There are times when error messages need to be shown when ifltab is not used
+//  or is not properly filled out
+
+int zmessHandle(long long *ifltab, int *messHandle)
+{
+	//  boolMessSet is informational only;
+	int boolMessSet=0;
+
+
+	//  Check for initialization
+	if (zdssVals.integrityKey != DSS_INTEGRITY_KEY) {
+		zinit();
+	}
+
+	//  Is this a version 7 DSS file, and has ifltab been filled out
+	//  It is NOT an error here if ifltab[zdssKeys.kintegrityKey1] != zdssVals.integrityKey
+	//  For some error messages, ifltab will not be filled out
+
+	if ((zgetVersion(ifltab) == 7) && (ifltab[zdssKeys.kintegrityKey1] == zdssVals.integrityKey)) {
+		//  Valid ifltab
+		*messHandle = (int)ifltab[zdssKeys.kmessHandle];
+		boolMessSet = STATUS_OKAY;
+	}
+	else {
+		//  ifltab not initialized (okay)
+		*messHandle = zdssVals.messageHandle;
+		boolMessSet = STATUS_NOT_OKAY;
+	}
+
+	//  Check if the C message handle has been set
+	if ((*messHandle <= 0) || (*messHandle > 2000)) {
+		*messHandle = zdssVals.messageHandle;
+	}
+
+	//  Do we have a valid handle?
+	if ((*messHandle <= 0) || (*messHandle > 2000)) {
+		//  No
+		*messHandle = 0;
+		boolMessSet = STATUS_NOT_OKAY;
+	}
+	return boolMessSet;
+}
+
+

@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <IsPackable>true</IsPackable>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <Version>1.0.5</Version>
+    <!-- The updater executable payload is intentionally packaged as deployable content, not a compile reference. -->
+    <NoWarn>$(NoWarn);NU5100</NoWarn>
+    <NuspecFile>RMC.Wpf.Framework.Support.nuspec</NuspecFile>
+    <NuspecBasePath>$(MSBuildProjectDirectory)</NuspecBasePath>
+    <NuspecProperties>configuration=$(Configuration);version=$(Version)</NuspecProperties>
+  </PropertyGroup>
+</Project>

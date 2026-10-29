@@ -1,0 +1,72 @@
+﻿<UserControl x:Class="FrameworkUI.ProjectPropertiesControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:FrameworkUI"
+             xmlns:cntrls="clr-namespace:GenericControls;assembly=GenericControls"
+             mc:Ignorable="d" 
+             MinWidth="100"
+             MinHeight="100"
+             d:DesignHeight="200" d:DesignWidth="300"      
+             Background="{DynamicResource PropertyGrid.Content.Background}"
+             Foreground="{DynamicResource EnvironmentWindowText}"
+             DataContext="{Binding RelativeSource={RelativeSource Self}}">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <cntrls:DoubleToGridLengthConverter x:Key="ActualToLengthConverter" />
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <ScrollViewer x:Name="Viewer" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+        <Grid x:Name="MainGrid" Width="{Binding ElementName=Viewer, Path=ViewportWidth}" MinWidth="200">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" MinHeight="50"/>
+            </Grid.RowDefinitions>
+            <Expander Grid.Row="0" 
+                          Margin="0,4,4,8" 
+                          Header="PROJECT PROPERTIES" 
+                          IsExpanded="True" 
+                          Grid.ColumnSpan="2"
+                          Style="{DynamicResource PropertyExpanderStyle}">
+                <DockPanel>
+                    <cntrls:NameTextPropertyControl x:Name="NameTextBox" Margin="0 2" CharacterLimit="50" DockPanel.Dock="Top" Title="Name" MaxPropertyWidth="200" 
+                                                Text="{Binding Project.Name, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" PreviewMouseLeftButtonDown="Name_PreviewMouseLeftButtonDown"
+                                                ExistingNames="{Binding ExistingNames, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}"
+                                                PropertyWidth="{Binding ElementName=SoftwareVersion, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}"
+                                                GotFocus="NameTextBox_GotFocus"
+                                                LostFocus="NameTextBox_LostFocus"/>
+
+                    <cntrls:ResizeableTextPropertyControl x:Name="Description" Margin="0 2" DockPanel.Dock="Top" Title="Description" MaxPropertyWidth="200" TextBoxHeight="88"
+                                                      Text="{Binding Project.Description, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" PreviewMouseLeftButtonDown="Description_PreviewMouseLeftButtonDown"
+                                                      PropertyWidth="{Binding ElementName=SoftwareVersion, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}"/>
+
+                    <cntrls:TextPropertyControl x:Name="CreationDate" Margin="0 2" DockPanel.Dock="Top" Title="Created On" MaxPropertyWidth="200" IsReadOnly="True"
+                                            Text="{Binding Project.CreationDate, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}" PreviewMouseLeftButtonDown="CreationDate_PreviewMouseLeftButtonDown"
+                                            PropertyWidth="{Binding ElementName=SoftwareVersion, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}"/>
+
+                    <cntrls:TextPropertyControl x:Name="LastModified" Margin="0 2" DockPanel.Dock="Top" Title="Last Modified" MaxPropertyWidth="200" IsReadOnly="True" 
+                                            Text="{Binding Project.LastModified, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}" PreviewMouseLeftButtonDown="LastModified_PreviewMouseLeftButtonDown"
+                                            PropertyWidth="{Binding ElementName=SoftwareVersion, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}"/>
+
+                    <cntrls:TextPropertyControl x:Name="FileDirectory" Margin="0 2" DockPanel.Dock="Top" Title="File Directory" MaxPropertyWidth="200" IsReadOnly="True" 
+                                            Text="{Binding Project.FileDirectory, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}" ToolTip="{Binding Project.FileDirectory, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}"
+                                            PreviewMouseLeftButtonDown="FileDirectory_PreviewMouseLeftButtonDown"
+                                            PropertyWidth="{Binding ElementName=SoftwareVersion, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}"/>
+
+                    <cntrls:TextPropertyControl x:Name="SoftwareVersion" Margin="0 2" DockPanel.Dock="Top" Title="Software Version" MaxPropertyWidth="200" IsReadOnly="True" 
+                                            Text="{Binding Project.SoftwareVersion, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}" PreviewMouseLeftButtonDown="SoftwareVersion_PreviewMouseLeftButtonDown"/>
+
+                </DockPanel>
+            </Expander>
+            
+            <!--<DockPanel HorizontalAlignment="Stretch" VerticalAlignment="Top" Grid.ColumnSpan="2" Grid.Row="0" Margin="5" >
+                <cntrls:SeparatorWithHeader Header="Project Properties" DockPanel.Dock="Top" Margin="0,5,0,5"/>
+            </DockPanel>-->
+            
+            <GridSplitter Grid.Row="1" Height="1" HorizontalAlignment="Stretch" VerticalAlignment="Bottom" Background="{DynamicResource SeparatorBorder}"/>
+            <cntrls:PropertyAttributes x:Name="PropertyAttributes" Grid.Row="2"/>
+        </Grid>
+    </ScrollViewer>
+</UserControl>

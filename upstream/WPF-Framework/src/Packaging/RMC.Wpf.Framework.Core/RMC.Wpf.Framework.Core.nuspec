@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <id>RMC.Wpf.Framework.Core</id>
+    <version>$version$</version>
+    <authors>C. Haden Smith, Woodrow L. Fields, Julian Gonzalez</authors>
+    <owners>USACE-RMC</owners>
+    <license type="expression">0BSD</license>
+    <projectUrl>https://github.com/USACE-RMC/WPF-Framework</projectUrl>
+    <repository type="git" url="https://github.com/USACE-RMC/WPF-Framework" />
+    <readme>README.md</readme>
+    <description>Core interfaces, project model contracts, undo/redo infrastructure, messaging, and WPF themes for the RMC WPF Framework.</description>
+    <releaseNotes>Version 1.0.5 keeps element display names synchronized when names change during undo or redo.</releaseNotes>
+    <tags>RMC WPF framework themes undo-redo</tags>
+    <dependencies>
+      <group targetFramework="net10.0-windows7.0" />
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="..\..\..\README.md" target="" />
+    <file src="..\..\FrameworkInterfaces\bin\$configuration$\net10.0-windows\FrameworkInterfaces.dll" target="lib\net10.0-windows7.0" />
+    <file src="..\..\FrameworkInterfaces\bin\$configuration$\net10.0-windows\FrameworkInterfaces.xml" target="lib\net10.0-windows7.0" />
+    <file src="..\..\Themes\bin\$configuration$\net10.0-windows\Themes.dll" target="lib\net10.0-windows7.0" />
+    <file src="..\..\Themes\bin\$configuration$\net10.0-windows\Themes.xml" target="lib\net10.0-windows7.0" />
+  </files>
+</package>

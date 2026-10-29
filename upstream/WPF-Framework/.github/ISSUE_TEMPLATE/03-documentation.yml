@@ -1,0 +1,54 @@
+name: Documentation
+description: Report missing, unclear, or incorrect documentation.
+title: "[Docs]: "
+labels: ["documentation"]
+body:
+  - type: textarea
+    id: location
+    attributes:
+      label: Where is the documentation issue?
+      description: Link to the page, section, help topic, or file if possible.
+      placeholder: "Example: User Guide, Section 3.2, Importing Data"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: issue-type
+    attributes:
+      label: What type of documentation issue is this?
+      options:
+        - Missing information
+        - Unclear explanation
+        - Incorrect information
+        - Typo or formatting problem
+        - Example needed
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Describe the issue
+      description: What is confusing, missing, or incorrect?
+      placeholder: "Example: The guide says to select an output folder, but the current interface uses a file picker instead."
+    validations:
+      required: true
+
+  - type: textarea
+    id: suggested-change
+    attributes:
+      label: Suggested change
+      description: Optional. Suggest wording or content that would help.
+      placeholder: "Example: Add a screenshot showing the current import window."
+    validations:
+      required: false
+
+  - type: upload
+    id: files
+    attributes:
+      label: Screenshots or files
+      description: Upload screenshots or examples if helpful.
+    validations:
+      required: false
+      accept: ".png,.jpg,.jpeg,.gif,.webp,.svg,.txt,.csv,.json,.zip,.pdf,.docx,.xlsx,.pptx"

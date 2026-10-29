@@ -1,0 +1,23 @@
+name: Integration
+
+on:
+  pull_request:
+    branches: [ main ]
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  CI:
+    uses: HydrologicEngineeringCenter/dotnet-workflows/.github/workflows/integration.yml@main
+    with:
+      dotnet-version: '10.0.x'
+      run-tests: true
+
+  artifact-contracts:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test fail-closed release artifact contracts
+        shell: pwsh
+        run: .\scripts\test-release-artifact-contract.ps1

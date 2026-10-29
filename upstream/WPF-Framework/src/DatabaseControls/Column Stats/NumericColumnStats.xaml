@@ -1,0 +1,271 @@
+<UserControl x:Class="DatabaseControls.NumericColumnStats" x:Name="NumericStats"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:DatabaseControls"
+             xmlns:cntrls="clr-namespace:GenericControls;assembly=GenericControls"
+             xmlns:oxy="http://oxyplot.org/wpf"
+             xmlns:oxyCntrls="clr-namespace:OxyPlotControls;assembly=OxyPlotControls"
+             mc:Ignorable="d"
+             d:DesignHeight="450" d:DesignWidth="800" >
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary>
+                    <cntrls:BooleanToVisibilityConverter x:Key="Bool2VisConverter"/>
+                </ResourceDictionary>
+                <ResourceDictionary Source="pack://application:,,,/DatabaseControls;component/Resources/TableViewerResources.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <!--DataContext="{Binding RelativeSource={RelativeSource Self}}"-->
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition MinWidth="150" MaxWidth="600" Width="300"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+
+        <TextBlock Name="InvalidDataDetectedWarningTextBlock" Grid.ColumnSpan="3" Visibility="Collapsed" Text="*Invalid numeric values have been detected and removed to generate statistics."/>
+
+        <DockPanel VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Margin="0,0,15,0">
+
+            <local:TableViewer
+                x:Name="StatsTable"
+                Editable="False"
+                Margin="0"
+                Height="311"
+                DockPanel.Dock="Top"
+                RowSelectable="False"
+                ColumnSelectable="True"
+                VerticalAlignment="Top"
+                ShowRowHeaders="False"
+                AutoFitColumns="True"/>
+
+            <Grid
+                x:Name="GroupingStackPanel"
+                DockPanel.Dock="Top"
+                Margin="0 5">
+
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Left" Text="Classification:"/>
+
+                <ComboBox
+                    Name="GroupingComboBox"
+                    HorizontalAlignment="Stretch"
+                    Margin="10,0,0,0"
+                    Grid.Column="1"
+                    Height="24"
+                    SelectionChanged="GroupingComboBox_SelectionChanged">
+                    <ComboBoxItem Name="RiceRuleItem" Content="Rice Rule"/>
+                    <ComboBoxItem Name="JenksBreaksItem" Content="Jenks Breaks"/>
+                    <ComboBoxItem Name="QuantilesItem" Content="Quantiles"/>
+                    <!--<ComboBoxItem Name="GeometricItem" Content="Geometric"/>-->
+                    <ComboBoxItem Name="HeadTailsItem" Content="Head/Tail Breaks"/>
+                    <ComboBoxItem Name="StandardDeviationItem" Content="Std Deviations"/>
+                    <ComboBoxItem Name="EqualIntervalItem" Content="Equal Interval"/>
+                    <ComboBoxItem Name="CustomIntervalItem" Content="Custom Interval"/>
+                    <ComboBoxItem Name="ManualIntervalItem" Content="Manual Interval"/>
+                </ComboBox>
+            </Grid>
+
+            <!--<cntrls:SeparatorWithHeader
+                DockPanel.Dock="Top"
+                Background="DarkBlue"
+                Margin="0 5"/>-->
+
+            <cntrls:NumericSliderPropertyControl
+                Name="ClassCountControl"
+                DockPanel.Dock="Top"
+                Margin="0, 0, 0, 5"
+                Title="Class Count"
+                MinValue="1"
+                MaxValue="12"
+                Increment="1"
+                TextPropertyWidth="100"
+                Visibility="Collapsed"
+                Number="{Binding ClassCount, ElementName=NumericStats, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"/>
+
+            <cntrls:NumericAutoPropertyControl
+                Name="GeometricRControl"
+                Title="R Value"
+                ToolTip="R value for geometric progression."
+                DockPanel.Dock="Top"
+                Margin="0, 0, 0, 5"
+                MinValue="1"
+                MaxPropertyWidth="90"
+                CanHaveNegative="False"
+                Visibility="Collapsed"
+                DefaultNumber="{Binding DefaultR, ElementName=NumericStats, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                Number="{Binding GeometricR, ElementName=NumericStats, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"/>
+
+            <cntrls:BooleanPropertyControl
+                Name="GeometricMirrorControl"
+                Title="Mirror"
+                ToolTip="Mirror geometric progression from the mean."
+                DockPanel.Dock="Top"
+                Margin="0, 0, 0, 5"
+                Visibility="Collapsed"
+                IsSelected="{Binding GeometricMirror, ElementName=NumericStats, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"/>
+
+            <cntrls:NumericAutoPropertyControl
+                Name="IntervalSizeControl"
+                Title="Interval Size"
+                DockPanel.Dock="Top"
+                Margin="0, 0, 0, 5"
+                MinValue="0"
+                CanHaveNegative="False"
+                Visibility="Collapsed"
+                DefaultNumber="{Binding DefaultIntervalSize, ElementName=NumericStats, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                Number="{Binding IntervalSize, ElementName=NumericStats, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"/>
+
+            <cntrls:NumericSliderPropertyControl
+                Name="HeadTailThresholdControl"
+                Margin="0, 0, 0, 5"
+                DockPanel.Dock="Top"
+                Increment=".05"
+                MinValue=".1"
+                MaxValue="1"
+                TextPropertyWidth="100"
+                Visibility="Collapsed"
+                Title="Threshold"
+                ToolTip="Proportion of the last bin to stop the iterative classification process."
+                Number="{Binding Threshold, ElementName=NumericStats, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"/>
+
+            <cntrls:NumericSliderPropertyControl
+                Name="DeviationsControl"
+                Margin="0, 0, 0, 5"
+                DockPanel.Dock="Top"
+                Increment=".25"
+                MinValue=".25"
+                MaxValue="4"
+                TextPropertyWidth="100"
+                Visibility="Collapsed"
+                VerticalAlignment="Top"
+                Title="Deviations"
+                ToolTip="Multiplier on the deviation interval."
+                Number="{Binding Deviations, ElementName=NumericStats,UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"/>
+
+            <local:TableViewer
+                x:Name="BreaksTable"
+                Editable="True"
+                DockPanel.Dock="Top"
+                RowSelectable="False"
+                ColumnSelectable="True"
+                VerticalAlignment="Stretch"
+                ShowRowHeaders="False"
+                AutoFitColumns="True"/>
+
+            <!--<cntrls:CopyPasteDataGrid DockPanel.Dock="Top" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+                <DataGrid.Columns>
+                    --><!--<DataGridTextColumn Header="From" Width="50"/>--><!--
+                    <DataGridTextColumn Header="Less Than" Width="*"/>
+                    <DataGridTextColumn Header="Count" Width="*"/>
+                </DataGrid.Columns>
+            </cntrls:CopyPasteDataGrid>-->
+        </DockPanel>
+
+        <GridSplitter
+            Grid.Column="1"
+            Grid.Row="1"
+            Margin="-5,0,0,0"
+            Width="10"
+            Background="Transparent"
+            VerticalAlignment="Stretch"
+            HorizontalAlignment="Left"/>
+
+        <Separator
+            Style="{StaticResource VerticalSeparatorStyle}"
+            Grid.Column="1"
+            Margin="0,0,0,0"
+            HorizontalAlignment="Left"
+            VerticalAlignment="Stretch"
+            IsHitTestVisible="False"/>
+
+        <!--<oxy:PlotView x:Name="mvmplot" Grid.Column="1" Grid.RowSpan="2" Margin="5,5,0,5" />-->
+        <oxy:Plot x:Name="StatsPlot"
+                  Grid.Column="1"
+                  Grid.Row="1"
+                  Margin="5 0"
+                  Background="Transparent"
+                  IsLegendVisible="False"
+                  PlotAreaBackground="White">
+            <oxy:Plot.Series>
+
+                <oxy:HistogramSeries
+                    Name="BackGroundHistogramSeries"
+                    Title="Background Histogram"
+                    FillColor="#FFB4B9B5"
+                    StrokeThickness="1"
+                    LabelFormatString=""
+                    ItemsSource="{Binding BackgroundHistogramData, ElementName=NumericStats}"/>
+
+                <oxy:HistogramSeries
+                    Name="HistogramSeries"
+                    Title = "Histogram"
+                    LabelPlacement="Outside"
+                    StrokeThickness="1"
+                    ItemsSource="{Binding HistogramData, ElementName=NumericStats}"/>
+
+            </oxy:Plot.Series>
+
+            <oxy:Plot.Axes>
+                <oxy:LinearAxis
+                    Name="XAxis"
+                    Title="{Binding DataName, ElementName=NumericStats}"
+                    Position="Bottom"
+                    MinimumPadding=".05"
+                    MaximumPadding=".05"
+                    TitleFontSize="15"
+                    AxisTitleDistance="20"/>
+
+                <oxy:LinearAxis
+                    Name="YAxis"
+                    Title="Count"
+                    Minimum="0"
+                    AbsoluteMinimum="0"
+                    IsZoomEnabled="False"
+                    Position="Left"
+                    MinimumPadding="0"
+                    MaximumPadding=".1"
+                    TitleFontSize="15"
+                    AxisTitleDistance="20"/>
+            </oxy:Plot.Axes>
+
+
+        </oxy:Plot>
+
+        <oxyCntrls:OxyPlotToolbar
+            x:Name="PlotToolbar"
+            Grid.Column="2"
+            ToolBarOrientation="Vertical"
+            Background="Transparent"
+            PropertiesCalled="PlotToolbar_PropertiesCalled"
+            Plot="{Binding ElementName=StatsPlot, Mode=OneTime}"/>
+
+        <oxyCntrls:OxyPlotPropertiesControl
+            x:Name="PropertiesControl"
+            Plot="{Binding ElementName=StatsPlot, Mode=OneWay}"
+            ClosePropertiesCalled="PropertiesControl_ClosePropertiesCalled"
+            Visibility="Collapsed"
+            Width="300"
+            Grid.Column="3"
+            Margin="5,0,0,0"/>
+
+        <CheckBox x:Name="ShowBackgroundCheckbox"
+            Grid.Column="1"
+            VerticalAlignment="Bottom"
+            HorizontalAlignment="Right"
+            Margin="5"
+            Content="Background Histogram"
+            Checked="ShowBackgroundCheckbox_Changed"
+            Unchecked="ShowBackgroundCheckbox_Changed"/>
+
+    </Grid>
+</UserControl>

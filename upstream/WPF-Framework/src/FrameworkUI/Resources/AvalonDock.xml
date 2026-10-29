@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LayoutRoot>
+  <RootPanel Orientation="Horizontal">
+    <LayoutAnchorablePane DockWidth="250">
+      <LayoutAnchorable AutoHideWidth="250" AutoHideHeight="250" AutoHideMinWidth="100" AutoHideMinHeight="100" CanDockAsTabbedDocument="False" Title="  Project Explorer" IsSelected="True" ContentId="ProjectExplorer" CanClose="False" />
+    </LayoutAnchorablePane>
+    <LayoutPanel Orientation="Vertical">
+      <LayoutPanel Orientation="Horizontal">
+        <LayoutDocumentPaneGroup Orientation="Horizontal">
+          <LayoutDocumentPane />
+        </LayoutDocumentPaneGroup>
+      </LayoutPanel>
+      <LayoutAnchorablePane DockHeight="200">
+        <LayoutAnchorable AutoHideWidth="200" AutoHideHeight="200" AutoHideMinWidth="100" AutoHideMinHeight="100" CanDockAsTabbedDocument="False" Title="  Message Window" IsSelected="True" ContentId="MessageWindow" CanClose="False" />
+      </LayoutAnchorablePane>
+    </LayoutPanel>
+    <LayoutAnchorablePane DockWidth="250">
+      <LayoutAnchorable AutoHideWidth="250" AutoHideHeight="250" AutoHideMinWidth="100" AutoHideMinHeight="100" CanDockAsTabbedDocument="False" Title="  Properties" IsSelected="True" ContentId="PropertiesWindow" CanClose="False" />
+    </LayoutAnchorablePane>
+  </RootPanel>
+  <TopSide />
+  <RightSide />
+  <LeftSide />
+  <BottomSide />
+  <FloatingWindows />
+  <Hidden />
+</LayoutRoot>

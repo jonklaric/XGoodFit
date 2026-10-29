@@ -1,0 +1,66 @@
+﻿<UserControl x:Class="GenericControls.FileSelectorControl" x:Name="FileSelector"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:GenericControls"
+             mc:Ignorable="d" 
+             d:DataContext="{Binding RelativeSource={RelativeSource Self}}"
+             d:DesignHeight="22" d:DesignWidth="400">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="../Resources/ResourceDictionary.xaml"/>
+                <ResourceDictionary>
+                    <local:BooleanToVisibilityConverter x:Key="BoolToVisConverter" TrueValue="Visible" FalseValue="Collapsed"/>
+                    <local:ReverseBooleanConverter x:Key="ReverseBoolConverter"/>
+                </ResourceDictionary>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <Grid Height="22" Background="Transparent">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width=".001*"/>
+            <ColumnDefinition Width="{Binding ElementName=FileSelector, Path=PropertyWidth, FallbackValue=10*}" 
+                              MaxWidth="{Binding ElementName=FileSelector, Path=MaxPropertyWidth, FallbackValue=400}"
+                              MinWidth="{Binding ElementName=FileSelector, Path=MinPropertyWidth, FallbackValue=10}"/>
+        </Grid.ColumnDefinitions>
+
+        <TextBlock Grid.Column="0" Style="{StaticResource TitleTextStyle}"
+                   Text="{Binding ElementName=FileSelector, Path=Title}"
+                   Visibility="{Binding ElementName=FileSelector, Path=ShowTitle, Converter={StaticResource BoolToVisConverter}}"/>
+
+        <Line Style="{StaticResource DotLeaderLineStyle}"
+              Visibility="{Binding ElementName=FileSelector, Path=ShowLeaderLine, Converter={StaticResource BoolToVisConverter}}"/>
+
+        <Grid Grid.Column="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" SizeChanged="ControlSizeChanged">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <TextBox 
+                Grid.Column="0" 
+                x:Name="FilePathTextBox"                     
+                HorizontalAlignment="Stretch" 
+                VerticalAlignment="Stretch"
+                TextChanged="FilePathTextBox_TextChanged"
+                Text="{Binding ElementName=FileSelector, Path=Text, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                IsReadOnly="{Binding ElementName=FileSelector, Path=IsReadOnly, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}"/>
+            <Button 
+                Grid.Column="1" 
+                Margin="2,0,0,0" 
+                x:Name="FilePathButton" 
+                Width="22" 
+                Height="22" 
+                VerticalAlignment="Center" 
+                Click="FilePathButton_Click" >
+                <TextBlock Text="..." HorizontalAlignment="Center"/>
+            </Button>
+
+            <!--IsEnabled="{Binding ElementName=FileSelector, Path=IsReadOnly, UpdateSourceTrigger=PropertyChanged, Mode=OneWay, Converter={StaticResource ReverseBoolConverter}}">-->
+        </Grid>
+
+    </Grid>
+</UserControl>

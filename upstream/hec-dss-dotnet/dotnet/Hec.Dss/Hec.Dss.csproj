@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <PackageReadmeFile>readme.md</PackageReadmeFile>
+    <TargetFrameworks>net9.0</TargetFrameworks>
+    <Platforms>AnyCPU</Platforms>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <LangVersion>Latest</LangVersion>
+    <Authors>Karl Tarbet, Anton Rotter-Sieren, Neema Nejad, Chris Havens</Authors>
+    <Owner>
+      US Army Corps of Engineers
+      Hydrologic Engineering Center
+    </Owner>
+    <Title>Hec.Dss</Title>
+    <Product>Hec.Dss</Product>
+    <PackageDescription>
+      Hec.Dss is a .net API for HEC-DSS  https://www.hec.usace.army.mil/software/hec-dss/documentation.aspx
+    </PackageDescription>
+    <PackageVersion>2.0.3</PackageVersion>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+  </PropertyGroup>
+    <ItemGroup>
+        <None Include="readme.md" Pack="true" PackagePath="\"/>
+        <None Include="native-lib\win\hecdss.dll" Pack="true" PackagePath="runtimes/win-x64/native" />
+        <None Include="native-lib\linux\libhecdss.so" Pack="true" PackagePath="runtimes/linux-x64/native" />
+    </ItemGroup>
+    <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
+      <Exec Command="if &quot;$(CleanSolution)&quot; == &quot;true&quot; (&#xD;&#xA;    echo Cleaning the solution...&#xD;&#xA;    powershell -ExecutionPolicy Unrestricted  -File pre-build-clean.ps1&#xD;&#xA;&#xD;&#xA;) else (&#xD;&#xA;    echo Building the solution...&#xD;&#xA;    powershell -ExecutionPolicy Unrestricted  -File download-hecdss.ps1&#xD;&#xA;  )&#xD;&#xA;&#xD;&#xA;" />
+    </Target>
+  
+</Project>

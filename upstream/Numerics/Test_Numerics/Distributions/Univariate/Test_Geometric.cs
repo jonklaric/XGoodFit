@@ -1,0 +1,247 @@
+﻿using System;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Numerics.Distributions;
+
+namespace Distributions.Univariate
+{
+    /// <summary>
+    /// Testing the Geometric distribution algorithm.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    ///     <b> Authors: </b>
+    ///     <list type="bullet">
+    ///     <item> Haden Smith, USACE Risk Management Center, cole.h.smith@usace.army.mil </item>
+    ///     <item> Tiki Gonzalez, USACE Risk Management Center, julian.t.gonzalez@usace.army.mil</item>
+    ///     </list> 
+    /// </para>
+    /// <para>
+    /// <b> References: </b>
+    /// </para>
+    /// <para>
+    /// <see href = "https://github.com/mathnet/mathnet-numerics/blob/master/src/Numerics.Tests/DistributionTests" />
+    /// </para>
+    /// </remarks>
+    [TestClass]
+    public class Test_Geometric
+    {
+        /// <summary>
+        /// Verified using Palisade's @Risk and Accord.Net
+        /// </summary>
+        [TestMethod()]
+        public void Test_GeometricDist()
+        {
+            double true_mean = 1.3809523809523812d;
+            double true_mode = 0.0d;
+            double true_median = 1.0d;
+            double true_stdDev = Math.Sqrt(3.2879818594104315d);
+            double true_skew = 2.0746d;
+            double true_kurt = 9.3041d;
+            double true_pdf = 0.141288d;
+            double true_cdf = 0.80488799999999994d;
+            double true_icdf05 = 0.0d;
+            double true_icdf95 = 5.0d;
+            var G = new Geometric(0.42d);
+            Assert.AreEqual(G.Mean, true_mean, 0.0001d);
+            Assert.AreEqual(G.Median, true_median, 0.0001d);
+            Assert.AreEqual(G.Mode, true_mode, 0.0001d);
+            Assert.AreEqual(G.StandardDeviation, true_stdDev, 0.0001d);
+            Assert.AreEqual(G.Skewness, true_skew, 0.0001d);
+            Assert.AreEqual(G.Kurtosis, true_kurt, 0.0001d);
+            Assert.AreEqual(G.PDF(2.0d), true_pdf, 0.0001d);
+            Assert.AreEqual(G.CDF(2.0d), true_cdf, 0.0001d);
+            Assert.AreEqual(G.InverseCDF(0.05d), true_icdf05, 0.0001d);
+            Assert.AreEqual(G.InverseCDF(0.95d), true_icdf95, 0.0001d);
+        }
+
+        /// <summary>
+        /// See if parameters can create geometric distribution.
+        /// </summary>
+        [TestMethod()]
+        public void Test_Construction()
+        {
+            var G = new Geometric();
+            Assert.AreEqual(0.5, G.ProbabilityOfSuccess);
+
+            var G2 = new Geometric(0);
+            Assert.AreEqual(0, G2.ProbabilityOfSuccess);
+
+            var G3 = new Geometric(1);
+            Assert.AreEqual(1, G3.ProbabilityOfSuccess);
+        }
+
+        /// <summary>
+        /// Testing geometric distribution with bad parameters.
+        /// </summary>
+        [TestMethod()]
+        public void Test_InvalidParameters()
+        {
+            var G = new Geometric(-1);
+            Assert.IsFalse(G.ParametersValid);
+
+            var G2 = new Geometric(2);
+            Assert.IsFalse(G2.ParametersValid);
+
+            var G3 = new Geometric(double.NaN);
+            Assert.IsFalse(G3.ParametersValid);
+
+            var G4 = new Geometric(double.PositiveInfinity);
+            Assert.IsFalse(G4.ParametersValid);
+        }
+
+        /// <summary>
+        /// Checking parameters to string function.
+        /// </summary>
+        [TestMethod()]
+        public void Test_ParametersToString()
+        {
+            var G = new Geometric();
+            Assert.AreEqual("Probability (p)", G.ParametersToString[0, 0]);
+            Assert.AreEqual("0.5", G.ParametersToString[0, 1]);
+        }
+
+        /// <summary>
+        /// Testing mean function.
+        /// </summary>
+        [TestMethod()]
+        public void Test_Mean()
+        {
+            var G = new Geometric();
+            Assert.AreEqual(1, G.Mean);
+
+            var G2 = new Geometric(0.3);
+            Assert.AreEqual(2.3333, G2.Mean, 1e-04);
+        }
+
+        /// <summary>
+        /// Testing median function.
+        /// </summary>
+        [TestMethod()]
+        public void Test_Median()
+        {
+            var G = new Geometric(0.0001);
+            Assert.AreEqual(6931, G.Median);
+
+            var G2 = new Geometric(0.1);
+            Assert.AreEqual(6, G2.Median);
+
+            var G3 = new Geometric(0.9);
+            Assert.AreEqual(0, G3.Median);
+        }
+
+        /// <summary>
+        /// Testing mode function outputs 0.
+        /// </summary>
+        [TestMethod()]
+        public void Test_Mode()
+        {
+            var G = new Geometric();
+            Assert.AreEqual(0, G.Mode);
+
+            var G2 = new Geometric(0);
+            Assert.AreEqual(0, G2.Mode);
+        }
+
+        /// <summary>
+        /// Testing Standard deviation with different probabilities.
+        /// </summary>
+        [TestMethod()]
+        public void Test_StandardDeviation()
+        {
+            var G = new Geometric();
+            Assert.AreEqual(1.41421, G.StandardDeviation, 1e-04);
+
+            var G2 = new Geometric(0.3);
+            Assert.AreEqual(2.78886, G2.StandardDeviation,  1e-04);
+        }
+
+        /// <summary>
+        /// Testing skewness function.
+        /// </summary>
+        [TestMethod()]
+        public void Test_Skewness()
+        {
+            var G = new Geometric();
+            Assert.AreEqual(2.12132, G.Skewness,  1e-04);
+
+            var G2 = new Geometric(0.3);
+            Assert.AreEqual(2.03188, G2.Skewness, 1e-04);
+        }
+
+        /// <summary>
+        /// Testing Kurtosis function.
+        /// </summary>
+        [TestMethod()]
+        public void Test_Kurtosis()
+        {
+            var G = new Geometric();
+            Assert.AreEqual(9.5, G.Kurtosis);
+
+            var G2 = new Geometric(0.3);
+            Assert.AreEqual(9.12857, G2.Kurtosis,  1e-04);
+        }
+
+        /// <summary>
+        /// Testing minimum is 0 and maximum is positive infinity.
+        /// </summary>
+        [TestMethod()]
+        public void Test_MinMax()
+        {
+            var G = new Geometric();
+            Assert.AreEqual(0, G.Minimum);
+            Assert.AreEqual(double.PositiveInfinity,G.Maximum);
+
+            var G2 = new Geometric(0.3);
+            Assert.AreEqual(0, G2.Minimum);
+            Assert.AreEqual(double.PositiveInfinity, G2.Maximum);
+        }
+
+        /// <summary>
+        /// Testing PDF method with different parameters and locations.
+        /// </summary>
+        [TestMethod()]
+        public void Test_PDF()
+        {
+            var G = new Geometric();
+            Assert.AreEqual(0.5, G.PDF(0));
+            Assert.AreEqual(0.125, G.PDF(2));
+            Assert.AreEqual(0, G.PDF(-1));
+
+            var G2 = new Geometric(0.3);
+            Assert.AreEqual(0.3, G2.PDF(0));
+            Assert.AreEqual(0.122989, G2.PDF(2.5), 1e-05);
+        }
+
+        /// <summary>
+        /// Testing CDF method with different parameters and locations.
+        /// </summary>
+        [TestMethod()]
+        public void Test_CDF()
+        {
+            var G = new Geometric();
+            Assert.AreEqual(0.5, G.CDF(0));
+            Assert.AreEqual(0.875, G.CDF(2));
+            Assert.AreEqual(0, G.CDF(-1));
+            Assert.AreEqual(1, G.CDF(double.PositiveInfinity));
+
+            var G2 = new Geometric(0.3);
+            Assert.AreEqual(0.657, G2.CDF(2));
+            Assert.AreEqual(1, G2.CDF(100), 1e-04);
+        }
+
+        /// <summary>
+        /// Testing inverse CDF method.
+        /// </summary>
+        [TestMethod()]
+        public void Test_InverseCDF()
+        {
+            var G = new Geometric();
+            Assert.AreEqual(0, G.InverseCDF(0.3));
+            Assert.AreEqual(1, G.InverseCDF(0.7),  1e-04);
+
+            var G2 = new Geometric(0.3);
+            Assert.AreEqual(1, G2.InverseCDF(0.5),  1e-04);
+            Assert.AreEqual(6,G2.InverseCDF(0.9));
+        }
+    }
+}

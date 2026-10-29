@@ -1,0 +1,92 @@
+#!/bin/bash 
+# script to Compile and execute test C programs
+# K. Tarbet HEC Oct 2021
+#
+
+HECLIB_HOME="../../heclib"
+HINC="${HECLIB_HOME}/heclib_c/src/headers"
+HLIBS="${HECLIB_HOME}//Output/heclib.a"
+os="$(uname)"
+echo "os = ${os}"
+echo ${HLIBS}
+if [[ "$os" = "Linux" ]]; then
+   CFLAGS="-m64 -c -fPIC -g -I${HINC}"
+   LINK1="cc -fPIC "
+   LINK2="-lz -lrt -lgfortran -lm"
+elif [[ "$os" = "Darwin" ]]; then
+   CFLAGS="-m64 -c -fPIC -g -std=gnu99 -I${HINC}"
+   LINK1="cc -m64 -fPIC "
+   LINK2="-L${GFORTRAN_PATH} -lz -lgfortran -lm"
+elif [[ "$os" = "SunOS" ]]; then
+   CFLAGS="-m64 -c -I${HINC} -mt -xcode=pic32 -xstrconst -xc99=all -xCC -g -xs"
+   LINK1="f95 -mt -m64 -xcode=pic32 -xpagesize=4M -lm -lrt -lz -g -xs"
+fi
+echo ${CFLAGS}
+pass_count=0
+test_count=0
+fail_count=0
+
+mkdir -p ./Output
+rm ./Output/*
+cp ../../dss-test-data/*.dss ./Output/
+
+test()
+{
+   echo "$1.c"
+cc $CFLAGS $1.c -o ./Output/$1.o
+# link
+$LINK1 ./Output/$1.o ${HLIBS} ${HLIBS} ${HLIBS} \
+getopt.o \
+-o ./Output/$1 $LINK2
+# run the program
+echo "running $1"
+./Output/$1 $2 > ./Output/$1_test.log 
+status=$?
+if [ $status -ne 0 ]; then
+ echo "Test_Error with $1"
+ tail -50 ./Output/$1_test.log
+ fail_count=$((fail_count+1))
+ else
+ pass_count=$((pass_count+1))
+fi
+
+test_count=$((test_count+1))
+
+}
+
+
+# grid test needs getopt.o
+cc $CFLAGS getopt.c
+test endian
+./Output/endian
+# test ts_readv6
+test ts_write_irregular
+test ExampleSecondGranularity
+test SampleText1
+test SamplePairedData
+test ExampleMinuteGranularity
+test ts_write
+test ExampleTimeSeries1
+test ExampleTimeSeries2
+test GridTest " -d GridTest.dss -h 100 -w 100 -c 26 -r 12"
+file GridTest.dss
+test GridTest " -d GridTest.dss -h 100 -w 100 -c 26 -r 12 -v"
+test zopenExample
+
+echo ""
+echo "============="
+echo "Native Test Summary "
+echo "============ "
+echo "C test program run is finished"
+echo "${test_count} tests found"
+echo "${pass_count} tests successful"
+echo "${fail_count} tests failed "
+
+if [ ${fail_count} -ne 0 ]; then
+ echo "Failed "
+ exit -1  
+ else
+  exit 0
+fi
+
+test_count=$((test_count+1))

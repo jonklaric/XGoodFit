@@ -1,0 +1,44 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net481;net8.0;net9.0;net10.0</TargetFrameworks>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <RunSettingsFilePath>$(MSBuildProjectDirectory)\test.runsettings</RunSettingsFilePath>
+  </PropertyGroup>
+  
+    <!-- Otherwise targets C# 7.3 which doesn't have global usings and some other syntactic sugar utilized here.  -->
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net481'">
+	<LangVersion>latest</LangVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector" Version="6.0.4">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.0.1" />
+    <PackageReference Include="MSTest.TestAdapter" Version="4.0.2" />
+    <PackageReference Include="MSTest.TestFramework" Version="4.0.2" />
+
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Numerics\Numerics.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Distributions\Univariate\Fixtures\kappa-four-probabilities.csv" />
+    <EmbeddedResource Include="Distributions\Univariate\Fixtures\kappa-four-boundaries.csv" />
+    <EmbeddedResource Include="..\docs\distributions\oracles\extreme-positive.csv" Link="Distributions\Univariate\Fixtures\extreme-positive.csv" />
+    <EmbeddedResource Include="..\docs\distributions\oracles\generalized-fisher.csv" Link="Distributions\Univariate\Fixtures\generalized-fisher.csv" />
+    <EmbeddedResource Include="..\docs\distributions\oracles\generalized-adjacent-boundaries.csv" Link="Distributions\Univariate\Fixtures\generalized-adjacent-boundaries.csv" />
+    <EmbeddedResource Include="..\docs\distributions\oracles\normal-pearson.csv" Link="Distributions\Univariate\Fixtures\normal-pearson.csv" />
+  </ItemGroup>
+
+</Project>

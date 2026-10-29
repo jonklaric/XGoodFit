@@ -1,0 +1,35 @@
+<cntrls:MetroDialogWindow x:Class="FrameworkUI.CompactProgressControl"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:cntrls="clr-namespace:GenericControls;assembly=GenericControls"
+        mc:Ignorable="d"
+        Title="Compact &amp; Optimize"
+        SizeToContent="Height" Width="332"
+        WindowStartupLocation="CenterScreen"
+        Style="{DynamicResource MetroDialogStyle}"
+        Background="{DynamicResource EnvironmentWindowBackground}">
+    <cntrls:MetroDialogWindow.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/FrameworkUI;component/Icons/IconDictionary.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </cntrls:MetroDialogWindow.Resources>
+    <Grid Margin="6">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <Image Source="{DynamicResource CompactProject}" Margin="2" Stretch="None" VerticalAlignment="Center"
+               RenderOptions.EdgeMode="Aliased" RenderOptions.BitmapScalingMode="HighQuality"/>
+        <TextBlock x:Name="ProgressText" Grid.Column="1" Text="Compacting &amp; Optimizing Project File..." VerticalAlignment="Center"
+                   Foreground="{DynamicResource EnvironmentWindowText}"/>
+        <ProgressBar x:Name="ProgressBar" Grid.Row="1" Grid.ColumnSpan="2" Height="18" Margin="0,6,0,0" />
+    </Grid>
+</cntrls:MetroDialogWindow>

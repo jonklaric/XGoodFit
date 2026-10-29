@@ -1,0 +1,95 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!--
+    Merged Control Templates
+
+    This resource dictionary merges all control template definitions.
+    Control templates use DynamicResource bindings to color keys,
+    making them theme-agnostic. Colors are defined separately in
+    the Colors folder and swapped at runtime.
+
+    Based on Visual Studio 2013 styling from the Gemini project:
+    https://github.com/tgjones/gemini
+    -->
+
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+    <!-- SHARED RESOURCES                                                             -->
+    <!-- These resources are used by multiple control templates                       -->
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+
+    <!-- Focus Visual Style for keyboard navigation -->
+    <Style x:Key="GeminiFocusVisual">
+        <Setter Property="Control.Template">
+            <Setter.Value>
+                <ControlTemplate>
+                    <Rectangle Margin="2"
+                               StrokeDashArray="1 2"
+                               Stroke="{DynamicResource FocusStyle.Brush}"
+                               StrokeThickness="1"
+                               SnapsToDevicePixels="True"/>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Standard drop shadow effect for popups and menus -->
+    <DropShadowEffect x:Key="StandardDropShadow"
+                      ShadowDepth="3"
+                      Opacity="0.6"
+                      Direction="305"/>
+
+    <!-- Disabled menu item foreground brush -->
+    <SolidColorBrush x:Key="DisabledMenuItemBrush" Color="#FF9A9A9A"/>
+
+    <!-- Transparent RepeatButton for Slider and ScrollBar Track areas -->
+    <!-- Must be defined here (before MergedDictionaries) to ensure availability -->
+    <Style x:Key="RepeatButtonTransparent" TargetType="{x:Type RepeatButton}">
+        <Setter Property="OverridesDefaultStyle" Value="true"/>
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Focusable" Value="false"/>
+        <Setter Property="IsTabStop" Value="false"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type RepeatButton}">
+                    <Rectangle Fill="{TemplateBinding Background}" Height="{TemplateBinding Height}" Width="{TemplateBinding Width}"/>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+    <!-- CONTROL TEMPLATES                                                            -->
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="Button.xaml"/>
+        <ResourceDictionary Source="Calendar.xaml"/>
+        <ResourceDictionary Source="CheckBox.xaml"/>
+        <ResourceDictionary Source="RadioButton.xaml"/>
+        <ResourceDictionary Source="RichTextBox.xaml"/>
+        <ResourceDictionary Source="ComboBox.xaml"/>
+        <ResourceDictionary Source="DataGrid.xaml"/>
+        <ResourceDictionary Source="Expander.xaml"/>
+        <ResourceDictionary Source="GridSplitter.xaml"/>
+        <ResourceDictionary Source="GroupBox.xaml"/>
+        <ResourceDictionary Source="Label.xaml"/>
+        <ResourceDictionary Source="ListBox.xaml"/>
+        <ResourceDictionary Source="ListView.xaml"/>
+        <ResourceDictionary Source="Menu.xaml"/>
+        <ResourceDictionary Source="MetroWindowStyle.xaml"/>
+        <ResourceDictionary Source="ProgressBar.xaml"/>
+        <ResourceDictionary Source="ScrollBar.xaml"/>
+        <ResourceDictionary Source="Separator.xaml"/>
+        <ResourceDictionary Source="Slider.xaml"/>
+        <ResourceDictionary Source="StackPanel.xaml"/>
+        <ResourceDictionary Source="StatusBar.xaml"/>
+        <ResourceDictionary Source="TabControl.xaml"/>
+        <ResourceDictionary Source="TextBlock.xaml"/>
+        <ResourceDictionary Source="TextBox.xaml"/>
+        <ResourceDictionary Source="ToolBar.xaml"/>
+        <ResourceDictionary Source="ToolTip.xaml"/>
+        <ResourceDictionary Source="TreeView.xaml"/>
+    </ResourceDictionary.MergedDictionaries>
+
+</ResourceDictionary>

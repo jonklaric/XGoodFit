@@ -1,0 +1,8 @@
+<Project>
+
+  <!--
+    Intentionally empty: stops any XGoodFit Directory.Build.targets from reaching upstream
+    projects that have none of their own (see Directory.Build.props in this folder).
+  -->
+
+</Project>

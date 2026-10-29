@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>ExpressionParser</RootNamespace>
+    <AssemblyName>ExpressionParser</AssemblyName>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+
+    <IsWpfFrameworkLibrary>true</IsWpfFrameworkLibrary>
+    <PackageId>RMC.ExpressionParser</PackageId>
+    <Title>ExpressionParser</Title>
+    <Description>Mathematical expression parsing library with Excel-like syntax. Tokenizes and parses expressions into an AST for evaluation. Supports variables, type conversions, operator precedence, string / boolean / comparison operations, and built-in functions (IF, AND/OR, RAND, ROUND, SUBSTRING, etc.).</Description>
+    <PackageTags>expression-parser; lexer; formula-evaluation; ast; calculator; excel-syntax; usace-rmc</PackageTags>
+  </PropertyGroup>
+
+
+</Project>

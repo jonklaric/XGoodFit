@@ -1,0 +1,50 @@
+<Project>
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <CentralPackageFloatingVersionsEnabled>true</CentralPackageFloatingVersionsEnabled>
+    <ClosedXmlVersion>0.105.0</ClosedXmlVersion>
+    <CoverletCollectorVersion>6.0.2</CoverletCollectorVersion>
+    <DocumentFormatOpenXmlVersion>3.4.1</DocumentFormatOpenXmlVersion>
+    <DotNetReproducibleBuildsVersion>1.2.39</DotNetReproducibleBuildsVersion>
+    <ExcelNumberFormatVersion>1.1</ExcelNumberFormatVersion>
+    <FastMemberVersion>1.5.0</FastMemberVersion>
+    <MicrosoftNetTestSdkVersion>17.12.0</MicrosoftNetTestSdkVersion>
+    <MicrosoftSourceLinkGitHubVersion>10.0.111</MicrosoftSourceLinkGitHubVersion>
+    <MSTestTestAdapterVersion>3.5.2</MSTestTestAdapterVersion>
+    <MSTestTestFrameworkVersion>3.5.2</MSTestTestFrameworkVersion>
+    <NSubstituteVersion>4.2.1</NSubstituteVersion>
+    <NUnitVersion>3.14.0</NUnitVersion>
+    <NUnit3TestAdapterVersion>4.5.0</NUnit3TestAdapterVersion>
+    <!-- Restore the released RMC.Numerics package used for WPF Framework validation. -->
+    <RmcNumericsVersion>2.1.4</RmcNumericsVersion>
+    <!-- NuGet package dependencies require a valid version range, not a floating wildcard. -->
+    <RmcNumericsPackageDependencyVersion>[2.1.4,3.0.0)</RmcNumericsPackageDependencyVersion>
+    <SourceGearSqlite3Version>3.50.4.5</SourceGearSqlite3Version>
+    <SystemDataSQLiteVersion>2.0.2</SystemDataSQLiteVersion>
+    <XunitVersion>2.9.2</XunitVersion>
+    <XunitRunnerVisualStudioVersion>2.8.2</XunitRunnerVisualStudioVersion>
+    <XunitStaFactVersion>1.1.11</XunitStaFactVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageVersion Include="ClosedXML" Version="$(ClosedXmlVersion)" />
+    <PackageVersion Include="coverlet.collector" Version="$(CoverletCollectorVersion)" />
+    <PackageVersion Include="DocumentFormat.OpenXml" Version="$(DocumentFormatOpenXmlVersion)" />
+    <PackageVersion Include="DotNet.ReproducibleBuilds" Version="$(DotNetReproducibleBuildsVersion)" />
+    <PackageVersion Include="ExcelNumberFormat" Version="$(ExcelNumberFormatVersion)" />
+    <PackageVersion Include="FastMember" Version="$(FastMemberVersion)" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="$(MicrosoftNetTestSdkVersion)" />
+    <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="$(MicrosoftSourceLinkGitHubVersion)" />
+    <PackageVersion Include="MSTest.TestAdapter" Version="$(MSTestTestAdapterVersion)" />
+    <PackageVersion Include="MSTest.TestFramework" Version="$(MSTestTestFrameworkVersion)" />
+    <PackageVersion Include="NSubstitute" Version="$(NSubstituteVersion)" />
+    <PackageVersion Include="NUnit" Version="$(NUnitVersion)" />
+    <PackageVersion Include="NUnit3TestAdapter" Version="$(NUnit3TestAdapterVersion)" />
+    <PackageVersion Include="RMC.Numerics" Version="$(RmcNumericsVersion)" />
+    <PackageVersion Include="SourceGear.sqlite3" Version="$(SourceGearSqlite3Version)" />
+    <PackageVersion Include="System.Data.SQLite" Version="$(SystemDataSQLiteVersion)" />
+    <PackageVersion Include="xunit" Version="$(XunitVersion)" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="$(XunitRunnerVisualStudioVersion)" />
+    <PackageVersion Include="Xunit.StaFact" Version="$(XunitStaFactVersion)" />
+  </ItemGroup>
+</Project>

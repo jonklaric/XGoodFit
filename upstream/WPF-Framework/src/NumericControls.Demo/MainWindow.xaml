@@ -1,0 +1,371 @@
+<cntrls:MetroWindow x:Class="NumericControls.Demo.MainWindow" x:Name="MyWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:NumericControls.Demo"
+        xmlns:cntrls="clr-namespace:GenericControls;assembly=GenericControls"
+        xmlns:numCntrls="clr-namespace:NumericControls;assembly=NumericControls"
+        xmlns:uni="clr-namespace:NumericControls.Distributions.Univariate;assembly=NumericControls"
+        mc:Ignorable="d"
+        Title="NumericControls Demo - USACE Risk Management Center"
+        Height="750" Width="1100" MinWidth="900" MinHeight="600"
+        Style="{DynamicResource MetroWindowStyle}"
+        Background="{DynamicResource EnvironmentWindowBackground}">
+
+    <cntrls:MetroWindow.Resources>
+        <ResourceDictionary>
+            <!-- Demo section header style -->
+            <Style x:Key="SectionHeaderStyle" TargetType="TextBlock">
+                <Setter Property="FontSize" Value="14"/>
+                <Setter Property="FontWeight" Value="SemiBold"/>
+                <Setter Property="Foreground" Value="{DynamicResource EnvironmentWindowText}"/>
+                <Setter Property="Margin" Value="0,10,0,8"/>
+            </Style>
+
+            <!-- Demo description style -->
+            <Style x:Key="DescriptionStyle" TargetType="TextBlock">
+                <Setter Property="FontSize" Value="11"/>
+                <Setter Property="Foreground" Value="{DynamicResource EnvironmentWindowText}"/>
+                <Setter Property="Opacity" Value="0.7"/>
+                <Setter Property="TextWrapping" Value="Wrap"/>
+                <Setter Property="Margin" Value="0,0,0,8"/>
+            </Style>
+        </ResourceDictionary>
+    </cntrls:MetroWindow.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header Bar with Theme Selection -->
+        <Border Grid.Row="0"
+                Background="{DynamicResource EnvironmentWindowBackground}"
+                BorderBrush="{DynamicResource Button.Static.Border}"
+                BorderThickness="0,0,0,1"
+                Padding="15,10">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Title -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="NumericControls Library Demo"
+                               FontSize="18" FontWeight="SemiBold"
+                               Foreground="{DynamicResource EnvironmentWindowText}"/>
+                    <TextBlock Text=" - USACE Risk Management Center"
+                               FontSize="12" VerticalAlignment="Bottom" Margin="0,0,0,2"
+                               Foreground="{DynamicResource EnvironmentWindowText}" Opacity="0.6"/>
+                </StackPanel>
+
+                <!-- Theme Selection -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="Theme:" VerticalAlignment="Center" Margin="0,0,12,0"
+                               Foreground="{DynamicResource EnvironmentWindowText}"/>
+                    <RadioButton x:Name="LightThemeRadio" Content="Light" GroupName="Theme"
+                                 IsChecked="True" Checked="ThemeRadio_Checked" Margin="0,0,12,0"
+                                 Foreground="{DynamicResource EnvironmentWindowText}"/>
+                    <RadioButton x:Name="BlueThemeRadio" Content="Blue" GroupName="Theme"
+                                 Checked="ThemeRadio_Checked" Margin="0,0,12,0"
+                                 Foreground="{DynamicResource EnvironmentWindowText}"/>
+                    <RadioButton x:Name="DarkThemeRadio" Content="Dark" GroupName="Theme"
+                                 Checked="ThemeRadio_Checked"
+                                 Foreground="{DynamicResource EnvironmentWindowText}"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Main Content - Tab Control -->
+        <TabControl Grid.Row="1" Margin="5" SelectedIndex="0">
+
+            <!-- ==================== TAB 1: Distribution Selector ==================== -->
+            <TabItem Header="Distribution Selector">
+                <Grid Margin="5">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="20"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Full Distribution Selector Control -->
+                    <DockPanel Grid.Column="0">
+                        <TextBlock DockPanel.Dock="Top" Text="Distribution Selector Control" Style="{StaticResource SectionHeaderStyle}"/>
+                        <TextBlock DockPanel.Dock="Top" Style="{StaticResource DescriptionStyle}"
+                                   Text="Full-featured distribution selector with parameters, plot, and summary statistics. ."/>
+
+                        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Hidden" HorizontalAlignment="Left">
+                            <uni:DistributionSelectorControl x:Name="DistSelectorWithFitting" Width="400" 
+                                BorderBrush="{DynamicResource Button.Static.Border}"
+                                BackgroundColor="{DynamicResource EnvironmentWindowBackground}"
+                                BorderThickness="1"
+                                SelectedDistribution="{Binding ElementName=MyWindow, Path=SelectedDistribution, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                                ShowAxisTitle="True"
+                                ShowTickLines="True"
+                                DistributionTitle="Sample Distribution"
+                                ShowAxisLabel="True"/>
+                        </ScrollViewer>
+                    </DockPanel>
+
+                    <!-- Distribution Selector Popup Variations -->
+                    <DockPanel Grid.Column="2">
+                        <TextBlock DockPanel.Dock="Top" Text="Distribution Selector Popups" Style="{StaticResource SectionHeaderStyle}"/>
+                        <TextBlock DockPanel.Dock="Top" Style="{StaticResource DescriptionStyle}"
+                                   Text="Compact popup controls for space-constrained layouts. All pop-up controls on this page share the same bound distribution. Click the buttons below to open the distribution selector."/>
+
+                        <StackPanel DockPanel.Dock="Top">
+                            <!-- Full Popup: Parameters, Plot, and Statistics -->
+                            <TextBlock Text="Parameters, Plot, and Statistics" FontWeight="SemiBold" Margin="0,10,0,5"
+                                       Foreground="{DynamicResource EnvironmentWindowText}"/>
+                            <TextBlock Style="{StaticResource DescriptionStyle}"
+                                       Text="Complete popup with all distribution information including summary statistics table."/>
+                            <uni:DistributionSelectorPopup
+                                SelectedDistribution="{Binding ElementName=MyWindow, Path=PopUpDistribution, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                                ShowPlot="True" ShowStatistics="True"
+                                VerticalAlignment="Top" HorizontalAlignment="Left"
+                                MinWidth="200"/>
+
+                            <!-- Popup: Parameters and Plot -->
+                            <TextBlock Text="Parameters and Plot" FontWeight="SemiBold" Margin="0,20,0,5"
+                                       Foreground="{DynamicResource EnvironmentWindowText}"/>
+                            <TextBlock Style="{StaticResource DescriptionStyle}"
+                                       Text="Medium-sized popup showing parameter table and probability density plot."/>
+                            <uni:DistributionSelectorPopup
+                                SelectedDistribution="{Binding ElementName=MyWindow, Path=PopUpDistribution, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                                ShowPlot="True" ShowStatistics="False"
+                                VerticalAlignment="Top" HorizontalAlignment="Left"
+                                MinWidth="200"/>
+
+                            <!-- Compact Popup: Parameters Only -->
+                            <TextBlock Text="Parameters Only" FontWeight="SemiBold" Margin="0,20,0,5"
+                                       Foreground="{DynamicResource EnvironmentWindowText}"/>
+                            <TextBlock Style="{StaticResource DescriptionStyle}"
+                                       Text="Minimal popup showing only the distribution type selector and parameter table."/>
+                            <uni:DistributionWithSelectorControl
+                                SelectedDistribution="{Binding ElementName=MyWindow, Path=PopUpDistribution, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                                ShowPlot="False" ShowStatistics="False"
+                                VerticalAlignment="Top" HorizontalAlignment="Left"/>
+
+                            <!-- Feature Info Box -->
+                            <Border Margin="0,25,0,0"
+                                    Background="{DynamicResource EnvironmentWindowBackground}"
+                                    BorderBrush="{DynamicResource Button.Static.Border}" BorderThickness="1"
+                                    Padding="15" CornerRadius="4">
+                                <StackPanel>
+                                    <TextBlock Text="Popup Features:" FontWeight="SemiBold"
+                                               Foreground="{DynamicResource EnvironmentWindowText}" Margin="0,0,0,10"/>
+                                    <TextBlock Foreground="{DynamicResource EnvironmentWindowText}" TextWrapping="Wrap">
+                                        <Run FontWeight="SemiBold">Distribution Types:</Run>
+                                        <Run>Normal, Log-Normal, Triangular, Uniform, and more</Run>
+                                        <LineBreak/>
+                                        <LineBreak/>
+                                        <Run FontWeight="SemiBold">Parameters:</Run>
+                                        <Run>Edit distribution parameters with validation</Run>
+                                        <LineBreak/>
+                                        <LineBreak/>
+                                        <Run FontWeight="SemiBold">Data Binding:</Run>
+                                        <Run>All controls share the same distribution object</Run>
+                                    </TextBlock>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </DockPanel>
+                </Grid>
+            </TabItem>
+
+            <!-- ==================== TAB 2: Uncertain Curve Editor ==================== -->
+            <TabItem Header="Uncertain Curve Editor">
+                <Grid Margin="10">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <StackPanel Grid.Row="0">
+                        <TextBlock Text="Uncertain Ordered Data Editor" Style="{StaticResource SectionHeaderStyle}"/>
+                        <TextBlock Style="{StaticResource DescriptionStyle}"
+                                   Text="Edit ordered paired data with uncertainty quantification for each ordinate. Supports various probability distributions for uncertainty modeling."/>
+                    </StackPanel>
+
+                    <numCntrls:UncertainOrderedDataSelectorControl
+                        Grid.Row="1"
+                        SelectedUncertainOrderedData="{Binding ElementName=MyWindow, Path=SelectedUncertainCurve, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                        OrderY="Descending"
+                        XColumnHeader="Depth" YColumnHeader="Velocity"
+                        XAxisLabel="Depth" YAxisLabel="Velocity"/>
+                </Grid>
+            </TabItem>
+
+            <!-- ==================== TAB 3: Uncertain Table Editor ==================== -->
+            <TabItem Header="Uncertain Table Editor">
+                <Grid Margin="10">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <StackPanel Grid.Row="0">
+                        <TextBlock Text="Uncertain Ordered Data Table" Style="{StaticResource SectionHeaderStyle}"/>
+                        <TextBlock Style="{StaticResource DescriptionStyle}"
+                                   Text="Table-based editor for uncertain ordered paired data with row add/remove capabilities."/>
+                    </StackPanel>
+
+                    <Button Name="TestButton" Grid.Row="1"
+                            Content="Test Data Modification"
+                            Padding="12,6"
+                            HorizontalAlignment="Left"
+                            Margin="0,0,0,10"
+                            Click="TestButton_Click"/>
+
+                    <numCntrls:UncertainOrderedDataTableEditor
+                        Name="UncertainTable"
+                        Grid.Row="2"
+                        AddRemoveRows="True"
+                        SelectedUncertainOrderedData="{Binding ElementName=MyWindow, Path=SelectedUncertainCurve, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                        OrderY="None"
+                        IsStrictY="False"
+                        IsStrictX="False"
+                        XColumnHeader="Depth"
+                        YColumnHeader="Velocity"/>
+                </Grid>
+            </TabItem>
+
+            <!-- ==================== TAB 4: Curve Editor ==================== -->
+            <TabItem Header="Curve Editor">
+                <Grid Margin="10">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <StackPanel Grid.Row="0">
+                        <TextBlock Text="Ordered Paired Data Editor" Style="{StaticResource SectionHeaderStyle}"/>
+                        <TextBlock Style="{StaticResource DescriptionStyle}"
+                                   Text="Standard curve editor for ordered X-Y coordinate pairs with automatic sorting and validation."/>
+                    </StackPanel>
+
+                    <numCntrls:OrderedDataSelectorControl
+                        Grid.Row="1"
+                        SelectedOrderedData="{Binding ElementName=MyWindow, Path=SelectedCurve, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                        OrderY="Descending"
+                        XColumnHeader="Depth" YColumnHeader="Velocity"
+                        XAxisLabel="Depth" YAxisLabel="Velocity"/>
+                </Grid>
+            </TabItem>
+
+            <!-- ==================== TAB 5: Probability Ordinates ==================== -->
+            <TabItem Header="Probability Ordinates">
+                <numCntrls:ProbabilityOrdinatesControl ProbabilityOrdinates="{Binding ElementName=MyWindow, Path=ProbabilityOrdinates, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" />
+            </TabItem>
+
+            <!-- ==================== TAB 6: Time Series ==================== -->
+            <TabItem Header="Time Series">
+                <Grid Margin="10">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <StackPanel Grid.Row="0">
+                        <TextBlock Text="Time Series Data Editor" Style="{StaticResource SectionHeaderStyle}"/>
+                        <TextBlock Style="{StaticResource DescriptionStyle}"
+                                   Text="Manage temporal data with support for various time intervals (irregular, daily, hourly, minute). Includes calculator functions for data transformation."/>
+                    </StackPanel>
+
+                    <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,10">
+                        <TextBlock Text="Sample Data:" VerticalAlignment="Center" Margin="0,0,10,0"
+                                   Foreground="{DynamicResource EnvironmentWindowText}"/>
+                        <ComboBox Width="150">
+                            <ComboBoxItem Name="USGSItem" Content="USGS 01134500" Selected="USGSItem_Selected"/>
+                            <ComboBoxItem Name="IrregularItem" Content="Irregular" Selected="IrregularItem_Selected"/>
+                            <ComboBoxItem Name="DailyItem" Content="Daily" Selected="DailyItem_Selected"/>
+                            <ComboBoxItem Name="HourlyItem" Content="Hourly" Selected="HourlyItem_Selected"/>
+                            <ComboBoxItem Name="MinutesItem" Content="Minute" Selected="MinutesItem_Selected"/>
+                        </ComboBox>
+                    </StackPanel>
+
+                    <numCntrls:TimeSeriesTable
+                        Name="TimeSeriesTableControl"
+                        Grid.Row="2"
+                        IsReadOnly="False"
+                        XColumnHeader="Date"
+                        YColumnHeader="Data"/>
+                </Grid>
+            </TabItem>
+
+            <!-- ==================== TAB 7: Bin Definitions ==================== -->
+            <TabItem Header="Bin Definitions">
+                <Grid Margin="10">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <StackPanel Grid.Row="0">
+                        <TextBlock Text="Stratification Bin Definition" Style="{StaticResource SectionHeaderStyle}"/>
+                        <TextBlock Style="{StaticResource DescriptionStyle}"
+                                   Text="Define stratification bins with configurable boundaries and sample counts for data segmentation and analysis."/>
+                    </StackPanel>
+
+                    <numCntrls:BinDefinitionControl
+                        Grid.Row="1"
+                        StratificationOptionsCollection="{Binding ElementName=MyWindow, Path=StratificationOptionsCollection, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"/>
+                </Grid>
+            </TabItem>
+
+            <!-- ==================== TAB 8: Bivariate CDF ==================== -->
+            <TabItem Header="Bivariate CDF">
+                <Grid Margin="10">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <StackPanel Grid.Row="0">
+                        <TextBlock Text="Bivariate Empirical Distribution" Style="{StaticResource SectionHeaderStyle}"/>
+                        <TextBlock Style="{StaticResource DescriptionStyle}"
+                                   Text="Two-dimensional empirical cumulative distribution function editor for bivariate hazard analysis."/>
+                    </StackPanel>
+
+                    <numCntrls:BivariateEmpiricalControl
+                        Grid.Row="1"
+                        VerticalAlignment="Top"
+                        X1Header="Primary Hazard"
+                        X2Header="Secondary Hazard"
+                        BivariateCDF="{Binding ElementName=MyWindow, Path=BivariateCDF, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"/>
+                </Grid>
+            </TabItem>
+
+        </TabControl>
+
+        <!-- Status Bar -->
+        <Border Grid.Row="2"
+                Background="{DynamicResource EnvironmentWindowBackground}"
+                BorderBrush="{DynamicResource Button.Static.Border}"
+                BorderThickness="0,1,0,0"
+                Padding="15,6">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Grid.Column="0"
+                           Text="NumericControls Library Demo - .NET 10.0 | WPF"
+                           FontSize="11" Opacity="0.7"
+                           Foreground="{DynamicResource EnvironmentWindowText}"/>
+
+                <TextBlock Grid.Column="1"
+                           Text="Statistical controls for numeric data entry and probability distributions"
+                           FontSize="11" Opacity="0.7"
+                           Foreground="{DynamicResource EnvironmentWindowText}"/>
+            </Grid>
+        </Border>
+    </Grid>
+</cntrls:MetroWindow>

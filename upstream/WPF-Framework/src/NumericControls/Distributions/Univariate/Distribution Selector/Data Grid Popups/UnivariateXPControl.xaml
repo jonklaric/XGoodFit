@@ -1,0 +1,52 @@
+﻿<UserControl x:Class="NumericControls.UnivariateXPControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:NumericControls"
+             xmlns:cntrls="clr-namespace:GenericControls;assembly=GenericControls"
+             mc:Ignorable="d" 
+             d:DesignHeight="400" d:DesignWidth="200">
+    <UserControl.Resources>
+        <!-- Column header style with wrapped text and sorting support -->
+        <Style x:Key="WrappedColumnHeaderStyle" TargetType="{x:Type DataGridColumnHeader}">
+            <Setter Property="ContentTemplate">
+                <Setter.Value>
+                    <DataTemplate>
+                        <TextBlock TextWrapping="Wrap"
+                                   TextAlignment="Center"
+                                   VerticalAlignment="Bottom"
+                                   FontWeight="Bold"
+                                   HorizontalAlignment="Stretch"
+                                   Text="{Binding}"/>
+                    </DataTemplate>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Bottom"/>
+            <EventSetter Event="Click" Handler="ColumnHeaderClick"/>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid>
+        <!-- Data grid for univariate distribution X and P values -->
+        <cntrls:ValidationDataGrid Name="UnivariateGrid"
+                                   HorizontalGridLinesBrush="#FF353B7A"
+                                   VerticalGridLinesBrush="#FF353B7A"
+                                   AutoGenerateColumns="True"
+                                   SelectionMode="Extended"
+                                   SelectionUnit="CellOrRowHeader"
+                                   CanUserDeleteRows="False"
+                                   CanUserAddRows="False"
+                                   CanUserResizeRows="False"
+                                   CanUserSortColumns="False"
+                                   CanUserReorderColumns="False"
+                                   CanUserResizeColumns="False"
+                                   AlternatingRowBackground="#FFF3F9F7"
+                                   AlternationCount="2"
+                                   RowHeight="24"
+                                   VerticalContentAlignment="Center"
+                                   AutoGeneratingColumn="UnivariateGrid_AutoGeneratingColumn">
+        </cntrls:ValidationDataGrid>
+    </Grid>
+</UserControl>

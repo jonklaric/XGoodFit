@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <id>RMC.Wpf.Framework.Support</id>
+    <version>$version$</version>
+    <authors>C. Haden Smith, Woodrow L. Fields, Julian Gonzalez</authors>
+    <owners>USACE-RMC</owners>
+    <license type="expression">0BSD</license>
+    <projectUrl>https://github.com/USACE-RMC/WPF-Framework</projectUrl>
+    <repository type="git" url="https://github.com/USACE-RMC/WPF-Framework" />
+    <readme>README.md</readme>
+    <description>Software update services and deployable updater helper for the RMC WPF Framework.</description>
+    <releaseNotes>Coordinated WPF Framework 1.0.5 release; no package-specific functional changes.</releaseNotes>
+    <tags>RMC WPF framework software-update updater</tags>
+    <dependencies>
+      <group targetFramework="net10.0-windows7.0" />
+    </dependencies>
+    <contentFiles>
+      <files include="any/net10.0-windows7.0/SoftwareUpdate.Updater.exe" buildAction="None" copyToOutput="true" flatten="true" />
+      <files include="any/net10.0-windows7.0/SoftwareUpdate.Updater.dll" buildAction="None" copyToOutput="true" flatten="true" />
+      <files include="any/net10.0-windows7.0/SoftwareUpdate.Updater.deps.json" buildAction="None" copyToOutput="true" flatten="true" />
+      <files include="any/net10.0-windows7.0/SoftwareUpdate.Updater.runtimeconfig.json" buildAction="None" copyToOutput="true" flatten="true" />
+    </contentFiles>
+  </metadata>
+  <files>
+    <file src="..\..\..\README.md" target="" />
+    <file src="..\..\SoftwareUpdate\bin\$configuration$\net10.0-windows\SoftwareUpdate.dll" target="lib\net10.0-windows7.0" />
+    <file src="..\..\SoftwareUpdate\bin\$configuration$\net10.0-windows\SoftwareUpdate.xml" target="lib\net10.0-windows7.0" />
+    <file src="..\..\SoftwareUpdate.Updater\bin\$configuration$\net10.0-windows\SoftwareUpdate.Updater.exe" target="contentFiles\any\net10.0-windows7.0" />
+    <file src="..\..\SoftwareUpdate.Updater\bin\$configuration$\net10.0-windows\SoftwareUpdate.Updater.dll" target="contentFiles\any\net10.0-windows7.0" />
+    <file src="..\..\SoftwareUpdate.Updater\bin\$configuration$\net10.0-windows\SoftwareUpdate.Updater.deps.json" target="contentFiles\any\net10.0-windows7.0" />
+    <file src="..\..\SoftwareUpdate.Updater\bin\$configuration$\net10.0-windows\SoftwareUpdate.Updater.runtimeconfig.json" target="contentFiles\any\net10.0-windows7.0" />
+  </files>
+</package>

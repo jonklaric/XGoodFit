@@ -1,0 +1,134 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="clr-namespace:FrameworkUI"
+    xmlns:mw="clr-namespace:FrameworkUI.MessageWindow">
+
+    <!--Message Window Button Style-->
+    <Style x:Key="MessageWindowButtonStyle" TargetType="{x:Type Button}" BasedOn="{StaticResource {x:Type Button}}">
+        <Setter Property="Background" Value="{DynamicResource StackPanelBackground}" />
+        <Setter Property="Foreground" Value="{DynamicResource EnvironmentToolWindowText}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource StackPanelBackground}" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type Button}">
+                    <Border Name="Border" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" RecognizesAccessKey="True" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Border" Property="BorderBrush" Value="{DynamicResource Button.MouseOver.Border}" />
+                        </Trigger>
+                        <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                            <Setter TargetName="Border" Property="BorderBrush" Value="{DynamicResource Button.MouseOver.Border}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="{DynamicResource Button.MouseOver.Background}" />
+            </Trigger>
+            <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                <Setter Property="Background" Value="{DynamicResource Button.MouseOver.Background}" />
+            </Trigger>
+            <Trigger Property="IsEnabled" Value="False">
+                <Setter Property="Foreground" Value="{DynamicResource EnvironmentToolWindowDisabledText}" />
+                <Setter Property="Opacity" Value="0.5" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <!--Message Window Pressed Button Style-->
+    <Style x:Key="MessageWindowPressedButtonStyle" TargetType="{x:Type Button}" BasedOn="{StaticResource {x:Type Button}}">
+        <Setter Property="Background" Value="{DynamicResource StackPanelBackground}" />
+        <Setter Property="Foreground" Value="{DynamicResource EnvironmentToolWindowText}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource MessageWindow.Button.Pressed.Border}" />
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type Button}">
+                    <Border Name="Border" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" RecognizesAccessKey="True" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Border" Property="BorderBrush" Value="{DynamicResource MessageWindow.Button.Pressed.Border}" />
+                        </Trigger>
+                        <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                            <Setter TargetName="Border" Property="BorderBrush" Value="{DynamicResource MessageWindow.Button.Pressed.Border}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="{DynamicResource Button.MouseOver.Background}" />
+            </Trigger>
+            <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                <Setter Property="Background" Value="{DynamicResource Button.MouseOver.Background}" />
+            </Trigger>
+            <Trigger Property="IsEnabled" Value="False">
+                <Setter Property="Foreground" Value="{DynamicResource EnvironmentToolWindowDisabledText}" />
+                <Setter Property="Opacity" Value="0.5" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <!--Message Window Center Column Header Style-->
+    <Style x:Key="MessageWindowDataGridCenterHeaderStyle" TargetType="DataGridColumnHeader">
+        <Setter Property="Height" Value="24"/>
+        <Setter Property="Background" Value="{DynamicResource MessageWindow.Background}" />
+        <Setter Property="Foreground" Value="{DynamicResource MessageWindow.Foreground}"/>
+        <Setter Property="HorizontalAlignment" Value="Stretch"/>
+        <Setter Property="HorizontalContentAlignment" Value="Center"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource MessageWindow.Gridlines}"/>
+        <Setter Property="BorderThickness" Value="0,0,1,1"/>
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="{DynamicResource MessageWindow.HeaderHoveredBackground}" />
+            </Trigger>
+            <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                <Setter Property="Background" Value="{DynamicResource MessageWindow.HeaderHoveredBackground}" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <!--Message Window Left Column Header Style-->
+    <Style x:Key="MessageWindowDataGridLeftHeaderStyle" TargetType="DataGridColumnHeader">
+        <Setter Property="Height" Value="24"/>
+        <Setter Property="Background" Value="{DynamicResource MessageWindow.Background}"/>
+        <Setter Property="Foreground" Value="{DynamicResource MessageWindow.Foreground}"/>
+        <Setter Property="HorizontalAlignment" Value="Stretch"/>
+        <Setter Property="HorizontalContentAlignment" Value="Left"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource MessageWindow.Gridlines}"/>
+        <Setter Property="BorderThickness" Value="0,0,1,1"/>
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="{DynamicResource MessageWindow.HeaderHoveredBackground}" />
+            </Trigger>
+            <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                <Setter Property="Background" Value="{DynamicResource MessageWindow.HeaderHoveredBackground}" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <!--Message Window Style-->
+    <Style x:Key="MessageWindowStyle" TargetType="{x:Type mw:MessageWindowControl}">
+        <Setter Property="StackPanelBackgroundColor" Value="{DynamicResource StackPanelBackground}" />
+        <Setter Property="StackPanelButtonStyle" Value="{DynamicResource MessageWindowButtonStyle}"/>
+        <Setter Property="StackPanelPressedButtonStyle" Value="{DynamicResource MessageWindowPressedButtonStyle}"/>
+        <Setter Property="StackPanelSeparatorStyle" Value="{DynamicResource VerticalSeparatorStyle}"/>
+        <Setter Property="BackgroundColor" Value="{DynamicResource MessageWindow.Background}" />
+        <Setter Property="CenterColumnHeaderStyle" Value="{DynamicResource MessageWindowDataGridCenterHeaderStyle}"/>
+        <Setter Property="LeftColumnHeaderStyle" Value="{DynamicResource MessageWindowDataGridLeftHeaderStyle}"/>
+    </Style>
+
+    <Style TargetType="{x:Type mw:MessageWindowControl}" BasedOn="{StaticResource MessageWindowStyle}"/>
+    
+</ResourceDictionary>

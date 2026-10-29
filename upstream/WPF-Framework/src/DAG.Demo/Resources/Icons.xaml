@@ -1,0 +1,16 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <DrawingImage x:Key="HazardIcon">
+        <DrawingImage.Drawing>
+            <GeometryDrawing Brush="#FF89CEE1">
+                <GeometryDrawing.Pen>
+                    <Pen Brush="#FF1D286B" Thickness="2"/>
+                </GeometryDrawing.Pen>
+                <GeometryDrawing.Geometry>
+                    <PathGeometry Figures="M 8 14 2 8 8 2 14 8 Z" FillRule="NonZero"/>
+                </GeometryDrawing.Geometry>
+            </GeometryDrawing>
+        </DrawingImage.Drawing>
+    </DrawingImage>
+</ResourceDictionary>

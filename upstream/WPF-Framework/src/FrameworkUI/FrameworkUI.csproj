@@ -1,0 +1,37 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <RootNamespace>FrameworkUI</RootNamespace>
+    <AssemblyName>FrameworkUI</AssemblyName>
+    <Nullable>enable</Nullable>
+    <UseWPF>true</UseWPF>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+
+    <IsWpfFrameworkLibrary>true</IsWpfFrameworkLibrary>
+    <PackageId>RMC.FrameworkUI</PackageId>
+    <Title>FrameworkUI</Title>
+    <Description>Complete WPF application shell for WPF Framework. Provides the main window, AvalonDock docking layout, project explorer, message window, recent files, user settings, and theme bridging.</Description>
+    <PackageTags>wpf; main-window; docking; avalondock; theme; ribbon; project-explorer; usace-rmc</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\AvalonDock\Xceed.Wpf.AvalonDock.Themes.VS2013\Xceed.Wpf.AvalonDock.Themes.VS2013.csproj" />
+    <ProjectReference Include="..\AvalonDock\Xceed.Wpf.AvalonDock\Xceed.Wpf.AvalonDock.csproj" />
+    <ProjectReference Include="..\FrameworkInterfaces\FrameworkInterfaces.csproj" />
+    <ProjectReference Include="..\GenericControls\GenericControls.csproj" />
+    <ProjectReference Include="..\Themes\Themes.csproj" />
+    <ProjectReference Include="..\SoftwareUpdate\SoftwareUpdate.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Resources\*.png" />
+    <Resource Include="Resources\*.xml" />
+  </ItemGroup>
+
+</Project>

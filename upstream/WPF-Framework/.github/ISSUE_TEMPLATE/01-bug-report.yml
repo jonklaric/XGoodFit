@@ -1,0 +1,89 @@
+name: Bug report
+description: Report something that is not working correctly.
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a problem. Please do not report security vulnerabilities here; use the instructions in SECURITY.md instead.
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Briefly describe the problem.
+      placeholder: "Example: The program closes when I click Run Analysis."
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: What did you expect to happen?
+      description: Tell us what you expected instead.
+      placeholder: "Example: I expected the analysis to finish and show the results table."
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps-to-reproduce
+    attributes:
+      label: Steps to reproduce
+      description: List the steps that caused the problem, if you know them.
+      value: |
+        1.
+        2.
+        3.
+    validations:
+      required: false
+
+  - type: input
+    id: affected-area
+    attributes:
+      label: Affected area or control
+      description: Name the project, window, tool, or control if you know it.
+      placeholder: "Example: AvalonDock layout, DataTableView, OxyPlot control"
+    validations:
+      required: false
+
+  - type: input
+    id: framework-version
+    attributes:
+      label: WPF Framework version or commit
+      description: Enter the version, package number, branch, or commit if you know it.
+      placeholder: "Example: v1.0.0 or commit abc1234"
+    validations:
+      required: false
+
+  - type: input
+    id: environment
+    attributes:
+      label: Windows, .NET, and Visual Studio details
+      description: Add any version details you know.
+      placeholder: "Example: Windows 11, .NET 10 SDK, Visual Studio version if relevant"
+    validations:
+      required: false
+
+  - type: dropdown
+    id: theme
+    attributes:
+      label: Theme
+      description: Choose the theme if the issue is visual.
+      options:
+        - Not sure or not visual
+        - Light
+        - Dark
+        - Blue
+        - Multiple themes
+    validations:
+      required: false
+
+  - type: upload
+    id: files
+    attributes:
+      label: Screenshots, logs, or sample files
+      description: Upload anything that helps explain the problem.
+    validations:
+      required: false
+      accept: ".png,.jpg,.jpeg,.gif,.webp,.svg,.log,.txt,.csv,.json,.zip,.pdf,.docx,.xlsx"

@@ -1,0 +1,171 @@
+﻿namespace Numerics.Mathematics.LinearAlgebra
+{
+    /// <summary>
+    /// A class for computing all eigenvalues and eigenvectors of a real <b>symmetric</b> matrix using the Jacobi rotation method.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <b> Authors: </b>
+    /// <list type="bullet"> 
+    ///     <item> Haden Smith, USACE Risk Management Center, cole.h.smith@usace.army.mil </item>
+    /// </list>
+    /// </para>
+    /// <para>
+    /// <b> Description: </b>
+    /// </para>
+    /// <para>
+    /// Computes the eigen-decomposition A = V * D * V^T for a real symmetric matrix A, where D contains the eigenvalues and
+    /// the columns of V are the corresponding orthonormal eigenvectors. The implementation uses the classic Jacobi iterative
+    /// method, which is robust and accurate for small to medium-sized problems.
+    /// </para>
+    /// <para>
+    /// <b> References: </b>
+    /// <list type="bullet">
+    /// <item> "Numerical Recipes: The Art of Scientific Computing, Third Edition." Press et al., 2017. </item>
+    /// <item> <description><see href = "https://en.wikipedia.org/wiki/Jacobi_eigenvalue_algorithm"/></description> </item>
+    /// </list>
+    /// </para>
+    /// </remarks>
+    [Serializable]
+    public class EigenValueDecomposition
+    {
+        /// <summary>
+        /// Constructs a new symmetric eigen-decomposition.
+        /// </summary>
+        /// <param name="A">The <b>symmetric</b> input matrix A [0..n-1][0..n-1].</param>
+        public EigenValueDecomposition(Matrix A)
+        {
+            if (A.NumberOfRows != A.NumberOfColumns)
+                throw new ArgumentOutOfRangeException(nameof(A), "The matrix A must be square.");
+            if (!A.IsSymmetric)
+                throw new ArgumentException("The matrix A must be symmetric for this decomposition.", nameof(A));
+
+            n = A.NumberOfRows;
+            this.A = new Matrix(A.ToArray());
+            EigenVectors = Matrix.Identity(n);
+            EigenValues = new Vector(n);
+
+            // Rotate a working copy so the public input matrix keeps the values that were decomposed
+            var work = new Matrix(A.ToArray());
+            var a = work.Array; // same storage as work
+
+            // The convergence threshold follows the scale of the matrix, so a decomposition of c*A
+            // stops at the same relative accuracy as a decomposition of A. The largest element
+            // magnitude is the reference: it dominates every off-diagonal, and rotations can always
+            // drive the off-diagonals below 1E-12 of it before reaching roundoff.
+            double elementMax = 0.0;
+            for (int i = 0; i < n; i++)
+                for (int j = 0; j < n; j++)
+                    elementMax = Math.Max(elementMax, Math.Abs(a[i, j]));
+            double tol = 1e-12 * elementMax;
+            const int maxIter = 2000;
+
+            for (int iter = 0; iter < maxIter; iter++)
+            {
+                // Find largest off-diagonal element
+                double max = 0.0; int p = 0, q = 0;
+                for (int i = 0; i < n - 1; i++)
+                {
+                    for (int j = i + 1; j < n; j++)
+                    {
+                        double val = Math.Abs(a[i, j]);
+                        if (val > max) { max = val; p = i; q = j; }
+                    }
+                }
+
+                if (max <= tol) break; // Converged
+
+                // Current largest off-diagonal pair (p, q)
+                double app = a[p, p];
+                double aqq = a[q, q];
+                double apq = a[p, q];
+
+                // Robust angle computation: θ = 0.5 * atan2(2*apq, aqq - app)
+                double theta = 0.5 * Math.Atan2(2.0 * apq, aqq - app);
+                double c = Math.Cos(theta);
+                double s = Math.Sin(theta);
+
+                // Rotate the 2x2 pivot block exactly
+                double appNew = c * c * app - 2.0 * s * c * apq + s * s * aqq;
+                double aqqNew = s * s * app + 2.0 * s * c * apq + c * c * aqq;
+                a[p, p] = appNew;
+                a[q, q] = aqqNew;
+                a[p, q] = a[q, p] = 0.0;
+
+                // Update the rest of the rows/cols (preserve symmetry)
+                for (int k = 0; k < n; k++)
+                {
+                    if (k == p || k == q) continue;
+                    double aik = a[k, p];
+                    double akq = a[k, q];
+                    double akpNew = c * aik - s * akq;
+                    double akqNew = s * aik + c * akq;
+                    a[k, p] = a[p, k] = akpNew;
+                    a[k, q] = a[q, k] = akqNew;
+                }
+
+                // Accumulate eigenvectors: V = V * J(p,q)
+                for (int k = 0; k < n; k++)
+                {
+                    double vip = EigenVectors[k, p];
+                    double viq = EigenVectors[k, q];
+                    EigenVectors[k, p] = c * vip - s * viq;
+                    EigenVectors[k, q] = s * vip + c * viq;
+                }
+            }
+
+            // Extract eigenvalues from the diagonal of the rotated working copy
+            for (int i = 0; i < n; i++)
+                EigenValues[i] = a[i, i];
+        }
+
+        private readonly int n; // Size of A
+
+        /// <summary>
+        /// Stores the input matrix A that was decomposed (copied from the constructor input).
+        /// </summary>
+        public Matrix A { get; private set; }
+
+        /// <summary>
+        /// Returns the vector of eigenvalues (length n).
+        /// </summary>
+        public Vector EigenValues { get; private set; }
+
+        /// <summary>
+        /// Returns the matrix of eigenvectors (n x n). Each column corresponds to an eigenvalue.
+        /// </summary>
+        public Matrix EigenVectors { get; private set; }
+
+        /// <summary>
+        /// Returns the effective sample size based on Dutilleul's method (1993). 
+        /// </summary>
+        /// <returns>The scale-invariant effective sample size, or zero for an all-zero spectrum.</returns>
+        /// <remarks>
+        /// Eigenvalues are normalized by the largest absolute eigenvalue before evaluating
+        /// <c>(Σλ)² / Σλ²</c>. Negative eigenvalues no larger than <c>1E-10</c> of that spectral
+        /// scale are treated as numerical roundoff; materially negative eigenvalues retain the
+        /// established formula behavior.
+        /// </remarks>
+        public double EffectiveSampleSize()
+        {
+            double spectralScale = 0d;
+            for (int i = 0; i < EigenValues.Length; i++)
+                spectralScale = Math.Max(spectralScale, Math.Abs(EigenValues[i]));
+            if (spectralScale == 0d) return 0d;
+
+            double sum = 0;
+            double sumsq = 0;
+            for (int i = 0; i < EigenValues.Length; i++)
+            {
+                // Normalize first so the roundoff threshold and ESS are independent of matrix scale.
+                double lambda = EigenValues[i] / spectralScale;
+                if (lambda < 0.0 && Math.Abs(lambda) <= 1e-10) lambda = 0.0;
+                sum += lambda;
+                sumsq += lambda * lambda;
+            }
+            if (sumsq == 0d) return 0d;
+            double neff = (sum * sum) / sumsq;
+            return neff;
+        }
+    }
+}

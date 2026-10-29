@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <OutputType>WinExe</OutputType>
+    <RootNamespace>ExpressionParserControls.Demo</RootNamespace>
+    <AssemblyName>ExpressionParserControls.Demo</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Page Include="App.xaml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ExpressionParserControls\ExpressionParserControls.csproj" />
+    <ProjectReference Include="..\ExpressionParser\ExpressionParser.csproj" />
+    <ProjectReference Include="..\GenericControls\GenericControls.csproj" />
+    <ProjectReference Include="..\Themes\Themes.csproj" />
+  </ItemGroup>
+</Project>

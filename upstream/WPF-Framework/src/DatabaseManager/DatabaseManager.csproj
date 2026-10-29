@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net10.0</TargetFramework>
+		<OutputType>Library</OutputType>
+		<LangVersion>latest</LangVersion>
+		<PlatformTarget>AnyCPU</PlatformTarget>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+
+		<IsWpfFrameworkLibrary>true</IsWpfFrameworkLibrary>
+		<PackageId>RMC.DatabaseManager</PackageId>
+		<Title>DatabaseManager</Title>
+		<Description>Multi-format database abstraction library for .NET. Provides a unified interface for reading, editing, and exporting tabular data backed by SQLite, CSV, DBF, or in-memory DataTables, with undo/redo edit tracking and Excel/CSV export.</Description>
+		<PackageTags>database; sqlite; dbf; csv; datatable; undo-redo; excel-export; usace-rmc</PackageTags>
+	</PropertyGroup>
+
+	<!-- Shared packages -->
+	<ItemGroup>
+		<PackageReference Include="ClosedXML" />
+		<PackageReference Include="DocumentFormat.OpenXml" />
+		<PackageReference Include="ExcelNumberFormat" />
+		<PackageReference Include="FastMember" />
+		<PackageReference Include="System.Data.SQLite" />
+		<PackageReference Include="SourceGear.sqlite3" />
+	</ItemGroup>
+
+</Project>

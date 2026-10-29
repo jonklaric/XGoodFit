@@ -1,0 +1,443 @@
+﻿using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.Threading;
+
+namespace Numerics.Utilities
+{
+    /// <summary>
+    /// A thread-safe class for reporting the progress of a parallel list of tasks.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    ///     Authors:
+    ///     This class was co-developed by Alex Kennedy and Woodrow Fields. Credit to initial implementation and idea goes to Alex.
+    ///     Converted to C# and partially documented by Haden Smith, USACE Risk Management Center, cole.h.smith@usace.army.mil
+    /// </para>
+    /// </remarks>
+    public class SafeProgressReporter
+    {
+
+        #region Construction
+
+        /// <summary>
+        /// Create a new thread-safe progress reporter.
+        /// </summary>
+        public SafeProgressReporter()
+        {
+            _synchronizationContext = SynchronizationContext.Current;
+            _invokeProgressHandlers = new SendOrPostCallback(InvokeProgressHandlers);
+            _invokeMessageHandlers = new SendOrPostCallback(InvokeMessageHandlers);
+        }
+
+        /// <summary>
+        /// Create a new thread-safe progress reporter with a specified task name.
+        /// </summary>
+        /// <param name="taskName">The name of the task.</param>
+        public SafeProgressReporter(string taskName)
+        {
+            TaskName = taskName;
+            _synchronizationContext = SynchronizationContext.Current;
+            _invokeProgressHandlers = new SendOrPostCallback(InvokeProgressHandlers);
+            _invokeMessageHandlers = new SendOrPostCallback(InvokeMessageHandlers);
+        }
+
+        #endregion
+
+        #region Members
+
+        private double _previousProgress = -0.0000000000001d;
+        private string _previousMessage = "";
+        private MessageType _previousMessageType = MessageType.Status;
+        private Process? _externalProcess;
+        private List<SafeProgressReporter> _subProgReporterCollection = new List<SafeProgressReporter>();
+        private readonly object _subProgReporterLock = new object();
+        private CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
+        /// <summary>
+        /// Callback for invoking progress event handlers on the synchronization context.
+        /// </summary>
+        protected readonly SendOrPostCallback _invokeProgressHandlers;
+        /// <summary>
+        /// Callback for invoking message event handlers on the synchronization context.
+        /// </summary>
+        protected readonly SendOrPostCallback _invokeMessageHandlers;
+        /// <summary>
+        /// The synchronization context used for marshaling events to the UI thread.
+        /// </summary>
+        protected SynchronizationContext? _synchronizationContext;
+
+        /// <summary>
+        /// Returns the most recent progress.
+        /// </summary>
+        protected double MostRecentProgress => _previousProgress;
+
+        /// <summary>
+        /// Returns the most recent message.
+        /// </summary>
+        public string MostRecentMessage => _previousMessage;
+
+        /// <summary>
+        /// Returns the message count.
+        /// </summary>
+        private int _messageCount;
+
+        /// <summary>
+        /// Returns the message count.
+        /// </summary>
+        public int MessageCount => _messageCount;
+
+        /// <summary>
+        /// Returns the task name.
+        /// </summary>
+        public string TaskName { get; private set; } = null!;
+
+        /// <summary>
+        /// Returns the most recent message type.
+        /// </summary>
+        public MessageType MostRecentMessageType => _previousMessageType;
+
+        /// <summary>
+        /// The external process being executed.
+        /// </summary>
+        protected Process? ExternalProcess => _externalProcess;
+
+        /// <summary>
+        /// Determines if cancellation was requested.
+        /// </summary>
+        public bool IsCancelRequested => _cancellationTokenSource.IsCancellationRequested;
+
+        /// <summary>
+        /// Returns a read only list of child progress reporters. 
+        /// </summary>
+        public ReadOnlyCollection<SafeProgressReporter> ChildReporters
+        {
+            get
+            {
+                // A snapshot, so callers can enumerate while other threads register children
+                lock (_subProgReporterLock)
+                {
+                    return new ReadOnlyCollection<SafeProgressReporter>(_subProgReporterCollection.ToArray());
+                }
+            }
+        }
+
+        /// <summary>
+        /// Event is raised when the progress is reported.
+        /// </summary>
+        public event ProgressReportedEventHandler? ProgressReported;
+
+        /// <summary>
+        /// Delegate for handling progress reported events.
+        /// </summary>
+        /// <param name="reporter">The SafeProgressReporter instance raising the event.</param>
+        /// <param name="prog">The current progress value (typically 0.0 to 1.0).</param>
+        /// <param name="progDelta">The change in progress since the last report.</param>
+        public delegate void ProgressReportedEventHandler(SafeProgressReporter reporter, double prog, double progDelta);
+
+        /// <summary>
+        /// Event is raised when a message is reported.
+        /// </summary>
+        public event MessageReportedEventHandler? MessageReported;
+
+        /// <summary>
+        /// Delegate for handling message reported events.
+        /// </summary>
+        /// <param name="msg">The message structure containing the message content and metadata.</param>
+        public delegate void MessageReportedEventHandler(MessageContentStruct msg);
+
+        /// <summary>
+        /// Event is raised when the task starts.
+        /// </summary>
+        public event TaskStartedEventHandler? TaskStarted;
+
+        /// <summary>
+        /// Delegate for handling task started events.
+        /// </summary>
+        public delegate void TaskStartedEventHandler();
+
+        /// <summary>
+        /// Event is raised when the task ended.
+        /// </summary>
+        public event TaskEndedEventHandler? TaskEnded;
+
+        /// <summary>
+        /// Delegate for handling task ended events.
+        /// </summary>
+        public delegate void TaskEndedEventHandler();
+
+        /// <summary>
+        /// Event is raised when a child reporter is created.
+        /// </summary>
+        public event ChildReporterCreatedEventHandler? ChildReporterCreated;
+
+        /// <summary>
+        /// Delegate for handling child reporter created events.
+        /// </summary>
+        /// <param name="childReporter">The newly created child SafeProgressReporter instance.</param>
+        public delegate void ChildReporterCreatedEventHandler(SafeProgressReporter childReporter);
+
+        /// <summary>
+        /// Enumeration of progress reporter message types.
+        /// </summary>
+        public enum MessageType
+        {
+            /// <summary>
+            /// A status message.
+            /// </summary>
+            Status,
+            /// <summary>
+            /// A success message.
+            /// </summary>
+            Success,
+            /// <summary>
+            /// A warning message.
+            /// </summary>
+            Warning,
+            /// <summary>
+            /// A fatal error message.
+            /// </summary>
+            FatalError
+        }
+
+        /// <summary>
+        /// Message Content structure.
+        /// </summary>
+        public struct MessageContentStruct
+        {
+            /// <summary>
+            /// The message text.
+            /// </summary>
+            public string Message;
+            /// <summary>
+            /// The type of message.
+            /// </summary>
+            public MessageType MessageType;
+            /// <summary>
+            /// The reporter that generated the message.
+            /// </summary>
+            public SafeProgressReporter Reporter;
+            /// <summary>
+            /// Creates a new message content structure.
+            /// </summary>
+            /// <param name="message">The message text.</param>
+            /// <param name="messageType">The type of message.</param>
+            /// <param name="reporter">The reporter that generated the message.</param>
+            public MessageContentStruct(string message, MessageType messageType, SafeProgressReporter reporter)
+            {
+                Message = message;
+                MessageType = messageType;
+                Reporter = reporter;
+            }
+        }
+
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// Set synchronization context. 
+        /// </summary>
+        /// <param name="context">The context.</param>
+        protected void SetContext(SynchronizationContext? context)
+        {
+            _synchronizationContext = context;
+        }
+
+        /// <summary>
+        /// Indicate that the task has started.
+        /// </summary>
+        public void IndicateTaskStart()
+        {
+            _synchronizationContext?.Post(new SendOrPostCallback(state => TaskStarted?.Invoke()), null);
+        }
+
+        /// <summary>
+        /// Indicate that the task has ended.
+        /// </summary>
+        public void IndicateTaskEnded()
+        {
+            _synchronizationContext?.Post(new SendOrPostCallback(state => TaskEnded?.Invoke()), null);
+        }
+
+        /// <summary>
+        /// Performs action when progress is reported.
+        /// </summary>
+        /// <param name="prog">The progress level.</param>
+        protected virtual void OnProgressReported(double prog)
+        {
+        }
+
+        /// <summary>
+        /// Performs action when message is reported.
+        /// </summary>
+        /// <param name="msg">The message.</param>
+        protected virtual void OnMessageReported(MessageContentStruct msg)
+        {
+        }
+
+        /// <summary>
+        /// Report external process that is running.
+        /// </summary>
+        /// <param name="process">The external process.</param>
+        public void ReportExternalProcess(Process process)
+        {
+            _externalProcess = process;
+            OnExternalProcessReported(process);
+        }
+
+        /// <summary>
+        /// Performs action when external process is reported.
+        /// </summary>
+        /// <param name="process">The external process.</param>
+        protected virtual void OnExternalProcessReported(Process process)
+        {
+        }
+
+        /// <summary>
+        /// Report the error message.
+        /// </summary>
+        /// <param name="message">The error message.</param>
+        public void ReportError(string message)
+        {
+            ReportMessage(message, MessageType.FatalError);
+        }
+
+        /// <summary>
+        /// Invokes the progress handlers.
+        /// </summary>
+        /// <param name="state">The object.</param>
+        private void InvokeProgressHandlers(object? state)
+        {
+            double prog = ((double[])state!)[0];
+            double prevProg = ((double[])state!)[1];
+            if (prevProg < 0d)
+                prevProg = 0d;
+            OnProgressReported(prog);
+            ProgressReported?.Invoke(this, prog, prog - prevProg);
+        }
+
+        /// <summary>
+        /// Invokes the message handlers.
+        /// </summary>
+        /// <param name="state">The object.</param>
+        private void InvokeMessageHandlers(object? state)
+        {
+            MessageContentStruct prog = (MessageContentStruct)state!;
+            OnMessageReported(prog);
+            MessageReported?.Invoke(prog);
+        }
+
+        /// <summary>
+        /// Cancel the task.
+        /// </summary>
+        public void RequestCancel()
+        {
+            _cancellationTokenSource.Cancel();
+        }
+
+        /// <summary>
+        /// Resets the cancellation token to allow the task to continue after a cancellation request.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Creates a new CancellationTokenSource and propagates it to all child reporters.
+        /// This allows a canceled task to be restarted or continued.
+        /// </para>
+        /// <para>
+        /// Use this method after calling RequestCancel() if you want to allow the task to run again
+        /// without the cancellation flag being set.
+        /// </para>
+        /// </remarks>
+        public void ResetCancel()    
+        {
+            lock (_subProgReporterLock)
+            {
+                _cancellationTokenSource = new CancellationTokenSource();
+                foreach (var subProg in _subProgReporterCollection)
+                {
+                    subProg._cancellationTokenSource = _cancellationTokenSource;
+                }
+            }
+        }
+
+
+        /// <summary>
+        /// Returns a new thread-safe progress reporter for a subtask.
+        /// </summary>
+        /// <param name="fractionOfTotal">The fraction of total progress to track.</param>
+        /// <param name="subTaskName">The subtask name.</param>
+        public SafeProgressReporter CreateProgressModifier(float fractionOfTotal, string subTaskName = "")
+        {
+            if (fractionOfTotal > 1f)
+                fractionOfTotal = 1f;
+            if (fractionOfTotal < 0f)
+                fractionOfTotal = 0f;
+            if (string.IsNullOrEmpty(subTaskName))
+                subTaskName = TaskName;
+            var child = new SafeProgressReporter(subTaskName);
+            child.SetContext(_synchronizationContext);
+            child._previousProgress = 0d;
+            child.ProgressReported += (reporter, prog, progDelta) => ReportProgress(_previousProgress + progDelta * fractionOfTotal);
+            child.MessageReported += msg => ReportMessage(msg);
+            lock (_subProgReporterLock)
+            {
+                child._cancellationTokenSource = _cancellationTokenSource;
+                _subProgReporterCollection.Add(child);
+            }
+            var invokeChildCreatedHandlers = new SendOrPostCallback(state => ChildReporterCreated?.Invoke(child));
+            _synchronizationContext?.Post(invokeChildCreatedHandlers, child);
+            return child;
+        }
+
+        /// <summary>
+        /// Report progress and message.
+        /// </summary>
+        /// <param name="progress">The progress to report.</param>
+        /// <param name="message">The message text.</param>
+        /// <param name="messageType">The message type.</param>
+        public void Report(double progress, string message, MessageType messageType)
+        {
+            ReportProgress(progress);
+            ReportMessage(message, messageType);
+        }
+
+        /// <summary>
+        /// Report progress.
+        /// </summary>
+        /// <param name="progress">The progress to report.</param>
+        public void ReportProgress(double progress)
+        {
+            if (_previousProgress == progress) return;
+            _synchronizationContext?.Post(_invokeProgressHandlers, new double[] { progress, _previousProgress });
+            _previousProgress = progress;
+        }
+
+        /// <summary>
+        /// Report message.
+        /// </summary>
+        /// <param name="message">The message text.</param>
+        /// <param name="messageType">The message type.</param>
+        public void ReportMessage(string message, MessageType messageType = MessageType.Status)
+        {
+            _synchronizationContext?.Post(_invokeMessageHandlers, new MessageContentStruct(message, messageType, this));
+            System.Threading.Interlocked.Increment(ref _messageCount);
+            _previousMessage = message;
+            _previousMessageType = messageType;
+        }
+
+        /// <summary>
+        /// Report message.
+        /// </summary>
+        /// <param name="message">The message to report.</param>
+        protected void ReportMessage(MessageContentStruct message)
+        {
+            _synchronizationContext?.Post(_invokeMessageHandlers, message);
+            System.Threading.Interlocked.Increment(ref _messageCount);
+            _previousMessage = message.Message;
+            _previousMessageType = message.MessageType;
+        }
+
+        #endregion
+
+    }
+}

@@ -1,0 +1,738 @@
+<cntrls:MetroWindow x:Class="GenericControls.Demo.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:sys="clr-namespace:System;assembly=mscorlib"
+        xmlns:glob="clr-namespace:System.Globalization;assembly=mscorlib"
+        xmlns:local="clr-namespace:GenericControls.Demo"
+        xmlns:cntrls="clr-namespace:GenericControls;assembly=GenericControls"
+        mc:Ignorable="d"
+        Title="GenericControls Demo" Height="800" Width="1100" MinWidth="800" MinHeight="600"
+        Style="{DynamicResource MetroWindowStyle}"
+        Background="{DynamicResource EnvironmentWindowBackground}">
+
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/GenericControls;Component/Resources/ResourceDictionary.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+
+            <!-- Converters -->
+            <cntrls:DoubleToGridLengthConverter x:Key="DoubleToGridLengthConverter"/>
+            <cntrls:BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+
+            <!-- Line width options for selectors -->
+            <DoubleCollection x:Key="LineWidthOptions">1,2,3,4,5,6,8,10</DoubleCollection>
+
+            <!-- Demo section header style -->
+            <Style x:Key="SectionHeaderStyle" TargetType="TextBlock">
+                <Setter Property="FontSize" Value="14"/>
+                <Setter Property="FontWeight" Value="SemiBold"/>
+                <Setter Property="Foreground" Value="{DynamicResource EnvironmentWindowText}"/>
+                <Setter Property="Margin" Value="0,10,0,8"/>
+            </Style>
+
+            <!-- Demo description style -->
+            <Style x:Key="DescriptionStyle" TargetType="TextBlock">
+                <Setter Property="FontSize" Value="11"/>
+                <Setter Property="Foreground" Value="{DynamicResource EnvironmentWindowText}"/>
+                <Setter Property="Opacity" Value="0.7"/>
+                <Setter Property="TextWrapping" Value="Wrap"/>
+                <Setter Property="Margin" Value="0,0,0,8"/>
+            </Style>
+        </ResourceDictionary>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header Bar with Theme Selection -->
+        <Border Grid.Row="0"
+                Background="{DynamicResource EnvironmentWindowBackground}"
+                BorderBrush="{DynamicResource Button.Static.Border}"
+                BorderThickness="0,0,0,1"
+                Padding="15,10">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Title -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="GenericControls Library Demo"
+                               FontSize="18" FontWeight="SemiBold"
+                               Foreground="{DynamicResource EnvironmentWindowText}"/>
+                    <TextBlock Text=" - USACE Risk Management Center"
+                               FontSize="12" VerticalAlignment="Bottom" Margin="0,0,0,2"
+                               Foreground="{DynamicResource EnvironmentWindowText}" Opacity="0.6"/>
+                </StackPanel>
+
+                <!-- Theme Selection -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="Theme:" VerticalAlignment="Center" Margin="0,0,12,0"
+                               Foreground="{DynamicResource EnvironmentWindowText}"/>
+                    <RadioButton x:Name="LightThemeRadio" Content="Light" GroupName="Theme"
+                                 IsChecked="True" Checked="ThemeRadio_Checked" Margin="0,0,12,0"
+                                 Foreground="{DynamicResource EnvironmentWindowText}"/>
+                    <RadioButton x:Name="BlueThemeRadio" Content="Blue" GroupName="Theme"
+                                 Checked="ThemeRadio_Checked" Margin="0,0,12,0"
+                                 Foreground="{DynamicResource EnvironmentWindowText}"/>
+                    <RadioButton x:Name="DarkThemeRadio" Content="Dark" GroupName="Theme"
+                                 Checked="ThemeRadio_Checked"
+                                 Foreground="{DynamicResource EnvironmentWindowText}"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Main Content - Tab Control -->
+        <TabControl Grid.Row="1" Margin="10" SelectedIndex="0">
+
+            <!-- ==================== TAB 1: Input Controls ==================== -->
+            <TabItem Header="Input Controls">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="15">
+                    <StackPanel>
+                        <TextBlock Text="Text and Numeric Input Controls" Style="{StaticResource SectionHeaderStyle}"/>
+                        <TextBlock Style="{StaticResource DescriptionStyle}"
+                                   Text="These controls provide validated text and numeric input with international formatting support, including scientific notation (e.g., 1e-6, 1E2)."/>
+
+                        <Grid Margin="0,0,0,20">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="180"/>
+                                <ColumnDefinition Width="*" MaxWidth="400"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <!-- NameTextBox -->
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="NameTextBox:"
+                                       HorizontalAlignment="Right" VerticalAlignment="Center" Margin="5"
+                                       Foreground="{DynamicResource EnvironmentWindowText}"/>
+                            <cntrls:NameTextBox Grid.Row="0" Grid.Column="1" Height="22"
+                                                Text="{Binding NameProperty, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                CanBeBlank="False" />
+
+                            <!-- NumericTextBox (Integer) -->
+                            <TextBlock Grid.Row="1" Grid.Column="0" Text="NumericTextBox (Integer):"
+                                       HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="5"
+                                       Foreground="{DynamicResource EnvironmentWindowText}"/>
+                            <cntrls:NumericTextBox Grid.Row="1" Grid.Column="1"
+                                                   MinValue="-100" MaxValue="100"
+                                                   CanBeBlank="False" CanBeNegative="True"
+                                                   Text="0" Height="22"/>
+
+                            <!-- NumericTextBox (Decimal with Scientific Notation) -->
+                            <TextBlock Grid.Row="2" Grid.Column="0" Text="NumericTextBox (Scientific):" 
+                                       HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="5"
+                                       Foreground="{DynamicResource EnvironmentWindowText}"
+                                       ToolTip="Supports scientific notation: 1e-6, 1E2, etc."/>
+                            <cntrls:NumericTextBox Grid.Row="2" Grid.Column="1"
+                                                   MinValue="-1E308" MaxValue="1E308" IsWholeNumber="False"
+                                                   CanBeBlank="True" CanBeNegative="True"
+                                                   AllowScientificNotation="True"
+                                                   Text="1.23e-6" Height="22"
+                                                   ToolTip="Try: 1e-6, 1E2, -2.5e3"/>
+
+                            <!-- NumericUpDown -->
+                            <TextBlock Grid.Row="3" Grid.Column="0" Text="NumericUpDown:" 
+                                       HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="5"
+                                       Foreground="{DynamicResource EnvironmentWindowText}"/>
+                            <cntrls:NumericUpDown Grid.Row="3" Grid.Column="1"
+                                                  Minimum="0" Maximum="1000000"
+                                                  Value="50000" Increment="1000"
+                                                  DecimalPlaces="0" ThousandsSeparator="True"
+                                                  HorizontalAlignment="Left" Width="180" Height="22"/>
+
+                            <!-- NumericSlider -->
+                            <TextBlock Grid.Row="4" Grid.Column="0" Text="NumericSlider:" 
+                                       HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="5"
+                                       Foreground="{DynamicResource EnvironmentWindowText}"/>
+                            <cntrls:NumericSlider Grid.Row="4" Grid.Column="1" 
+                                                  Minimum="0" Maximum="100" Value="50" Height="22"/>
+                        </Grid>
+
+                        <cntrls:SeparatorWithHeader Header="Resizable and Special Controls" Margin="0,10,0,15"/>
+
+                        <Grid Margin="0,0,0,20">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="180"/>
+                                <ColumnDefinition Width="*" MaxWidth="500"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <!-- ResizableTextBoxControl -->
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="ResizableTextBox:"
+                                       HorizontalAlignment="Right" VerticalAlignment="Top" Margin="5"
+                                       Foreground="{DynamicResource EnvironmentWindowText}"/>
+                            <cntrls:ResizableTextBoxControl Grid.Row="0" Grid.Column="1" Height="22"
+                                                             Text="This control can be resized by dragging the bottom edge. Useful for multi-line text input."
+                                                             />
+
+                            <!-- GridLengthControl -->
+                            <TextBlock Grid.Row="1" Grid.Column="0" Text="GridLengthControl:"
+                                       HorizontalAlignment="Right" VerticalAlignment="Center" Margin="5"
+                                       Foreground="{DynamicResource EnvironmentWindowText}"
+                                       ToolTip="For editing WPF Grid column/row sizes (Auto, Pixel, Star)"/>
+                            <cntrls:GridLengthControl Grid.Row="1" Grid.Column="1" Height="22"
+                                                       GridLength="{Binding TestGridLength, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                       HorizontalAlignment="Left" 
+                                                       ToolTip="Select unit type: Auto, Pixel (*), or Star (*)"/>
+
+                            <!-- ThicknessControl -->
+                            <TextBlock Grid.Row="2" Grid.Column="0" Text="ThicknessControl:"
+                                       HorizontalAlignment="Right" VerticalAlignment="Center" Margin="5"
+                                       Foreground="{DynamicResource EnvironmentWindowText}"/>
+                            <cntrls:ThicknessControl Grid.Row="2" Grid.Column="1"
+                                                      SelectedThickness="{Binding ThicknessProperty, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                      HorizontalAlignment="Left" Margin="0,5"/>
+                        </Grid>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- ==================== TAB 2: Date, Time and Color ==================== -->
+            <TabItem Header="Date, Time and Color">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="15">
+                    <StackPanel>
+                        <TextBlock Text="Date and Time Controls" Style="{StaticResource SectionHeaderStyle}"/>
+                        <TextBlock Style="{StaticResource DescriptionStyle}"
+                                   Text="Controls for displaying and selecting dates and times with various format options."/>
+
+                        <Grid Margin="0,0,0,20">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Clock Control -->
+                            <Border Grid.Column="0" BorderBrush="{DynamicResource Button.Static.Border}"
+                                    BorderThickness="1" Padding="20" Margin="0,0,20,0" CornerRadius="4">
+                                <StackPanel>
+                                    <TextBlock Text="ClockControl" HorizontalAlignment="Center" Margin="0,0,0,10"
+                                               FontWeight="SemiBold" Foreground="{DynamicResource EnvironmentWindowText}"/>
+                                    <cntrls:ClockControl HorizontalAlignment="Center"
+                                                         HasSeconds="True" Is24Hour="False"
+                                                         Time="{Binding DateTimeProperty, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                         Width="200" Height="200"/>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Date/Time Pickers -->
+                            <StackPanel Grid.Column="1">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="180"/>
+                                        <ColumnDefinition Width="*" MaxWidth="300"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+
+                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="DateAndTimeTextBox (12h):"
+                                               HorizontalAlignment="Right" VerticalAlignment="Center" Margin="5"
+                                               Foreground="{DynamicResource EnvironmentWindowText}"/>
+                                    <cntrls:DateAndTimeTextBoxControl Grid.Row="0" Grid.Column="1"
+                                                                       Is24Hour="False"
+                                                                       SelectedDateTime="{Binding DateTimeProperty, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                                       Height="22"/>
+
+                                    <TextBlock Grid.Row="1" Grid.Column="0" Text="DateAndTimeTextBox (24h):"
+                                               HorizontalAlignment="Right" VerticalAlignment="Center" Margin="5"
+                                               Foreground="{DynamicResource EnvironmentWindowText}"/>
+                                    <cntrls:DateAndTimeTextBoxControl Grid.Row="1" Grid.Column="1"
+                                                                       Is24Hour="True"
+                                                                       SelectedDateTime="{Binding DateTimeProperty, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                                       Height="22"/>
+                                </Grid>
+                            </StackPanel>
+                        </Grid>
+
+                        <cntrls:SeparatorWithHeader Header="Color Selection Controls" Margin="0,20,0,15"/>
+
+                        <Grid Margin="0,0,0,20">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Full ColorPicker -->
+                            <Border Grid.Column="0" BorderBrush="{DynamicResource Button.Static.Border}"
+                                    BorderThickness="1" Padding="10" Margin="0,0,20,0" CornerRadius="4"
+                                    Background="{DynamicResource EnvironmentWindowBackground}">
+                                <StackPanel>
+                                    <TextBlock Text="ColorPicker (Full)" HorizontalAlignment="Center" Margin="0,0,0,10"
+                                               FontWeight="SemiBold" Foreground="{DynamicResource EnvironmentWindowText}"/>
+                                    <cntrls:ColorPicker Width="140" Height="220"
+                                                        Color="{Binding ColorProperty, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- ColorPickerPopup and Color Display -->
+                            <StackPanel Grid.Column="1">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="150"/>
+                                        <ColumnDefinition Width="*" MaxWidth="200"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+
+                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="ColorPickerPopup:"
+                                               HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,5,10,5"
+                                               Foreground="{DynamicResource EnvironmentWindowText}"/>
+                                    <cntrls:ColorPickerPopup Grid.Row="0" Grid.Column="1"
+                                                              Width="60" Height="28" HorizontalAlignment="Left"
+                                                              Color="{Binding ColorProperty, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                              Margin="0,5"/>
+
+                                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Selected Color Preview:"
+                                               HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,5,10,5"
+                                               Foreground="{DynamicResource EnvironmentWindowText}"/>
+                                    <Rectangle Grid.Row="1" Grid.Column="1"
+                                               Width="60" Height="28" HorizontalAlignment="Left"
+                                               Fill="{Binding ColorProperty, Mode=OneWay}"
+                                               Stroke="{DynamicResource Button.Static.Border}" StrokeThickness="1"
+                                               Margin="0,5"/>
+                                </Grid>
+
+                                <TextBlock Text="The ColorPicker and ColorPickerPopup share the same bound color."
+                                           Style="{StaticResource DescriptionStyle}" Margin="0,15,0,0"/>
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- ==================== TAB 3: Property Editors ==================== -->
+            <TabItem Header="Property Editors">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="300"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Property Controls -->
+                    <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto" Padding="15">
+                        <DockPanel>
+                            <TextBlock DockPanel.Dock="Top" Text="Property Editor Controls" Style="{StaticResource SectionHeaderStyle}"/>
+                            <TextBlock DockPanel.Dock="Top" Style="{StaticResource DescriptionStyle}"
+                                       Text="These controls are designed for building property panels with consistent layout and data binding."/>
+
+                            <!-- Text Properties -->
+                            <cntrls:SeparatorWithHeader DockPanel.Dock="Top" Header="Text Properties" Margin="0,5,0,10"/>
+
+                            <cntrls:TextPropertyControl DockPanel.Dock="Top" Margin="0,2" PropertyWidth="500"
+                                                        Title="Text Property"  
+                                                        Text="{Binding TextProperty, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+
+                            <cntrls:NameTextPropertyControl DockPanel.Dock="Top" Margin="0,2" PropertyWidth="500"
+                                                             Title="Name Property" ShowLeaderLine="True"
+                                                             Text="{Binding NameProperty, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+
+                            <cntrls:ResizeableTextPropertyControl DockPanel.Dock="Top" Margin="0,2" PropertyWidth="500"
+                                                                   Title="Description" ShowLeaderLine="True"
+                                                                   Text="{Binding DescriptionProperty, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+
+                            <!-- Numeric Properties -->
+                            <cntrls:SeparatorWithHeader DockPanel.Dock="Top" Header="Numeric Properties" Margin="0,15,0,10"/>
+
+                            <cntrls:NumericPropertyControl DockPanel.Dock="Top" Margin="0,2" PropertyWidth="500"
+                                                           Title="Numeric Value" ShowLeaderLine="True"
+                                                           MinValue="-100" MaxValue="100" CanHaveNegative="True"
+                                                           Number="{Binding NumericProperty, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+
+                            <cntrls:NumericSliderPropertyControl DockPanel.Dock="Top" Margin="0,2" PropertyWidth="500"
+                                                                  Title="Opacity" ShowLeaderLine="True"
+                                                                  MinValue="0" MaxValue="1" Increment="0.05"
+                                                                  Number="{Binding OpacityProperty, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+
+                            <cntrls:NumericPropertySelectorControl DockPanel.Dock="Top" Margin="0,2" PropertyWidth="500"
+                                                                    Title="Line Width" ShowLeaderLine="True"
+                                                                    NumericOptions="{StaticResource LineWidthOptions}"
+                                                                    SelectedNumber="{Binding LineWidthProperty, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+
+                            <cntrls:NumericAutoPropertyControl DockPanel.Dock="Top" Margin="0,2" PropertyWidth="500"
+                                                                Title="Auto Value" ShowLeaderLine="True"
+                                                                DefaultNumber="{x:Static sys:Double.NaN}" CanHaveNegative="True"
+                                                                Number="{Binding NumericAutoProperty, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+
+                            <!-- Selection Properties -->
+                            <cntrls:SeparatorWithHeader DockPanel.Dock="Top" Header="Selection Properties" Margin="0,15,0,10"/>
+
+                            <cntrls:BooleanPropertyControl DockPanel.Dock="Top" Margin="0,2" 
+                                                           Title="Enable Feature" ShowLeaderLine="True"
+                                                           IsSelected="{Binding BooleanProperty, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+
+                            <cntrls:FontSelectorControl DockPanel.Dock="Top" Margin="0,2" PropertyWidth="500"
+                                                        Title="Font Family" ShowLeaderLine="True"
+                                                        FontFamilyString="{Binding FontProperty, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+
+                            <cntrls:FontWeightSelectorControl DockPanel.Dock="Top" Margin="0,2" PropertyWidth="500"
+                                                               Title="Font Weight" ShowLeaderLine="True"
+                                                               SelectedFontWeight="{Binding FontWeightProperty, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+
+                            <cntrls:ColorPropertyControl DockPanel.Dock="Top" Margin="0,2"
+                                                         Title="Color" ShowLeaderLine="True"
+                                                         SelectedColor="{Binding ColorProperty, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+
+                            <cntrls:LineStyleSelectorControl DockPanel.Dock="Top" Margin="0,2" PropertyWidth="500"
+                                                              Title="Line Style" ShowLeaderLine="True"
+                                                              SelectedDashArray="{Binding LineStyleProperty, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+
+                            <cntrls:LineWidthSelectorControl DockPanel.Dock="Top" Margin="0,2" PropertyWidth="500"
+                                                              Title="Stroke Width" ShowLeaderLine="True"
+                                                              WidthOptions="{StaticResource LineWidthOptions}"
+                                                              SelectedWidth="{Binding LineWidthProperty, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+
+                            <!-- Alignment Properties -->
+                            <cntrls:SeparatorWithHeader DockPanel.Dock="Top" Header="Alignment Properties" Margin="0,15,0,10"/>
+
+                            <cntrls:HorizontalAlignmentControl DockPanel.Dock="Top" Margin="0,2" PropertyWidth="500"
+                                                                Title="Horizontal Alignment" ShowLeaderLine="True"
+                                                                Alignment="{Binding HorizontalAlignmentProperty, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+
+                            <cntrls:VerticalAlignmentControl DockPanel.Dock="Top" Margin="0,2" PropertyWidth="500"
+                                                              Title="Vertical Alignment" ShowLeaderLine="True"
+                                                              Alignment="{Binding VerticalAlignmentProperty, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+
+                            <!-- Geometry Properties -->
+                            <cntrls:SeparatorWithHeader DockPanel.Dock="Top" Header="Geometry Properties" Margin="0,15,0,10"/>
+
+                            <cntrls:PointPropertyControl DockPanel.Dock="Top" Margin="0,2"
+                                                          Title="Point (X, Y)"
+                                                          DataPoint="{Binding PointProperty, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+
+                            <cntrls:Point3DPropertyControl DockPanel.Dock="Top" Margin="0,2"
+                                                            Title="Point3D (X, Y, Z)"
+                                                            DataPoint="{Binding Point3DProperty, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+
+                            <!-- Date/Time Properties -->
+                            <cntrls:SeparatorWithHeader DockPanel.Dock="Top" Header="Date/Time Properties" Margin="0,15,0,10"/>
+
+                            <cntrls:DateTimePropertyControl DockPanel.Dock="Top" Margin="0,2" PropertyWidth="500"
+                                                             Title="Date/Time" ShowLeaderLine="True"
+                                                             SelectedDateTime="{Binding DateTimeProperty, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+
+                            <cntrls:CalendarWeekRulePropertyControl DockPanel.Dock="Top" Margin="0,2" PropertyWidth="500"
+                                                                     Title="Week Rule" ShowLeaderLine="True"
+                                                                     SelectedCalendarWeekRule="{Binding CalendarWeekRuleProperty, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+
+                            <!-- Custom Content -->
+                            <cntrls:SeparatorWithHeader DockPanel.Dock="Top" Header="Custom Content" Margin="0,15,0,10"/>
+
+                            <cntrls:ContentPropertyControl DockPanel.Dock="Top" Margin="0,2" PropertyWidth="500"
+                                                           Title="Custom Slider" ShowLeaderLine="True">
+                                <cntrls:ContentPropertyControl.InnerContent>
+                                    <Slider Minimum="0" Maximum="100" Value="50"/>
+                                </cntrls:ContentPropertyControl.InnerContent>
+                            </cntrls:ContentPropertyControl>
+
+                            <!-- Padding at bottom -->
+                            <Border DockPanel.Dock="Top" Height="20"/>
+                        </DockPanel>
+                    </ScrollViewer>
+
+                    <!-- Live Preview Panel -->
+                    <Border Grid.Column="1"
+                            Background="{DynamicResource EnvironmentWindowBackground}"
+                            BorderBrush="{DynamicResource Button.Static.Border}" BorderThickness="1,0,0,0"
+                            Padding="15">
+                        <StackPanel>
+                            <TextBlock Text="Live Preview" FontWeight="SemiBold" FontSize="14"
+                                       Foreground="{DynamicResource EnvironmentWindowText}" Margin="0,0,0,15"/>
+
+                            <TextBlock Text="Text Preview:" FontSize="11" Opacity="0.7"
+                                       Foreground="{DynamicResource EnvironmentWindowText}" Margin="0,0,0,5"/>
+                            <TextBlock Text="{Binding TextProperty}"
+                                       FontFamily="{Binding FontProperty}"
+                                       FontWeight="{Binding FontWeightProperty}"
+                                       Foreground="{DynamicResource EnvironmentWindowText}"
+                                       TextWrapping="Wrap" Margin="0,0,0,15"/>
+
+                            <TextBlock Text="Shape Preview:" FontSize="11" Opacity="0.7"
+                                       Foreground="{DynamicResource EnvironmentWindowText}" Margin="0,0,0,5"/>
+                            <Rectangle Height="60" Margin="0,0,0,15"
+                                       HorizontalAlignment="{Binding HorizontalAlignmentProperty}"
+                                       Fill="{Binding ColorProperty}"
+                                       Stroke="{Binding ColorProperty}"
+                                       StrokeThickness="{Binding LineWidthProperty}"
+                                       StrokeDashArray="{Binding LineStyleProperty}"
+                                       Opacity="{Binding OpacityProperty}"
+                                       Width="80"/>
+
+                            <TextBlock Text="Numeric Value:" FontSize="11" Opacity="0.7"
+                                       Foreground="{DynamicResource EnvironmentWindowText}" Margin="0,0,0,5"/>
+                            <TextBlock Text="{Binding NumericProperty, StringFormat=N2, ConverterCulture={x:Static glob:CultureInfo.CurrentCulture}}"
+                                       FontSize="18" FontWeight="Bold"
+                                       Foreground="{DynamicResource EnvironmentWindowText}" Margin="0,0,0,15"/>
+
+                            <TextBlock Text="Boolean State:" FontSize="11" Opacity="0.7"
+                                       Foreground="{DynamicResource EnvironmentWindowText}" Margin="0,0,0,5"/>
+                            <TextBlock FontSize="14"
+                                       Foreground="{DynamicResource EnvironmentWindowText}">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Text" Value="Disabled"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding BooleanProperty}" Value="True">
+                                                <Setter Property="Text" Value="Enabled"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </TabItem>
+
+            <!-- ==================== TAB 4: File and Folder Selectors ==================== -->
+            <TabItem Header="File and Folder">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="15">
+                    <StackPanel>
+                        <TextBlock Text="File and Folder Selection Controls" Style="{StaticResource SectionHeaderStyle}"/>
+                        <TextBlock Style="{StaticResource DescriptionStyle}"
+                                   Text="Controls for browsing and selecting files and folders with dialog integration."/>
+
+                        <Grid Margin="0,0,0,20">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <cntrls:FileSelectorControl Grid.Row="0" Margin="0,5" PropertyWidth="500"
+                                                        Title="Select File" ShowLeaderLine="True"
+                                                        FileFilters="All Files (*.*)|*.*|Text Files (*.txt)|*.txt|XML Files (*.xml)|*.xml"
+                                                        Text="{Binding FilePathProperty, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+
+                            <cntrls:FolderSelectorControl Grid.Row="1" Margin="0,5" PropertyWidth="500"
+                                                           Title="Select Folder" ShowLeaderLine="True"
+                                                           Text="{Binding FolderPathProperty, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+
+                            <cntrls:DirectorySelectorControl Grid.Row="2" Margin="0,5" PropertyWidth="500"
+                                                              Title="Select Directory" ShowLeaderLine="True"
+                                                              Text="{Binding DirectoryPathProperty, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                        </Grid>
+
+                        <cntrls:SeparatorWithHeader Header="Dialog Demonstrations" Margin="0,20,0,15"/>
+
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,20">
+                            <Button Content="Show Name Dialog" Padding="15,8" Margin="0,0,10,0"
+                                    Click="ShowNameDialog_Click"/>
+                            <Button Content="Show Folder Browser" Padding="15,8" Margin="0,0,10,0"
+                                    Click="ShowFolderBrowser_Click"/>
+                            <Button Content="Open File Dialog" Padding="15,8"
+                                    Click="ShowFileDialog_Click"/>
+                        </StackPanel>
+
+                        <TextBlock Text="{Binding DialogResultText}"
+                                   Foreground="{DynamicResource EnvironmentWindowText}"
+                                   TextWrapping="Wrap" Margin="0,10,0,0"/>
+
+                        <cntrls:SeparatorWithHeader Header="String List Editor" Margin="0,30,0,15"/>
+
+                        <TextBlock Style="{StaticResource DescriptionStyle}"
+                                   Text="The StringListPropertyControl allows editing a collection of strings in a DataGrid."/>
+
+                        <cntrls:StringListPropertyControl Title="String List"
+                                                           StringList="{Binding StringListProperty, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                           Height="200" Margin="0,5"/>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- ==================== TAB 5: DataGrid Controls ==================== -->
+            <TabItem Header="DataGrid">
+                <Grid Margin="15">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="20"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- CopyPasteDataGrid -->
+                    <DockPanel Grid.Column="0">
+                        <TextBlock DockPanel.Dock="Top" Text="CopyPasteDataGrid" Style="{StaticResource SectionHeaderStyle}"/>
+                        <TextBlock DockPanel.Dock="Top" Style="{StaticResource DescriptionStyle}"
+                                   Text="DataGrid with built-in copy/paste support (Ctrl+C, Ctrl+V). Right-click for context menu."/>
+
+                        <cntrls:DataGridToolbar DockPanel.Dock="Top"
+                                                DataGrid="{Binding ElementName=CPDataGrid, Mode=OneTime}"
+                                                ToolOrientation="Horizontal" Margin="0,0,0,5"/>
+
+                        <cntrls:CopyPasteDataGrid x:Name="CPDataGrid"
+                                                   CanUserAddRows="False"
+                                                   IsReadOnly="False"
+                                                   SelectionMode="Extended"
+                                                   SelectionUnit="CellOrRowHeader"
+                                                   CanUserAddInsertDeleteRows="True"
+                                                   AutoGeneratedColumns="CPDataGrid_AutoGeneratedColumns"/>
+                    </DockPanel>
+
+                    <!-- DataGrid in Popup -->
+                    <DockPanel Grid.Column="2">
+                        <TextBlock DockPanel.Dock="Top" Text="DataGrid in Popup" Style="{StaticResource SectionHeaderStyle}"/>
+                        <TextBlock DockPanel.Dock="Top" Style="{StaticResource DescriptionStyle}"
+                                   Text="Demonstrates a DataGrid within a popup for space-constrained layouts."/>
+
+                        <ToggleButton x:Name="DataGridToggleButton"
+                                      DockPanel.Dock="Top"
+                                      Content="Show DataGrid Popup"
+                                      Padding="15,8" HorizontalAlignment="Left" Margin="0,0,0,10"/>
+
+                        <Popup x:Name="DataGridPopup"
+                               IsOpen="{Binding ElementName=DataGridToggleButton, Path=IsChecked, Mode=TwoWay}"
+                               StaysOpen="False"
+                               AllowsTransparency="True"
+                               Placement="Bottom"
+                               PlacementTarget="{Binding ElementName=DataGridToggleButton}"
+                               Width="350" Height="250">
+                            <Border BorderBrush="{DynamicResource Button.Static.Border}"
+                                    BorderThickness="1"
+                                    Background="{DynamicResource EnvironmentWindowBackground}">
+                                <cntrls:CopyPasteDataGrid x:Name="CPDataGrid2"
+                                                           SelectionMode="Extended"
+                                                           SelectionUnit="CellOrRowHeader"
+                                                           MouseEnter="CPDataGrid2_MouseEnter"
+                                                           MouseLeave="CPDataGrid2_MouseLeave"
+                                                           ContextMenuClosing="CPDataGrid2_ContextMenuClosing"/>
+                            </Border>
+                        </Popup>
+
+                        <Border DockPanel.Dock="Top"
+                                Background="{DynamicResource EnvironmentWindowBackground}"
+                                BorderBrush="{DynamicResource Button.Static.Border}" BorderThickness="1"
+                                Padding="15" CornerRadius="4">
+                            <StackPanel>
+                                <TextBlock Text="DataGrid Features:" FontWeight="SemiBold"
+                                           Foreground="{DynamicResource EnvironmentWindowText}" Margin="0,0,0,10"/>
+                                <TextBlock Foreground="{DynamicResource EnvironmentWindowText}" TextWrapping="Wrap">
+                                    <Run FontWeight="SemiBold">Copy/Paste:</Run>
+                                    <Run>Use Ctrl+C and Ctrl+V to copy and paste cells</Run>
+                                    <LineBreak/>
+                                    <LineBreak/>
+                                    <Run FontWeight="SemiBold">Row Operations:</Run>
+                                    <Run>Add, insert, and delete rows via toolbar or context menu</Run>
+                                    <LineBreak/>
+                                    <LineBreak/>
+                                    <Run FontWeight="SemiBold">Selection:</Run>
+                                    <Run>Click row headers to select entire rows, or click cells for cell selection</Run>
+                                </TextBlock>
+                            </StackPanel>
+                        </Border>
+                    </DockPanel>
+                </Grid>
+            </TabItem>
+
+            <!-- ==================== TAB 6: Colors Collection ==================== -->
+            <TabItem Header="Color Collection">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="15">
+                    <StackPanel>
+                        <TextBlock Text="Color Collection Editor" Style="{StaticResource SectionHeaderStyle}"/>
+                        <TextBlock Style="{StaticResource DescriptionStyle}"
+                                   Text="Demonstrates an ItemsControl bound to a collection of ColorItem objects. Click on any color rectangle to edit it with a popup ColorPicker."/>
+
+                        <Grid Margin="0,0,0,20">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Add Color Button and Main Color Picker -->
+                            <Border Grid.Column="0" BorderBrush="{DynamicResource Button.Static.Border}"
+                                    BorderThickness="1" Padding="15" Margin="0,0,20,0" CornerRadius="4"
+                                    Background="{DynamicResource EnvironmentWindowBackground}">
+                                <StackPanel>
+                                    <TextBlock Text="New Color" HorizontalAlignment="Center" Margin="0,0,0,10"
+                                               FontWeight="SemiBold" Foreground="{DynamicResource EnvironmentWindowText}"/>
+                                    <cntrls:ColorPickerPopup x:Name="NewColorPicker"
+                                                              Width="60" Height="28" Margin="0,0,0,10"
+                                                              Color="{Binding NewColorProperty, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                    <Button Content="Add Color" Padding="15,8" Click="AddColor_Click"/>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Color Items Collection -->
+                            <StackPanel Grid.Column="1">
+                                <TextBlock Text="Color Collection (click to edit):"
+                                           FontWeight="SemiBold" Margin="0,0,0,10"
+                                           Foreground="{DynamicResource EnvironmentWindowText}"/>
+
+                                <ItemsControl x:Name="ColorItemsControl" HorizontalContentAlignment="Stretch">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Grid Margin="0,2" Height="32">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="120"/>
+                                                    <ColumnDefinition Width="60"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+
+                                                <TextBlock Grid.Column="0"
+                                                           Text="{Binding Name}"
+                                                           VerticalAlignment="Center"
+                                                           Foreground="{DynamicResource EnvironmentWindowText}"/>
+
+                                                <Rectangle Grid.Column="1"
+                                                           VerticalAlignment="Stretch"
+                                                           HorizontalAlignment="Stretch"
+                                                           Margin="5,2"
+                                                           Cursor="Hand"
+                                                           MouseLeftButtonUp="ColorRectangle_MouseLeftButtonUp">
+                                                    <Rectangle.Style>
+                                                        <Style TargetType="Rectangle">
+                                                            <Setter Property="Fill" Value="{Binding ColorBrush, UpdateSourceTrigger=PropertyChanged}"/>
+                                                            <Setter Property="Stroke" Value="{DynamicResource Button.Static.Border}"/>
+                                                            <Setter Property="StrokeThickness" Value="1"/>
+                                                            <Style.Triggers>
+                                                                <Trigger Property="IsMouseOver" Value="True">
+                                                                    <Setter Property="StrokeThickness" Value="2"/>
+                                                                </Trigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </Rectangle.Style>
+                                                </Rectangle>
+
+                                                <Button Grid.Column="2" Content="Remove" Padding="8,4"
+                                                        Click="RemoveColor_Click" Tag="{Binding}"/>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+        </TabControl>
+
+        <!-- Status Bar -->
+        <Border Grid.Row="2"
+                Background="{DynamicResource EnvironmentWindowBackground}"
+                BorderBrush="{DynamicResource Button.Static.Border}" BorderThickness="0,1,0,0"
+                Padding="10,5">
+            <TextBlock Text="GenericControls Library Demo - .NET 9.0 | WPF"
+                       FontSize="11" Opacity="0.7"
+                       Foreground="{DynamicResource EnvironmentWindowText}"/>
+        </Border>
+    </Grid>
+</cntrls:MetroWindow>

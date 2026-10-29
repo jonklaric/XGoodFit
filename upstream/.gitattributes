@@ -1,0 +1,5 @@
+# Vendored files must stay byte-identical to their upstream blobs; scripts/vendor-upstream.sh checks
+# this. Repositories with their own .gitattributes (RMC-BestFit, WPF-Framework, hec-dss) keep their
+# rules, which take precedence over this file. The lines below cover files the repository-wide
+# `* text=auto` would otherwise rewrite.
+/zlib/win32/zlib.def -text

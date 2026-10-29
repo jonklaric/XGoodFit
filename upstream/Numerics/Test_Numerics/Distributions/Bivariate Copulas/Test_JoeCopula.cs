@@ -1,0 +1,464 @@
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Numerics.Data.Statistics;
+using Numerics.Distributions;
+using Numerics.Distributions.Copulas;
+
+namespace Distributions.BivariateCopulas
+{
+    /// <summary>
+    /// Unit tests for the Joe Copula. Reference values come from the R 'copula' package for the original methods and from pyvinecopulib 0.7.6 and mpmath 1.4.1 for the conditional-distribution methods.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    ///     <b> Authors: </b>
+    ///     <list type="bullet">
+    ///     <item>Haden Smith, USACE Risk Management Center, cole.h.smith@usace.army.mil</item>
+    ///     </list>
+    /// </para>
+    /// </remarks>
+    [TestClass]
+    public class Test_JoeCopula
+    {
+
+        /// <summary>
+        /// Test PDF
+        /// </summary>
+        [TestMethod]
+        public void Test_PDF()
+        {
+            var copula = new JoeCopula(10);
+            Assert.AreEqual(4.342727e-05, copula.PDF(0.2, 0.8), 1E-6);
+
+            copula = new JoeCopula(20);
+            Assert.AreEqual(8.645443e-11, copula.PDF(0.2, 0.8), 1E-6);
+
+            copula = new JoeCopula(1.1);
+            Assert.AreEqual(0.9512265, copula.PDF(0.2, 0.8), 1E-6);
+
+            copula = new JoeCopula(5);
+            Assert.AreEqual(0.02110735, copula.PDF(0.2, 0.8), 1E-6);
+
+            // Test symmetry
+            copula = new JoeCopula(10);
+            Assert.AreEqual(4.342727e-05, copula.PDF(0.8, 0.2), 1E-6);
+
+            copula = new JoeCopula(20);
+            Assert.AreEqual(8.645443e-11, copula.PDF(0.8, 0.2), 1E-6);
+
+            copula = new JoeCopula(1.1);
+            Assert.AreEqual(0.9512265, copula.PDF(0.8, 0.2), 1E-6);
+
+            copula = new JoeCopula(5);
+            Assert.AreEqual(0.02110735, copula.PDF(0.8, 0.2), 1E-6);
+
+        }
+
+        /// <summary>
+        /// Test CDF
+        /// </summary>
+        [TestMethod]
+        public void Test_CDF()
+        {
+            var copula = new JoeCopula(10);
+            Assert.AreEqual(0.1999999, copula.CDF(0.2, 0.8), 1E-6);
+
+            copula = new JoeCopula(20);
+            Assert.AreEqual(0.2, copula.CDF(0.2, 0.8), 1E-6);
+
+            copula = new JoeCopula(1.1);
+            Assert.AreEqual(0.1656223, copula.CDF(0.2, 0.8), 1E-6);
+
+            copula = new JoeCopula(5);
+            Assert.AreEqual(0.199895, copula.CDF(0.2, 0.8), 1E-6);
+
+            // Test symmetry
+            copula = new JoeCopula(10);
+            Assert.AreEqual(0.1999999, copula.CDF(0.8, 0.2), 1E-6);
+
+            copula = new JoeCopula(20);
+            Assert.AreEqual(0.2, copula.CDF(0.8, 0.2), 1E-6);
+
+            copula = new JoeCopula(1.1);
+            Assert.AreEqual(0.1656223, copula.CDF(0.8, 0.2), 1E-6);
+
+            copula = new JoeCopula(5);
+            Assert.AreEqual(0.199895, copula.CDF(0.8, 0.2), 1E-6);
+
+        }
+
+        private double[] data1 = new double[] { 105.080527801019, 115.026257454374, 117.358129524541, 84.3469768155338, 84.5362454182564, 115.832013303087, 103.698610148398, 88.8411298970013, 94.7422294382998, 109.79929825752, 94.0976045955494, 112.417576846617, 110.180042813334, 105.093201216588, 136.275040650675, 91.0470309608862, 84.2474349276179, 100.535501865457, 80.9058461473664, 119.213220466183, 100.572669469592, 103.131258346566, 100.810317630538, 114.061624071483, 83.5975402855976, 89.0115333472513, 66.3268165070727, 84.7329927826247, 69.7680817872407, 115.650963119626, 92.5472957212446, 106.114531288404, 108.032885546296, 110.38969090409, 99.6051228521885, 71.2293045424982, 93.7583750323159, 88.56905726009, 101.688577044379, 88.1152932378495, 102.179951148463, 147.661448558484, 130.057283273608, 109.854007734265, 81.2705409811028, 117.66598298105, 88.8769701106725, 102.802427495432, 93.4008884560194, 90.2277365987588, 103.036719364918, 77.5184782680141, 91.5324658931925, 101.835989095901, 101.800043749889, 109.764650578377, 79.7834884356497, 80.6891470677998, 116.183753310048, 97.7251444184232, 101.93962603208, 91.479747920405, 106.616497717471, 88.9732889869284, 100.347155748138, 64.2776497298067, 97.8630230693096, 115.039994756502, 100.160509753111, 99.0744120656348, 111.633096916686, 99.3446937251762, 113.010250612283, 91.3689738704099, 93.0857066194397, 112.761306730353, 111.792394529326, 51.8176166632693, 107.422232145344, 102.659904000871, 82.1117724410236, 99.3163646335942, 113.555145795822, 116.501871333875, 95.4376498231323, 118.137910178593, 101.824522891831, 98.675229136211, 87.3054670597499, 107.50132629382, 88.6217672049816, 108.587609616577, 117.070978807494, 100.829377608782, 85.9716443690607, 87.1615186321506, 101.929033409522, 129.887046688029, 106.165881910737, 110.123691041869 };
+        private double[] data2 = new double[] { 65.3627311420053, 109.338093441946, 110.187130564663, 72.6572491437794, 66.1830652216622, 106.917958610739, 89.4544458566931, 34.2121510489786, 87.5612581119189, 60.5637237767687, 33.8034654209032, 99.2844647305164, 104.97303205735, 6.04617859719163, 138.811261697691, 71.2893972974008, 59.417366566882, 85.355111220543, 50.1413604581927, 102.920060652383, 93.0914947236245, 70.1509627285045, 11.6186828960635, 117.810957879192, 79.1966502763724, 70.2131986632539, 72.5040290039477, 63.6963355882566, 48.4038689280691, 105.297596037192, 87.9566889097355, 87.2650426632532, 92.1659510753509, 51.9553483976797, 69.1607656479071, 69.8590431888949, 63.1696994924036, 83.3814974744098, 77.8342636732521, 54.3557740053106, 75.9564039272592, 153.295740162045, 125.192966195081, 84.9856299114578, 86.854354257246, 98.0159599592548, 3.77678567039993, 74.3992868304184, 61.7221737834943, 75.0682654590025, 107.067397020988, 66.3698849697294, 78.3453997857911, 83.9149525731405, 69.5344335662347, 105.933049927905, 26.5327793191245, 54.4009262051242, 89.3584519067692, 77.5365813897511, 66.5148556530152, 75.574562907648, 69.8755523955032, 75.15359174989, 55.0871908145974, 76.301388721602, 84.6034786632286, 86.412293254073, 89.8760641259544, 73.4531945546952, 103.905973398154, 76.6907578549793, 81.9676998718682, 78.9370335717157, 20.7797553590814, 96.0968795553399, 86.6087907592008, 70.4507347850656, 107.294695066862, 79.0020795665946, 61.8228011685283, 70.9975241569947, 76.1327812702326, 74.3139042973535, 56.2911048478489, 121.512535634237, 92.9142895046758, 88.7950084218728, 63.705929356528, 84.3367159226979, 66.7354953690805, 102.711710544246, 97.0527842334408, 69.4933842704733, 84.4978321017289, 74.067511177418, 75.1669385237322, 134.226620060869, 107.962687902957, 97.4269493483909 };
+
+        /// <summary>
+        /// Test fitting with the method of maximum pseudo likelihood.
+        /// </summary>
+        [TestMethod]
+        public void Test_MPL_Fit()
+        {
+            // get ranks of data
+            var rank1 = Statistics.RanksInPlace(data1);
+            var rank2 = Statistics.RanksInPlace(data2);
+            // get plotting positions
+            for (int i = 0; i < data1.Length; i++)
+            {
+                rank1[i] = rank1[i] / (rank1.Length + 1d);
+                rank2[i] = rank2[i] / (rank2.Length + 1d);
+            }
+            // Fit copula
+            BivariateCopula copula = new JoeCopula();
+            BivariateCopulaEstimation.Estimate(ref copula, rank1, rank2, CopulaEstimationMethod.PseudoLikelihood);
+            Assert.AreEqual(2.664326, copula.Theta, 1E-4);
+        }
+
+        /// <summary>
+        /// Estimate using the inference from margins method.
+        /// </summary>
+        [TestMethod]
+        public void Test_IFM_Fit()
+        {
+            BivariateCopula copula = new JoeCopula();
+            copula.MarginalDistributionX = new Normal();
+            copula.MarginalDistributionY = new Normal();
+            // Fit marginals
+            ((IEstimation)copula.MarginalDistributionX).Estimate(data1, ParameterEstimationMethod.MaximumLikelihood);
+            ((IEstimation)copula.MarginalDistributionY).Estimate(data2, ParameterEstimationMethod.MaximumLikelihood);
+            // Fit copula
+            BivariateCopulaEstimation.Estimate(ref copula, data1, data2, CopulaEstimationMethod.InferenceFromMargins);
+            Assert.AreEqual(2.965269, copula.Theta, 1E-4);
+        }
+
+        /// <summary>
+        /// Estimate using the method of maximum likelihood estimation.
+        /// </summary>
+        [TestMethod]
+        public void Test_MLE_Fit()
+        {
+            BivariateCopula copula = new JoeCopula();
+            copula.MarginalDistributionX = new Normal();
+            copula.MarginalDistributionY = new Normal();
+            // Fit copula and marginals
+            BivariateCopulaEstimation.Estimate(ref copula, data1, data2, CopulaEstimationMethod.FullLikelihood);
+            // Theta
+            Assert.AreEqual(3.032809, copula.Theta, 1E-3);
+            // Marginal-X
+            Assert.AreEqual(99.85959, ((Normal)copula.MarginalDistributionX).Mu, 1E-2);
+            Assert.AreEqual(15.47272, ((Normal)copula.MarginalDistributionX).Sigma, 1E-2);
+            // Marginal-Y
+            Assert.AreEqual(79.50469, ((Normal)copula.MarginalDistributionY).Mu, 1E-2);
+            Assert.AreEqual(25.11105, ((Normal)copula.MarginalDistributionY).Sigma, 1E-2);
+        }
+
+        /// <summary>
+        /// Test the tail dependence coefficients.
+        /// Joe copula: λ_U = 2 - 2^(1/θ), λ_L = 0.
+        /// </summary>
+        [TestMethod]
+        public void Test_TailDependence()
+        {
+            // θ = 2: λ_U = 2 - 2^(1/2) ≈ 0.58579
+            var copula = new JoeCopula(2.0);
+            Assert.AreEqual(0.0, copula.LowerTailDependence, 1E-10, "Joe copula should have no lower tail dependence.");
+            Assert.AreEqual(2.0 - Math.Pow(2.0, 0.5), copula.UpperTailDependence, 1E-6, "λ_U should equal 2 - 2^(1/θ) for θ=2.");
+
+            // θ = 4: λ_U = 2 - 2^(1/4) ≈ 0.81079
+            var copula4 = new JoeCopula(4.0);
+            Assert.AreEqual(2.0 - Math.Pow(2.0, 0.25), copula4.UpperTailDependence, 1E-6, "λ_U should equal 2 - 2^(1/θ) for θ=4.");
+
+            // θ = 1 (independence): λ_U = 2 - 2 = 0
+            var copulaIndep = new JoeCopula(1.0);
+            Assert.AreEqual(0.0, copulaIndep.UpperTailDependence, 1E-10, "λ_U should be 0 for θ=1 (independence).");
+
+            // θ → ∞: λ_U → 1
+            var copulaLarge = new JoeCopula(100.0);
+            Assert.IsGreaterThan(0.99, copulaLarge.UpperTailDependence, "λ_U should approach 1 for large θ.");
+        }
+
+        /// <summary>
+        /// Test that ParametersValid tracks the dependency parameter's valid range.
+        /// ValidateParameter returns null for a valid dependence parameter and a non-null
+        /// exception otherwise, so ParametersValid follows the parameter.
+        /// </summary>
+        [TestMethod]
+        public void Test_ParametersValid()
+        {
+            var copula = new JoeCopula(2.0);
+            Assert.IsTrue(copula.ParametersValid);
+
+            copula.Theta = 0.5; // below the minimum of 1
+            Assert.IsFalse(copula.ParametersValid);
+
+            copula.Theta = 3.0;
+            Assert.IsTrue(copula.ParametersValid);
+        }
+
+        /// <summary>
+        /// Test Clone produces an independent copy with deep-copied marginals.
+        /// </summary>
+        [TestMethod]
+        public void Test_Clone()
+        {
+            var copula = new JoeCopula(2.0, new Normal(100, 10), new Gumbel(50, 5));
+            var clone = copula.Clone() as JoeCopula;
+            Assert.IsNotNull(clone);
+            Assert.AreEqual(copula.Theta, clone.Theta);
+            Assert.IsTrue(clone.ParametersValid);
+
+            // Marginals are deep-copied (distributions memoize lazily, so clones must
+            // not share marginal instances), with identical quantiles
+            Assert.AreNotSame(copula.MarginalDistributionX, clone.MarginalDistributionX);
+            Assert.AreNotSame(copula.MarginalDistributionY, clone.MarginalDistributionY);
+            Assert.AreEqual(copula.MarginalDistributionY.InverseCDF(0.9), clone.MarginalDistributionY.InverseCDF(0.9));
+
+            // Mutating the clone should not affect the original
+            clone.Theta = 3.0;
+            Assert.AreEqual(2.0, copula.Theta);
+        }
+
+        /// <summary>
+        /// Test the forward conditional CDF (h-function), h(v|u) = ∂C(u,v)/∂u.
+        /// Reference values were computed with the Python package pyvinecopulib 0.7.6
+        /// (Bicop.hfunc1, family joe), cross-checked at generation against a 50-digit
+        /// numerical ∂C/∂u of the Joe CDF computed with mpmath 1.4.1 (agreement ≤ 1E-15).
+        /// The analytic conditional is also cross-checked against a central finite difference
+        /// of the closed-form CDF (ε = 1E-6; noise floor ~1E-9, so 1E-7 is asserted) and
+        /// pinned at the exact upper edge h(1|u) = 1.
+        /// </summary>
+        [TestMethod]
+        public void Test_ConditionalCDF()
+        {
+            var copula = new JoeCopula(2.5);
+            Assert.AreEqual(0.9123991248836704, copula.ConditionalCDF(0.3, 0.7), 1E-10);
+            Assert.AreEqual(0.1588740110264739, copula.ConditionalCDF(0.7, 0.3), 1E-10);
+            Assert.AreEqual(0.9965790386549064, copula.ConditionalCDF(0.05, 0.9), 1E-10);
+            Assert.AreEqual(0.004109173736105264, copula.ConditionalCDF(0.9, 0.05), 1E-10);
+
+            foreach (double theta in new[] { 1.5, 2.5 })
+            {
+                var c = new JoeCopula(theta);
+                foreach (double u in new[] { 0.1, 0.3, 0.5, 0.7, 0.9 })
+                {
+                    foreach (double v in new[] { 0.1, 0.5, 0.9 })
+                    {
+                        double fd = (c.CDF(u + 1E-6, v) - c.CDF(u - 1E-6, v)) / 2E-6;
+                        Assert.AreEqual(fd, c.ConditionalCDF(u, v), 1E-7);
+                    }
+                    Assert.AreEqual(1d, c.ConditionalCDF(u, 1d), 1E-12);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Test the scalar inverse conditional CDF. Reference values were computed with the
+        /// Python package pyvinecopulib 0.7.6 (Bicop.hinv1, family joe). The Joe inverse is a
+        /// Brent solve with tolerance 1E-8, so 1E-6 absolute deltas are asserted for the
+        /// reference pins and for the round trip h(InverseConditionalCDF(u, t) | u) = t.
+        /// InverseCDF(u, t)[1] must recompose the scalar bit-for-bit.
+        /// </summary>
+        [TestMethod]
+        public void Test_InverseConditionalCDF()
+        {
+            var copula = new JoeCopula(2.5);
+            Assert.AreEqual(0.48484561599221265, copula.InverseConditionalCDF(0.3, 0.7), 1E-6);
+            Assert.AreEqual(0.40581706363375525, copula.InverseConditionalCDF(0.9, 0.05), 1E-6);
+
+            foreach (double theta in new[] { 1.5, 2.5 })
+            {
+                var c = new JoeCopula(theta);
+                foreach (double u in new[] { 0.1, 0.3, 0.5, 0.7, 0.9 })
+                {
+                    foreach (double t in new[] { 0.1, 0.5, 0.9 })
+                    {
+                        double v = c.InverseConditionalCDF(u, t);
+                        Assert.AreEqual(t, c.ConditionalCDF(u, v), 1E-6);
+                        Assert.AreEqual(v, c.InverseCDF(u, t)[1], 0d);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Test the inverse conditional at conditional probabilities within rounding distance
+        /// of the boundaries. In exact arithmetic h(1|u) = 1, but the floating-point objective
+        /// can round below 1, so a requested level of t = 1 − 1E-16 can exceed the attainable maximum of
+        /// the objective — rarely at moderate θ but for most of the unit interval at θ = 20; the solver
+        /// must still complete. The asserted contract is the
+        /// inverse relationship, not a particular value: every call returns a probability in
+        /// [0, 1] whose value is monotone in the conditional level. The contract is
+        /// deliberately not a round trip through <see cref="BivariateCopula.ConditionalCDF"/>:
+        /// the Archimedean families evaluate that through the generator ratio
+        /// φ′(u)/φ′(C(u,v)) rather than the closed form this inverse solves, and its precision
+        /// degrades at v = 1 for large θ (the generator-ratio form returns about 0.52 at θ = 20, u = 0.846,
+        /// where the exact value is 1 — a property of that formula, not of this inverse).
+        /// Interior levels are pinned against reference values above.
+        /// </summary>
+        [TestMethod]
+        public void Test_InverseConditionalCDF_BoundaryConditionals()
+        {
+            foreach (double theta in new[] { 1.2, 1.5, 2.5, 10d, 20d })
+            {
+                var copula = new JoeCopula(theta);
+                for (int i = 1; i < 2000; i++)
+                {
+                    double u = i / 2000d;
+                    double top = copula.InverseConditionalCDF(u, 1d - 1E-16);
+                    Assert.IsTrue(top >= 0d && top <= 1d,
+                        $"Top-edge inverse left [0, 1] at θ = {theta}, u = {u}: {top}.");
+                    Assert.IsGreaterThanOrEqualTo(copula.InverseConditionalCDF(u, 0.999), top,
+                        $"The top-edge inverse must not fall below an interior level at θ = {theta}, u = {u}.");
+                    double bottom = copula.InverseConditionalCDF(u, 1E-16);
+                    Assert.IsTrue(bottom >= 0d && bottom <= 1d,
+                        $"Bottom-edge inverse left [0, 1] at θ = {theta}, u = {u}: {bottom}.");
+                    Assert.IsLessThanOrEqualTo(copula.InverseConditionalCDF(u, 0.001), bottom,
+                        $"The bottom-edge inverse must not exceed an interior level at θ = {theta}, u = {u}.");
+                }
+            }
+        }
+
+        /// <summary>
+        /// The length of the rank fixtures used by the method of moments tests.
+        /// </summary>
+        private const int RankFixtureLength = 101;
+
+        /// <summary>
+        /// The number of pairs in a rank fixture, which is the denominator of Kendall's tau without ties.
+        /// </summary>
+        private const double RankFixturePairs = RankFixtureLength * (RankFixtureLength - 1) / 2d;
+
+        /// <summary>
+        /// Returns a permutation of 0 to n - 1 carrying exactly the requested number of inversions.
+        /// </summary>
+        /// <param name="n">The length of the permutation.</param>
+        /// <param name="inversions">The number of inverted pairs, between 0 and n * (n - 1) / 2.</param>
+        /// <returns>The permutation, as a double array.</returns>
+        /// <remarks>
+        /// Paired against the ascending sequence 0 to n - 1, a permutation carrying d inversions has exactly d
+        /// discordant pairs and no ties, so Kendall's tau of the pair is exactly 1 - 2 d / (n (n - 1) / 2). This
+        /// gives a fixture whose tau is a chosen rational value, which is what lets the method of moments fit be
+        /// exercised at a prescribed dependence. The permutation is built from its Lehmer code, taking as many
+        /// inversions as the remaining positions allow at each step.
+        /// </remarks>
+        private static double[] PermutationWithInversions(int n, int inversions)
+        {
+            var available = new List<int>();
+            for (int i = 0; i < n; i++) available.Add(i);
+
+            var result = new double[n];
+            int remaining = inversions;
+            for (int i = 0; i < n; i++)
+            {
+                int take = Math.Min(remaining, n - 1 - i);
+                result[i] = available[take];
+                available.RemoveAt(take);
+                remaining -= take;
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// Returns the ascending sequence 0 to n - 1.
+        /// </summary>
+        /// <param name="n">The length of the sequence.</param>
+        /// <returns>The ascending sequence, as a double array.</returns>
+        private static double[] AscendingRanks(int n)
+        {
+            var result = new double[n];
+            for (int i = 0; i < n; i++) result[i] = i;
+            return result;
+        }
+
+        /// <summary>
+        /// Test Kendall's tau as a function of theta against an external oracle.
+        /// </summary>
+        /// <remarks>
+        /// The reference values are from pyvinecopulib 0.7.6, the Python bindings of vinecopulib, which is the
+        /// C++ engine behind the R package rvinecopulib. They are an independent implementation of the Joe tau
+        /// relation and are not derived from the series evaluated here. vinecopulib rejects a Joe theta above 30
+        /// and returns nan at exactly theta = 2, so the table stops at 30 and skips 2.
+        /// </remarks>
+        [TestMethod]
+        public void Test_KendallsTauFromTheta()
+        {
+            Assert.AreEqual(0.0, JoeCopula.KendallsTauFromTheta(1.0), 1E-12);
+            Assert.AreEqual(0.21927246047709437, JoeCopula.KendallsTauFromTheta(1.5), 1E-12);
+            Assert.AreEqual(0.5179624982298885, JoeCopula.KendallsTauFromTheta(3.0), 1E-12);
+            Assert.AreEqual(0.677220746877611, JoeCopula.KendallsTauFromTheta(5.0), 1E-12);
+            Assert.AreEqual(0.8220439420773361, JoeCopula.KendallsTauFromTheta(10.0), 1E-12);
+            Assert.AreEqual(0.9059400804989396, JoeCopula.KendallsTauFromTheta(20.0), 1E-12);
+            Assert.AreEqual(0.9360443756097613, JoeCopula.KendallsTauFromTheta(30.0), 1E-12);
+        }
+
+        /// <summary>
+        /// Estimate using the method of moments.
+        /// </summary>
+        [TestMethod]
+        public void Test_MOM_Fit()
+        {
+            var copula = new JoeCopula();
+            copula.SetThetaFromTau(data1, data2);
+            Assert.AreEqual(2.6052516, copula.Theta, 1E-4);
+        }
+
+        /// <summary>
+        /// Test that the method of moments fit recovers the theta implied by the sample tau.
+        /// </summary>
+        /// <remarks>
+        /// Each fixture has a Kendall's tau that is an exact rational, so the fitted theta must reproduce that
+        /// tau when it is pushed back through the tau relation. The tolerance reflects the root-finding
+        /// tolerance of Brent's method, not the accuracy of the tau relation.
+        /// </remarks>
+        [TestMethod]
+        public void Test_SetThetaFromTau_RoundTrip()
+        {
+            var ranks = AscendingRanks(RankFixtureLength);
+            foreach (int inversions in new[] { 100, 400, 900, 1600, 2400 })
+            {
+                var permuted = PermutationWithInversions(RankFixtureLength, inversions);
+                double expected = 1d - 2d * inversions / RankFixturePairs;
+                Assert.AreEqual(expected, Correlation.KendallsTau(ranks, permuted), 1E-12, $"The fixture with {inversions} inversions must carry the expected tau.");
+
+                var copula = new JoeCopula();
+                copula.SetThetaFromTau(ranks, permuted);
+                Assert.IsGreaterThanOrEqualTo(1d, copula.Theta);
+                Assert.IsLessThanOrEqualTo(100d, copula.Theta);
+                Assert.AreEqual(expected, JoeCopula.KendallsTauFromTheta(copula.Theta), 1E-7, $"The fit with {inversions} inversions did not recover the sample tau.");
+            }
+        }
+
+        /// <summary>
+        /// Test that a tau the fitting bracket cannot reach is rejected.
+        /// </summary>
+        [TestMethod]
+        public void Test_SetThetaFromTau_UnattainableTau()
+        {
+            var ranks = AscendingRanks(RankFixtureLength);
+            var copula = new JoeCopula();
+
+            // Perfect concordance gives tau = 1, above the largest tau the bracket theta in [1, 100] reaches.
+            var concordant = PermutationWithInversions(RankFixtureLength, 0);
+            var tooStrong = Assert.ThrowsExactly<ArgumentException>(() => copula.SetThetaFromTau(ranks, concordant));
+            StringAssert.Contains(tooStrong.Message, "~= [0, 0.98025]");
+
+            // Perfect discordance gives tau = -1, and the Joe copula models positive dependence only.
+            var discordant = PermutationWithInversions(RankFixtureLength, (int)RankFixturePairs);
+            var negative = Assert.ThrowsExactly<ArgumentException>(() => copula.SetThetaFromTau(ranks, discordant));
+            StringAssert.Contains(negative.Message, "~= [0, 0.98025]");
+        }
+
+        /// <summary>
+        /// Test that an independent sample is fitted at the independence limit theta = 1.
+        /// </summary>
+        [TestMethod]
+        public void Test_SetThetaFromTau_Independence()
+        {
+            var ranks = AscendingRanks(RankFixtureLength);
+            var permuted = PermutationWithInversions(RankFixtureLength, (int)RankFixturePairs / 2);
+            Assert.AreEqual(0d, Correlation.KendallsTau(ranks, permuted), 0d, "Half of the pairs discordant gives a tau of exactly zero.");
+
+            var copula = new JoeCopula();
+            copula.SetThetaFromTau(ranks, permuted);
+            Assert.AreEqual(1d, copula.Theta, 0d);
+            Assert.AreEqual(0d, JoeCopula.KendallsTauFromTheta(copula.Theta), 1E-12);
+        }
+
+    }
+}
