@@ -1,0 +1,28 @@
+<Project>
+
+  <!--
+    Upstream overlay (docs/migration-plan.md §4.1).
+
+    A ported project sets UpstreamProjectDir to the upstream project it ports. Every upstream C# file
+    then compiles as it is, unless this project has a ported copy at the same relative path. So a
+    ported project contains only the files that had to change, and each can be compared with its
+    upstream original.
+
+    - XAML and its code-behind are always ported (as .axaml and .axaml.cs), so upstream *.xaml.cs
+      files are never compiled.
+    - UpstreamCompileRemove lists upstream files left out on purpose, with the reason as metadata,
+      e.g. <UpstreamCompileRemove Include="Properties/AssemblyInfo.cs" Reason="WPF ThemeInfo" />.
+
+    Projects under upstream/ never see this file (upstream/Directory.Build.targets is empty).
+  -->
+  <ItemGroup Condition="'$(UpstreamProjectDir)' != ''">
+    <_PortedCompile Include="**/*.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
+    <_UpstreamCompile Include="$(UpstreamProjectDir)**/*.cs"
+                      Exclude="$(UpstreamProjectDir)bin/**;$(UpstreamProjectDir)obj/**;$(UpstreamProjectDir)**/*.xaml.cs" />
+    <_UpstreamCompile Remove="@(_PortedCompile->'$(UpstreamProjectDir)%(RecursiveDir)%(Filename)%(Extension)')" />
+    <_UpstreamCompile Remove="@(UpstreamCompileRemove->'$(UpstreamProjectDir)%(Identity)')" />
+    <Compile Include="@(_UpstreamCompile)"
+             Link="upstream/$([MSBuild]::MakeRelative('$(UpstreamProjectDir)', '%(FullPath)'))" />
+  </ItemGroup>
+
+</Project>

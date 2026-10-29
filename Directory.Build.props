@@ -9,8 +9,18 @@
   <PropertyGroup>
     <RepositoryRoot>$(MSBuildThisFileDirectory)</RepositoryRoot>
     <UpstreamRoot>$(RepositoryRoot)upstream/</UpstreamRoot>
+    <UpstreamFrameworkSrc>$(UpstreamRoot)WPF-Framework/src/</UpstreamFrameworkSrc>
+    <UpstreamBestFitSrc>$(UpstreamRoot)RMC-BestFit/src/</UpstreamBestFitSrc>
     <LangVersion>latest</LangVersion>
     <Deterministic>true</Deterministic>
+  </PropertyGroup>
+
+  <!--
+    Avalonia settings for the ported UI. Upstream XAML relies on reflection bindings, so Avalonia 12's
+    compiled-bindings default stays off until x:DataType is added (docs/migration-plan.md §5.1).
+  -->
+  <PropertyGroup>
+    <AvaloniaUseCompiledBindingsByDefault>false</AvaloniaUseCompiledBindingsByDefault>
   </PropertyGroup>
 
   <!--

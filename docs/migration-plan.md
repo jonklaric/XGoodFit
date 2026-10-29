@@ -434,8 +434,9 @@ Sizes are relative, for one developer with AI-assisted porting: S ≈ ≤2 wk, M
 - **Upstream's OxyPlot tests can't run outside Windows.** The test assembly requires an STA thread, and elsewhere NUnit silently runs nothing.
   - `scripts/run-upstream-tests.sh` skips that suite outside Windows, and fails any suite that runs zero tests.
   - A cross-platform wrapper for those tests belongs to Spike C.
-- **Two upstream tests are excluded.**
+- **Three upstream model tests are excluded.**
   - `RunAsync_MultipleAnalyses_Parallel` asserts a 250 ms wall-clock limit, so it fails intermittently on both OSes. It measures speed, not results.
+  - `XYOrdinatesChange_EstimatedAnalysis_PreservesMcmcResults` races with itself, so it failed once on a Windows CI runner. Setting `XYOrdinates` starts a fire-and-forget reprocess (`AnalysisBase.ReprocessIfEstimated`), while the test calls `CreateFrequencyAnalysisResultsAsync` directly; a failed background run clears `IsEstimated`. Worth reporting upstream: the same pattern could reach the app if anything else rebuilds results while a reprocess is in flight.
   - `Documentation_LocalLinksResolve` checks links into folders that are deliberately not vendored.
 - **The upstream default connection uses WAL journal mode.** It converts any non-WAL database when opened and creates `-wal`/`-shm` side files. Tools such as the probe therefore read temporary copies, and the file-compatibility suite must do the same.
 - **HEC-DSS usage is read-only.** BestFit reads DSS files only: open, catalogue paths, read time series. It goes through HEC's `Hec.Dss` wrapper (2.0.3, net9.0, 31 native calls), plus one direct call, `hec_dss_tsGetDateTimeRange`, which is present in the current C library.
@@ -467,6 +468,17 @@ Sizes are relative, for one developer with AI-assisted porting: S ≈ ≤2 wk, M
 - `Themes`: palettes, `ThemeService`/`ThemeManager` API and theme persistence; embedded fonts and global WPF-equivalent defaults.
 
 **Exit:** a theme-switching demo window with parity screenshots of the palettes.
+
+**Progress (2026-10-30)**
+
+| Item | Status |
+|---|---|
+| Build layout: ported projects in `src/` overlay their upstream project. Upstream C# compiles unchanged unless a ported copy exists at the same relative path (`Directory.Build.targets`); XAML and code-behind are always ported | ✅ |
+| Avalonia 12.1.4, with compiled bindings off by default (§5.1) | ✅ |
+| `Themes`: Light/Blue/Dark palettes generated from upstream (`scripts/port-palettes.sh`); `ThemeService`, `ThemeResourceHelper`, `ThemeChangedEventArgs` and the 3 converters ported; shared resources in `Merged.axaml` | ✅ Control themes follow in Phase 3 |
+| `FrameworkInterfaces`: 23 files compile unchanged from upstream; 6 ported, changing only their `using` lines, plus no `Freeze()` for the Messenger's brushes. A project alias keeps WPF's `ImageSource` name for Avalonia's `IImage` | ✅ |
+| `Themes.Tests` (headless, MSTest): every palette key matches upstream in all 3 themes; theme switching updates open windows | ✅ 8/8 on Windows |
+| Fonts and WPF-equivalent defaults (Segoe UI 12; Selawik where Segoe UI isn't installed), theme gallery, `WpfCompat` | Next |
 
 ### Phase 2: Walking-skeleton shell (`FrameworkUI`) (L)
 - `MainWindow` with menus, a toolbar with undo/redo history drop-downs, key bindings, recent files, auto-backup and file compaction.

@@ -1,15 +1,21 @@
 <Project>
 
   <!--
-    Central package versions for XGoodFit's own projects. Versions are added as each
-    dependency is adopted; the Phase 0 spikes decide go/no-go (docs/migration-plan.md §4.2).
-    Projects under upstream/ use their own Directory.Packages.props.
+    Central package versions for XGoodFit's own projects (docs/migration-plan.md §4.2).
+    Vendored upstream projects under upstream/ use their own Directory.Packages.props.
   -->
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <AvaloniaVersion>12.1.4</AvaloniaVersion>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageVersion Include="Avalonia" Version="$(AvaloniaVersion)" />
+    <PackageVersion Include="Avalonia.Desktop" Version="$(AvaloniaVersion)" />
+    <PackageVersion Include="Avalonia.HarfBuzz" Version="$(AvaloniaVersion)" />
+    <PackageVersion Include="Avalonia.Headless" Version="$(AvaloniaVersion)" />
+    <PackageVersion Include="Avalonia.Skia" Version="$(AvaloniaVersion)" />
+    <PackageVersion Include="Avalonia.Themes.Simple" Version="$(AvaloniaVersion)" />
   </ItemGroup>
 
 </Project>

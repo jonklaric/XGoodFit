@@ -41,6 +41,10 @@ jobs:
       - name: Build from a fresh checkout
         run: dotnet build XGoodFit.slnx -c Release
 
+      # The ported UI's own tests, run headlessly.
+      - name: XGoodFit tests
+        run: dotnet test XGoodFit.slnx -c Release --no-build
+
       # Exclusions and per-OS limits are documented in the script.
       - name: Upstream portable test suites
         shell: bash

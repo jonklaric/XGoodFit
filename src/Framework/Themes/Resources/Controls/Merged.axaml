@@ -1,0 +1,71 @@
+<!-- Ported from upstream/WPF-Framework/src/Themes/Resources/Controls/Merged.xaml. -->
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!--
+    Merged Control Templates
+
+    This resource dictionary merges all control template definitions.
+    Control templates use DynamicResource bindings to color keys,
+    making them theme-agnostic. Colors are defined separately in
+    the Colors folder and swapped at runtime.
+
+    Based on Visual Studio 2013 styling from the Gemini project:
+    https://github.com/tgjones/gemini
+    -->
+
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+    <!-- SHARED RESOURCES                                                             -->
+    <!-- These resources are used by multiple control templates                       -->
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+
+    <!--
+    Focus Visual Style for keyboard navigation.
+    XGoodFit port: WPF's FocusVisualStyle becomes an Avalonia focus adorner template.
+    -->
+    <FocusAdornerTemplate x:Key="GeminiFocusVisual">
+        <Rectangle Margin="2"
+                   StrokeDashArray="1,2"
+                   Stroke="{DynamicResource FocusStyle.Brush}"
+                   StrokeThickness="1"/>
+    </FocusAdornerTemplate>
+
+    <!--
+    Standard drop shadow effect for popups and menus.
+    XGoodFit port: WPF casts this shadow ShadowDepth="3" at Direction="305", measured anticlockwise
+    from the right, so down and to the right. Avalonia's DropShadowDirectionEffect measures the angle
+    the other way, so the WPF offsets are given directly: 3 cos 305° = 1.7207 right and
+    -3 sin 305° = 2.4575 down. BlurRadius is WPF's default.
+    -->
+    <DropShadowEffect x:Key="StandardDropShadow"
+                      OffsetX="1.7207"
+                      OffsetY="2.4575"
+                      BlurRadius="5"
+                      Opacity="0.6"/>
+
+    <!-- Disabled menu item foreground brush -->
+    <SolidColorBrush x:Key="DisabledMenuItemBrush" Color="#FF9A9A9A"/>
+
+    <!--
+    Transparent RepeatButton for Slider and ScrollBar Track areas.
+    XGoodFit port: a ControlTheme is complete on its own, as OverridesDefaultStyle="true" made the
+    WPF style.
+    -->
+    <ControlTheme x:Key="RepeatButtonTransparent" TargetType="RepeatButton">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Focusable" Value="False"/>
+        <Setter Property="IsTabStop" Value="False"/>
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Rectangle Fill="{TemplateBinding Background}" Height="{TemplateBinding Height}" Width="{TemplateBinding Width}"/>
+            </ControlTemplate>
+        </Setter>
+    </ControlTheme>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+    <!-- CONTROL TEMPLATES                                                            -->
+    <!-- Ported control themes are merged here as they land, in upstream's order      -->
+    <!-- (docs/migration-plan.md §6, Phase 3).                                        -->
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+
+</ResourceDictionary>

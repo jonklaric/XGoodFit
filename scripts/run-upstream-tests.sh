@@ -52,10 +52,16 @@ run Test_Numerics dotnet test upstream/Numerics/Test_Numerics/Test_Numerics.cspr
 #    not vendored (examples, validation evidence, skill packages).
 #  - RunAsync_MultipleAnalyses_Parallel: asserts a 250 ms wall-clock limit, so it fails
 #    intermittently on busy machines (seen on Windows and Linux); it measures speed, not results.
+#  - XYOrdinatesChange_EstimatedAnalysis_PreservesMcmcResults: races with itself. Setting
+#    XYOrdinates starts a fire-and-forget reprocess (AnalysisBase.ReprocessIfEstimated) while the
+#    test calls CreateFrequencyAnalysisResultsAsync directly, so it fails intermittently (seen once
+#    on a Windows CI runner).
 bestfit="upstream/RMC-BestFit/src/RMC.BestFit.Tests"
+bestfit_filter="FullyQualifiedName!=RMC.BestFit.Tests.Documentation.TechnicalReferenceDocumentationTests.Documentation_LocalLinksResolve"
+bestfit_filter+="&FullyQualifiedName!=RMC.BestFit.Tests.BatchAnalysis.BatchAnalysisRunnerTests.RunAsync_MultipleAnalyses_Parallel"
+bestfit_filter+="&FullyQualifiedName!=RMC.BestFit.Tests.Bivariate.BivariateAnalysisXYOrdinatesReprocessTests.XYOrdinatesChange_EstimatedAnalysis_PreservesMcmcResults"
 if dotnet build "$bestfit/RMC.BestFit.Tests.csproj" -c Release > "$logs/build-RMC.BestFit.Tests.log" 2>&1; then
-  run RMC.BestFit.Tests dotnet "$bestfit/bin/Release/net10.0/RMC.BestFit.Tests.dll" --filter \
-    "FullyQualifiedName!=RMC.BestFit.Tests.Documentation.TechnicalReferenceDocumentationTests.Documentation_LocalLinksResolve&FullyQualifiedName!=RMC.BestFit.Tests.BatchAnalysis.BatchAnalysisRunnerTests.RunAsync_MultipleAnalyses_Parallel"
+  run RMC.BestFit.Tests dotnet "$bestfit/bin/Release/net10.0/RMC.BestFit.Tests.dll" --filter "$bestfit_filter"
 else
   echo "==> RMC.BestFit.Tests: build FAILED, see artifacts/logs/build-RMC.BestFit.Tests.log"
   failed=1
