@@ -181,6 +181,9 @@ namespace Themes
                         "Ensure this method is called after the Application object has been created.");
                 }
 
+                // XGoodFit port: give every window WPF's default font (Resources/Defaults.axaml).
+                app.Styles.Add((IStyle)AvaloniaXamlLoader.Load(new Uri(ThemeResourceHelper.DefaultsUri, UriKind.Absolute)));
+
                 // Load control templates (done once, never changes)
                 _controlTemplatesDictionary = LoadDictionary(ThemeResourceHelper.ControlTemplatesUri);
                 app.Resources.MergedDictionaries.Add(_controlTemplatesDictionary);

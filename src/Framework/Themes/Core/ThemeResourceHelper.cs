@@ -38,6 +38,15 @@ namespace Themes
             "avares://Themes/Resources/Controls/Merged.axaml";
 
         /// <summary>
+        /// The resource URI for the styles that give every window WPF's default font.
+        /// </summary>
+        /// <remarks>
+        /// XGoodFit addition: WPF takes these defaults from the system; Avalonia needs them as styles.
+        /// </remarks>
+        public const string DefaultsUri =
+            "avares://Themes/Resources/Defaults.axaml";
+
+        /// <summary>
         /// The resource URI for the Light theme color dictionary.
         /// </summary>
         public const string LightColorsUri =

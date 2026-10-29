@@ -1,0 +1,68 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="ThemeGallery.GalleryWindow"
+        Title="XGoodFit theme gallery"
+        Width="1280" Height="900"
+        Background="{DynamicResource EnvironmentWindowBackground}"
+        Foreground="{DynamicResource EnvironmentWindowText}">
+    <DockPanel Margin="10">
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="12" Margin="0,0,0,10">
+            <TextBlock Text="Theme:" VerticalAlignment="Center" FontWeight="Bold"/>
+            <RadioButton x:Name="LightTheme" Content="Light" GroupName="Theme" IsChecked="True" IsCheckedChanged="OnThemeChecked"/>
+            <RadioButton x:Name="BlueTheme" Content="Blue" GroupName="Theme" IsCheckedChanged="OnThemeChecked"/>
+            <RadioButton x:Name="DarkTheme" Content="Dark" GroupName="Theme" IsCheckedChanged="OnThemeChecked"/>
+            <TextBlock x:Name="Summary" VerticalAlignment="Center" Opacity="0.7"/>
+        </StackPanel>
+
+        <Grid ColumnDefinitions="*,12,330">
+            <!-- Every palette key, as a live swatch. -->
+            <ScrollViewer Grid.Column="0">
+                <ItemsControl x:Name="Groups"/>
+            </ScrollViewer>
+
+            <!-- Standard controls. They keep Avalonia's Simple theme until their ported themes land (Phase 3). -->
+            <StackPanel Grid.Column="2" Spacing="8">
+                <TextBlock Text="Controls" FontWeight="Bold"/>
+                <TextBlock Text="The quick brown fox jumps over the lazy dog. 0123456789"/>
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <Button Content="Button"/>
+                    <Button Content="Disabled" IsEnabled="False"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Spacing="10">
+                    <CheckBox Content="Checked" IsChecked="True"/>
+                    <CheckBox Content="Unchecked"/>
+                    <CheckBox Content="Mixed" IsThreeState="True" IsChecked="{x:Null}"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Spacing="10">
+                    <RadioButton Content="Option A" GroupName="Sample" IsChecked="True"/>
+                    <RadioButton Content="Option B" GroupName="Sample"/>
+                </StackPanel>
+                <TextBox Text="Text box"/>
+                <ComboBox SelectedIndex="0" HorizontalAlignment="Stretch">
+                    <ComboBoxItem Content="Log-Pearson Type III"/>
+                    <ComboBoxItem Content="Generalized Extreme Value"/>
+                </ComboBox>
+                <ListBox Height="72" SelectedIndex="1">
+                    <ListBoxItem Content="Time Series Data"/>
+                    <ListBoxItem Content="Input Data"/>
+                    <ListBoxItem Content="Distribution Fitting"/>
+                </ListBox>
+                <Slider Minimum="0" Maximum="100" Value="40"/>
+                <ProgressBar Minimum="0" Maximum="100" Value="65" Height="14"/>
+                <Expander Header="Expander" IsExpanded="True">
+                    <TextBlock Text="Expanded content"/>
+                </Expander>
+                <TabControl Height="80">
+                    <TabItem Header="Plot"><TextBlock Text="First tab"/></TabItem>
+                    <TabItem Header="Table"><TextBlock Text="Second tab"/></TabItem>
+                </TabControl>
+                <TreeView Height="80">
+                    <TreeViewItem Header="Project" IsExpanded="True">
+                        <TreeViewItem Header="Time Series Data"/>
+                        <TreeViewItem Header="Analyses"/>
+                    </TreeViewItem>
+                </TreeView>
+            </StackPanel>
+        </Grid>
+    </DockPanel>
+</Window>

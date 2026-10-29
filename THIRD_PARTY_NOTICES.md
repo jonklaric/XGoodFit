@@ -16,3 +16,5 @@ added as dependencies are adopted.
 | [Hec.Dss .NET wrapper](https://github.com/HydrologicEngineeringCenter/hec-dss-dotnet) (USACE Hydrologic Engineering Center) | .NET API over the HEC-DSS library, built from source. Vendored in `upstream/hec-dss-dotnet` | No licence file in the repository; treated as MIT, like HEC-DSS, pending confirmation from HEC |
 | [zlib](https://github.com/madler/zlib) | Compression inside the HEC-DSS library. Vendored in `upstream/zlib` | [zlib](upstream/zlib/LICENSE) |
 | [System.Data.SQLite](https://system.data.sqlite.org) and [SourceGear.sqlite3](https://github.com/ericsink/SQLitePCL.raw) | Reading and writing `.bestfit` project files (NuGet) | Public domain |
+| [Avalonia](https://github.com/AvaloniaUI/Avalonia) | The cross-platform UI framework (NuGet) | MIT |
+| [Selawik](https://github.com/microsoft/Selawik) (Microsoft) | Substitute for Segoe UI where it isn't installed (macOS, Linux). Vendored in `upstream/Selawik` and embedded in the app | [OFL-1.1](upstream/Selawik/LICENSE.txt) |

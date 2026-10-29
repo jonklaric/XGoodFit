@@ -18,6 +18,14 @@ can be vendored again and its changes ported one by one ([migration plan §10](.
 | [`hec-dss-dotnet`](hec-dss-dotnet) | [HydrologicEngineeringCenter/hec-dss-dotnet](https://github.com/HydrologicEngineeringCenter/hec-dss-dotnet) | [`f8f576f`](https://github.com/HydrologicEngineeringCenter/hec-dss-dotnet/tree/f8f576ff98b524a4a6b5a2f17735adf5f144b9fd) | 2.0.3 | None stated. Treated as MIT, like HEC-DSS, pending confirmation from HEC | `dotnet/Hec.Dss`, `dotnet/DotNetTests` and the root files |
 | [`zlib`](zlib) | [madler/zlib](https://github.com/madler/zlib) | [`51b7f2a`](https://github.com/madler/zlib/tree/v1.3.1) (tag `v1.3.1`) | 1.3.1 | [zlib](zlib/LICENSE) | Everything except the optional `contrib` extras |
 
+Some files are published only as release downloads, not in git. `scripts/vendor-assets.sh` vendors
+them from the downloads pinned in [`upstream-assets.lock`](../upstream-assets.lock), and checks each
+download's SHA-256 first:
+
+| Folder | Original project | Release | Licence | What was copied |
+|---|---|---|---|---|
+| [`Selawik`](Selawik) | [microsoft/Selawik](https://github.com/microsoft/Selawik) | [1.01](https://github.com/microsoft/Selawik/releases/tag/1.01) | [OFL-1.1](Selawik/LICENSE.txt) | The five TrueType fonts and the licence. Selawik is Microsoft's open-source, metric-compatible substitute for Segoe UI, used where Segoe UI isn't installed (macOS, Linux) |
+
 Each folder keeps its upstream licence file, and the USACE projects keep their `CITATION.cff`.
 Please cite the original projects when you use or describe this work:
 
@@ -54,4 +62,4 @@ Please cite the original projects when you use or describe this work:
 
 `Directory.Build.props`, `Directory.Build.targets`, `Directory.Packages.props` and `.editorconfig`
 are XGoodFit's, not upstream's. They contain no settings, so XGoodFit's own build and editor settings
-never reach upstream code. `.gitattributes` keeps one zlib file byte-identical.
+never reach upstream code. `.gitattributes` keeps one zlib file and the Selawik files byte-identical.

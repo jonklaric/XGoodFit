@@ -19,4 +19,9 @@
     <PackageReference Include="Avalonia" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- Selawik, the substitute for Segoe UI where it isn't installed (Resources/Defaults.axaml). -->
+    <AvaloniaResource Include="$(UpstreamRoot)Selawik/*.ttf" Link="Assets/Fonts/%(Filename)%(Extension)" />
+  </ItemGroup>
+
 </Project>

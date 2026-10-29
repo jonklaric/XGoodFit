@@ -477,8 +477,10 @@ Sizes are relative, for one developer with AI-assisted porting: S ≈ ≤2 wk, M
 | Avalonia 12.1.4, with compiled bindings off by default (§5.1) | ✅ |
 | `Themes`: Light/Blue/Dark palettes generated from upstream (`scripts/port-palettes.sh`); `ThemeService`, `ThemeResourceHelper`, `ThemeChangedEventArgs` and the 3 converters ported; shared resources in `Merged.axaml` | ✅ Control themes follow in Phase 3 |
 | `FrameworkInterfaces`: 23 files compile unchanged from upstream; 6 ported, changing only their `using` lines, plus no `Freeze()` for the Messenger's brushes. A project alias keeps WPF's `ImageSource` name for Avalonia's `IImage` | ✅ |
-| `Themes.Tests` (headless, MSTest): every palette key matches upstream in all 3 themes; theme switching updates open windows | ✅ 8/8 on Windows |
-| Fonts and WPF-equivalent defaults (Segoe UI 12; Selawik where Segoe UI isn't installed), theme gallery, `WpfCompat` | Next |
+| `Themes.Tests` (headless, MSTest): every palette key matches upstream in all 3 themes; theme switching updates open windows; WPF's default font | ✅ 10/10 on Windows |
+| WPF-equivalent defaults: every window gets Segoe UI at 12 DIP, falling back to the embedded Selawik where Segoe UI isn't installed. Selawik 1.01 is vendored from its release download (`upstream-assets.lock`, SHA-256-checked) | ✅ `ThemeService.Initialize` adds the styles (`Resources/Defaults.axaml`) |
+| Theme gallery (`tools/ThemeGallery`): all 322 palette keys as live swatches next to standard controls, with a theme switcher. `ThemeGallery capture <folder>` renders it in each theme headlessly | ✅ Phase 1 exit: the demo window switches Light/Blue/Dark |
+| `WpfCompat` shims | Next, as Phase 2–3 code needs them |
 
 ### Phase 2: Walking-skeleton shell (`FrameworkUI`) (L)
 - `MainWindow` with menus, a toolbar with undo/redo history drop-downs, key bindings, recent files, auto-backup and file compaction.
