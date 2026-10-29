@@ -42,7 +42,7 @@ example, after a pull that changed `upstream.lock`. Re-run `scripts/fetch-upstre
 To check that this machine gives the same results as the other platforms:
 
 ```bash
-# Also download the sample data: BestFit's example projects (455 MB) and HEC's DSS files (110 MB).
+# Also download the sample data (about 480 MB): BestFit's example projects and HEC's DSS files.
 scripts/fetch-upstream.sh --with-examples
 
 # Run upstream's portable test suites.
@@ -66,7 +66,9 @@ every build uses exactly the same sources.
 | RMC.Numerics and third-party libraries such as SQLite | Their own repositories | NuGet packages, restored by `dotnet build` |
 
 The fetched sources go into `upstream/`, which is git-ignored and never edited. Portable upstream
-code compiles unmodified. The Windows-only WPF code is ported into this repository file for file.
+code compiles unmodified. The one planned exception is the file of native declarations in HEC's
+.NET wrapper: it no longer matches the HEC-DSS library, so a corrected copy will live here. The
+Windows-only WPF code is ported into this repository file for file.
 
 ## Relationship to RMC-BestFit
 

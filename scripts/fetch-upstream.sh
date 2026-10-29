@@ -6,8 +6,8 @@
 #
 # Usage: scripts/fetch-upstream.sh [--with-examples]
 #   --with-examples  also fetch the optional sample data used by the file-compatibility,
-#                    parity and HEC-DSS suites: RMC-BestFit's ~455 MB of example projects
-#                    and HEC's ~110 MB of sample DSS files
+#                    parity and HEC-DSS suites (about 480 MB to download): RMC-BestFit's
+#                    example projects and HEC's sample DSS files
 set -euo pipefail
 
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
