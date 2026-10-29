@@ -396,14 +396,20 @@ Sizes are relative, for one developer with AI-assisted porting: S ≈ ≤2 wk, M
 | Item | Status |
 |---|---|
 | Repo scaffold: `upstream.lock` + `scripts/fetch-upstream.sh`, central props, `global.json`, `XGoodFit.slnx`, CI workflow, `scripts/run-upstream-tests.sh` | ✅ Pushed to `main` (`7f2bde4`) |
-| Portable layer on Windows x64 (en-AU), Linux x64 (Ubuntu 26.04 GNOME, en-US) and macOS arm64 (M4 Pro, macOS 26.6), plus GitHub-hosted CI on all three | ✅ Same results everywhere. RMC.BestFit model 3,546/3,546 · DatabaseManager 301/301 · ExpressionParser 240/240 · OxyPlot core 3,273 passed (Windows only, see below) |
+| Portable layer on Windows x64 (en-AU), Linux x64 (Ubuntu 26.04 GNOME, en-US) and macOS arm64 (M4 Pro, macOS 26.6), plus GitHub-hosted CI on all three | ✅ Same results everywhere. RMC.BestFit model 3,546/3,546 · DatabaseManager 301/301 · ExpressionParser 240/240 · OxyPlot core 3,276/3,276 runnable on en-US Windows (Windows only, see below) |
 | All 32 example `.bestfit` projects through the upstream SQLite stack (System.Data.SQLite 2.0.2, SQLite 3.50.4) | ✅ They open on all three OSes, and **all 146 tables read identically** on Windows x64, Linux x64 and macOS arm64 (`tools/ProjectProbe` fingerprints) |
-| HEC-DSS natives (D6) | Researched; approach below. Next up |
+| HEC-DSS natives (D6) | Researched; approach below. Next up, with an open licence question about HEC's .NET wrapper |
+| CI (GitHub-hosted Windows, macOS arm64, Linux) | ✅ Green, including a job that fails if any OS reads the example projects differently |
 | Spikes A–F, parity harness | Not started |
 
 **Findings so far**
 
 - **Chart axes follow the OS culture in the WPF app.** On an en-AU machine OxyPlot renders `1/01/2011`, while bound fields use en-US. The port keeps that split (§5.2).
+- **The same locale formats dates differently by OS.**
+  - .NET on Windows uses Windows' regional data: en-AU is `d/MM/yyyy`, so `2/01/2011`.
+  - On macOS and Linux it uses ICU data: en-AU is `d/M/yyyy`, so `2/1/2011`.
+  - .NET on macOS does pick up the system locale even when launched without `LANG`.
+  - So Windows output matches WPF exactly, and macOS/Linux follow their native conventions. Cross-OS screenshot comparisons must pin one culture.
 - **Upstream's OxyPlot tests can't run outside Windows.** The test assembly requires an STA thread, and elsewhere NUnit silently runs nothing.
   - `scripts/run-upstream-tests.sh` skips that suite outside Windows, and fails any suite that runs zero tests.
   - A cross-platform wrapper for those tests belongs to Spike C.
@@ -418,6 +424,9 @@ Sizes are relative, for one developer with AI-assisted porting: S ≈ ≤2 wk, M
     2. Build `hecdss` from source (CMake, C only) in CI for win-x64, linux-x64, osx-arm64 and osx-x64, bundling `libz` on macOS.
     3. Compile the wrapper's own sources in an XGoodFit project that packs those natives under `runtimes/<rid>/native`, without its Windows-only pre-build.
     4. Validate with the wrapper's tests and a sample DSS file on every OS.
+  - **Licensing:** the C library (`hec-dss`) is MIT, but the .NET wrapper repo (`hec-dss-dotnet`) has **no licence**: no file, no source headers, no GitHub licence metadata. Code by federal employees is generally public domain in the US, but some listed authors may be contractors.
+    - Options: ask HEC to add a licence; until then, build and test the wrapper from source without redistributing it.
+    - Fallback: implement the small read-only API slice BestFit uses (`DssReader`, catalogue, `DssPath`, `TimeSeries`) directly over the MIT C library, verified against the official wrapper on the same DSS files (R17).
 
 ### Phase 1: Foundation (M)
 - `WpfCompat` shims (§4.4), with unit tests.
@@ -601,6 +610,7 @@ USACE is actively developing BestFit (2.0.1 shipped recently).
 | R14 | `System.Data.SQLite` 2.0 untested upstream on macOS/Linux | L–M | H | Phase 0 validation; fallback `Microsoft.Data.Sqlite` inside `DatabaseManager` |
 | R15 | Unsigned Windows builds (free-only, D5) trigger SmartScreen warnings | H | L–M | Apply to the SignPath Foundation (free signing for OSS); otherwise document "More info → Run anyway" |
 | R16 | Name conflicts with a trademark, or users mistake the port for an official USACE release | L | M | Distinct name plus trademark search; disclaimer in the About box and README (§1.1) |
+| R17 | HEC's .NET wrapper (`hec-dss-dotnet`) has no licence, so it may not be safe to redistribute; DSS import is required at 1.0 (D6) | M | H | Ask HEC to add a licence; meanwhile test without redistributing; fallback: own read-only wrapper over the MIT C library, verified against the official one |
 
 ---
 
