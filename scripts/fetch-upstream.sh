@@ -5,8 +5,9 @@
 # downloaded. RMC-BestFit's full history is over 1 GB, mostly verification evidence.
 #
 # Usage: scripts/fetch-upstream.sh [--with-examples]
-#   --with-examples  also fetch each repo's optional paths (RMC-BestFit's ~455 MB of
-#                    example projects, used by the file-compatibility and parity suites)
+#   --with-examples  also fetch the optional sample data used by the file-compatibility,
+#                    parity and HEC-DSS suites: RMC-BestFit's ~455 MB of example projects
+#                    and HEC's ~110 MB of sample DSS files
 set -euo pipefail
 
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -19,11 +20,38 @@ for arg in "$@"; do
   esac
 done
 
+# 'git sparse-checkout set --cone' needs git 2.35 or later.
+read -r git_major git_minor <<< "$(git --version | sed -E 's/^git version ([0-9]+)\.([0-9]+).*/\1 \2/')"
+if (( git_major < 2 || (git_major == 2 && git_minor < 35) )); then
+  echo "fetch-upstream.sh needs git 2.35 or later; found $(git --version)." >&2
+  exit 1
+fi
+
 while IFS= read -r line || [[ -n "$line" ]]; do
   line="${line%$'\r'}"
   [[ -z "${line//[[:space:]]/}" || "$line" =~ ^[[:space:]]*# ]] && continue
   read -r name url commit paths optional <<< "$line"
   dest="$root/upstream/$name"
+
+  # Folders to check out; '*' means the whole tree and '-' means none.
+  whole=false
+  sparse=()
+  case "$paths" in
+    '*') whole=true ;;
+    '-') ;;
+    *) IFS=',' read -r -a sparse <<< "$paths" ;;
+  esac
+  if [[ "$with_optional" == true ]]; then
+    case "${optional:--}" in
+      '*') whole=true ;;
+      '-') ;;
+      *) IFS=',' read -r -a extra <<< "$optional"; sparse+=("${extra[@]}") ;;
+    esac
+  fi
+  if [[ "$whole" == false && ${#sparse[@]} -eq 0 ]]; then
+    echo "==> $name: optional, skipped (fetched with --with-examples)"
+    continue
+  fi
   echo "==> $name @ ${commit:0:7}"
 
   if [[ ! -d "$dest/.git" ]]; then
@@ -32,24 +60,18 @@ while IFS= read -r line || [[ -n "$line" ]]; do
   fi
   git -C "$dest" config core.longpaths true
 
-  sparse=()
-  if [[ "$paths" != "*" ]]; then
-    IFS=',' read -r -a sparse <<< "$paths"
-  fi
-  if [[ "$with_optional" == true && -n "${optional:-}" && "$optional" != "-" ]]; then
-    IFS=',' read -r -a extra <<< "$optional"
-    sparse+=("${extra[@]}")
-  fi
-
   if ! git -C "$dest" cat-file -e "$commit^{commit}" 2>/dev/null; then
     git -C "$dest" fetch -q --depth 1 --filter=blob:none origin "$commit"
   fi
-  if ((${#sparse[@]})); then
-    git -C "$dest" sparse-checkout set --cone "${sparse[@]}"
-  else
+  if [[ "$whole" == true ]]; then
     git -C "$dest" sparse-checkout disable
+  else
+    git -C "$dest" sparse-checkout set --cone "${sparse[@]}"
   fi
   git -C "$dest" -c advice.detachedHead=false checkout -q --detach "$commit"
 done < "$root/upstream.lock"
 
+# Lets the build detect a missing or out-of-date fetch (build/CheckUpstream.targets).
+mkdir -p "$root/upstream"
+cp "$root/upstream.lock" "$root/upstream/.fetched.lock"
 echo "Upstream sources are in $root/upstream"

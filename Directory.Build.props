@@ -1,10 +1,12 @@
-<Project>
+<Project InitialTargets="XGoodFitCheckUpstream">
 
   <!--
     Shared settings for XGoodFit's own projects (src/, tests/, tools/).
     Projects under upstream/ are built with their own Directory.Build.props, because
     MSBuild stops at the nearest one, so upstream code compiles exactly as upstream intends.
   -->
+  <Import Project="build/CheckUpstream.targets" />
+
   <PropertyGroup>
     <RepositoryRoot>$(MSBuildThisFileDirectory)</RepositoryRoot>
     <UpstreamRoot>$(RepositoryRoot)upstream/</UpstreamRoot>

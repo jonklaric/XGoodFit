@@ -10,3 +10,6 @@ Entries are added as dependencies are adopted.
 | [RMC.Numerics](https://github.com/USACE-RMC/Numerics) (USACE Risk Management Center) | Numerical library used unchanged (NuGet) | 0BSD |
 | [OxyPlot](https://github.com/oxyplot/oxyplot) (USACE-RMC fork, via WPF-Framework) | Charting core | MIT |
 | [System.Data.SQLite](https://system.data.sqlite.org) and [SourceGear.sqlite3](https://github.com/ericsink/SQLitePCL.raw) | Reading and writing `.bestfit` project files | Public domain |
+| [HEC-DSS](https://github.com/HydrologicEngineeringCenter/hec-dss) (USACE Hydrologic Engineering Center) | Native library for reading DSS files, built from source | MIT |
+| [Hec.Dss .NET wrapper](https://github.com/HydrologicEngineeringCenter/hec-dss-dotnet) (USACE Hydrologic Engineering Center) | .NET API over the HEC-DSS library, built from source | No licence file in the repository; treated as MIT, like HEC-DSS, pending confirmation from HEC |
+| [zlib](https://github.com/madler/zlib) | Compression inside the HEC-DSS library | zlib |

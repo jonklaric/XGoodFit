@@ -3,7 +3,18 @@
 # delta to the mirrored files (docs/migration-plan.md §10).
 #
 # Columns: name  git-url  commit  sparse-paths  optional-paths
-#   sparse-paths    comma-separated folders to check out ('*' = whole tree); root files are always included
-#   optional-paths  extra folders fetched only with --with-examples ('-' = none)
-RMC-BestFit    https://github.com/USACE-RMC/RMC-BestFit.git    bfce2ddbebb8d75e6cf6e21c4fef8ecfb5058269  src,docs,tools/PlotReferenceExporter  examples
-WPF-Framework  https://github.com/USACE-RMC/WPF-Framework.git  7f897e107db4a25cca29127ce9d564898c5fde93  *                                     -
+#   sparse-paths    comma-separated folders to check out ('*' = whole tree, '-' = only with
+#                   --with-examples); root files are always included
+#   optional-paths  extra folders fetched only with --with-examples ('*' = whole tree, '-' = none)
+#
+# HEC-DSS: hec-dss is release 7-JA-7, the newest release, which builds with CMake and no Fortran.
+# Five functions declared by hec-dss-dotnet 2.0.3 (written for 7-IU-6) have since gained trailing
+# parameters, so the wrapper is compiled with corrected declarations (docs/migration-plan.md §7).
+# zlib is v1.3.1, the version hec-dss 7-JA-7 builds with. dss-test-data is the sample data for
+# HEC's own C and .NET tests.
+RMC-BestFit     https://github.com/USACE-RMC/RMC-BestFit.git                      bfce2ddbebb8d75e6cf6e21c4fef8ecfb5058269  src,docs,tools/PlotReferenceExporter  examples
+WPF-Framework   https://github.com/USACE-RMC/WPF-Framework.git                    7f897e107db4a25cca29127ce9d564898c5fde93  *                                     -
+hec-dss         https://github.com/HydrologicEngineeringCenter/hec-dss.git        1da59764e509b31fe790133acc757cab8a6b846c  deps,heclib,test                      -
+hec-dss-dotnet  https://github.com/HydrologicEngineeringCenter/hec-dss-dotnet.git f8f576ff98b524a4a6b5a2f17735adf5f144b9fd  dotnet/Hec.Dss,dotnet/DotNetTests     -
+zlib            https://github.com/madler/zlib.git                                51b7f2abdade71cd9bb0e7a373ef2610ec6f9daf  *                                     -
+dss-test-data   https://github.com/HydrologicEngineeringCenter/dss-test-data.git  5df48cee088f8af6466ddaf581220257cca61f59  -                                     *

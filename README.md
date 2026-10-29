@@ -23,16 +23,50 @@ The goal is the same application, looking and behaving the same, running nativel
 
 ## Building
 
-You need the [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0) and git. On Windows,
-run the script from Git Bash.
+You need the [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0), git 2.35 or later,
+and bash. On Windows, use Git Bash, which comes with Git for Windows.
 
 ```bash
-# Fetch the pinned upstream sources. Omit --with-examples to skip the 455 MB of example projects.
+git clone https://github.com/jonklaric/XGoodFit.git
+cd XGoodFit
+
+# Download the pinned upstream sources into upstream/ (about 22 MB).
+scripts/fetch-upstream.sh
+
+dotnet build XGoodFit.slnx
+```
+
+If the upstream sources are missing or out of date, the build stops and says so. This happens, for
+example, after a pull that changed `upstream.lock`. Re-run `scripts/fetch-upstream.sh` to fix it.
+
+To check that this machine gives the same results as the other platforms:
+
+```bash
+# Also download the sample data: BestFit's example projects (455 MB) and HEC's DSS files (110 MB).
 scripts/fetch-upstream.sh --with-examples
 
-# Check that every example project opens and reads correctly on this machine.
+# Run upstream's portable test suites.
+scripts/run-upstream-tests.sh
+
+# Check that every example project opens and reads correctly.
 dotnet run --project tools/ProjectProbe/ProjectProbe.csproj -- upstream/RMC-BestFit/examples
 ```
+
+## Where the source code comes from
+
+XGoodFit's own code lives in this repository. Everything else is downloaded at pinned versions, so
+every build uses exactly the same sources.
+
+| Code | Comes from | How a build gets it |
+|---|---|---|
+| XGoodFit's own code: the Avalonia port (from Phase 1), tools and scripts | This repository | `git clone` |
+| RMC-BestFit: the model library, and the WPF code being ported | [USACE-RMC/RMC-BestFit](https://github.com/USACE-RMC/RMC-BestFit) | `scripts/fetch-upstream.sh`, at the commit pinned in [`upstream.lock`](upstream.lock) |
+| WPF-Framework: the database and expression libraries, the OxyPlot fork, and the WPF code being ported | [USACE-RMC/WPF-Framework](https://github.com/USACE-RMC/WPF-Framework) | Same |
+| HEC-DSS: the C library, the zlib it builds with, the `Hec.Dss` .NET wrapper, and HEC's sample DSS files | [hec-dss](https://github.com/HydrologicEngineeringCenter/hec-dss), [zlib](https://github.com/madler/zlib), [hec-dss-dotnet](https://github.com/HydrologicEngineeringCenter/hec-dss-dotnet), [dss-test-data](https://github.com/HydrologicEngineeringCenter/dss-test-data) | Same |
+| RMC.Numerics and third-party libraries such as SQLite | Their own repositories | NuGet packages, restored by `dotnet build` |
+
+The fetched sources go into `upstream/`, which is git-ignored and never edited. Portable upstream
+code compiles unmodified. The Windows-only WPF code is ported into this repository file for file.
 
 ## Relationship to RMC-BestFit
 
