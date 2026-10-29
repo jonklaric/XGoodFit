@@ -413,7 +413,7 @@ Sizes are relative, for one developer with AI-assisted porting: S ≈ ≤2 wk, M
 | Repo scaffold: `upstream.lock` + `scripts/fetch-upstream.sh`, central props, `global.json`, `XGoodFit.slnx`, CI workflow, `scripts/run-upstream-tests.sh` | ✅ Pushed to `main` (`7f2bde4`); fetching was later replaced by vendoring (D11) |
 | Portable layer on Windows x64 (en-AU), Linux x64 (Ubuntu 26.04 GNOME, en-US) and macOS arm64 (M4 Pro, macOS 26.6), plus GitHub-hosted CI on all three | ✅ Same results everywhere. RMC.BestFit model 3,546/3,546 · DatabaseManager 301/301 · ExpressionParser 240/240 · OxyPlot core 3,276/3,276 runnable on en-US Windows (Windows only, see below) |
 | All 32 example `.bestfit` projects through the upstream SQLite stack (System.Data.SQLite 2.0.2, SQLite 3.50.4) | ✅ They open on all three OSes, and **all 146 tables read identically** on Windows x64, Linux x64 and macOS arm64 (`tools/ProjectProbe` fingerprints) |
-| Standalone repository (D11): upstream code vendored in `upstream/`, byte-identical to the pins; clone and `dotnet build` with no other downloads besides NuGet | ✅ RMC-BestFit, WPF-Framework, Numerics, hec-dss, hec-dss-dotnet and zlib vendored (2026-10-30). RMC.Numerics now builds from source: Numerics 2,895/2,895 and RMC.BestFit 3,546/3,546 pass against it |
+| Standalone repository (D11): upstream code vendored in `upstream/`, byte-identical to the pins; clone and `dotnet build` with no other downloads besides NuGet | ✅ RMC-BestFit, WPF-Framework, Numerics, hec-dss, hec-dss-dotnet and zlib vendored (2026-10-30). RMC.Numerics now builds from source, and RMC.BestFit 3,546/3,546 pass against it. Numerics' own suite: 2,864/2,864 on x64, excluding live-service tests as upstream does; on arm64, 3 bit-for-bit tests are skipped (findings below) |
 | HEC-DSS (D6) | Sources vendored: hec-dss 7-JA-7, zlib 1.3.1, hec-dss-dotnet 2.0.3; HEC's sample data is downloadable. Wrapper 2.0.3 doesn't match any hec-dss release, so it needs corrected declarations (below). Native builds are next |
 | CI (GitHub-hosted Windows, macOS arm64, Linux) | ✅ Green, including a job that fails if any OS reads the example projects differently |
 | Spikes A–F, parity harness | Not started |
@@ -426,6 +426,11 @@ Sizes are relative, for one developer with AI-assisted porting: S ≈ ≤2 wk, M
   - On macOS and Linux it uses ICU data: en-AU is `d/M/yyyy`, so `2/1/2011`.
   - .NET on macOS does pick up the system locale even when launched without `LANG`.
   - So Windows output matches WPF exactly, and macOS/Linux follow their native conventions. Cross-OS screenshot comparisons must pin one culture.
+- **On arm64, RMC.Numerics' bit-for-bit tests differ from the x64 references (R9).** On GitHub's macOS arm64 runner, three Numerics tests that assert exact equality fail:
+  - two NUTS sampler draws differ at the 13th significant digit (`0.06320733141719788` vs `0.06320733141716985`);
+  - one Weibull constraint differs at the 16th (`6.684491850934669` vs `6.684491850934662`).
+  - This is ordinary cross-architecture floating-point behaviour, not a port defect. The model's 3,546 tolerance-based tests pass on arm64. `scripts/run-upstream-tests.sh` skips those three tests on arm64, and the Phase 9 reproducibility report must quantify the differences.
+- **Numerics' live-service tests are excluded**, as in upstream's own CI (`TestCategory!=LiveServiceIntegration`). They download from USGS and other services, and one failed in CI when USGS returned HTTP 503.
 - **Upstream's OxyPlot tests can't run outside Windows.** The test assembly requires an STA thread, and elsewhere NUnit silently runs nothing.
   - `scripts/run-upstream-tests.sh` skips that suite outside Windows, and fails any suite that runs zero tests.
   - A cross-platform wrapper for those tests belongs to Spike C.

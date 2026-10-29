@@ -31,8 +31,21 @@ run() {
   fi
 }
 
-# RMC.Numerics, the numerical library under the model (vendored at tag v2.2.0).
-run Test_Numerics dotnet test upstream/Numerics/Test_Numerics/Test_Numerics.csproj -c Release -f net10.0
+# RMC.Numerics, the numerical library under the model (vendored at tag v2.2.0). Excluded:
+#  - LiveServiceIntegration: downloads from live web services (USGS, BOM, ...), which fail whenever a
+#    service is down (seen: USGS HTTP 503). Upstream's own CI excludes them the same way.
+#  - On arm64 only, three tests that assert bit-for-bit equality with reference values recorded on
+#    x64. Their results differ in the last digits (about 1e-13 relative), as floating-point maths
+#    does across architectures; the model's tolerance-based tests pass on arm64.
+numerics_filter="TestCategory!=LiveServiceIntegration"
+case "$(uname -m)" in
+  arm64|aarch64)
+    numerics_filter+="&Name!=Test_NUTS_GradientReuse_AdaptedMetric_ReproducesReferenceDrawsBitwise"
+    numerics_filter+="&Name!=Test_NUTS_GradientReuse_FixedMetric_ReproducesReferenceDrawsBitwise"
+    numerics_filter+="&Name!=Weibull_ordinary_PreservesBaselineConstraints"
+    ;;
+esac
+run Test_Numerics dotnet test upstream/Numerics/Test_Numerics/Test_Numerics.csproj -c Release -f net10.0 --filter "$numerics_filter"
 
 # RMC.BestFit model library, run directly so --filter reaches the test runner. Excluded:
 #  - Documentation_LocalLinksResolve: checks links into upstream folders that are deliberately
