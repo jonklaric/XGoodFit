@@ -1,18 +1,37 @@
 <!--
     WPF-equivalent defaults for every window. XGoodFit addition: WPF gets these from the system and
-    needs no such file. ThemeService.Initialize adds these styles to the application.
+    its controls, and needs no such file. ThemeService.Initialize adds these styles to the application.
 
     WPF draws text in the system message font, Segoe UI, at 12 device-independent pixels. Avalonia's
     defaults are the platform font at 14. Segoe UI isn't installed on macOS or Linux, so they fall back
     to Selawik, Microsoft's open-source substitute with the same metrics (upstream/Selawik).
 -->
 <Styles xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:themes="using:Themes">
 
     <!-- :is() matches every kind of top-level window (Window, popups), not just the TopLevel type. -->
     <Style Selector=":is(TopLevel)">
         <Setter Property="FontFamily" Value="Segoe UI, avares://Themes/Assets/Fonts#Selawik"/>
         <Setter Property="FontSize" Value="12"/>
+    </Style>
+
+    <!--
+    WPF draws a shape's stroke 1 pixel wide by default; Avalonia draws none, except for lines and
+    polylines. Paths and polygons get WPF's default from WpfDefaults. Rectangles and ellipses get it here, and only with a
+    stroke: Avalonia insets their fill by half the stroke thickness even without one, which WPF
+    doesn't. Values set in XAML or by templates take precedence over this style.
+    -->
+    <Style Selector="Rectangle, Ellipse">
+        <Setter Property="StrokeThickness" Value="{Binding Stroke, RelativeSource={RelativeSource Self}, Converter={x:Static themes:WpfDefaults.StrokeThickness}}"/>
+    </Style>
+
+    <!--
+    Styles that WPF's containers apply through style keys. WPF's menus give their separators the
+    MenuItem.SeparatorStyleKey style, ported as MenuItemSeparatorStyle (Controls/Menu.axaml).
+    -->
+    <Style Selector="Menu > Separator, MenuItem > Separator, ContextMenu > Separator">
+        <Setter Property="Theme" Value="{DynamicResource MenuItemSeparatorStyle}"/>
     </Style>
 
 </Styles>

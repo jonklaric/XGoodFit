@@ -1,8 +1,10 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Controls.Primitives;
 using Avalonia.Headless;
 using Avalonia.Media.Imaging;
+using Avalonia.Styling;
 using Avalonia.Themes.Simple;
 using Avalonia.Threading;
 using Themes;
@@ -10,7 +12,7 @@ using Themes;
 namespace ThemeGallery;
 
 // Usage: ThemeGallery                    show the gallery
-//        ThemeGallery capture <folder>   render it in every theme to <folder>/theme-gallery-<Theme>.png
+//        ThemeGallery capture <folder>   render it in every theme to <folder>/theme-gallery-<page>-<Theme>.png
 internal static class Program
 {
     [STAThread]
@@ -33,20 +35,60 @@ internal static class Program
             .UseHeadless(new AvaloniaHeadlessPlatformOptions { UseHeadlessDrawing = false })
             .SetupWithoutStarting();
 
+        // Draw popups (menus, context menus) in the window, so its frame includes them.
+        Application.Current!.Styles.Add(new Style(x => x.Is<Popup>())
+        {
+            Setters = { new Setter(Popup.ShouldUseOverlayLayerProperty, true) },
+        });
+
         Directory.CreateDirectory(folder);
-        var window = new GalleryWindow { SizeToContent = SizeToContent.Height };
+        var window = new GalleryWindow();
         window.Show();
         foreach (Theme theme in Enum.GetValues<Theme>())
         {
             window.SelectTheme(theme);
-            Dispatcher.UIThread.RunJobs();
-            string path = Path.Combine(folder, $"theme-gallery-{theme}.png");
-            using var frame = window.CaptureRenderedFrame() ?? throw new InvalidOperationException("No frame was rendered.");
-            frame.Save(path, new PngBitmapEncoderOptions());
-            Console.WriteLine(path);
+
+            window.Pages.SelectedItem = window.ControlsPage;
+            Save(window, folder, "controls", theme);
+
+            window.FileMenu.Open();
+            Settle();
+            window.RecentMenu.Open();
+            Save(window, folder, "menu", theme);
+            window.MainMenu.Close();
+
+            window.SampleTextBox.ContextMenu!.Placement = PlacementMode.Bottom;
+            window.SampleTextBox.ContextMenu.Open(window.SampleTextBox);
+            Save(window, folder, "context-menu", theme);
+            window.SampleTextBox.ContextMenu.Close();
+
+            window.SampleComboBox.IsDropDownOpen = true;
+            Save(window, folder, "combo-box", theme);
+            window.SampleComboBox.IsDropDownOpen = false;
+
+            window.Pages.SelectedItem = window.PalettePage;
+            Save(window, folder, "palette", theme);
         }
         window.Close();
         return 0;
+    }
+
+    private static void Save(Window window, string folder, string page, Theme theme)
+    {
+        Settle();
+        string path = Path.Combine(folder, $"theme-gallery-{page}-{theme}.png");
+        using var frame = window.CaptureRenderedFrame() ?? throw new InvalidOperationException("No frame was rendered.");
+        frame.Save(path, new PngBitmapEncoderOptions());
+        Console.WriteLine(path);
+    }
+
+    // Lets layout run and fade-in animations finish: the headless render timer uses real time.
+    private static void Settle()
+    {
+        Dispatcher.UIThread.RunJobs();
+        Thread.Sleep(300);
+        AvaloniaHeadlessPlatform.ForceRenderTimerTick();
+        Dispatcher.UIThread.RunJobs();
     }
 }
 

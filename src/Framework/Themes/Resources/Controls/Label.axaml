@@ -1,0 +1,28 @@
+<!-- Ported from upstream/WPF-Framework/src/Themes/Resources/Controls/Label.xaml. Conversion rules: Button.axaml. -->
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!--This Dictionary is taken from the Gemini project https://github.com/tgjones/gemini-->
+
+    <ControlTheme x:Key="{x:Type Label}" TargetType="Label">
+        <Setter Property="Foreground" Value="{DynamicResource Label.Static.Text}"/>
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Padding" Value="5"/>
+        <Setter Property="HorizontalContentAlignment" Value="Left"/>
+        <Setter Property="VerticalContentAlignment" Value="Top"/>
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}">
+                    <ContentPresenter x:Name="PART_ContentPresenter"
+                                      Content="{TemplateBinding Content}"
+                                      ContentTemplate="{TemplateBinding ContentTemplate}"
+                                      HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" RecognizesAccessKey="True" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                </Border>
+            </ControlTemplate>
+        </Setter>
+
+        <Style Selector="^:disabled">
+            <Setter Property="Foreground" Value="{DynamicResource Label.Disabled.Text}"/>
+        </Style>
+    </ControlTheme>
+</ResourceDictionary>

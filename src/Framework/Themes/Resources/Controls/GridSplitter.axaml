@@ -1,0 +1,61 @@
+<!-- Ported from upstream/WPF-Framework/src/Themes/Resources/Controls/GridSplitter.xaml. Conversion rules: Button.axaml. -->
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:local="using:Themes">
+
+    <!--
+    XGoodFit port notes:
+    - The DataTriggers hide the grip when the splitter's Grid is narrower (or shorter) than the
+      cutoff. Here the converter's result sets a "cutoff" class on the grip, which a style hides.
+    - Line X1/Y1/X2/Y2 become StartPoint and EndPoint.
+    - Focusable: WPF's GridSplitter takes focus (for arrow-key resizing); Avalonia's doesn't by default.
+    -->
+    <local:CutoffConverter x:Key="CutoffConverter" Cutoff="50" />
+
+    <ControlTheme x:Key="HorizontalGridSplitterStyle" TargetType="GridSplitter">
+        <Setter Property="Focusable" Value="True"/>
+        <Setter Property="Background" Value="{DynamicResource EnvironmentWindowBackground}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource SeparatorBorder}"/>
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border BorderThickness="{TemplateBinding BorderThickness}">
+                    <Canvas x:Name="GridCanvas" RenderOptions.EdgeMode="Aliased" UseLayoutRounding="True" Height="6" VerticalAlignment="Center" Width="50" HorizontalAlignment="Center"
+                            Classes.cutoff="{Binding $parent[Grid].Bounds.Width, Converter={StaticResource CutoffConverter}}">
+                        <Line StartPoint="0,0" EndPoint="50,0" Stroke="{DynamicResource GridSplitter.Handle.Light}" StrokeThickness="1"/>
+                        <Line StartPoint="0,1" EndPoint="50,1" Stroke="{DynamicResource GridSplitter.Handle.Dark}" StrokeThickness="1"/>
+                        <Line StartPoint="0,4" EndPoint="50,4" Stroke="{DynamicResource GridSplitter.Handle.Light}" StrokeThickness="1"/>
+                        <Line StartPoint="0,5" EndPoint="50,5" Stroke="{DynamicResource GridSplitter.Handle.Dark}" StrokeThickness="1"/>
+                    </Canvas>
+                </Border>
+            </ControlTemplate>
+        </Setter>
+
+        <Style Selector="^ /template/ Canvas#GridCanvas.cutoff">
+            <Setter Property="IsVisible" Value="False"/>
+        </Style>
+    </ControlTheme>
+
+    <ControlTheme x:Key="VerticalGridSplitterStyle" TargetType="GridSplitter">
+        <Setter Property="Focusable" Value="True"/>
+        <Setter Property="Background" Value="{DynamicResource EnvironmentWindowBackground}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource SeparatorBorder}"/>
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border BorderThickness="{TemplateBinding BorderThickness}">
+                    <Canvas x:Name="GridCanvas" RenderOptions.EdgeMode="Aliased" UseLayoutRounding="True" Height="50" VerticalAlignment="Center" Width="6" HorizontalAlignment="Center"
+                            Classes.cutoff="{Binding $parent[Grid].Bounds.Height, Converter={StaticResource CutoffConverter}}">
+                        <Line StartPoint="0,0" EndPoint="0,50" Stroke="{DynamicResource GridSplitter.Handle.Light}" StrokeThickness="1"/>
+                        <Line StartPoint="1,0" EndPoint="1,50" Stroke="{DynamicResource GridSplitter.Handle.Dark}" StrokeThickness="1"/>
+                        <Line StartPoint="4,0" EndPoint="4,50" Stroke="{DynamicResource GridSplitter.Handle.Light}" StrokeThickness="1"/>
+                        <Line StartPoint="5,0" EndPoint="5,50" Stroke="{DynamicResource GridSplitter.Handle.Dark}" StrokeThickness="1"/>
+                    </Canvas>
+                </Border>
+            </ControlTemplate>
+        </Setter>
+
+        <Style Selector="^ /template/ Canvas#GridCanvas.cutoff">
+            <Setter Property="IsVisible" Value="False"/>
+        </Style>
+    </ControlTheme>
+
+</ResourceDictionary>

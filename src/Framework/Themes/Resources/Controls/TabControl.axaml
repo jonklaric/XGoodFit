@@ -1,0 +1,375 @@
+<!-- Ported from upstream/WPF-Framework/src/Themes/Resources/Controls/TabControl.xaml. Conversion rules: Button.axaml. -->
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:local="using:Themes">
+    <local:TabSizeConverter x:Key="TabSizeConverter" />
+
+    <!--
+    XGoodFit port notes:
+    - The TabStripPlacement triggers change the grid's row and column definitions, which Avalonia
+      styles can't reach, so each placement has its own template with the layout the triggers give.
+      As upstream, they move the tab panel inside its border rather than the border, so for Bottom and
+      Right the tabs stay in the first cell. BestFit uses Top and Left.
+    - The tab panel (WPF's TabPanel) is Avalonia's ItemsPresenter (PART_ItemsPresenter) with a
+      WrapPanel, turned vertical for Left and Right. WPF's TabPanel also moves the selected row of
+      wrapped tabs to the front.
+    - The selected content host is PART_SelectedContentHost; Avalonia's TabControl sets its content.
+    - Padding="2" and the TabItem defaults come from WPF's Aero2 styles under upstream's.
+    - Each TabItem template shows the header in a presenter named PART_ContentPresenter, as Avalonia's
+      own TabItem themes do (WPF's ContentSite and presenter).
+    - PropertiesTabItemStyle, HorizontalTabItemStyle and VerticalTabItemStyle are based on the
+      implicit TabItem style, which only gives them a template they replace. Avalonia would also apply
+      that style's triggers, so they aren't based on it.
+    - Visibility="Hidden" in the header templates is Opacity="0" without hit testing.
+    -->
+
+    <!--Style for Tab Control-->
+    <ControlTheme x:Key="TabControlStyle" TargetType="TabControl">
+        <Setter Property="Background" Value="{DynamicResource TabControl.Background}"/>
+        <Setter Property="Foreground" Value="{DynamicResource TabControl.Foreground}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource TabControl.Border}"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Padding" Value="2"/>
+        <Setter Property="HorizontalContentAlignment" Value="Center"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
+
+        <!-- TabStripPlacement Top -->
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Grid x:Name="templateRoot" ClipToBounds="True" KeyboardNavigation.TabNavigation="Local" ColumnDefinitions="*,0" RowDefinitions="Auto,*">
+                    <Border x:Name="headerPanelBorder" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="0" Background="{TemplateBinding Background}">
+                        <ItemsPresenter x:Name="PART_ItemsPresenter" ItemsPanel="{TemplateBinding ItemsPanel}" Margin="2,0,2,2" ZIndex="1" KeyboardNavigation.TabIndex="1"/>
+                    </Border>
+                    <Border x:Name="contentPanel" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Grid.Column="0" Grid.Row="1" KeyboardNavigation.TabIndex="2" KeyboardNavigation.TabNavigation="Local">
+                        <ContentPresenter x:Name="PART_SelectedContentHost" Margin="{TemplateBinding Padding}"/>
+                    </Border>
+                </Grid>
+            </ControlTemplate>
+        </Setter>
+
+        <Style Selector="^[TabStripPlacement=Bottom]">
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Grid x:Name="templateRoot" ClipToBounds="True" KeyboardNavigation.TabNavigation="Local" ColumnDefinitions="*,0" RowDefinitions="*,Auto">
+                        <Border x:Name="headerPanelBorder" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="0" Background="{TemplateBinding Background}">
+                            <ItemsPresenter x:Name="PART_ItemsPresenter" ItemsPanel="{TemplateBinding ItemsPanel}" Margin="2,0,2,2" ZIndex="1" KeyboardNavigation.TabIndex="1"/>
+                        </Border>
+                        <Border x:Name="contentPanel" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Grid.Column="0" Grid.Row="0" KeyboardNavigation.TabIndex="2" KeyboardNavigation.TabNavigation="Local">
+                            <ContentPresenter x:Name="PART_SelectedContentHost" Margin="{TemplateBinding Padding}"/>
+                        </Border>
+                    </Grid>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+        <Style Selector="^[TabStripPlacement=Left]">
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Grid x:Name="templateRoot" ClipToBounds="True" KeyboardNavigation.TabNavigation="Local" ColumnDefinitions="Auto,*" RowDefinitions="*,0">
+                        <Border x:Name="headerPanelBorder" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="0,0,1,0" Background="{TemplateBinding Background}">
+                            <ItemsPresenter x:Name="PART_ItemsPresenter" ItemsPanel="{TemplateBinding ItemsPanel}" Margin="4,4,0,2" ZIndex="1" KeyboardNavigation.TabIndex="1"/>
+                        </Border>
+                        <Border x:Name="contentPanel" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Grid.Column="1" Grid.Row="0" KeyboardNavigation.TabIndex="2" KeyboardNavigation.TabNavigation="Local">
+                            <ContentPresenter x:Name="PART_SelectedContentHost" Margin="{TemplateBinding Padding}"/>
+                        </Border>
+                    </Grid>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+        <Style Selector="^[TabStripPlacement=Right]">
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Grid x:Name="templateRoot" ClipToBounds="True" KeyboardNavigation.TabNavigation="Local" ColumnDefinitions="*,Auto" RowDefinitions="*,0">
+                        <Border x:Name="headerPanelBorder" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="0" Background="{TemplateBinding Background}">
+                            <ItemsPresenter x:Name="PART_ItemsPresenter" ItemsPanel="{TemplateBinding ItemsPanel}" Margin="0,2,2,2" ZIndex="1" KeyboardNavigation.TabIndex="1"/>
+                        </Border>
+                        <Border x:Name="contentPanel" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Grid.Column="0" Grid.Row="0" KeyboardNavigation.TabIndex="2" KeyboardNavigation.TabNavigation="Local">
+                            <ContentPresenter x:Name="PART_SelectedContentHost" Margin="{TemplateBinding Padding}"/>
+                        </Border>
+                    </Grid>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+        <Style Selector="^[TabStripPlacement=Left] /template/ ItemsPresenter#PART_ItemsPresenter > WrapPanel, ^[TabStripPlacement=Right] /template/ ItemsPresenter#PART_ItemsPresenter > WrapPanel">
+            <Setter Property="Orientation" Value="Vertical"/>
+        </Style>
+        <Style Selector="^:disabled /template/ Grid#templateRoot">
+            <Setter Property="TextElement.Foreground" Value="{DynamicResource SystemColors.GrayTextBrush}"/>
+        </Style>
+    </ControlTheme>
+
+    <!-- Style for Tab Item -->
+    <ControlTheme x:Key="TabItemStyle" TargetType="TabItem">
+        <Setter Property="Foreground" Value="Black"/>
+        <Setter Property="Margin" Value="0"/>
+        <Setter Property="Padding" Value="6,2,6,2"/>
+        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+        <Setter Property="VerticalContentAlignment" Value="Stretch"/>
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Grid>
+                    <Border
+                            Name="Border"
+                            Margin="0"
+                            Background="#FFE7E8EC"
+                            BorderThickness="1"
+                            CornerRadius="0,0,0,0">
+                        <ContentPresenter x:Name="PART_ContentPresenter"
+                                    VerticalAlignment="Center"
+                                    HorizontalAlignment="Center"
+                                    Content="{TemplateBinding Header}"
+                                    ContentTemplate="{TemplateBinding HeaderTemplate}"
+                                    Margin="4"
+                                    RecognizesAccessKey="True"/>
+                    </Border>
+                </Grid>
+            </ControlTemplate>
+        </Setter>
+
+        <Style Selector="^[TabStripPlacement=Left]:selected">
+            <Setter Property="Foreground" Value="Black"/>
+            <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
+                <Setter Property="Foreground" Value="{DynamicResource TabItem.Selection.Foreground}"/>
+            </Style>
+            <Style Selector="^ /template/ Border#Border">
+                <Setter Property="Background" Value="{DynamicResource TabItem.Selection.Background}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource TabItem.Selection.Border}"/>
+                <Setter Property="BorderThickness" Value="1,1,0,1"/>
+                <Setter Property="Margin" Value="-2,0,0,0"/>
+            </Style>
+        </Style>
+        <Style Selector="^[TabStripPlacement=Left]:not(:selected)">
+            <Setter Property="Foreground" Value="Black"/>
+            <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
+                <Setter Property="Foreground" Value="{DynamicResource TabItem.Static.Foreground}"/>
+            </Style>
+            <Style Selector="^ /template/ Border#Border">
+                <Setter Property="Background" Value="{DynamicResource TabItem.Static.Background}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource TabItem.Static.Border}"/>
+                <Setter Property="BorderThickness" Value="1,1,0,1"/>
+                <Setter Property="Margin" Value="0"/>
+            </Style>
+        </Style>
+        <Style Selector="^[TabStripPlacement=Top]:selected">
+            <Setter Property="Foreground" Value="Black"/>
+            <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
+                <Setter Property="Foreground" Value="{DynamicResource TabItem.Selection.Foreground}"/>
+            </Style>
+            <Style Selector="^ /template/ Border#Border">
+                <Setter Property="Background" Value="{DynamicResource TabItem.Selection.Background}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource TabItem.Selection.Border}"/>
+                <Setter Property="BorderThickness" Value="1,1,1,0"/>
+                <Setter Property="Margin" Value="0,-2,0,0"/>
+            </Style>
+        </Style>
+        <Style Selector="^[TabStripPlacement=Top]:not(:selected)">
+            <Setter Property="Foreground" Value="Black"/>
+            <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
+                <Setter Property="Foreground" Value="{DynamicResource TabItem.Static.Foreground}"/>
+            </Style>
+            <Style Selector="^ /template/ Border#Border">
+                <Setter Property="Background" Value="{DynamicResource TabItem.Static.Background}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource TabItem.Static.Border}"/>
+                <Setter Property="BorderThickness" Value="1,1,1,0"/>
+                <Setter Property="Margin" Value="0"/>
+            </Style>
+        </Style>
+    </ControlTheme>
+
+    <ControlTheme x:Key="{x:Type TabControl}" TargetType="TabControl" BasedOn="{StaticResource TabControlStyle}" />
+    <ControlTheme x:Key="{x:Type TabItem}" TargetType="TabItem" BasedOn="{StaticResource TabItemStyle}" />
+
+    <ControlTheme x:Key="PropertiesTabItemStyle" TargetType="TabItem">
+        <Setter Property="Foreground" Value="Black"/>
+        <Setter Property="Margin" Value="0"/>
+        <Setter Property="Padding" Value="6,2,6,2"/>
+        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+        <Setter Property="VerticalContentAlignment" Value="Stretch"/>
+        <Setter Property="Width">
+            <MultiBinding Converter="{StaticResource TabSizeConverter}">
+                <Binding RelativeSource="{RelativeSource FindAncestor, AncestorType=TabControl}" />
+                <Binding RelativeSource="{RelativeSource FindAncestor, AncestorType=TabControl}" Path="Bounds.Width" />
+            </MultiBinding>
+        </Setter>
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border x:Name="border" Margin="{TemplateBinding Margin}" BorderThickness="1" BorderBrush="{TemplateBinding BorderBrush}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}">
+                    <ContentPresenter x:Name="PART_ContentPresenter"
+                                      Content="{TemplateBinding Header}"
+                                      ContentTemplate="{TemplateBinding HeaderTemplate}"
+                                      HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" Margin="{TemplateBinding Margin}"/>
+                </Border>
+            </ControlTemplate>
+        </Setter>
+        <Setter Property="HeaderTemplate">
+            <DataTemplate>
+                <Grid HorizontalAlignment="Center">
+                    <TextBlock HorizontalAlignment="Stretch" Text="{Binding}"/>
+                    <TextBlock HorizontalAlignment="Stretch" Text="{Binding}" FontWeight="Bold" Opacity="0" IsHitTestVisible="False"/>
+                </Grid>
+            </DataTemplate>
+        </Setter>
+
+        <Style Selector="^:not(:pointerover):not(:selected)">
+            <Style Selector="^ /template/ Border#border">
+                <Setter Property="Background" Value="Transparent"/>
+                <Setter Property="BorderBrush" Value="Transparent"/>
+            </Style>
+            <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
+                <Setter Property="Foreground" Value="{DynamicResource TabItem.Static.Foreground}"/>
+            </Style>
+        </Style>
+        <Style Selector="^:pointerover:not(:selected)">
+            <Style Selector="^ /template/ Border#border">
+                <Setter Property="Background" Value="{DynamicResource TabItem.MouseOver.Background}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource TabItem.MouseOver.Border}"/>
+            </Style>
+            <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
+                <Setter Property="Foreground" Value="{DynamicResource TabItem.MouseOver.Foreground}"/>
+            </Style>
+        </Style>
+        <Style Selector="^:selected">
+            <Style Selector="^ /template/ Border#border">
+                <Setter Property="Background" Value="{DynamicResource TabItem.Selection.Background}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource TabItem.Selection.Background}"/>
+            </Style>
+            <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
+                <Setter Property="Foreground" Value="{DynamicResource TabItem.Selection.Foreground}"/>
+            </Style>
+        </Style>
+    </ControlTheme>
+
+    <ControlTheme x:Key="HorizontalTabItemStyle" TargetType="TabItem">
+        <Setter Property="Foreground" Value="Black"/>
+        <Setter Property="Margin" Value="0"/>
+        <Setter Property="Padding" Value="6,2,6,2"/>
+        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+        <Setter Property="VerticalContentAlignment" Value="Stretch"/>
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border x:Name="border" Margin="{TemplateBinding Margin}" BorderThickness="1" BorderBrush="{TemplateBinding BorderBrush}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}">
+                    <ContentPresenter x:Name="PART_ContentPresenter" Margin="2"
+                                      Content="{TemplateBinding Header}"
+                                      ContentTemplate="{TemplateBinding HeaderTemplate}"
+                                      HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                </Border>
+            </ControlTemplate>
+        </Setter>
+        <Setter Property="HeaderTemplate">
+            <DataTemplate>
+                <Grid HorizontalAlignment="Center">
+                    <TextBlock HorizontalAlignment="Stretch" Text="{Binding}"/>
+                    <TextBlock HorizontalAlignment="Stretch" Text="{Binding}" FontWeight="Bold" Opacity="0" IsHitTestVisible="False"/>
+                </Grid>
+            </DataTemplate>
+        </Setter>
+
+        <Style Selector="^:not(:pointerover):not(:selected)">
+            <Style Selector="^ /template/ Border#border">
+                <Setter Property="Background" Value="Transparent"/>
+                <Setter Property="BorderBrush" Value="Transparent"/>
+            </Style>
+            <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
+                <Setter Property="Foreground" Value="{DynamicResource TabItem.Static.Foreground}"/>
+            </Style>
+        </Style>
+        <Style Selector="^:pointerover:not(:selected)">
+            <Style Selector="^ /template/ Border#border">
+                <Setter Property="Background" Value="{DynamicResource TabItem.MouseOver.Background}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource TabItem.MouseOver.Border}"/>
+            </Style>
+            <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
+                <Setter Property="Foreground" Value="{DynamicResource TabItem.MouseOver.Foreground}"/>
+            </Style>
+        </Style>
+        <Style Selector="^:selected">
+            <Style Selector="^ /template/ Border#border">
+                <Setter Property="Background" Value="{DynamicResource TabItem.Selection.Background}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource TabItem.Selection.Background}"/>
+            </Style>
+            <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
+                <Setter Property="Foreground" Value="{DynamicResource TabItem.Selection.Foreground}"/>
+            </Style>
+        </Style>
+        <Style Selector="^:disabled /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Foreground" Value="{DynamicResource DisabledMenuItemBrush}"/>
+        </Style>
+    </ControlTheme>
+
+    <ControlTheme x:Key="VerticalTabItemStyle" TargetType="TabItem">
+        <Setter Property="Foreground" Value="Black"/>
+        <Setter Property="Margin" Value="0"/>
+        <Setter Property="Padding" Value="6,2,6,2"/>
+        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+        <Setter Property="VerticalContentAlignment" Value="Stretch"/>
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Grid>
+                    <StackPanel x:Name="test" Orientation="Horizontal" Height="30">
+                        <Grid>
+                            <Border x:Name="rectangleBorder" BorderThickness="1,1,0,1">
+                                <Rectangle x:Name="rectangle" Width="130" Fill="{TemplateBinding Background}" />
+                            </Border>
+                            <TextBlock x:Name="presenter" Text="{TemplateBinding Header}" Margin="10,5" VerticalAlignment="Center" />
+                        </Grid>
+                        <Path x:Name="arrow" Data="M0,0 10,15 0,30" Fill="{TemplateBinding Background}" />
+                    </StackPanel>
+                </Grid>
+            </ControlTemplate>
+        </Setter>
+        <Setter Property="HeaderTemplate">
+            <DataTemplate>
+                <Grid HorizontalAlignment="Left" VerticalAlignment="Center">
+                    <TextBlock TextAlignment="Left" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Text="{Binding}"/>
+                    <TextBlock TextAlignment="Left" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Text="{Binding}" FontWeight="Bold" Opacity="0" IsHitTestVisible="False"/>
+                </Grid>
+            </DataTemplate>
+        </Setter>
+
+        <Style Selector="^:not(:pointerover):not(:selected)">
+            <Style Selector="^ /template/ Rectangle#rectangle">
+                <Setter Property="Fill" Value="Transparent"/>
+            </Style>
+            <Style Selector="^ /template/ Border#rectangleBorder">
+                <Setter Property="BorderBrush" Value="Transparent"/>
+            </Style>
+            <Style Selector="^ /template/ Path#arrow">
+                <Setter Property="Fill" Value="Transparent"/>
+                <Setter Property="Stroke" Value="Transparent"/>
+            </Style>
+            <Style Selector="^ /template/ TextBlock#presenter">
+                <Setter Property="Foreground" Value="{DynamicResource TabItem.Static.Foreground}"/>
+            </Style>
+        </Style>
+        <Style Selector="^:pointerover:not(:selected)">
+            <Style Selector="^ /template/ Rectangle#rectangle">
+                <Setter Property="Fill" Value="{DynamicResource TabItem.MouseOver.Background}"/>
+            </Style>
+            <Style Selector="^ /template/ Border#rectangleBorder">
+                <Setter Property="BorderBrush" Value="{DynamicResource TabItem.MouseOver.Border}"/>
+            </Style>
+            <Style Selector="^ /template/ Path#arrow">
+                <Setter Property="Fill" Value="{DynamicResource TabItem.MouseOver.Background}"/>
+                <Setter Property="Stroke" Value="{DynamicResource TabItem.MouseOver.Border}"/>
+            </Style>
+            <Style Selector="^ /template/ TextBlock#presenter">
+                <Setter Property="Foreground" Value="{DynamicResource TabItem.MouseOver.Foreground}"/>
+            </Style>
+        </Style>
+        <Style Selector="^:selected">
+            <Style Selector="^ /template/ Rectangle#rectangle">
+                <Setter Property="Fill" Value="{DynamicResource TabItem.Selection.Background}"/>
+            </Style>
+            <Style Selector="^ /template/ Border#rectangleBorder">
+                <Setter Property="BorderBrush" Value="{DynamicResource TabItem.Selection.Background}"/>
+            </Style>
+            <Style Selector="^ /template/ Path#arrow">
+                <Setter Property="Fill" Value="{DynamicResource TabItem.Selection.Background}"/>
+                <Setter Property="Stroke" Value="{DynamicResource TabItem.Selection.Background}"/>
+            </Style>
+            <Style Selector="^ /template/ TextBlock#presenter">
+                <Setter Property="Foreground" Value="{DynamicResource TabItem.Selection.Foreground}"/>
+            </Style>
+        </Style>
+    </ControlTheme>
+
+</ResourceDictionary>

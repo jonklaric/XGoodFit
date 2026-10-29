@@ -1,0 +1,403 @@
+<!-- Ported from upstream/WPF-Framework/src/Themes/Resources/Controls/Menu.xaml. Conversion rules: Button.axaml. -->
+    <!--
+      Originally from the Wide framework:
+      https://github.com/chandramouleswaran/Wide
+
+      Used in Gemini with kind permission of the author.
+
+      Original licence follows:
+
+      Copyright (c) 2013 Chandramouleswaran Ravichandran
+      Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+      The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+      THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+    -->
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:conv="using:Avalonia.Controls.Converters">
+
+    <!--
+    XGoodFit port notes:
+    - WPF picks a MenuItem template by its Role. Here the menu bar's items get MetroTopLevelMenuItem
+      (Menu.ItemContainerTheme): TopLevelHeader, or TopLevelItem when it has no items (:empty). Every
+      other MenuItem gets MetroMenuItem: SubmenuItem, or SubmenuHeader when it has items.
+    - IsHighlighted is :selected and IsSubmenuOpen is :open. The popups are named PART_Popup, and their
+      items hosts become ItemsPresenters. Avalonia's menus wrap arrow-key navigation themselves, as
+      KeyboardNavigation.DirectionalNavigation="Cycle" does in WPF.
+    - The shortcut column shows InputGesture, Avalonia's counterpart of InputGestureText, formatted
+      for the platform.
+    - Separators in menus get MenuItemSeparatorStyle (WPF's MenuItem.SeparatorStyleKey) from a style in
+      Defaults.axaml, as WPF's menus apply that key themselves.
+    - Upstream's implicit Separator style here is based on an undefined MetroSeparator. WPF never
+      creates it, because Separator.xaml's implicit style, merged later, takes precedence, so it isn't
+      ported.
+    - The popups' Fade animation (150 ms in WPF) and the context menu's Loaded storyboard (0.2 s)
+      become style animations that run when they open. WPF skips the fade when moving between open
+      menus (IsSuspendingPopupAnimation), which Avalonia doesn't report.
+    - The submenu popup's Opacity="0" isn't ported: WPF doesn't apply a Popup's opacity to its
+      content, and Avalonia would hide the submenu.
+    - The disabled-image styles in MetroMenuItem's Style.Resources dim the icon presenter.
+    -->
+
+    <StreamGeometry x:Key="Checkmark">M 0,5.1 L 1.7,5.2 L 3.4,7.1 L 8,0.4 L 9.2,0 L 3.3,10.8 Z</StreamGeometry>
+    <StreamGeometry x:Key="RightArrow">M 0,0 L 4,3.5 L 0,7 Z</StreamGeometry>
+
+    <conv:PlatformKeyGestureConverter x:Key="MenuItemKeyGestureConverter"/>
+
+    <!-- Original style from http://www.jeff.wilcox.name/2010/05/zunelike-contextmenu-style/ -->
+    <!-- MenuItem.SeparatorStyleKey -->
+    <ControlTheme x:Key="MenuItemSeparatorStyle" TargetType="Separator">
+        <Setter Property="Background" Value="{DynamicResource MenuPopupDefaultSeparator}" />
+        <Setter Property="IsTabStop" Value="False" />
+        <Setter Property="VerticalAlignment" Value="Stretch" />
+        <Setter Property="Margin" Value="0" />
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition MinWidth="25" Width="Auto" SharedSizeGroup="Icon" />
+                        <ColumnDefinition MinWidth="90" Width="*" />
+                        <ColumnDefinition MinWidth="50" Width="Auto" SharedSizeGroup="Shortcut" />
+                        <ColumnDefinition MinWidth="13" Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <Border Grid.Column="1" Grid.ColumnSpan="3"
+                            Margin="4 1 4 1"
+                            Background="{TemplateBinding Background}" Height="1" />
+                </Grid>
+            </ControlTemplate>
+        </Setter>
+    </ControlTheme>
+
+    <!-- MenuItem Style, Role TopLevelHeader and TopLevelItem -->
+    <ControlTheme x:Key="MetroTopLevelMenuItem" TargetType="MenuItem">
+        <Setter Property="Foreground" Value="{DynamicResource MenuDefaultText}" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="7,2,8,3" />
+
+        <!-- TopLevelHeader -->
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border Name="OuterBorder" BorderThickness="1,1,1,0" BorderBrush="Transparent"
+                        TextElement.Foreground="{DynamicResource MenuTopLevelHeaderDefaultText}">
+                    <Border Name="InnerBorder" BorderThickness="0,0,0,1" BorderBrush="Transparent">
+                        <Grid>
+                            <ContentPresenter Name="PART_HeaderPresenter" Margin="6,3,6,3"
+                                              Content="{TemplateBinding Header}"
+                                              ContentTemplate="{TemplateBinding HeaderTemplate}"
+                                              RecognizesAccessKey="True" />
+                            <Popup Name="PART_Popup" Placement="BottomEdgeAlignedLeft" HorizontalOffset="-1.1"
+                                   IsOpen="{TemplateBinding IsSubMenuOpen, Mode=TwoWay}"
+                                   IsLightDismissEnabled="True"
+                                   OverlayInputPassThroughElement="{Binding $parent[Menu]}"
+                                   Focusable="False"
+                                   Margin="-10,-10,-10,-10">
+                                <Border Name="SubmenuBorder"
+                                        Background="{DynamicResource MenuPopupDefaultBackground}"
+                                        BorderBrush="{DynamicResource MenuPopupDefaultBorder}"
+                                        BorderThickness="1" Margin="0 0 8 8"
+                                        Effect="{DynamicResource StandardDropShadow}">
+                                    <StackPanel>
+                                        <!--
+                                        The illusion. XGoodFit port: WPF draws a 2-pixel Line at Y=-1 that takes no
+                                        space; this rectangle covers the same pixels.
+                                        -->
+                                        <Rectangle Fill="{DynamicResource MenuPopupDefaultBackground}"
+                                                   Height="2" Margin="0,-2,0,0" HorizontalAlignment="Left"
+                                                   Width="{Binding #InnerBorder.Bounds.Width}" />
+                                        <Grid>
+                                            <Border Background="{DynamicResource MenuPopupDefaultIconBackground}"
+                                                    Width="27" HorizontalAlignment="Left" />
+                                            <ItemsPresenter Name="PART_ItemsPresenter"
+                                                            ItemsPanel="{TemplateBinding ItemsPanel}"
+                                                            Grid.IsSharedSizeScope="True" Margin="2" />
+                                        </Grid>
+                                    </StackPanel>
+                                </Border>
+                            </Popup>
+                        </Grid>
+                    </Border>
+                </Border>
+            </ControlTemplate>
+        </Setter>
+
+        <Style Selector="^:open /template/ Border#SubmenuBorder">
+            <Style.Animations>
+                <Animation Duration="0:0:0.15">
+                    <KeyFrame Cue="0%"><Setter Property="Opacity" Value="0" /></KeyFrame>
+                    <KeyFrame Cue="100%"><Setter Property="Opacity" Value="1" /></KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+        <Style Selector="^:selected:not(:open)">
+            <Style Selector="^ /template/ Border#OuterBorder">
+                <Setter Property="Background" Value="{DynamicResource MenuTopLevelHeaderHoveredBackground}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource MenuTopLevelHeaderHoveredBorder}" />
+                <Setter Property="TextElement.Foreground" Value="{DynamicResource MenuTopLevelHeaderHoveredText}" />
+            </Style>
+            <Style Selector="^ /template/ Border#InnerBorder">
+                <Setter Property="BorderBrush" Value="{DynamicResource MenuTopLevelHeaderHoveredBorder}" />
+            </Style>
+        </Style>
+        <Style Selector="^:open /template/ Border#OuterBorder">
+            <Setter Property="Background" Value="{DynamicResource MenuTopLevelHeaderPressedBackground}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource MenuTopLevelHeaderPressedBorder}" />
+            <Setter Property="TextElement.Foreground" Value="{DynamicResource MenuTopLevelHeaderPressedText}" />
+        </Style>
+
+        <!-- TopLevelItem -->
+        <Style Selector="^:empty">
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Border Name="Border">
+                        <Grid>
+                            <ContentPresenter Name="PART_HeaderPresenter" Margin="6,3,6,3"
+                                              Content="{TemplateBinding Header}"
+                                              ContentTemplate="{TemplateBinding HeaderTemplate}"
+                                              RecognizesAccessKey="True" />
+                        </Grid>
+                    </Border>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+        <Style Selector="^:empty:selected /template/ Border#Border">
+            <Setter Property="Background" Value="{DynamicResource MenuTopLevelHeaderHoveredBackground}" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+        </Style>
+
+        <Style Selector="^:disabled">
+            <Setter Property="Foreground" Value="{DynamicResource DisabledMenuItemBrush}" />
+        </Style>
+    </ControlTheme>
+
+    <!-- MenuItem Style, Role SubmenuItem and SubmenuHeader -->
+    <ControlTheme x:Key="MetroMenuItem" TargetType="MenuItem">
+        <Setter Property="Foreground" Value="{DynamicResource MenuDefaultText}" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="2,3,2,3" />
+
+        <!--Submenu item template-->
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border Name="Border">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition MinWidth="25" Width="Auto" SharedSizeGroup="Icon" />
+                            <ColumnDefinition MinWidth="90" Width="*" />
+                            <ColumnDefinition MinWidth="50" Width="Auto" SharedSizeGroup="Shortcut" />
+                            <ColumnDefinition MinWidth="13" Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition MinHeight="22" Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <Border x:Name="IconContainer" Grid.Column="0"
+                                Background="Transparent"
+                                Padding="5,3,4,3">
+                            <Grid>
+                                <ContentPresenter x:Name="Icon"
+                                                  HorizontalAlignment="Center"
+                                                  VerticalAlignment="Center"
+                                                  Height="16" Width="16"
+                                                  Content="{TemplateBinding Icon}" />
+                                <Border x:Name="Check"
+                                        VerticalAlignment="Center" HorizontalAlignment="Center"
+                                        Width="16" Height="16"
+                                        IsVisible="False"
+                                        Background="{DynamicResource MenuPopupDefaultCheckmarkBackground}"
+                                        BorderThickness="0" BorderBrush="{DynamicResource MenuPopupDefaultCheckmark}">
+                                    <Path x:Name="CheckMark" Width="8" Height="8"
+                                          Stroke="{DynamicResource MenuPopupDefaultCheckmark}" StrokeThickness="2"
+                                          Data="M 0 4 L 3 7 7 0" />
+                                </Border>
+                            </Grid>
+                        </Border>
+                        <Border Grid.Column="1" Padding="6 2 0 2">
+                            <ContentPresenter x:Name="HeaderHost"
+                                              VerticalAlignment="Center"
+                                              Content="{TemplateBinding Header}"
+                                              ContentTemplate="{TemplateBinding HeaderTemplate}"
+                                              RecognizesAccessKey="True" />
+                        </Border>
+                        <TextBlock x:Name="InputGestureText" Grid.Column="2"
+                                   Padding="0 2 2 2"
+                                   Margin="6 0 0 0"
+                                   VerticalAlignment="Center"
+                                   Text="{TemplateBinding InputGesture, Converter={StaticResource MenuItemKeyGestureConverter}}"
+                                   DockPanel.Dock="Right" />
+                    </Grid>
+                </Border>
+            </ControlTemplate>
+        </Setter>
+
+        <!--Submenu Header template-->
+        <Style Selector="^:not(:empty)">
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Border Name="Border">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition MinWidth="25" Width="Auto" SharedSizeGroup="Icon" />
+                                <ColumnDefinition MinWidth="90" Width="*" />
+                                <ColumnDefinition MinWidth="50" Width="Auto" SharedSizeGroup="Shortcut" />
+                                <ColumnDefinition MinWidth="13" Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition MinHeight="24" Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <Border x:Name="IconContainer" Grid.Column="0"
+                                    Background="Transparent"
+                                    Padding="5,3,4,3">
+                                <Grid>
+                                    <ContentPresenter x:Name="Icon"
+                                                      HorizontalAlignment="Center"
+                                                      VerticalAlignment="Center"
+                                                      Height="16" Width="16"
+                                                      Content="{TemplateBinding Icon}" />
+                                </Grid>
+                            </Border>
+                            <Border Grid.Column="1" Padding="6 2 0 2">
+                                <ContentPresenter x:Name="HeaderHost"
+                                                  VerticalAlignment="Center"
+                                                  Content="{TemplateBinding Header}"
+                                                  ContentTemplate="{TemplateBinding HeaderTemplate}"
+                                                  RecognizesAccessKey="True" />
+                            </Border>
+                            <TextBlock x:Name="InputGestureText" Grid.Column="2"
+                                       Margin="6 0 0 0"
+                                       Padding="0 2 2 2"
+                                       VerticalAlignment="Center"
+                                       Text="{TemplateBinding InputGesture, Converter={StaticResource MenuItemKeyGestureConverter}}"
+                                       DockPanel.Dock="Right" />
+                            <Path x:Name="ArrowPath" Grid.Column="3" HorizontalAlignment="Left" VerticalAlignment="Center"
+                                  Data="{StaticResource RightArrow}" Fill="{DynamicResource MenuPopupDefaultArrow}" />
+                            <Popup Name="PART_Popup" Placement="RightEdgeAlignedTop" HorizontalOffset="-2"
+                                   IsOpen="{TemplateBinding IsSubMenuOpen, Mode=TwoWay}"
+                                   IsLightDismissEnabled="False"
+                                   Focusable="False">
+                                <Border Name="SubmenuBorder"
+                                        Background="{DynamicResource MenuPopupDefaultBackground}"
+                                        BorderBrush="{DynamicResource MenuPopupDefaultBorder}"
+                                        BorderThickness="1" Margin="0 0 8 8"
+                                        Effect="{DynamicResource StandardDropShadow}">
+                                    <Grid>
+                                        <Border Background="{DynamicResource MenuPopupDefaultIconBackground}"
+                                                Width="27" HorizontalAlignment="Left" />
+                                        <ItemsPresenter Name="PART_ItemsPresenter"
+                                                        ItemsPanel="{TemplateBinding ItemsPanel}"
+                                                        Grid.IsSharedSizeScope="True" />
+                                    </Grid>
+                                </Border>
+                            </Popup>
+                        </Grid>
+                    </Border>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+
+        <!-- Style.Resources: disabled images and paths in the item, the icon in practice -->
+        <Style Selector="^:disabled /template/ ContentPresenter#Icon">
+            <Setter Property="Opacity" Value="0.5" />
+        </Style>
+
+        <!-- ControlTemplate.Triggers -->
+        <Style Selector="^:open /template/ Border#SubmenuBorder">
+            <Style.Animations>
+                <Animation Duration="0:0:0.15">
+                    <KeyFrame Cue="0%"><Setter Property="Opacity" Value="0" /></KeyFrame>
+                    <KeyFrame Cue="100%"><Setter Property="Opacity" Value="1" /></KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+        <!-- Icon is null: Visibility Hidden -->
+        <Style Selector="^:not(:icon) /template/ ContentPresenter#Icon">
+            <Setter Property="Opacity" Value="0" />
+            <Setter Property="IsHitTestVisible" Value="False" />
+        </Style>
+        <Style Selector="^:empty:checked">
+            <Style Selector="^ /template/ ContentPresenter#Icon">
+                <Setter Property="IsVisible" Value="False" />
+            </Style>
+            <Style Selector="^ /template/ Border#Check">
+                <Setter Property="IsVisible" Value="True" />
+            </Style>
+        </Style>
+        <Style Selector="^:selected">
+            <Style Selector="^ /template/ Border#Border">
+                <Setter Property="Background" Value="{DynamicResource MenuPopupHoveredItemBackground}" />
+            </Style>
+            <Style Selector="^ /template/ Border#IconContainer">
+                <Setter Property="Background" Value="{DynamicResource MenuPopupHoveredItemBackground}" />
+            </Style>
+            <Style Selector="^ /template/ Path#ArrowPath">
+                <Setter Property="Fill" Value="{DynamicResource MenuPopupHoveredArrow}" />
+            </Style>
+        </Style>
+        <Style Selector="^:disabled">
+            <Setter Property="Foreground" Value="{DynamicResource DisabledMenuItemBrush}" />
+        </Style>
+    </ControlTheme>
+
+    <ControlTheme x:Key="MetroContextMenu" TargetType="ContextMenu">
+        <Setter Property="Background" Value="{DynamicResource MenuPopupDefaultBackground}" />
+        <Setter Property="Foreground" Value="{DynamicResource EnvironmentWindowText}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="BorderBrush" Value="{DynamicResource MenuPopupDefaultBorder}" />
+        <Setter Property="Padding" Value="0,2,0,2" />
+        <Setter Property="UseLayoutRounding" Value="True" />
+        <!-- XGoodFit port: Avalonia's menus need focus for keyboard navigation (as its own themes set). -->
+        <Setter Property="Focusable" Value="True" />
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border Margin="2" x:Name="Menu"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        Background="{TemplateBinding Background}"
+                        CornerRadius="0"
+                        Effect="{DynamicResource StandardDropShadow}">
+                    <Grid>
+                        <ItemsPresenter Name="PART_ItemsPresenter"
+                                        ItemsPanel="{TemplateBinding ItemsPanel}"
+                                        KeyboardNavigation.TabNavigation="Continue"
+                                        Margin="{TemplateBinding Padding}" />
+                    </Grid>
+                </Border>
+            </ControlTemplate>
+        </Setter>
+
+        <!-- Border.Triggers: fade in when shown (WPF: on Loaded) -->
+        <Style Selector="^[IsOpen=True] /template/ Border#Menu">
+            <Style.Animations>
+                <Animation Duration="0:0:0.2">
+                    <KeyFrame Cue="0%"><Setter Property="Opacity" Value="0" /></KeyFrame>
+                    <KeyFrame Cue="100%"><Setter Property="Opacity" Value="1" /></KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+    </ControlTheme>
+
+    <ControlTheme x:Key="StandardMenu" TargetType="Menu">
+        <Setter Property="Foreground" Value="{DynamicResource MenuDefaultText}" />
+        <Setter Property="ItemContainerTheme" Value="{StaticResource MetroTopLevelMenuItem}" />
+        <Setter Property="ItemsPanel">
+            <ItemsPanelTemplate>
+                <WrapPanel ClipToBounds="True" Orientation="Horizontal" />
+            </ItemsPanelTemplate>
+        </Setter>
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border Background="{DynamicResource MenuDefaultBackground}"
+                        BorderBrush="{DynamicResource MenuDefaultBackground}"
+                        BorderThickness="1">
+                    <ItemsPresenter Name="PART_ItemsPresenter"
+                                    ItemsPanel="{TemplateBinding ItemsPanel}"
+                                    KeyboardNavigation.TabNavigation="Continue" />
+                </Border>
+            </ControlTemplate>
+        </Setter>
+    </ControlTheme>
+
+    <!--Set default styles-->
+    <ControlTheme x:Key="{x:Type MenuItem}" TargetType="MenuItem" BasedOn="{StaticResource MetroMenuItem}" />
+    <ControlTheme x:Key="{x:Type Menu}" TargetType="Menu" BasedOn="{StaticResource StandardMenu}" />
+    <ControlTheme x:Key="{x:Type ContextMenu}" TargetType="ContextMenu" BasedOn="{StaticResource MetroContextMenu}" />
+
+</ResourceDictionary>

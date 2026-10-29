@@ -1,0 +1,40 @@
+<!-- Ported from upstream/WPF-Framework/src/Themes/Resources/Controls/ToolTip.xaml. Conversion rules: Button.axaml. -->
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!--This Dictionary is taken from the Gemini project https://github.com/tgjones/gemini-->
+
+    <!--
+    XGoodFit port notes:
+    - The implicit TextBlock style in WPF's Style.Resources wraps the tool tip's text. Avalonia's
+      TextWrapping is inherited, so the content presenter sets it for all the text inside it.
+    - Not ported: HasDropShadow="False" and its trigger, which only repeats the template's values.
+      Avalonia tool tips have no drop shadow.
+    -->
+    <ControlTheme x:Key="{x:Type ToolTip}" TargetType="ToolTip">
+        <Setter Property="Background" Value="{DynamicResource EnvironmentToolTipBackground}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource EnvironmentToolTipBorder}" />
+        <Setter Property="Foreground" Value="{DynamicResource EnvironmentToolTipText}" />
+        <Setter Property="MaxWidth" Value="300"/>
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border Name="Border"
+                        BorderThickness="1"
+                        Width="{TemplateBinding Width}"
+                        Height="{TemplateBinding Height}"
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        CornerRadius="4">
+                    <ContentPresenter Name="PART_ContentPresenter"
+                                      Content="{TemplateBinding Content}"
+                                      ContentTemplate="{TemplateBinding ContentTemplate}"
+                                      TextWrapping="Wrap"
+                                      Margin="4"
+                                      HorizontalAlignment="Left"
+                                      VerticalAlignment="Top" />
+                </Border>
+            </ControlTemplate>
+        </Setter>
+    </ControlTheme>
+
+</ResourceDictionary>

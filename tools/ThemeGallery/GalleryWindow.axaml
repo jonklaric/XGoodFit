@@ -2,11 +2,61 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         x:Class="ThemeGallery.GalleryWindow"
         Title="XGoodFit theme gallery"
-        Width="1280" Height="900"
+        Width="1280" Height="960"
         Background="{DynamicResource EnvironmentWindowBackground}"
         Foreground="{DynamicResource EnvironmentWindowText}">
-    <DockPanel Margin="10">
-        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="12" Margin="0,0,0,10">
+    <Window.Styles>
+        <Style Selector="Border.card">
+            <Setter Property="Width" Value="300"/>
+            <Setter Property="Margin" Value="0,0,10,10"/>
+            <Setter Property="Padding" Value="8"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource GroupBoxBorder}"/>
+        </Style>
+        <Style Selector="Border.card > StackPanel">
+            <Setter Property="Spacing" Value="6"/>
+        </Style>
+        <Style Selector="TextBlock.title">
+            <Setter Property="FontWeight" Value="Bold"/>
+        </Style>
+    </Window.Styles>
+
+    <DockPanel>
+        <!-- The gallery's own menu bar is a live sample of the Menu theme. -->
+        <Menu x:Name="MainMenu" DockPanel.Dock="Top">
+            <MenuItem x:Name="FileMenu" Header="_File">
+                <MenuItem Header="_New Project" InputGesture="Ctrl+N"/>
+                <MenuItem Header="_Open Project..." InputGesture="Ctrl+O">
+                    <MenuItem.Icon>
+                        <Path Data="M 1,3 L 6,3 L 7,5 L 15,5 L 15,14 L 1,14 Z" Fill="{DynamicResource ToolbarIconAccent}"/>
+                    </MenuItem.Icon>
+                </MenuItem>
+                <MenuItem x:Name="RecentMenu" Header="Recent Projects">
+                    <MenuItem Header="1 Example Project.bestfit"/>
+                    <MenuItem Header="2 Bulletin 17C Example.bestfit"/>
+                </MenuItem>
+                <Separator/>
+                <MenuItem Header="_Save" InputGesture="Ctrl+S"/>
+                <MenuItem Header="Save _As..." IsEnabled="False">
+                    <MenuItem.Icon>
+                        <Path Data="M 1,1 L 13,1 L 15,3 L 15,15 L 1,15 Z" Fill="{DynamicResource ToolbarIconAccent}"/>
+                    </MenuItem.Icon>
+                </MenuItem>
+                <Separator/>
+                <MenuItem Header="E_xit"/>
+            </MenuItem>
+            <MenuItem Header="_Edit">
+                <MenuItem Header="_Undo" InputGesture="Ctrl+Z"/>
+                <MenuItem Header="_Redo" InputGesture="Ctrl+Y"/>
+            </MenuItem>
+            <MenuItem Header="_View">
+                <MenuItem Header="Project Explorer" ToggleType="CheckBox" IsChecked="True"/>
+                <MenuItem Header="Properties" ToggleType="CheckBox"/>
+            </MenuItem>
+            <MenuItem Header="_About"/>
+        </Menu>
+
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="12" Margin="10,8">
             <TextBlock Text="Theme:" VerticalAlignment="Center" FontWeight="Bold"/>
             <RadioButton x:Name="LightTheme" Content="Light" GroupName="Theme" IsChecked="True" IsCheckedChanged="OnThemeChecked"/>
             <RadioButton x:Name="BlueTheme" Content="Blue" GroupName="Theme" IsCheckedChanged="OnThemeChecked"/>
@@ -14,55 +64,193 @@
             <TextBlock x:Name="Summary" VerticalAlignment="Center" Opacity="0.7"/>
         </StackPanel>
 
-        <Grid ColumnDefinitions="*,12,330">
-            <!-- Every palette key, as a live swatch. -->
-            <ScrollViewer Grid.Column="0">
-                <ItemsControl x:Name="Groups"/>
-            </ScrollViewer>
+        <TabControl x:Name="Pages" Margin="10,0,10,10">
+            <!-- Standard controls. Those whose themes aren't ported yet keep Avalonia's Simple theme (Phase 3). -->
+            <TabItem x:Name="ControlsPage" Header="Controls">
+                <ScrollViewer>
+                    <WrapPanel Margin="0,10,0,0">
+                        <Border Classes="card">
+                            <StackPanel>
+                                <TextBlock Classes="title" Text="Text"/>
+                                <TextBlock Text="The quick brown fox jumps over the lazy dog. 0123456789" TextWrapping="Wrap"/>
+                                <Label Content="_Label with an access key"/>
+                            </StackPanel>
+                        </Border>
+                        <Border Classes="card">
+                            <StackPanel>
+                                <TextBlock Classes="title" Text="Buttons"/>
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <Button Content="Button" Padding="8,2"/>
+                                    <Button Content="Disabled" Padding="8,2" IsEnabled="False"/>
+                                    <ToggleButton Content="Toggle" Padding="8,2" IsChecked="True"/>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Spacing="2">
+                                    <ToggleButton Theme="{DynamicResource StackPanelToggleButtonStyle}" Content="Panel toggle" IsChecked="True"/>
+                                    <ToggleButton Theme="{DynamicResource StackPanelToggleButtonStyle}" Content="Panel toggle"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+                        <Border Classes="card">
+                            <StackPanel>
+                                <TextBlock Classes="title" Text="Check boxes and radio buttons"/>
+                                <StackPanel Orientation="Horizontal" Spacing="10">
+                                    <CheckBox Content="Checked" IsChecked="True"/>
+                                    <CheckBox Content="Unchecked"/>
+                                    <CheckBox Content="Mixed" IsThreeState="True" IsChecked="{x:Null}"/>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Spacing="10">
+                                    <RadioButton Content="Option A" GroupName="Sample" IsChecked="True"/>
+                                    <RadioButton Content="Option B" GroupName="Sample"/>
+                                    <RadioButton Content="Disabled" GroupName="Sample" IsEnabled="False"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+                        <Border Classes="card">
+                            <StackPanel>
+                                <TextBlock Classes="title" Text="Text boxes (with a context menu)"/>
+                                <TextBox x:Name="SampleTextBox" Text="Text box"/>
+                                <TextBox Text="Disabled" IsEnabled="False"/>
+                            </StackPanel>
+                        </Border>
+                        <Border Classes="card">
+                            <StackPanel>
+                                <TextBlock Classes="title" Text="Scroll viewer and separators"/>
+                                <ScrollViewer Height="70" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+                                    <TextBlock Width="600" Height="160" TextWrapping="Wrap"
+                                               Text="A scroll viewer with both scroll bars. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."/>
+                                </ScrollViewer>
+                                <Separator/>
+                                <StackPanel Orientation="Horizontal" Height="18">
+                                    <TextBlock Text="Left" VerticalAlignment="Center"/>
+                                    <Separator Theme="{DynamicResource VerticalSeparatorStyle}"/>
+                                    <TextBlock Text="Right" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+                        <Border Classes="card">
+                            <StackPanel>
+                                <TextBlock Classes="title" Text="Combo box and list box"/>
+                                <ComboBox x:Name="SampleComboBox" SelectedIndex="0" HorizontalAlignment="Stretch">
+                                    <ComboBoxItem Content="Log-Pearson Type III"/>
+                                    <ComboBoxItem Content="Generalized Extreme Value"/>
+                                    <ComboBoxItem Content="Gumbel"/>
+                                    <ComboBoxItem Content="Disabled item" IsEnabled="False"/>
+                                </ComboBox>
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <ComboBox SelectedIndex="0" Width="140" IsEnabled="False">
+                                        <ComboBoxItem Content="Disabled"/>
+                                    </ComboBox>
+                                    <ComboBox IsEditable="True" Text="Editable" Width="140">
+                                        <ComboBoxItem Content="Editable"/>
+                                    </ComboBox>
+                                </StackPanel>
+                                <ListBox Height="72" SelectedIndex="1">
+                                    <ListBoxItem Content="Time Series Data"/>
+                                    <ListBoxItem Content="Input Data"/>
+                                    <ListBoxItem Content="Distribution Fitting"/>
+                                </ListBox>
+                            </StackPanel>
+                        </Border>
+                        <Border Classes="card">
+                            <StackPanel>
+                                <TextBlock Classes="title" Text="Slider and progress bar"/>
+                                <Slider Minimum="0" Maximum="100" Value="40"/>
+                                <ProgressBar Minimum="0" Maximum="100" Value="65" Height="14"/>
+                            </StackPanel>
+                        </Border>
+                        <Border Classes="card">
+                            <StackPanel>
+                                <TextBlock Classes="title" Text="Expander and group box"/>
+                                <Expander Header="Expander" IsExpanded="True">
+                                    <TextBlock Text="Expanded content"/>
+                                </Expander>
+                                <GroupBox Header="Group box">
+                                    <TextBlock Text="Grouped content"/>
+                                </GroupBox>
+                            </StackPanel>
+                        </Border>
+                        <Border Classes="card">
+                            <StackPanel>
+                                <TextBlock Classes="title" Text="Tab controls"/>
+                                <TabControl Height="60">
+                                    <TabItem Header="Plot"><TextBlock Text="Default tabs"/></TabItem>
+                                    <TabItem Header="Table"><TextBlock Text="Second tab"/></TabItem>
+                                </TabControl>
+                                <TabControl Height="60" Background="Transparent">
+                                    <TabItem Header="X-Y Plot" Theme="{DynamicResource HorizontalTabItemStyle}"><TextBlock Text="Horizontal tab item style"/></TabItem>
+                                    <TabItem Header="Tabular Results" Theme="{DynamicResource HorizontalTabItemStyle}"><TextBlock Text="Second tab"/></TabItem>
+                                </TabControl>
+                                <TabControl Height="60">
+                                    <TabItem Header="General" Theme="{DynamicResource PropertiesTabItemStyle}"><TextBlock Text="Properties tab item style"/></TabItem>
+                                    <TabItem Header="Options" Theme="{DynamicResource PropertiesTabItemStyle}"><TextBlock Text="Options"/></TabItem>
+                                    <TabItem Header="Output" Theme="{DynamicResource PropertiesTabItemStyle}"><TextBlock Text="Output"/></TabItem>
+                                </TabControl>
+                            </StackPanel>
+                        </Border>
+                        <Border Classes="card">
+                            <StackPanel>
+                                <TextBlock Classes="title" Text="Tab control with tabs on the left"/>
+                                <TabControl Height="110" TabStripPlacement="Left" Background="Transparent">
+                                    <TabItem Header="Distribution Results" Theme="{DynamicResource VerticalTabItemStyle}"><TextBlock Text="Vertical tab item style" Margin="6"/></TabItem>
+                                    <TabItem Header="Parameter Sets" Theme="{DynamicResource VerticalTabItemStyle}"><TextBlock Text="Second tab" Margin="6"/></TabItem>
+                                    <TabItem Header="MCMC Report" Theme="{DynamicResource VerticalTabItemStyle}"><TextBlock Text="Third tab" Margin="6"/></TabItem>
+                                </TabControl>
+                                <TabControl Height="60" TabStripPlacement="Left">
+                                    <TabItem Header="Left"><TextBlock Text="Default tabs on the left"/></TabItem>
+                                    <TabItem Header="Tabs"><TextBlock Text="Second tab"/></TabItem>
+                                </TabControl>
+                            </StackPanel>
+                        </Border>
+                        <Border Classes="card">
+                            <StackPanel>
+                                <TextBlock Classes="title" Text="Tree view"/>
+                                <TreeView Height="110">
+                                    <TreeViewItem Header="Project">
+                                        <TreeViewItem Header="Time Series Data">
+                                            <TreeViewItem Header="Annual Peak Flows" IsSelected="True"/>
+                                        </TreeViewItem>
+                                        <TreeViewItem Header="Analyses" IsExpanded="False">
+                                            <TreeViewItem Header="Collapsed child"/>
+                                        </TreeViewItem>
+                                        <TreeViewItem Header="Disabled item" IsEnabled="False"/>
+                                    </TreeViewItem>
+                                </TreeView>
+                            </StackPanel>
+                        </Border>
+                        <Border Classes="card">
+                            <StackPanel>
+                                <TextBlock Classes="title" Text="Tool tip"/>
+                                <ToolTip Content="A tool tip, shown in place. Long tips wrap at 300 pixels, as in the WPF theme." HorizontalAlignment="Left"/>
+                            </StackPanel>
+                        </Border>
+                        <Border Classes="card">
+                            <StackPanel>
+                                <TextBlock Classes="title" Text="Grid splitter and tool panel"/>
+                                <Grid ColumnDefinitions="*,Auto,*" Height="60">
+                                    <Border Grid.Column="0" Background="{DynamicResource EnvironmentWindowBackground}">
+                                        <TextBlock Text="Left pane" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                    </Border>
+                                    <GridSplitter Grid.Column="1" ResizeBehavior="PreviousAndNext" HorizontalAlignment="Left" VerticalAlignment="Stretch" Background="Transparent" Theme="{DynamicResource VerticalGridSplitterStyle}"/>
+                                    <Border Grid.Column="2" Background="{DynamicResource EnvironmentWindowBackground}">
+                                        <TextBlock Text="Right pane" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                    </Border>
+                                </Grid>
+                                <StackPanel Orientation="Horizontal" Theme="{DynamicResource StackPanelStyle}">
+                                    <Button Theme="{DynamicResource StackPanelButtonStyleBase}" Content="Panel button"/>
+                                    <Button Theme="{DynamicResource StackPanelButtonStyleBase}" Content="Disabled" IsEnabled="False"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+                    </WrapPanel>
+                </ScrollViewer>
+            </TabItem>
 
-            <!-- Standard controls. They keep Avalonia's Simple theme until their ported themes land (Phase 3). -->
-            <StackPanel Grid.Column="2" Spacing="8">
-                <TextBlock Text="Controls" FontWeight="Bold"/>
-                <TextBlock Text="The quick brown fox jumps over the lazy dog. 0123456789"/>
-                <StackPanel Orientation="Horizontal" Spacing="6">
-                    <Button Content="Button"/>
-                    <Button Content="Disabled" IsEnabled="False"/>
-                </StackPanel>
-                <StackPanel Orientation="Horizontal" Spacing="10">
-                    <CheckBox Content="Checked" IsChecked="True"/>
-                    <CheckBox Content="Unchecked"/>
-                    <CheckBox Content="Mixed" IsThreeState="True" IsChecked="{x:Null}"/>
-                </StackPanel>
-                <StackPanel Orientation="Horizontal" Spacing="10">
-                    <RadioButton Content="Option A" GroupName="Sample" IsChecked="True"/>
-                    <RadioButton Content="Option B" GroupName="Sample"/>
-                </StackPanel>
-                <TextBox Text="Text box"/>
-                <ComboBox SelectedIndex="0" HorizontalAlignment="Stretch">
-                    <ComboBoxItem Content="Log-Pearson Type III"/>
-                    <ComboBoxItem Content="Generalized Extreme Value"/>
-                </ComboBox>
-                <ListBox Height="72" SelectedIndex="1">
-                    <ListBoxItem Content="Time Series Data"/>
-                    <ListBoxItem Content="Input Data"/>
-                    <ListBoxItem Content="Distribution Fitting"/>
-                </ListBox>
-                <Slider Minimum="0" Maximum="100" Value="40"/>
-                <ProgressBar Minimum="0" Maximum="100" Value="65" Height="14"/>
-                <Expander Header="Expander" IsExpanded="True">
-                    <TextBlock Text="Expanded content"/>
-                </Expander>
-                <TabControl Height="80">
-                    <TabItem Header="Plot"><TextBlock Text="First tab"/></TabItem>
-                    <TabItem Header="Table"><TextBlock Text="Second tab"/></TabItem>
-                </TabControl>
-                <TreeView Height="80">
-                    <TreeViewItem Header="Project" IsExpanded="True">
-                        <TreeViewItem Header="Time Series Data"/>
-                        <TreeViewItem Header="Analyses"/>
-                    </TreeViewItem>
-                </TreeView>
-            </StackPanel>
-        </Grid>
+            <!-- Every palette key, as a live swatch. -->
+            <TabItem x:Name="PalettePage" Header="Palette">
+                <ScrollViewer>
+                    <ItemsControl x:Name="Groups" Margin="0,10,0,0"/>
+                </ScrollViewer>
+            </TabItem>
+        </TabControl>
     </DockPanel>
 </Window>

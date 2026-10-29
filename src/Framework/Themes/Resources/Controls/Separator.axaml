@@ -1,0 +1,42 @@
+<!-- Ported from upstream/WPF-Framework/src/Themes/Resources/Controls/Separator.xaml. Conversion rules: Button.axaml. -->
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <ControlTheme x:Key="SeparatorStyle" TargetType="Separator">
+        <Setter Property="Background" Value="{DynamicResource SeparatorBorder}"/>
+        <Setter Property="Margin" Value="0,2,0,2"/>
+        <Setter Property="Focusable" Value="False"/>
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border
+                    BorderBrush="{TemplateBinding BorderBrush}"
+                    BorderThickness="{TemplateBinding BorderThickness}"
+                    Background="{TemplateBinding Background}"
+                    Height="1"/>
+            </ControlTemplate>
+        </Setter>
+    </ControlTheme>
+
+    <ControlTheme x:Key="{x:Type Separator}" TargetType="Separator" BasedOn="{StaticResource SeparatorStyle}" />
+
+    <!--
+    XGoodFit port: WPF turns the horizontal separator with a 90° LayoutTransform, which Avalonia
+    controls don't have. The template draws the same line upright: 1 pixel wide and as tall as the
+    space, with the margin outside it as in WPF.
+    -->
+    <ControlTheme x:Key="VerticalSeparatorStyle"
+                  TargetType="Separator"
+                  BasedOn="{StaticResource {x:Type Separator}}">
+        <Setter Property="Margin" Value="2,1,2,1"/>
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border
+                    BorderBrush="{TemplateBinding BorderBrush}"
+                    BorderThickness="{TemplateBinding BorderThickness}"
+                    Background="{TemplateBinding Background}"
+                    Width="1"/>
+            </ControlTemplate>
+        </Setter>
+    </ControlTheme>
+
+</ResourceDictionary>

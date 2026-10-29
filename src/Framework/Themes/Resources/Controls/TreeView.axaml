@@ -1,0 +1,133 @@
+<!-- Ported from upstream/WPF-Framework/src/Themes/Resources/Controls/TreeView.xaml. Conversion rules: Button.axaml. -->
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!--This Dictionary is taken from the Gemini project https://github.com/tgjones/gemini-->
+
+    <!--
+    XGoodFit port notes:
+    - Avalonia's TreeView and TreeViewItem need PART_ItemsPresenter. The item's header presenter is
+      PART_HeaderPresenter, where Avalonia toggles expansion on a double-tap, as WPF does anywhere in
+      the item; the header row is PART_Header, which Avalonia brings into view.
+    - WPF's items take their content alignment from the ItemsControl above them, which resolves to the
+      tree view's Stretch. Avalonia's tree and items have no content alignment, so the header presenter
+      is stretched directly.
+    - The expander arrow rotates about (3,3) from its top-left corner, as WPF's RenderTransformOrigin
+      (0,0) does; Avalonia's default origin is the centre.
+    - TreeViewItemFocusVisual draws nothing (a Rectangle without a stroke), so items have no focus
+      adorner.
+    - Not ported: the virtualization triggers and ScrollViewer.CanContentScroll (Avalonia's tree
+      scrolls by pixel), and the WPF touch and pen settings ScrollViewer.PanningMode and
+      Stylus.IsFlicksEnabled.
+    -->
+
+    <ControlTheme x:Key="TreeViewStyle" TargetType="TreeView">
+        <Setter Property="Background" Value="{DynamicResource TreeView.Static.Background}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource TreeView.Static.Border}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Padding" Value="1"/>
+        <Setter Property="Foreground" Value="{DynamicResource TreeView.Static.Text}"/>
+        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto"/>
+        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto"/>
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border x:Name="Bd" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}">
+                    <ScrollViewer x:Name="_tv_scrollviewer_" Background="{TemplateBinding Background}" Focusable="False"
+                                  HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
+                                  VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}"
+                                  IsDeferredScrollingEnabled="{TemplateBinding ScrollViewer.IsDeferredScrollingEnabled}"
+                                  BringIntoViewOnFocusChange="{TemplateBinding ScrollViewer.BringIntoViewOnFocusChange}"
+                                  Padding="{TemplateBinding Padding}">
+                        <ItemsPresenter x:Name="PART_ItemsPresenter" ItemsPanel="{TemplateBinding ItemsPanel}"/>
+                    </ScrollViewer>
+                </Border>
+            </ControlTemplate>
+        </Setter>
+
+        <Style Selector="^:disabled /template/ Border#Bd">
+            <Setter Property="Background" Value="{DynamicResource TreeView.Disabled.Background}"/>
+        </Style>
+    </ControlTheme>
+
+    <StreamGeometry x:Key="TreeArrow">M0,0 L0,6 L6,0 z</StreamGeometry>
+
+    <ControlTheme x:Key="ExpandCollapseToggleStyle" TargetType="ToggleButton">
+        <Setter Property="Focusable" Value="False"/>
+        <Setter Property="Width" Value="16"/>
+        <Setter Property="Height" Value="16"/>
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border Background="Transparent" Height="16" Padding="5,5,5,5" Width="16">
+                    <Path x:Name="ExpandPath" Data="{StaticResource TreeArrow}" Fill="{DynamicResource TreeViewItem.TreeArrow.Static.Fill}" Stroke="{DynamicResource TreeViewItem.TreeArrow.Static.Stroke}"
+                          RenderTransformOrigin="0,0">
+                        <Path.RenderTransform>
+                            <RotateTransform Angle="135" CenterY="3" CenterX="3"/>
+                        </Path.RenderTransform>
+                    </Path>
+                </Border>
+            </ControlTemplate>
+        </Setter>
+
+        <Style Selector="^:checked /template/ Path#ExpandPath">
+            <Setter Property="RenderTransform">
+                <RotateTransform Angle="180" CenterY="3" CenterX="3"/>
+            </Setter>
+            <Setter Property="Fill" Value="{DynamicResource TreeViewItem.TreeArrow.Static.Checked.Fill}"/>
+            <Setter Property="Stroke" Value="{DynamicResource TreeViewItem.TreeArrow.Static.Checked.Stroke}"/>
+        </Style>
+        <Style Selector="^:pointerover /template/ Path#ExpandPath">
+            <Setter Property="Stroke" Value="{DynamicResource TreeViewItem.TreeArrow.MouseOver.Stroke}"/>
+            <Setter Property="Fill" Value="{DynamicResource TreeViewItem.TreeArrow.MouseOver.Fill}"/>
+        </Style>
+        <Style Selector="^:pointerover:checked /template/ Path#ExpandPath">
+            <Setter Property="Stroke" Value="{DynamicResource TreeViewItem.TreeArrow.MouseOver.Checked.Stroke}"/>
+            <Setter Property="Fill" Value="{DynamicResource TreeViewItem.TreeArrow.MouseOver.Checked.Fill}"/>
+        </Style>
+    </ControlTheme>
+
+    <ControlTheme x:Key="TreeViewItemStyle" TargetType="TreeViewItem">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Padding" Value="1,0,0,0"/>
+        <Setter Property="Foreground" Value="{DynamicResource TreeViewItem.Static.Text}"/>
+        <Setter Property="FocusAdorner" Value="{x:Null}"/>
+        <Setter Property="IsExpanded" Value="True"/>
+        <Setter Property="Template">
+            <ControlTemplate>
+                <StackPanel>
+                    <Border x:Name="Bd" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}">
+                        <Grid x:Name="PART_Header" Margin="{TemplateBinding Margin}" ColumnDefinitions="19,*">
+                            <ToggleButton x:Name="Expander" ClickMode="Press" IsChecked="{TemplateBinding IsExpanded, Mode=TwoWay}" Theme="{StaticResource ExpandCollapseToggleStyle}"/>
+                            <ContentPresenter Grid.Column="1" x:Name="PART_HeaderPresenter"
+                                              Content="{TemplateBinding Header}"
+                                              ContentTemplate="{TemplateBinding HeaderTemplate}"
+                                              HorizontalAlignment="Stretch"/>
+                        </Grid>
+                    </Border>
+                    <ItemsPresenter x:Name="PART_ItemsPresenter" ItemsPanel="{TemplateBinding ItemsPanel}" Margin="16,0,0,0"/>
+                </StackPanel>
+            </ControlTemplate>
+        </Setter>
+
+        <Style Selector="^[IsExpanded=False] /template/ ItemsPresenter#PART_ItemsPresenter">
+            <Setter Property="IsVisible" Value="False"/>
+        </Style>
+        <!-- HasItems=false: Visibility Hidden -->
+        <Style Selector="^:empty /template/ ToggleButton#Expander">
+            <Setter Property="Opacity" Value="0"/>
+            <Setter Property="IsHitTestVisible" Value="False"/>
+        </Style>
+        <Style Selector="^:selected">
+            <Setter Property="Foreground" Value="{DynamicResource TreeViewItem.Highlight.Static.Text}"/>
+            <Style Selector="^ /template/ Border#Bd">
+                <Setter Property="Background" Value="{DynamicResource TreeViewItem.Highlight.Static}"/>
+            </Style>
+        </Style>
+        <Style Selector="^:disabled">
+            <Setter Property="Foreground" Value="{DynamicResource TreeViewItem.Disabled.Text}"/>
+        </Style>
+    </ControlTheme>
+
+    <ControlTheme x:Key="{x:Type TreeView}" TargetType="TreeView" BasedOn="{StaticResource TreeViewStyle}" />
+    <ControlTheme x:Key="{x:Type TreeViewItem}" TargetType="TreeViewItem" BasedOn="{StaticResource TreeViewItemStyle}" />
+
+</ResourceDictionary>

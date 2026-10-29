@@ -1,0 +1,282 @@
+<!-- Ported from upstream/WPF-Framework/src/Themes/Resources/Controls/ScrollBar.xaml. Conversion rules: Button.axaml. -->
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!--This Dictionary is taken from the Gemini project https://github.com/tgjones/gemini-->
+
+    <!--
+    XGoodFit port notes:
+    - Avalonia's ScrollBar finds its buttons by name rather than by command. The line buttons are
+      PART_LineUpButton and PART_LineDownButton in both orientations (WPF's PART_LineLeftButton and
+      PART_LineRightButton), and the track's page buttons are PART_PageUpButton and PART_PageDownButton.
+      WPF's Track takes its range from the scroll bar itself; Avalonia's is bound to it here.
+    - The sizes WPF reads from SystemParameters are its values at 96 DPI (Merged.axaml). Avalonia's
+      Track keeps the thumb at least 10 pixels long; WPF's minimum is half the button size, 8 pixels,
+      which the thumbs set as MinHeight and MinWidth.
+    - The context menu is WPF's built-in scroll bar menu, with the same items and names.
+    - As in WPF, the buttons and track are enabled only while the pointer is over the scroll bar.
+      Avalonia stops reporting the pointer as over the scroll bar when a drag leaves the captured
+      thumb or button, where WPF keeps it, so the arrows dim during such a drag.
+    - Not ported: Stylus.IsPressAndHoldEnabled and Stylus.IsFlicksEnabled (WPF pen settings).
+    -->
+
+    <ControlTheme x:Key="ScrollBarButton" TargetType="RepeatButton">
+        <Setter Property="FocusAdorner" Value="{DynamicResource GeminiFocusVisual}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="HorizontalContentAlignment" Value="Center"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
+        <Setter Property="Padding" Value="1"/>
+        <Setter Property="Focusable" Value="False"/>
+        <Setter Property="IsTabStop" Value="False"/>
+        <!-- XGoodFit port: WPF's repeat timing with Windows' default keyboard settings, as in RepeatButtonTransparent (Merged.axaml). -->
+        <Setter Property="Delay" Value="500"/>
+        <Setter Property="Interval" Value="33"/>
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border x:Name="border" BorderBrush="{DynamicResource ScrollBar.Static.Border}" BorderThickness="1" Background="{DynamicResource ScrollBar.Static.Background}">
+                    <ContentPresenter x:Name="PART_ContentPresenter" Focusable="False"
+                                      Content="{TemplateBinding Content}"
+                                      ContentTemplate="{TemplateBinding ContentTemplate}"
+                                      HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                </Border>
+            </ControlTemplate>
+        </Setter>
+
+        <Style Selector="^:pointerover /template/ Border#border">
+            <Setter Property="Background" Value="{DynamicResource ScrollBar.MouseOver.Background}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource ScrollBar.MouseOver.Border}"/>
+        </Style>
+        <Style Selector="^:pressed /template/ Border#border">
+            <Setter Property="Background" Value="{DynamicResource ScrollBar.Pressed.Background}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource ScrollBar.Pressed.Border}"/>
+        </Style>
+        <Style Selector="^:disabled">
+            <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
+                <Setter Property="Opacity" Value="0.56"/>
+            </Style>
+            <Style Selector="^ /template/ Border#border">
+                <Setter Property="Background" Value="{DynamicResource ScrollBar.Disabled.Background}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource ScrollBar.Disabled.Border}"/>
+            </Style>
+        </Style>
+    </ControlTheme>
+
+    <!-- Note: RepeatButtonTransparent style is defined in Merged.xaml (shared resource) -->
+    <ControlTheme x:Key="ScrollBarThumbVertical" TargetType="Thumb">
+        <Setter Property="IsTabStop" Value="False"/>
+        <Setter Property="MinHeight" Value="8"/>
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Rectangle x:Name="rectangle" Fill="{DynamicResource ScrollBar.Static.Thumb}" Height="{TemplateBinding Height}" Width="{TemplateBinding Width}" Margin="4,0,4,0"/>
+            </ControlTemplate>
+        </Setter>
+
+        <Style Selector="^:pointerover /template/ Rectangle#rectangle">
+            <Setter Property="Fill" Value="{DynamicResource ScrollBar.MouseOver.Thumb}"/>
+        </Style>
+        <!-- IsDragging -->
+        <Style Selector="^:pressed /template/ Rectangle#rectangle">
+            <Setter Property="Fill" Value="{DynamicResource ScrollBar.Pressed.Thumb}"/>
+        </Style>
+    </ControlTheme>
+
+    <ControlTheme x:Key="ScrollBarThumbHorizontal" TargetType="Thumb">
+        <Setter Property="IsTabStop" Value="False"/>
+        <Setter Property="MinWidth" Value="8"/>
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Rectangle x:Name="rectangle" Fill="{DynamicResource ScrollBar.Static.Thumb}" Height="{TemplateBinding Height}" Width="{TemplateBinding Width}" Margin="0,4,0,4"/>
+            </ControlTemplate>
+        </Setter>
+
+        <Style Selector="^:pointerover /template/ Rectangle#rectangle">
+            <Setter Property="Fill" Value="{DynamicResource ScrollBar.MouseOver.Thumb}"/>
+        </Style>
+        <!-- IsDragging -->
+        <Style Selector="^:pressed /template/ Rectangle#rectangle">
+            <Setter Property="Fill" Value="{DynamicResource ScrollBar.Pressed.Thumb}"/>
+        </Style>
+    </ControlTheme>
+
+    <ControlTheme x:Key="{x:Type ScrollBar}" TargetType="ScrollBar">
+        <Setter Property="Background" Value="{DynamicResource ScrollBar.Static.Background}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource ScrollBar.Static.Border}"/>
+        <Setter Property="Foreground" Value="{DynamicResource SystemColors.ControlTextBrush}"/>
+        <Setter Property="BorderThickness" Value="1,0"/>
+        <Setter Property="Width" Value="{DynamicResource SystemParameters.VerticalScrollBarWidth}"/>
+        <Setter Property="MinWidth" Value="{DynamicResource SystemParameters.VerticalScrollBarWidth}"/>
+        <Setter Property="ContextMenu">
+            <Template>
+                <ContextMenu>
+                    <MenuItem Header="Scroll Here" Command="{Binding $parent[ScrollBar].ScrollHere}"/>
+                    <Separator/>
+                    <MenuItem Header="Top" Command="{Binding $parent[ScrollBar].ScrollToHome}"/>
+                    <MenuItem Header="Bottom" Command="{Binding $parent[ScrollBar].ScrollToEnd}"/>
+                    <Separator/>
+                    <MenuItem Header="Page Up" Command="{Binding $parent[ScrollBar].PageUp}"/>
+                    <MenuItem Header="Page Down" Command="{Binding $parent[ScrollBar].PageDown}"/>
+                    <Separator/>
+                    <MenuItem Header="Scroll Up" Command="{Binding $parent[ScrollBar].LineUp}"/>
+                    <MenuItem Header="Scroll Down" Command="{Binding $parent[ScrollBar].LineDown}"/>
+                </ContextMenu>
+            </Template>
+        </Setter>
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Grid x:Name="Bg">
+                    <Grid.RowDefinitions>
+                        <RowDefinition MaxHeight="{DynamicResource SystemParameters.VerticalScrollBarButtonHeight}"/>
+                        <RowDefinition Height="0.00001*"/>
+                        <RowDefinition MaxHeight="{DynamicResource SystemParameters.VerticalScrollBarButtonHeight}"/>
+                    </Grid.RowDefinitions>
+                    <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Grid.Row="1"/>
+                    <RepeatButton x:Name="PART_LineUpButton" IsEnabled="{TemplateBinding IsPointerOver}" Theme="{StaticResource ScrollBarButton}">
+                        <Path x:Name="ArrowTop" Data="M 0,4 C0,4 0,6 0,6 0,6 3.5,2.5 3.5,2.5 3.5,2.5 7,6 7,6 7,6 7,4 7,4 7,4 3.5,0.5 3.5,0.5 3.5,0.5 0,4 0,4 z" Fill="{DynamicResource ScrollBar.Static.Glyph}" Margin="3,4,3,3" Stretch="Uniform"/>
+                    </RepeatButton>
+                    <Track x:Name="PART_Track" IsDirectionReversed="True" IsEnabled="{TemplateBinding IsPointerOver}" Grid.Row="1"
+                           Minimum="{TemplateBinding Minimum}"
+                           Maximum="{TemplateBinding Maximum}"
+                           Value="{TemplateBinding Value, Mode=TwoWay}"
+                           ViewportSize="{TemplateBinding ViewportSize}"
+                           Orientation="{TemplateBinding Orientation}"
+                           DeferThumbDrag="{TemplateBinding ScrollViewer.IsDeferredScrollingEnabled}">
+                        <Track.DecreaseButton>
+                            <RepeatButton x:Name="PART_PageUpButton" Theme="{DynamicResource RepeatButtonTransparent}"/>
+                        </Track.DecreaseButton>
+                        <Track.IncreaseButton>
+                            <RepeatButton x:Name="PART_PageDownButton" Theme="{DynamicResource RepeatButtonTransparent}"/>
+                        </Track.IncreaseButton>
+                        <Thumb Theme="{StaticResource ScrollBarThumbVertical}"/>
+                    </Track>
+                    <RepeatButton x:Name="PART_LineDownButton" IsEnabled="{TemplateBinding IsPointerOver}" Grid.Row="2" Theme="{StaticResource ScrollBarButton}">
+                        <Path x:Name="ArrowBottom" Data="M 0,2.5 C0,2.5 0,0.5 0,0.5 0,0.5 3.5,4 3.5,4 3.5,4 7,0.5 7,0.5 7,0.5 7,2.5 7,2.5 7,2.5 3.5,6 3.5,6 3.5,6 0,2.5 0,2.5 z" Fill="{DynamicResource ScrollBar.Static.Glyph}" Margin="3,4,3,3" Stretch="Uniform"/>
+                    </RepeatButton>
+                </Grid>
+            </ControlTemplate>
+        </Setter>
+
+        <Style Selector="^:horizontal">
+            <Setter Property="Width" Value="NaN"/>
+            <Setter Property="MinWidth" Value="0"/>
+            <Setter Property="Height" Value="{DynamicResource SystemParameters.HorizontalScrollBarHeight}"/>
+            <Setter Property="MinHeight" Value="{DynamicResource SystemParameters.HorizontalScrollBarHeight}"/>
+            <Setter Property="BorderThickness" Value="0,1"/>
+            <Setter Property="ContextMenu">
+                <Template>
+                    <ContextMenu>
+                        <MenuItem Header="Scroll Here" Command="{Binding $parent[ScrollBar].ScrollHere}"/>
+                        <Separator/>
+                        <MenuItem Header="Left Edge" Command="{Binding $parent[ScrollBar].ScrollToHome}"/>
+                        <MenuItem Header="Right Edge" Command="{Binding $parent[ScrollBar].ScrollToEnd}"/>
+                        <Separator/>
+                        <MenuItem Header="Page Left" Command="{Binding $parent[ScrollBar].PageLeft}"/>
+                        <MenuItem Header="Page Right" Command="{Binding $parent[ScrollBar].PageRight}"/>
+                        <Separator/>
+                        <MenuItem Header="Scroll Left" Command="{Binding $parent[ScrollBar].LineLeft}"/>
+                        <MenuItem Header="Scroll Right" Command="{Binding $parent[ScrollBar].LineRight}"/>
+                    </ContextMenu>
+                </Template>
+            </Setter>
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Grid x:Name="Bg">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition MaxWidth="{DynamicResource SystemParameters.HorizontalScrollBarButtonWidth}"/>
+                            <ColumnDefinition Width="0.00001*"/>
+                            <ColumnDefinition MaxWidth="{DynamicResource SystemParameters.HorizontalScrollBarButtonWidth}"/>
+                        </Grid.ColumnDefinitions>
+                        <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Grid.Column="1"/>
+                        <RepeatButton x:Name="PART_LineUpButton" IsEnabled="{TemplateBinding IsPointerOver}" Theme="{StaticResource ScrollBarButton}">
+                            <Path x:Name="ArrowLeft" Data="M 3.18,7 C3.18,7 5,7 5,7 5,7 1.81,3.5 1.81,3.5 1.81,3.5 5,0 5,0 5,0 3.18,0 3.18,0 3.18,0 0,3.5 0,3.5 0,3.5 3.18,7 3.18,7 z" Fill="{DynamicResource ScrollBar.Static.Glyph}" Margin="3" Stretch="Uniform"/>
+                        </RepeatButton>
+                        <Track x:Name="PART_Track" Grid.Column="1" IsEnabled="{TemplateBinding IsPointerOver}"
+                               Minimum="{TemplateBinding Minimum}"
+                               Maximum="{TemplateBinding Maximum}"
+                               Value="{TemplateBinding Value, Mode=TwoWay}"
+                               ViewportSize="{TemplateBinding ViewportSize}"
+                               Orientation="{TemplateBinding Orientation}"
+                               DeferThumbDrag="{TemplateBinding ScrollViewer.IsDeferredScrollingEnabled}">
+                            <Track.DecreaseButton>
+                                <RepeatButton x:Name="PART_PageUpButton" Theme="{DynamicResource RepeatButtonTransparent}"/>
+                            </Track.DecreaseButton>
+                            <Track.IncreaseButton>
+                                <RepeatButton x:Name="PART_PageDownButton" Theme="{DynamicResource RepeatButtonTransparent}"/>
+                            </Track.IncreaseButton>
+                            <Thumb Theme="{StaticResource ScrollBarThumbHorizontal}"/>
+                        </Track>
+                        <RepeatButton x:Name="PART_LineDownButton" Grid.Column="2" IsEnabled="{TemplateBinding IsPointerOver}" Theme="{StaticResource ScrollBarButton}">
+                            <Path x:Name="ArrowRight" Data="M 1.81,7 C1.81,7 0,7 0,7 0,7 3.18,3.5 3.18,3.5 3.18,3.5 0,0 0,0 0,0 1.81,0 1.81,0 1.81,0 5,3.5 5,3.5 5,3.5 1.81,7 1.81,7 z" Fill="{DynamicResource ScrollBar.Static.Glyph}" Margin="3" Stretch="Uniform"/>
+                        </RepeatButton>
+                    </Grid>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+
+        <!--
+        ControlTemplate.Triggers. The MultiDataTriggers on each line button's IsMouseOver and IsPressed
+        become two selectors: the pressed one is declared later, so it wins while the button is down.
+        -->
+        <Style Selector="^ /template/ RepeatButton#PART_LineUpButton:pointerover > Path, ^ /template/ RepeatButton#PART_LineDownButton:pointerover > Path">
+            <Setter Property="Fill" Value="{DynamicResource ScrollBar.MouseOver.Glyph}"/>
+        </Style>
+        <Style Selector="^ /template/ RepeatButton#PART_LineUpButton:pointerover:pressed > Path, ^ /template/ RepeatButton#PART_LineDownButton:pointerover:pressed > Path">
+            <Setter Property="Fill" Value="{DynamicResource ScrollBar.Pressed.Glyph}"/>
+        </Style>
+        <Style Selector="^:disabled /template/ RepeatButton > Path">
+            <Setter Property="Fill" Value="{DynamicResource ScrollBar.Disabled.Glyph}"/>
+        </Style>
+    </ControlTheme>
+
+    <!--
+    XGoodFit port notes:
+    - Avalonia's ScrollViewer needs its ScrollContentPresenter named PART_ContentPresenter (WPF's
+      PART_ScrollContentPresenter). The ScrollViewer connects the presenter and the scroll bars itself,
+      so the range and visibility bindings WPF spells out aren't needed.
+    - The ScrollGestureRecognizer gives touch panning, which WPF's list controls turn on with
+      ScrollViewer.PanningMode. Touch doesn't hover in Avalonia, so it can't use the scroll bars, which
+      are enabled only under the pointer.
+    -->
+    <ControlTheme x:Key="{x:Type ScrollViewer}" TargetType="ScrollViewer">
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Grid x:Name="Grid" Background="{TemplateBinding Background}" ColumnDefinitions="*,Auto" RowDefinitions="*,Auto">
+                    <ScrollContentPresenter x:Name="PART_ContentPresenter"
+                                            Grid.Row="0"
+                                            Grid.Column="0"
+                                            Margin="{TemplateBinding Padding}"
+                                            ContentTemplate="{TemplateBinding ContentTemplate}"
+                                            HorizontalSnapPointsType="{TemplateBinding HorizontalSnapPointsType}"
+                                            VerticalSnapPointsType="{TemplateBinding VerticalSnapPointsType}"
+                                            HorizontalSnapPointsAlignment="{TemplateBinding HorizontalSnapPointsAlignment}"
+                                            VerticalSnapPointsAlignment="{TemplateBinding VerticalSnapPointsAlignment}"
+                                            ScrollViewer.IsScrollInertiaEnabled="{TemplateBinding IsScrollInertiaEnabled}">
+                        <ScrollContentPresenter.GestureRecognizers>
+                            <ScrollGestureRecognizer CanHorizontallyScroll="{Binding CanHorizontallyScroll, ElementName=PART_ContentPresenter}"
+                                                     CanVerticallyScroll="{Binding CanVerticallyScroll, ElementName=PART_ContentPresenter}"
+                                                     IsScrollInertiaEnabled="{Binding (ScrollViewer.IsScrollInertiaEnabled), ElementName=PART_ContentPresenter}"
+                                                     Offset="{Binding Offset, ElementName=PART_ContentPresenter}"
+                                                     Viewport="{Binding Viewport, ElementName=PART_ContentPresenter}"
+                                                     Extent="{Binding Extent, ElementName=PART_ContentPresenter}"/>
+                        </ScrollContentPresenter.GestureRecognizers>
+                    </ScrollContentPresenter>
+                    <ScrollBar x:Name="PART_VerticalScrollBar"
+                               Grid.Row="0"
+                               Grid.Column="1"
+                               AutomationProperties.AutomationId="VerticalScrollBar"
+                               Cursor="Arrow"
+                               Orientation="Vertical"/>
+                    <ScrollBar x:Name="PART_HorizontalScrollBar"
+                               Grid.Row="1"
+                               Grid.Column="0"
+                               AutomationProperties.AutomationId="HorizontalScrollBar"
+                               Cursor="Arrow"
+                               Orientation="Horizontal"/>
+                    <Grid x:Name="Corner"
+                          Grid.Row="1"
+                          Grid.Column="1"
+                          Background="{DynamicResource ScrollBar.Static.Background}"/>
+                </Grid>
+            </ControlTemplate>
+        </Setter>
+    </ControlTheme>
+</ResourceDictionary>

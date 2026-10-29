@@ -47,14 +47,31 @@
     <SolidColorBrush x:Key="DisabledMenuItemBrush" Color="#FF9A9A9A"/>
 
     <!--
+    XGoodFit port: WPF system values that upstream templates read from SystemColors and
+    SystemParameters. They are fixed at their values on Windows at 96 DPI with the default settings,
+    so every OS looks the same.
+    -->
+    <SolidColorBrush x:Key="SystemColors.ControlTextBrush" Color="#FF000000"/>
+    <SolidColorBrush x:Key="SystemColors.GrayTextBrush" Color="#FF6D6D6D"/>
+    <x:Double x:Key="SystemParameters.VerticalScrollBarWidth">17</x:Double>
+    <x:Double x:Key="SystemParameters.HorizontalScrollBarHeight">17</x:Double>
+    <x:Double x:Key="SystemParameters.VerticalScrollBarButtonHeight">17</x:Double>
+    <x:Double x:Key="SystemParameters.HorizontalScrollBarButtonWidth">17</x:Double>
+    <!-- WPF's ComboBox.MaxDropDownHeight default: a third of the primary screen's height, here 1080 pixels. -->
+    <x:Double x:Key="SystemParameters.ComboBoxMaxDropDownHeight">360</x:Double>
+
+    <!--
     Transparent RepeatButton for Slider and ScrollBar Track areas.
     XGoodFit port: a ControlTheme is complete on its own, as OverridesDefaultStyle="true" made the
-    WPF style.
+    WPF style. Delay and Interval are WPF's RepeatButton defaults with Windows' default keyboard
+    settings (500 and 33 ms); Avalonia's are 300 and 100 ms.
     -->
     <ControlTheme x:Key="RepeatButtonTransparent" TargetType="RepeatButton">
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="Focusable" Value="False"/>
         <Setter Property="IsTabStop" Value="False"/>
+        <Setter Property="Delay" Value="500"/>
+        <Setter Property="Interval" Value="33"/>
         <Setter Property="Template">
             <ControlTemplate>
                 <Rectangle Fill="{TemplateBinding Background}" Height="{TemplateBinding Height}" Width="{TemplateBinding Width}"/>
@@ -72,7 +89,21 @@
         <ResourceInclude Source="avares://Themes/Resources/Controls/Button.axaml"/>
         <ResourceInclude Source="avares://Themes/Resources/Controls/CheckBox.axaml"/>
         <ResourceInclude Source="avares://Themes/Resources/Controls/RadioButton.axaml"/>
+        <ResourceInclude Source="avares://Themes/Resources/Controls/ComboBox.axaml"/>
+        <ResourceInclude Source="avares://Themes/Resources/Controls/GridSplitter.axaml"/>
+        <ResourceInclude Source="avares://Themes/Resources/Controls/GroupBox.axaml"/>
+        <ResourceInclude Source="avares://Themes/Resources/Controls/Label.axaml"/>
+        <ResourceInclude Source="avares://Themes/Resources/Controls/ListBox.axaml"/>
+        <ResourceInclude Source="avares://Themes/Resources/Controls/ListView.axaml"/>
+        <ResourceInclude Source="avares://Themes/Resources/Controls/Menu.axaml"/>
+        <ResourceInclude Source="avares://Themes/Resources/Controls/ScrollBar.axaml"/>
+        <ResourceInclude Source="avares://Themes/Resources/Controls/Separator.axaml"/>
+        <ResourceInclude Source="avares://Themes/Resources/Controls/StackPanel.axaml"/>
+        <ResourceInclude Source="avares://Themes/Resources/Controls/TabControl.axaml"/>
+        <ResourceInclude Source="avares://Themes/Resources/Controls/TextBlock.axaml"/>
         <ResourceInclude Source="avares://Themes/Resources/Controls/TextBox.axaml"/>
+        <ResourceInclude Source="avares://Themes/Resources/Controls/ToolTip.axaml"/>
+        <ResourceInclude Source="avares://Themes/Resources/Controls/TreeView.axaml"/>
     </ResourceDictionary.MergedDictionaries>
 
 </ResourceDictionary>

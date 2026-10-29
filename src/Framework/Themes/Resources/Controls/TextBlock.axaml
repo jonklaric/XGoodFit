@@ -1,0 +1,16 @@
+<!-- Ported from upstream/WPF-Framework/src/Themes/Resources/Controls/TextBlock.xaml. Conversion rules: Button.axaml. -->
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!--
+    Themed TextBlock Style
+
+    Sets the default Foreground for all TextBlock elements to the theme-aware
+    EnvironmentWindowText brush. Without this, TextBlock defaults to black text
+    which is invisible in dark mode.
+    -->
+
+    <ControlTheme x:Key="BasicTextBlockStyle" TargetType="TextBlock">
+        <Setter Property="Foreground" Value="{DynamicResource EnvironmentWindowText}"/>
+    </ControlTheme>
+</ResourceDictionary>

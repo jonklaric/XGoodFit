@@ -1,0 +1,83 @@
+<!-- Ported from upstream/WPF-Framework/src/Themes/Resources/Controls/ListView.xaml. Conversion rules: Button.axaml. -->
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!--
+    XGoodFit port notes:
+    - Avalonia has no ListView. Upstream's ListViews have no GridView, so they become ListBoxes
+      (docs/migration-plan.md §4.3) with Theme="{DynamicResource ListViewStyle}". These themes target
+      ListBox and ListBoxItem, and the list theme gives its items ListViewItemStyle, as WPF's implicit
+      ListViewItem style does. The notes in ListBox.axaml apply here too.
+    -->
+
+    <ControlTheme x:Key="ListViewStyle" TargetType="ListBox">
+        <Setter Property="Background" Value="{DynamicResource ListView.Static.Background}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource ListView.Static.Border}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Foreground" Value="{DynamicResource ListView.Static.Text}"/>
+        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto"/>
+        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto"/>
+        <Setter Property="ItemContainerTheme" Value="{DynamicResource ListViewItemStyle}"/>
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border x:Name="Bd" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="1">
+                    <ScrollViewer x:Name="PART_ScrollViewer" Focusable="False" Padding="{TemplateBinding Padding}"
+                                  HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
+                                  VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}"
+                                  IsDeferredScrollingEnabled="{TemplateBinding ScrollViewer.IsDeferredScrollingEnabled}"
+                                  BringIntoViewOnFocusChange="{TemplateBinding ScrollViewer.BringIntoViewOnFocusChange}">
+                        <ItemsPresenter x:Name="PART_ItemsPresenter" ItemsPanel="{TemplateBinding ItemsPanel}"/>
+                    </ScrollViewer>
+                </Border>
+            </ControlTemplate>
+        </Setter>
+
+        <Style Selector="^:disabled /template/ Border#Bd">
+            <Setter Property="Background" Value="{DynamicResource ListView.Disabled.Background}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource ListView.Disabled.Border}"/>
+        </Style>
+    </ControlTheme>
+
+    <FocusAdornerTemplate x:Key="FocusVisual">
+        <Rectangle Margin="2" Stroke="{DynamicResource SystemColors.ControlTextBrush}" StrokeThickness="1" StrokeDashArray="1,2"/>
+    </FocusAdornerTemplate>
+    <SolidColorBrush x:Key="Item.MouseOver.Background" Color="#1F26A0DA"/>
+    <SolidColorBrush x:Key="Item.MouseOver.Border" Color="#a826A0Da"/>
+    <SolidColorBrush x:Key="Item.SelectedInactive.Background" Color="#3DDADADA"/>
+    <SolidColorBrush x:Key="Item.SelectedInactive.Border" Color="#FFDADADA"/>
+    <SolidColorBrush x:Key="Item.SelectedActive.Background" Color="#3D26A0DA"/>
+    <SolidColorBrush x:Key="Item.SelectedActive.Border" Color="#FF26A0DA"/>
+
+    <ControlTheme x:Key="ListViewItemStyle" TargetType="ListBoxItem">
+        <Setter Property="Padding" Value="4,1"/>
+        <Setter Property="HorizontalContentAlignment" Value="Left"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderBrush" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="FocusAdorner" Value="{StaticResource FocusVisual}"/>
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border x:Name="Bd" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}">
+                    <ContentPresenter x:Name="PART_ContentPresenter"
+                                      Content="{TemplateBinding Content}"
+                                      ContentTemplate="{TemplateBinding ContentTemplate}"
+                                      HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                </Border>
+            </ControlTemplate>
+        </Setter>
+
+        <Style Selector="^:pointerover /template/ Border#Bd">
+            <Setter Property="Background" Value="{DynamicResource ListViewItem.MouseOver.Background}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource ListViewItem.MouseOver.Border}"/>
+        </Style>
+        <Style Selector="^:selected /template/ Border#Bd">
+            <Setter Property="Background" Value="{DynamicResource ListViewItem.Selection.Background}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource ListViewItem.Selection.Border}"/>
+        </Style>
+        <Style Selector="^:disabled /template/ Border#Bd">
+            <Setter Property="TextElement.Foreground" Value="{DynamicResource SystemColors.GrayTextBrush}"/>
+        </Style>
+    </ControlTheme>
+
+</ResourceDictionary>

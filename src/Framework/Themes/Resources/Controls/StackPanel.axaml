@@ -1,0 +1,54 @@
+<!-- Ported from upstream/WPF-Framework/src/Themes/Resources/Controls/StackPanel.xaml. Conversion rules: Button.axaml. -->
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <ControlTheme x:Key="StackPanelStyle" TargetType="StackPanel">
+        <Setter Property="Background" Value="{DynamicResource StackPanelBackground}"/>
+    </ControlTheme>
+
+    <!-- XGoodFit port: Button is Avalonia's base class for buttons, as ButtonBase is WPF's. -->
+    <ControlTheme x:Key="StackPanelButtonStyleBase" TargetType="Button">
+        <Setter Property="Foreground" Value="{DynamicResource ToolbarButtonDefaultText}" />
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border x:Name="Border" BorderThickness="1">
+                    <ContentPresenter x:Name="Content" Margin="2"
+                                      Content="{TemplateBinding Content}"
+                                      ContentTemplate="{TemplateBinding ContentTemplate}"
+                                      HorizontalAlignment="Center"
+                                      VerticalAlignment="Center"
+                                      RecognizesAccessKey="True" />
+                </Border>
+            </ControlTemplate>
+        </Setter>
+
+        <!-- Hovered -->
+        <Style Selector="^:pointerover:not(:pressed)">
+            <Style Selector="^ /template/ Border#Border">
+                <Setter Property="Background" Value="{DynamicResource ToolbarButtonHoveredBackground}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource ToolbarButtonHoveredBorder}" />
+            </Style>
+            <Style Selector="^ /template/ ContentPresenter#Content">
+                <Setter Property="Foreground" Value="{DynamicResource ToolbarButtonHoveredText}" />
+            </Style>
+        </Style>
+
+        <!-- Pressed -->
+        <Style Selector="^:pointerover:pressed">
+            <Style Selector="^ /template/ Border#Border">
+                <Setter Property="Background" Value="{DynamicResource ToolbarButtonPressedBackground}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource ToolbarButtonPressedBorder}" />
+            </Style>
+            <Style Selector="^ /template/ ContentPresenter#Content">
+                <Setter Property="Foreground" Value="{DynamicResource ToolbarButtonPressedText}" />
+            </Style>
+        </Style>
+
+        <!-- Disabled -->
+        <Style Selector="^:disabled">
+            <Setter Property="Foreground" Value="{DynamicResource ToolbarButtonDisabledText}" />
+            <Setter Property="Opacity" Value="0.5" />
+        </Style>
+    </ControlTheme>
+
+</ResourceDictionary>

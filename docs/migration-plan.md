@@ -501,12 +501,14 @@ Sizes are relative, for one developer with AI-assisted porting: S ≈ ≤2 wk, M
 
 **Exit:** each control has a demo page, screenshot parity, and behaviour tests (grid copy/paste and add-row in particular).
 
-**Progress (2026-10-30):** 4 of the 27 `Themes` control themes are ported: Button (with ToggleButton and StackPanelToggleButtonStyle), CheckBox, RadioButton and TextBox. `Button.axaml` records the conversion rules:
-- WPF styles with templates become ControlThemes that also set the defaults WPF took from the system style underneath.
-- Triggers become pseudo-class selectors.
-- `TargetName` setters become `/template/` selectors.
-
-The theme gallery shows each ported control in all three themes.
+**Progress (2026-10-30):** 18 of the 27 `Themes` control theme files are ported: Button, CheckBox, ComboBox, GridSplitter, GroupBox, Label, ListBox, ListView, Menu (with ContextMenu), RadioButton, ScrollBar (with ScrollViewer), Separator, StackPanel, TabControl (with the three keyed TabItem styles BestFit uses), TextBlock, TextBox, ToolTip and TreeView. Still to come: Calendar, DataGrid, Expander, MetroWindowStyle, ProgressBar, RichTextBox, Slider, StatusBar and ToolBar.
+- `Button.axaml` records the conversion rules. WPF styles with templates become ControlThemes that also set the defaults WPF took from the system (Aero2) style underneath; triggers become pseudo-class selectors; `TargetName` setters become `/template/` selectors.
+- Each file's header notes what had to change and why. Examples: Avalonia finds template parts by name rather than by command; it can't restyle a grid's row definitions, so TabControl has one template per tab placement; ListView, which Avalonia lacks, becomes a ListBox theme.
+- WPF defaults that the ported XAML relies on and Avalonia lacks are restored in one place:
+  - `WpfDefaults`: shapes draw a 1-pixel stroke.
+  - `Defaults.axaml`: the default font, and the menu separator style WPF applies by key.
+  - `Merged.axaml`: the WPF system colours and sizes (17-pixel scroll bars, repeat-button timing).
+- The theme gallery shows each control in all three themes, including open menus, context menus and combo box drop-downs. `Themes.Tests` checks behaviour a screenshot can't, such as the stroke defaults and the tree view's expander.
 
 ### Phase 4: Plotting (L)
 - OxyPlot.Avalonia vendored, with the fork's additions mirrored: probability axes plus any modified series and annotations.
