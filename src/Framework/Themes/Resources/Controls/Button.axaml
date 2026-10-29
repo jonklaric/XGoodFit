@@ -1,0 +1,157 @@
+<!-- Ported from upstream/WPF-Framework/src/Themes/Resources/Controls/Button.xaml. -->
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!--This Dictionary is taken from the Gemini project https://github.com/tgjones/gemini-->
+    <!--Some changes were made to the border and padding-->
+
+    <!--
+    XGoodFit port notes (they apply to every control theme):
+    - A WPF Style with a ControlTemplate becomes a ControlTheme. A ControlTheme replaces the control's
+      whole theme, so it also sets the defaults WPF took from the system (Aero2) style underneath,
+      here BorderThickness="1".
+    - Trigger conditions become pseudo-classes: IsMouseOver :pointerover, IsKeyboardFocusWithin
+      :focus-within, IsPressed :pressed, IsChecked :checked/:unchecked, IsEnabled=False :disabled.
+      Setters with a TargetName become "/template/ Type#Name" selectors.
+    - FocusVisualStyle becomes FocusAdorner.
+    -->
+
+    <ControlTheme x:Key="ButtonStyle" TargetType="Button">
+        <Setter Property="Background" Value="{DynamicResource Button.Static.Background}" />
+        <Setter Property="Foreground" Value="{DynamicResource EnvironmentToolWindowText}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Button.Static.Border}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="FocusAdorner" Value="{x:Null}" />
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border Name="Border" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}">
+                    <ContentPresenter Name="PART_ContentPresenter"
+                                      Content="{TemplateBinding Content}"
+                                      ContentTemplate="{TemplateBinding ContentTemplate}"
+                                      HorizontalAlignment="Center" VerticalAlignment="Center" RecognizesAccessKey="True" />
+                </Border>
+            </ControlTemplate>
+        </Setter>
+
+        <!-- ControlTemplate.Triggers -->
+        <Style Selector="^:pointerover /template/ Border#Border">
+            <Setter Property="BorderBrush" Value="{DynamicResource Button.MouseOver.Border}" />
+        </Style>
+        <Style Selector="^:focus-within /template/ Border#Border">
+            <Setter Property="BorderBrush" Value="{DynamicResource Button.MouseOver.Border}" />
+        </Style>
+
+        <!-- Style.Triggers -->
+        <Style Selector="^:pointerover">
+            <Setter Property="Background" Value="{DynamicResource Button.MouseOver.Background}" />
+        </Style>
+        <Style Selector="^:focus-within">
+            <Setter Property="Background" Value="{DynamicResource Button.MouseOver.Background}" />
+        </Style>
+        <Style Selector="^:disabled">
+            <Setter Property="Foreground" Value="{DynamicResource EnvironmentToolWindowDisabledText}" />
+            <Setter Property="Opacity" Value="0.5" />
+        </Style>
+    </ControlTheme>
+
+    <ControlTheme x:Key="{x:Type Button}" TargetType="Button" BasedOn="{StaticResource ButtonStyle}" />
+
+    <ControlTheme x:Key="ToggleButtonStyle" TargetType="ToggleButton">
+        <Setter Property="Background" Value="{DynamicResource Button.Static.Background}" />
+        <Setter Property="Foreground" Value="{DynamicResource EnvironmentToolWindowText}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Button.Static.Border}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="FocusAdorner" Value="{x:Null}" />
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border Name="Border" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}">
+                    <ContentPresenter Name="PART_ContentPresenter"
+                                      Content="{TemplateBinding Content}"
+                                      ContentTemplate="{TemplateBinding ContentTemplate}"
+                                      HorizontalAlignment="Center" VerticalAlignment="Center" RecognizesAccessKey="True" />
+                </Border>
+            </ControlTemplate>
+        </Setter>
+
+        <!-- ControlTemplate.Triggers -->
+        <Style Selector="^:pointerover /template/ Border#Border">
+            <Setter Property="BorderBrush" Value="{DynamicResource Button.MouseOver.Border}" />
+        </Style>
+        <Style Selector="^:focus-within /template/ Border#Border">
+            <Setter Property="BorderBrush" Value="{DynamicResource Button.MouseOver.Border}" />
+        </Style>
+
+        <!-- Style.Triggers -->
+        <Style Selector="^:pointerover">
+            <Setter Property="Background" Value="{DynamicResource Button.MouseOver.Background}" />
+        </Style>
+        <Style Selector="^:focus-within">
+            <Setter Property="Background" Value="{DynamicResource Button.MouseOver.Background}" />
+        </Style>
+        <Style Selector="^:disabled">
+            <Setter Property="Foreground" Value="{DynamicResource EnvironmentToolWindowDisabledText}" />
+            <Setter Property="Opacity" Value="0.5" />
+        </Style>
+    </ControlTheme>
+
+    <ControlTheme x:Key="{x:Type ToggleButton}" TargetType="ToggleButton" BasedOn="{StaticResource ToggleButtonStyle}" />
+
+    <!-- XGoodFit port: SnapsToDevicePixels has no Avalonia equivalent; layout rounding keeps edges crisp. -->
+    <ControlTheme x:Key="StackPanelToggleButtonStyle" TargetType="ToggleButton">
+        <Setter Property="Foreground" Value="{DynamicResource ToolbarButtonDefaultText}" />
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border x:Name="Border" BorderThickness="1">
+                    <ContentPresenter x:Name="Content" Margin="2"
+                                      Content="{TemplateBinding Content}"
+                                      ContentTemplate="{TemplateBinding ContentTemplate}"
+                                      HorizontalAlignment="Center"
+                                      VerticalAlignment="Center"
+                                      RecognizesAccessKey="True" />
+                </Border>
+            </ControlTemplate>
+        </Setter>
+
+        <!-- Hovered -->
+        <Style Selector="^:pointerover:not(:pressed):not(:checked)">
+            <Style Selector="^ /template/ Border#Border">
+                <Setter Property="Background" Value="{DynamicResource ToolbarButtonHoveredBackground}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource ToolbarButtonHoveredBorder}" />
+            </Style>
+            <Style Selector="^ /template/ ContentPresenter#Content">
+                <Setter Property="Foreground" Value="{DynamicResource ToolbarButtonHoveredText}" />
+            </Style>
+        </Style>
+
+        <!-- Pressed -->
+        <Style Selector="^:pointerover:pressed">
+            <Style Selector="^ /template/ Border#Border">
+                <Setter Property="Background" Value="{DynamicResource ToolbarButtonPressedBackground}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource ToolbarButtonPressedBorder}" />
+            </Style>
+            <Style Selector="^ /template/ ContentPresenter#Content">
+                <Setter Property="Foreground" Value="{DynamicResource ToolbarButtonPressedText}" />
+            </Style>
+        </Style>
+
+        <!-- Checked (toggle is on) -->
+        <Style Selector="^:checked">
+            <Style Selector="^ /template/ Border#Border">
+                <Setter Property="Background" Value="{DynamicResource ToolbarButtonPressedBackground}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource ToolbarButtonPressedBorder}" />
+            </Style>
+            <Style Selector="^ /template/ ContentPresenter#Content">
+                <Setter Property="Foreground" Value="{DynamicResource ToolbarButtonPressedText}" />
+            </Style>
+        </Style>
+
+        <!-- Disabled -->
+        <Style Selector="^:disabled">
+            <Setter Property="Foreground" Value="{DynamicResource ToolbarButtonDisabledText}" />
+            <Setter Property="Opacity" Value="0.5" />
+        </Style>
+    </ControlTheme>
+
+</ResourceDictionary>

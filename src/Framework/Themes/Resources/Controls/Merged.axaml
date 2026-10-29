@@ -68,4 +68,8 @@
     <!-- (docs/migration-plan.md §6, Phase 3).                                        -->
     <!-- ═══════════════════════════════════════════════════════════════════════════ -->
 
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceInclude Source="avares://Themes/Resources/Controls/Button.axaml"/>
+    </ResourceDictionary.MergedDictionaries>
+
 </ResourceDictionary>
