@@ -1,0 +1,15 @@
+<Project>
+
+  <!--
+    Central package versions for XGoodFit's own projects. Versions are added as each
+    dependency is adopted; the Phase 0 spikes decide go/no-go (docs/migration-plan.md §4.2).
+    Projects under upstream/ use their own Directory.Packages.props.
+  -->
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+
+  <ItemGroup>
+  </ItemGroup>
+
+</Project>

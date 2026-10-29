@@ -1,0 +1,9 @@
+# Pinned upstream sources, fetched into upstream/<name> by scripts/fetch-upstream.sh.
+# Bumping a pin is a deliberate change: update the commit here, then port the upstream
+# delta to the mirrored files (docs/migration-plan.md §10).
+#
+# Columns: name  git-url  commit  sparse-paths  optional-paths
+#   sparse-paths    comma-separated folders to check out ('*' = whole tree); root files are always included
+#   optional-paths  extra folders fetched only with --with-examples ('-' = none)
+RMC-BestFit    https://github.com/USACE-RMC/RMC-BestFit.git    bfce2ddbebb8d75e6cf6e21c4fef8ecfb5058269  src,docs,tools/PlotReferenceExporter  examples
+WPF-Framework  https://github.com/USACE-RMC/WPF-Framework.git  7f897e107db4a25cca29127ce9d564898c5fde93  *                                     -

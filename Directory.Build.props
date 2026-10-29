@@ -1,0 +1,28 @@
+<Project>
+
+  <!--
+    Shared settings for XGoodFit's own projects (src/, tests/, tools/).
+    Projects under upstream/ are built with their own Directory.Build.props, because
+    MSBuild stops at the nearest one, so upstream code compiles exactly as upstream intends.
+  -->
+  <PropertyGroup>
+    <RepositoryRoot>$(MSBuildThisFileDirectory)</RepositoryRoot>
+    <UpstreamRoot>$(RepositoryRoot)upstream/</UpstreamRoot>
+    <LangVersion>latest</LangVersion>
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+
+  <!--
+    Product branding (docs/migration-plan.md §1.1). Only the branding layer uses these;
+    library and namespace names stay identical to upstream to keep upstream diffs small.
+  -->
+  <PropertyGroup>
+    <XGoodFitProductName>XGoodFit</XGoodFitProductName>
+    <XGoodFitAppId>io.github.jonklaric.xgoodfit</XGoodFitAppId>
+    <Product>$(XGoodFitProductName)</Product>
+    <Company>XGoodFit contributors</Company>
+    <Copyright>Copyright (c) 2026 Jon Klaric</Copyright>
+    <Version>0.1.0-dev</Version>
+  </PropertyGroup>
+
+</Project>

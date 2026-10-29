@@ -1,0 +1,39 @@
+# Pinned upstream sources, fetched by scripts/fetch-upstream.sh
+/upstream/
+
+# Build output
+bin/
+obj/
+artifacts/
+publish/
+Releases/
+*.nupkg
+*.snupkg
+
+# Test output
+TestResults/
+*.trx
+*.coverage
+coverage*.xml
+probe-*.txt
+
+# IDE and tooling
+.vs/
+.idea/
+*.user
+*.suo
+*.userprefs
+*.DotSettings.user
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+
+# OS files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# SQLite side files created when opening projects
+*.bestfit-wal
+*.bestfit-shm
+*.bestfit-journal

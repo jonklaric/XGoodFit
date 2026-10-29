@@ -1,0 +1,13 @@
+* text=auto
+
+# Shell scripts and files they parse must keep LF endings on every OS
+*.sh           text eol=lf
+upstream.lock  text eol=lf
+
+*.png      binary
+*.ico      binary
+*.icns     binary
+*.ttf      binary
+*.otf      binary
+*.bestfit  binary
+*.dss      binary
