@@ -395,11 +395,11 @@ Sizes are relative, for one developer with AI-assisted porting: S ≈ ≤2 wk, M
 
 | Item | Status |
 |---|---|
-| Repo scaffold: `upstream.lock` + `scripts/fetch-upstream.sh`, central props, `global.json`, `XGoodFit.slnx`, CI workflow, `scripts/run-upstream-tests.sh` | Done locally; not yet pushed |
-| Portable layer on Windows x64 (en-AU) and Linux x64 (Ubuntu 26.04 GNOME, en-US) | ✅ Same results on both. RMC.BestFit model 3,546/3,546 · DatabaseManager 301/301 · ExpressionParser 240/240 · OxyPlot core 3,273 passed (Windows only, see below) |
-| All 32 example `.bestfit` projects through the upstream SQLite stack (System.Data.SQLite 2.0.2, SQLite 3.50.4) | ✅ They open on both, and **all 146 tables read identically** (`tools/ProjectProbe` fingerprints) |
-| macOS | Waiting for SSH access to the Mac |
-| Spikes A–F, HEC-DSS natives, parity harness | Not started |
+| Repo scaffold: `upstream.lock` + `scripts/fetch-upstream.sh`, central props, `global.json`, `XGoodFit.slnx`, CI workflow, `scripts/run-upstream-tests.sh` | ✅ Pushed to `main` (`7f2bde4`) |
+| Portable layer on Windows x64 (en-AU), Linux x64 (Ubuntu 26.04 GNOME, en-US) and macOS arm64 (M4 Pro, macOS 26.6), plus GitHub-hosted CI on all three | ✅ Same results everywhere. RMC.BestFit model 3,546/3,546 · DatabaseManager 301/301 · ExpressionParser 240/240 · OxyPlot core 3,273 passed (Windows only, see below) |
+| All 32 example `.bestfit` projects through the upstream SQLite stack (System.Data.SQLite 2.0.2, SQLite 3.50.4) | ✅ They open on all three OSes, and **all 146 tables read identically** on Windows x64, Linux x64 and macOS arm64 (`tools/ProjectProbe` fingerprints) |
+| HEC-DSS natives (D6) | Researched; approach below. Next up |
+| Spikes A–F, parity harness | Not started |
 
 **Findings so far**
 
@@ -411,6 +411,13 @@ Sizes are relative, for one developer with AI-assisted porting: S ≈ ≤2 wk, M
   - `RunAsync_MultipleAnalyses_Parallel` asserts a 250 ms wall-clock limit, so it fails intermittently on both OSes. It measures speed, not results.
   - `Documentation_LocalLinksResolve` checks links into folders that are deliberately not fetched.
 - **The upstream default connection uses WAL journal mode.** It converts any non-WAL database when opened and creates `-wal`/`-shm` side files. Tools such as the probe therefore read temporary copies, and the file-compatibility suite must do the same.
+- **HEC-DSS usage is read-only.** BestFit reads DSS files only: open, catalogue paths, read time series. It goes through HEC's `Hec.Dss` wrapper (2.0.3, net9.0, 31 native calls), plus one direct call, `hec_dss_tsGetDateTimeRange`, which is present in the current C library.
+  - The wrapper ships only win-x64 and linux-x64 natives (HEC build 7-IU-6), and its pre-build step (PowerShell + 7-Zip download) only works on Windows.
+  - **Approach:**
+    1. Pin `hec-dss` and `hec-dss-dotnet` in `upstream.lock`.
+    2. Build `hecdss` from source (CMake, C only) in CI for win-x64, linux-x64, osx-arm64 and osx-x64, bundling `libz` on macOS.
+    3. Compile the wrapper's own sources in an XGoodFit project that packs those natives under `runtimes/<rid>/native`, without its Windows-only pre-build.
+    4. Validate with the wrapper's tests and a sample DSS file on every OS.
 
 ### Phase 1: Foundation (M)
 - `WpfCompat` shims (§4.4), with unit tests.
