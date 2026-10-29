@@ -79,7 +79,8 @@ jobs:
       - name: Compare fingerprints
         shell: bash
         run: |
-          for f in probe-*.txt; do grep -v '^#' "$f" > "${f%.txt}.body"; done
+          # Drop the per-machine header lines and any CR line endings before comparing.
+          for f in probe-*.txt; do tr -d '\r' < "$f" | grep -v '^#' > "${f%.txt}.body"; done
           status=0
           for f in probe-*.body; do
             diff -u probe-windows-x64.body "$f" || status=1

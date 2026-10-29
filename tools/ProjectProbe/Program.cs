@@ -19,6 +19,9 @@ if (args.Length == 0 || args[0] is "-h" or "--help")
     return 2;
 }
 
+// The output is meant to be compared across operating systems, so use the same line ending everywhere.
+Console.Out.NewLine = "\n";
+
 string target = Path.GetFullPath(args[0]);
 bool showTables = args.Contains("--tables");
 string baseDir = File.Exists(target) ? Path.GetDirectoryName(target)! : target;
