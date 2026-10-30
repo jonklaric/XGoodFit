@@ -8,13 +8,14 @@
 #            architecture on either kind of Mac.
 #   --test   also build HEC's C tests and run them with CTest (needs sample-data/dss-test-data,
 #            from scripts/fetch-sample-data.sh dss-test-data). An osx-x64 build on Apple silicon
-#            runs them under Rosetta 2, if it is installed.
+#            runs them under Rosetta 2, if it is installed. On Linux and macOS, HEC's Dss-C test
+#            squeezes and sorts files in /tmp (a fixed path in HEC's library).
 #   --clean  delete the build folder first.
 # Output:      artifacts/native/runtimes/<rid>/native/ (hecdss.dll, libhecdss.so or libhecdss.dylib),
 #              where src/Hec.Dss picks it up
 # Build trees: artifacts/native-build/hecdss/<rid>/
 # Environment: CMAKE (cmake to use; otherwise cmake on PATH, then Visual Studio's on Windows),
-#              JOBS (parallel compile jobs)
+#              JOBS (parallel compile jobs), CTEST_ARGS (more ctest arguments, e.g. -E Dss-C)
 set -euo pipefail
 
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -23,7 +24,7 @@ clean=0
 rids=""
 for arg in "$@"; do
   case "$arg" in
-    -h|--help) sed -n '2,19p' "${BASH_SOURCE[0]}"; exit 0 ;;
+    -h|--help) sed -n '2,18p' "${BASH_SOURCE[0]}"; exit 0 ;;
     --test) run_tests=1 ;;
     --clean) clean=1 ;;
     -*) echo "Unknown option: $arg" >&2; exit 2 ;;
@@ -152,7 +153,8 @@ for rid in $rids; do
     if [ "$rid" = osx-x64 ] && [ "$host_arch" = arm64 ] && [ ! -e /Library/Apple/usr/libexec/oah/libRosettaRuntime ]; then
       echo "Not running the osx-x64 tests: Rosetta 2 isn't installed." >&2
     else
-      "$ctest" --test-dir "$(native_path "$build")" -C Release --output-on-failure
+      # shellcheck disable=SC2086 # CTEST_ARGS holds separate arguments.
+      "$ctest" --test-dir "$(native_path "$build")" -C Release --output-on-failure ${CTEST_ARGS:-}
     fi
   fi
 done

@@ -57,7 +57,10 @@ each build loads, and fails if one of them is a separate zlib or the Visual C++ 
 
 `--test` also builds HEC's C tests (`test/C` and `test/Dss-C`, as HEC's own CMake registers them)
 and HEC's test of the shared library's API (`test/C/hecdss_test.c`), and runs them with CTest. On a
-Mac with Apple silicon, the `osx-x64` tests run under Rosetta 2 if it's installed.
+Mac with Apple silicon, the `osx-x64` tests run under Rosetta 2 if it's installed. `CTEST_ARGS`
+passes more options to CTest, e.g. `CTEST_ARGS="-E Dss-C"` to leave out the long Dss-C suite. On
+Linux and macOS that suite squeezes files and sorts catalogues in `/tmp`, a path fixed in HEC's
+library (the wrapper's unsorted catalogue never does).
 
 ## Updating HEC-DSS
 
