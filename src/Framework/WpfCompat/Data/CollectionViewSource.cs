@@ -2,234 +2,148 @@ using System.Collections;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
-using System.Globalization;
-using System.Reflection;
-using Avalonia.Utilities;
 
 namespace WpfCompat.Data;
 
 /// <summary>
-/// WPF's <c>SortDescription</c> (System.ComponentModel, in WindowsBase): a property path to sort a
-/// collection view by, and the direction.
+/// WPF's <c>System.ComponentModel.SortDescription</c>: a property to sort a view by, and the direction.
 /// </summary>
-/// <param name="propertyName">The property path, such as <c>"Alternative.Name"</c>.</param>
-/// <param name="direction">The direction.</param>
-public readonly struct SortDescription(string propertyName, ListSortDirection direction) : IEquatable<SortDescription>
+public struct SortDescription
 {
-    /// <summary>The property path the items are sorted by.</summary>
-    public string PropertyName { get; } = propertyName;
+    /// <summary>Creates a sort description.</summary>
+    /// <param name="propertyName">The property to sort by.</param>
+    /// <param name="direction">The direction.</param>
+    public SortDescription(string propertyName, ListSortDirection direction)
+    {
+        PropertyName = propertyName;
+        Direction = direction;
+    }
 
-    /// <summary>The direction they're sorted in.</summary>
-    public ListSortDirection Direction { get; } = direction;
+    /// <summary>The property to sort by.</summary>
+    public string PropertyName { get; set; }
 
-    /// <inheritdoc/>
-    public bool Equals(SortDescription other) => PropertyName == other.PropertyName && Direction == other.Direction;
-
-    /// <inheritdoc/>
-    public override bool Equals(object? obj) => obj is SortDescription other && Equals(other);
-
-    /// <inheritdoc/>
-    public override int GetHashCode() => HashCode.Combine(PropertyName, Direction);
-
-    /// <summary>Whether two sort descriptions are the same.</summary>
-    public static bool operator ==(SortDescription left, SortDescription right) => left.Equals(right);
-
-    /// <summary>Whether two sort descriptions differ.</summary>
-    public static bool operator !=(SortDescription left, SortDescription right) => !left.Equals(right);
+    /// <summary>The direction.</summary>
+    public ListSortDirection Direction { get; set; }
 }
 
 /// <summary>
-/// WPF's <c>ICollectionView</c> (System.ComponentModel), as far as the ported code uses it: the items in
-/// the view's order, its sort descriptions, and its current item.
-/// </summary>
-public interface ICollectionView : IEnumerable, INotifyCollectionChanged
-{
-    /// <summary>The descriptions the view sorts its items by, first to last.</summary>
-    ObservableCollection<SortDescription> SortDescriptions { get; }
-
-    /// <summary>The culture text is compared in; null compares as the invariant culture, as WPF does.</summary>
-    CultureInfo? Culture { get; set; }
-
-    /// <summary>The current item, or null when the current position is outside the view.</summary>
-    object? CurrentItem { get; }
-
-    /// <summary>The current item's position: -1 before the first item.</summary>
-    int CurrentPosition { get; }
-
-    /// <summary>Makes the item at a position (-1: none) the current one.</summary>
-    /// <param name="position">The position, from -1 to the number of items.</param>
-    /// <returns>Whether the current item is in the view.</returns>
-    bool MoveCurrentToPosition(int position);
-
-    /// <summary>Builds the view again from its source.</summary>
-    void Refresh();
-}
-
-/// <summary>
-/// WPF's <c>CollectionViewSource</c> for the way upstream uses it in code: a view of a collection, sorted
-/// by its <see cref="SortDescriptions"/>, that follows the collection's changes and, with
-/// <see cref="IsLiveSortingRequested"/>, its items' changes of the sorted properties.
-/// <code>
-/// CollectionViewSource csv = new CollectionViewSource() { Source = list, IsLiveSortingRequested = true };
-/// csv.SortDescriptions.Add(new SortDescription("Alternative.Name", ListSortDirection.Ascending));
-/// listBox.ItemsSource = csv.View;
-/// </code>
+/// WPF's <c>System.Windows.Data.CollectionViewSource</c>, as code makes one: a sorted view of a collection,
+/// which a combo box shows.
 /// </summary>
 /// <remarks>
-/// <para>
-/// XGoodFit addition: Avalonia has no collection views (ProDataGrid's DataGridCollectionView neither
-/// sorts live nor reads property paths as WPF does). The view (<see cref="ListCollectionView"/>) sorts as
-/// WPF's does: values along each property path, compared with the invariant culture's comparer (WPF's
-/// default view culture); a path that doesn't resolve on an item gives null, so such items keep their
-/// order. Unlike WPF's sort, equal items always keep the source's order.
-/// </para>
-/// <para>
-/// Like WPF's, the view listens to its source and items through weak events, so a view that's no longer
-/// shown can be collected even while the collection and its items live on.
-/// </para>
-/// <para>
-/// Not ported: filtering, grouping, XAML use, and synchronizing a selector's selection with the current
-/// item (Avalonia's selectors don't), which upstream turns off with <c>MoveCurrentToPosition(-1)</c>.
-/// </para>
+/// XGoodFit addition. Upstream's properties panels list the project's elements, sorted by name, in combo
+/// boxes: they make a CollectionViewSource of a collection with <see cref="IsLiveSortingRequested"/> and a
+/// sort description, and show its <see cref="View"/>. Avalonia has no collection views, so this gives that
+/// use its WPF behaviour (see <see cref="SortedCollectionView"/>). The view is made from the properties
+/// set when <see cref="View"/> is first read, as upstream reads it after setting them.
 /// </remarks>
 public class CollectionViewSource
 {
-    private IEnumerable? _source;
-    private ListCollectionView? _view;
-    private bool _isLiveSortingRequested;
-    private CultureInfo? _culture;
+    private SortedCollectionView? _view;
 
-    /// <summary>Creates a collection view source.</summary>
-    public CollectionViewSource()
-    {
-        SortDescriptions.CollectionChanged += (_, _) => _view?.SortDescriptionsChanged(SortDescriptions);
-    }
+    /// <summary>The collection to view.</summary>
+    public object? Source { get; set; }
 
-    /// <summary>The collection the view shows.</summary>
-    public IEnumerable? Source
-    {
-        get => _source;
-        set
-        {
-            _source = value;
-            _view = null;
-        }
-    }
+    /// <summary>Whether the view sorts an item again when a property it sorts by changes.</summary>
+    public bool IsLiveSortingRequested { get; set; }
 
-    /// <summary>Whether the view moves an item when a property it's sorted by changes.</summary>
-    public bool IsLiveSortingRequested
-    {
-        get => _isLiveSortingRequested;
-        set
-        {
-            _isLiveSortingRequested = value;
-            if (_view != null) _view.IsLiveSorting = value;
-        }
-    }
+    /// <summary>The properties the view sorts by, first to last.</summary>
+    public Collection<SortDescription> SortDescriptions { get; } = new Collection<SortDescription>();
 
-    /// <summary>The culture the view compares text in: null compares as the invariant culture.</summary>
-    public CultureInfo? Culture
-    {
-        get => _culture;
-        set
-        {
-            _culture = value;
-            if (_view != null) _view.Culture = value;
-        }
-    }
-
-    /// <summary>The descriptions the view sorts by, first to last.</summary>
-    public ObservableCollection<SortDescription> SortDescriptions { get; } = new();
-
-    /// <summary>The view of <see cref="Source"/>, or null without a source.</summary>
-    public ICollectionView? View
-    {
-        get
-        {
-            if (_view == null && _source != null)
-            {
-                _view = new ListCollectionView(_source) { Culture = _culture, IsLiveSorting = _isLiveSortingRequested };
-                _view.SortDescriptionsChanged(SortDescriptions);
-            }
-            return _view;
-        }
-    }
+    /// <summary>The sorted view of <see cref="Source"/>.</summary>
+    public SortedCollectionView View => _view ??= new SortedCollectionView((IEnumerable?)Source, SortDescriptions, IsLiveSortingRequested);
 }
 
 /// <summary>
-/// WPF's <c>ListCollectionView</c>, as <see cref="CollectionViewSource"/> makes it: a read-only list of a
-/// collection's items, sorted, which raises the collection changes its own order makes.
+/// A sorted, read-only view of a collection: WPF's <c>ListCollectionView</c> with sort descriptions, as
+/// <see cref="CollectionViewSource"/> makes it.
 /// </summary>
-public sealed class ListCollectionView : ICollectionView, IList,
-    IWeakEventSubscriber<NotifyCollectionChangedEventArgs>, IWeakEventSubscriber<PropertyChangedEventArgs>
+/// <remarks>
+/// <para>
+/// As in WPF, the view follows the collection: an added item goes to its sorted place and a removed one
+/// leaves it, each with its own notification, so a combo box keeps its selection. Other changes resort the
+/// view (a reset). With live sorting, an item whose sort property changes moves to its new place.
+/// </para>
+/// <para>
+/// Values compare as WPF's view compares them without a culture (<see cref="Comparer.DefaultInvariant"/>),
+/// and items that compare equal keep the collection's order. The current position is WPF's: the view
+/// starts at its first item, and <see cref="MoveCurrentToPosition"/> moves it (-1 is before the first).
+/// Avalonia's selectors don't follow it; WPF's combo boxes did, which is why upstream moves it to -1.
+/// </para>
+/// </remarks>
+public sealed class SortedCollectionView : IList, IReadOnlyList<object>, INotifyCollectionChanged
 {
-    private readonly IEnumerable _source;
-    private readonly List<object?> _items = new();
+    private readonly IEnumerable? _source;
+    private readonly SortDescription[] _sortDescriptions;
+    private readonly bool _isLiveSorting;
+    private readonly List<object> _items = new List<object>();
+    private readonly HashSet<INotifyPropertyChanged> _watched = new HashSet<INotifyPropertyChanged>(ReferenceEqualityComparer.Instance);
 
-    // Live sorting: each item's objects along its sort paths, and the property each is watched for.
-    private readonly Dictionary<object, List<(object Owner, string Property)>> _watchedFor = new(ReferenceEqualityComparer.Instance);
-    private readonly Dictionary<object, HashSet<object>> _watchedBy = new(ReferenceEqualityComparer.Instance);
-
-    private bool _isLiveSorting;
-    private CultureInfo? _culture;
-    private IComparer _comparer = Comparer.DefaultInvariant;
-    private int _currentPosition = -1;
-
-    /// <summary>Creates a view of a collection, in the collection's order until sort descriptions are added.</summary>
-    /// <param name="source">The collection.</param>
-    public ListCollectionView(IEnumerable source)
+    /// <summary>Creates the view.</summary>
+    /// <param name="source">The collection to view, or null for an empty view.</param>
+    /// <param name="sortDescriptions">The properties to sort by.</param>
+    /// <param name="isLiveSorting">Whether an item moves when a property it's sorted by changes.</param>
+    public SortedCollectionView(IEnumerable? source, IEnumerable<SortDescription> sortDescriptions, bool isLiveSorting)
     {
-        _source = source ?? throw new ArgumentNullException(nameof(source));
-        if (source is INotifyCollectionChanged changes) WeakEvents.CollectionChanged.Subscribe(changes, this);
-        SortDescriptions.CollectionChanged += (_, _) => Refresh();
-        Refresh();
+        _source = source;
+        _sortDescriptions = sortDescriptions.ToArray();
+        _isLiveSorting = isLiveSorting;
+        if (_source is INotifyCollectionChanged changes)
+        {
+            changes.CollectionChanged += Source_CollectionChanged;
+        }
+        Load();
+        CurrentPosition = _items.Count > 0 ? 0 : -1;
     }
 
     /// <inheritdoc/>
     public event NotifyCollectionChangedEventHandler? CollectionChanged;
 
-    /// <inheritdoc/>
-    public ObservableCollection<SortDescription> SortDescriptions { get; } = new();
+    // The item a selector showing the view has selected (see SelectorItems.SetItemsSourceKeepingSelection).
+    // Avalonia's selectors drop a moved item's selection, but keep one that other items move past, so a
+    // live-sorting move of that item is announced as the moves of the items it passes.
+    internal Func<object?>? SelectedItem { get; set; }
 
-    /// <inheritdoc/>
-    public CultureInfo? Culture
-    {
-        get => _culture;
-        set
-        {
-            _culture = value;
-            _comparer = value == null || value.Equals(CultureInfo.InvariantCulture) ? Comparer.DefaultInvariant : new Comparer(value);
-            Refresh();
-        }
-    }
+    /// <summary>The position of the current item, or -1 before the first item.</summary>
+    public int CurrentPosition { get; private set; }
 
-    /// <summary>Whether an item moves when a property it's sorted by changes.</summary>
-    public bool IsLiveSorting
-    {
-        get => _isLiveSorting;
-        set
-        {
-            if (_isLiveSorting == value) return;
-            _isLiveSorting = value;
-            WatchAll();
-        }
-    }
+    /// <summary>The current item, or null if the position is outside the view.</summary>
+    public object? CurrentItem => CurrentPosition >= 0 && CurrentPosition < _items.Count ? _items[CurrentPosition] : null;
 
-    /// <inheritdoc/>
-    public object? CurrentItem => _currentPosition >= 0 && _currentPosition < _items.Count ? _items[_currentPosition] : null;
-
-    /// <inheritdoc/>
-    public int CurrentPosition => _currentPosition;
-
-    /// <inheritdoc/>
+    /// <summary>The number of items.</summary>
     public int Count => _items.Count;
 
-    /// <inheritdoc/>
-    public object? this[int index]
+    /// <summary>The item at a position.</summary>
+    /// <param name="index">The position.</param>
+    public object this[int index] => _items[index];
+
+    /// <summary>Makes the item at a position current: WPF's <c>ICollectionView.MoveCurrentToPosition</c>.</summary>
+    /// <param name="position">The position, from -1 (before the first item) to <see cref="Count"/> (after the last).</param>
+    /// <returns>Whether the current item is in the view.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">The position is before -1 or after <see cref="Count"/>.</exception>
+    public bool MoveCurrentToPosition(int position)
     {
-        get => _items[index];
-        set => throw new NotSupportedException();
+        if (position < -1 || position > _items.Count)
+        {
+            throw new ArgumentOutOfRangeException(nameof(position));
+        }
+        CurrentPosition = position;
+        return CurrentItem != null;
     }
+
+    /// <inheritdoc/>
+    public IEnumerator<object> GetEnumerator() => _items.GetEnumerator();
+
+    IEnumerator IEnumerable.GetEnumerator() => _items.GetEnumerator();
+
+    /// <inheritdoc/>
+    public bool Contains(object? value) => value != null && _items.Contains(value);
+
+    /// <inheritdoc/>
+    public int IndexOf(object? value) => value == null ? -1 : _items.IndexOf(value);
+
+    /// <inheritdoc/>
+    public void CopyTo(Array array, int index) => ((ICollection)_items).CopyTo(array, index);
 
     bool IList.IsReadOnly => true;
 
@@ -239,213 +153,162 @@ public sealed class ListCollectionView : ICollectionView, IList,
 
     object ICollection.SyncRoot => this;
 
-    /// <inheritdoc/>
-    public bool MoveCurrentToPosition(int position)
+    object? IList.this[int index]
     {
-        if (position < -1 || position > _items.Count) throw new ArgumentOutOfRangeException(nameof(position));
-        _currentPosition = position;
-        return CurrentItem != null;
+        get => _items[index];
+        set => throw new NotSupportedException("The view is read-only.");
     }
 
-    /// <inheritdoc/>
-    public void Refresh()
+    int IList.Add(object? value) => throw new NotSupportedException("The view is read-only.");
+
+    void IList.Clear() => throw new NotSupportedException("The view is read-only.");
+
+    void IList.Insert(int index, object? value) => throw new NotSupportedException("The view is read-only.");
+
+    void IList.Remove(object? value) => throw new NotSupportedException("The view is read-only.");
+
+    void IList.RemoveAt(int index) => throw new NotSupportedException("The view is read-only.");
+
+    // Fills the view with the source's items, sorted.
+    private void Load()
+    {
+        foreach (INotifyPropertyChanged item in _watched)
+        {
+            item.PropertyChanged -= Item_PropertyChanged;
+        }
+        _watched.Clear();
+        _items.Clear();
+        if (_source == null)
+        {
+            return;
+        }
+        // OrderBy is stable: equal items keep the collection's order.
+        _items.AddRange(_source.Cast<object>().Select((item, index) => (item, index))
+            .OrderBy(pair => pair.item, Comparer<object>.Create(Compare))
+            .ThenBy(pair => pair.index)
+            .Select(pair => pair.item));
+        foreach (object item in _items)
+        {
+            Watch(item);
+        }
+    }
+
+    private void Watch(object item)
+    {
+        if (_isLiveSorting && item is INotifyPropertyChanged changes && _watched.Add(changes))
+        {
+            changes.PropertyChanged += Item_PropertyChanged;
+        }
+    }
+
+    private void Unwatch(object item)
+    {
+        if (item is INotifyPropertyChanged changes && !_items.Contains(item) && _watched.Remove(changes))
+        {
+            changes.PropertyChanged -= Item_PropertyChanged;
+        }
+    }
+
+    private void Source_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
         object? current = CurrentItem;
-        _items.Clear();
-        foreach (object? item in _source)
+        if (e.Action == NotifyCollectionChangedAction.Add && e.NewItems != null)
         {
-            _items.Insert(SortedIndex(item, _items.Count), item);
+            foreach (object item in e.NewItems)
+            {
+                int index = InsertionIndex(item);
+                _items.Insert(index, item);
+                Watch(item);
+                CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, item, index));
+            }
         }
-        _currentPosition = current == null ? (_currentPosition < 0 ? -1 : Math.Min(_currentPosition, _items.Count)) : _items.IndexOf(current);
-        WatchAll();
-        CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
-    }
-
-    /// <inheritdoc/>
-    public bool Contains(object? value) => _items.Contains(value);
-
-    /// <inheritdoc/>
-    public int IndexOf(object? value) => _items.IndexOf(value);
-
-    /// <inheritdoc/>
-    public void CopyTo(Array array, int index) => ((ICollection)_items).CopyTo(array, index);
-
-    /// <inheritdoc/>
-    public IEnumerator GetEnumerator() => _items.GetEnumerator();
-
-    int IList.Add(object? value) => throw new NotSupportedException();
-
-    void IList.Clear() => throw new NotSupportedException();
-
-    void IList.Insert(int index, object? value) => throw new NotSupportedException();
-
-    void IList.Remove(object? value) => throw new NotSupportedException();
-
-    void IList.RemoveAt(int index) => throw new NotSupportedException();
-
-    /// <summary>Takes a <see cref="CollectionViewSource"/>'s sort descriptions.</summary>
-    internal void SortDescriptionsChanged(IEnumerable<SortDescription> descriptions)
-    {
-        if (SortDescriptions.SequenceEqual(descriptions)) return;
-        SortDescriptions.Clear();
-        foreach (SortDescription description in descriptions)
-            SortDescriptions.Add(description);
-    }
-
-    void IWeakEventSubscriber<NotifyCollectionChangedEventArgs>.OnEvent(object? sender, WeakEvent ev, NotifyCollectionChangedEventArgs e)
-    {
-        switch (e.Action)
+        else if (e.Action == NotifyCollectionChangedAction.Remove && e.OldItems != null)
         {
-            case NotifyCollectionChangedAction.Add when e.NewItems != null:
-                for (int i = 0; i < e.NewItems.Count; i++)
+            foreach (object item in e.OldItems)
+            {
+                int index = _items.IndexOf(item);
+                if (index < 0)
                 {
-                    object? item = e.NewItems[i];
-                    // Unsorted, the view keeps the source's order.
-                    int index = SortDescriptions.Count == 0 && e.NewStartingIndex >= 0 ? Math.Min(e.NewStartingIndex + i, _items.Count) : SortedIndex(item, _items.Count);
-                    _items.Insert(index, item);
-                    if (_currentPosition >= index) _currentPosition++;
-                    Watch(item);
-                    CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, item, index));
+                    continue;
                 }
-                break;
-            case NotifyCollectionChangedAction.Remove when e.OldItems != null:
-                foreach (object? item in e.OldItems)
-                {
-                    int index = _items.IndexOf(item);
-                    if (index < 0) continue;
-                    _items.RemoveAt(index);
-                    if (_currentPosition > index || _currentPosition >= _items.Count) _currentPosition--;
-                    Unwatch(item);
-                    CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, item, index));
-                }
-                break;
-            default:
-                Refresh();
-                break;
+                _items.RemoveAt(index);
+                Unwatch(item);
+                CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, item, index));
+            }
         }
-    }
-
-    void IWeakEventSubscriber<PropertyChangedEventArgs>.OnEvent(object? sender, WeakEvent ev, PropertyChangedEventArgs e)
-    {
-        if (sender == null || !_watchedFor.TryGetValue(sender, out var watches)) return;
-        foreach (object item in watches
-            .Where(w => string.IsNullOrEmpty(e.PropertyName) || e.PropertyName == w.Property)
-            .Select(w => w.Owner)
-            .Distinct(ReferenceEqualityComparer.Instance)
-            .ToList())
+        else
         {
-            // An object along the path may have been replaced: watch the item's path again.
-            Unwatch(item);
-            Watch(item);
-            Reposition(item);
+            Load();
+            CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
         }
+        CurrentPosition = current != null && _items.Contains(current) ? _items.IndexOf(current) : Math.Min(CurrentPosition, _items.Count - 1);
     }
 
-    // Moves an item whose sorted values changed to where they now sort, as WPF's live sorting does.
-    private void Reposition(object item)
+    // Live sorting: moves an item whose sort property changed to its new place.
+    private void Item_PropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
-        int oldIndex = _items.FindIndex(x => ReferenceEquals(x, item));
-        if (oldIndex < 0) return;
+        if (sender == null
+            || (!string.IsNullOrEmpty(e.PropertyName) && !_sortDescriptions.Any(d => d.PropertyName == e.PropertyName)))
+        {
+            return;
+        }
+        int oldIndex = _items.IndexOf(sender);
+        if (oldIndex < 0
+            || ((oldIndex == 0 || Compare(_items[oldIndex - 1], sender) <= 0)
+                && (oldIndex == _items.Count - 1 || Compare(sender, _items[oldIndex + 1]) <= 0)))
+        {
+            // Not in the view, or still in its sorted place.
+            return;
+        }
+        object? current = CurrentItem;
+        // Asked before the list changes: a selector reads its selected item from the list.
+        bool selected = SelectedItem?.Invoke() == sender;
         _items.RemoveAt(oldIndex);
-        int newIndex = SortedIndex(item, _items.Count);
-        _items.Insert(newIndex, item);
-        if (newIndex == oldIndex) return;
-        if (_currentPosition == oldIndex) _currentPosition = newIndex;
-        else if (_currentPosition > oldIndex && _currentPosition <= newIndex) _currentPosition--;
-        else if (_currentPosition < oldIndex && _currentPosition >= newIndex) _currentPosition++;
-        CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Move, item, newIndex, oldIndex));
-    }
-
-    // Where an item goes among the first <count> items: after the last one it doesn't sort before, so
-    // equal items keep their order.
-    private int SortedIndex(object? item, int count)
-    {
-        if (SortDescriptions.Count == 0) return count;
-        int low = 0, high = count;
-        while (low < high)
+        int newIndex = InsertionIndex(sender);
+        if (selected)
         {
-            int middle = (low + high) / 2;
-            if (Compare(item, _items[middle]) < 0) high = middle;
-            else low = middle + 1;
+            // Move the items it passes, one place each, in turn.
+            _items.Insert(oldIndex, sender);
+            int step = newIndex > oldIndex ? 1 : -1;
+            for (int index = oldIndex; index != newIndex; index += step)
+            {
+                object passed = _items[index + step];
+                _items[index] = passed;
+                _items[index + step] = sender;
+                CurrentPosition = current != null ? _items.IndexOf(current) : CurrentPosition;
+                CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Move, passed, index, index + step));
+            }
+            return;
         }
-        return low;
+        _items.Insert(newIndex, sender);
+        CurrentPosition = current != null ? _items.IndexOf(current) : CurrentPosition;
+        CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Move, sender, newIndex, oldIndex));
     }
 
-    private int Compare(object? a, object? b)
+    // Where an item goes: after the items that sort before it or equal to it.
+    private int InsertionIndex(object item)
     {
-        foreach (SortDescription description in SortDescriptions)
+        int index = _items.Count;
+        while (index > 0 && Compare(_items[index - 1], item) > 0)
         {
-            int result = _comparer.Compare(ValueOf(a, description.PropertyName), ValueOf(b, description.PropertyName));
-            if (result != 0) return description.Direction == ListSortDirection.Descending ? -result : result;
+            index--;
+        }
+        return index;
+    }
+
+    private int Compare(object? x, object? y)
+    {
+        foreach (SortDescription description in _sortDescriptions)
+        {
+            int result = Comparer.DefaultInvariant.Compare(Value(x, description.PropertyName), Value(y, description.PropertyName));
+            if (result != 0)
+            {
+                return description.Direction == ListSortDirection.Descending ? -result : result;
+            }
         }
         return 0;
     }
 
-    // The value at the end of a property path, or null where the path doesn't resolve.
-    private static object? ValueOf(object? item, string path)
-    {
-        object? value = item;
-        foreach (string property in Segments(path))
-        {
-            if (value == null) return null;
-            value = PropertyOf(value, property)?.GetValue(value);
-        }
-        return value;
-    }
-
-    private static string[] Segments(string path) =>
-        string.IsNullOrEmpty(path) ? Array.Empty<string>() : path.Split('.');
-
-    private static PropertyInfo? PropertyOf(object owner, string name) =>
-        owner.GetType().GetProperty(name, BindingFlags.Public | BindingFlags.Instance);
-
-    private void WatchAll()
-    {
-        foreach (object item in _watchedBy.Keys.ToList())
-            Unwatch(item);
-        foreach (object? item in _items)
-            Watch(item);
-    }
-
-    // Watches the objects along an item's sort paths for changes of the next property on the path.
-    private void Watch(object? item)
-    {
-        if (!_isLiveSorting || item == null) return;
-        var watched = new HashSet<object>(ReferenceEqualityComparer.Instance);
-        foreach (SortDescription description in SortDescriptions)
-        {
-            object? owner = item;
-            foreach (string property in Segments(description.PropertyName))
-            {
-                if (owner == null) break;
-                if (owner is INotifyPropertyChanged notifier)
-                {
-                    if (!_watchedFor.TryGetValue(owner, out var watches))
-                    {
-                        _watchedFor[owner] = watches = new List<(object, string)>();
-                        WeakEvents.ThreadSafePropertyChanged.Subscribe(notifier, this);
-                    }
-                    watches.Add((item, property));
-                    watched.Add(owner);
-                }
-                owner = PropertyOf(owner, property)?.GetValue(owner);
-            }
-        }
-        _watchedBy[item] = watched;
-    }
-
-    private void Unwatch(object? item)
-    {
-        if (item == null || !_watchedBy.Remove(item, out var watched)) return;
-        foreach (object owner in watched)
-        {
-            if (!_watchedFor.TryGetValue(owner, out var watches)) continue;
-            watches.RemoveAll(w => ReferenceEquals(w.Owner, item));
-            if (watches.Count == 0)
-            {
-                _watchedFor.Remove(owner);
-                WeakEvents.ThreadSafePropertyChanged.Unsubscribe((INotifyPropertyChanged)owner, this);
-            }
-        }
-    }
+    private static object? Value(object? item, string propertyName) =>
+        item == null || string.IsNullOrEmpty(propertyName) ? item : TypeDescriptor.GetProperties(item).Find(propertyName, false)?.GetValue(item);
 }

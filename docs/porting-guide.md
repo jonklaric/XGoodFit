@@ -68,6 +68,15 @@ compared with its upstream original.
 | Overlapping triggers | the same order: later styles win where they overlap |
 | `DataTrigger` | a bound class and a style in the element's `Styles`: `Classes.invalid="{Binding ElementName=c, Path=!IsValid}"` with `<Style Selector="Border.invalid">` (see `NameTextBox.axaml`); or a converter, or `Xaml.Behaviors` |
 | `Visibility="Collapsed"` | `IsVisible="False"` |
+| A tool tip in a `ComboBox.ItemContainerStyle` | `<ComboBox.Styles><Style Selector="ComboBoxItem">` setting `ToolTip.Tip` |
+| `Popup Placement="Right"` | `Placement="RightEdgeAlignedTop"`; `PopupAnimation` and `AllowsTransparency` aren't ported |
+| Combo box items that are numbers | an item template whose binding formats with `FormattingCulture` (D8) |
+| An enum `DataTrigger` | `Classes.x="{Binding P, Converter={x:Static ObjectConverters.Equal}, ConverterParameter={x:Static local:E.V}}"` with styles in the element's `Styles` |
+| A `DataTrigger`'s storyboard | a style animation on that class: it stops when the class goes, as `StopStoryboard` does |
+| `DataGrid MinRowHeight="24"` | ProDataGrid has none and sets each row's `MinHeight` itself, so a row theme's setter loses: put `MinHeight` in the cells' themes |
+| A format with commas, `StringFormat={}{0:#,##0.####}` | quote it: `StringFormat='{}{0:#,##0.####}'` |
+| A `ToolTip` setter holding a `<ToolTip>` element (cells, column headers) | `<Setter Property="ToolTip.Tip"><Template>…</Template></Setter>`; in code `new Setter(ToolTip.TipProperty, new FuncTemplate<TextBlock>(…))`: one control can't be shared between cells |
+| `DisplayMemberPath` / `SelectedValuePath` | `DisplayMemberBinding="{Binding X}"` / `SelectedValueBinding="{Binding Y}"` |
 | `Visibility="Hidden"` | `Opacity="0"` with `IsHitTestVisible="False"` (keeps its space) |
 | `Visibility="{Binding …, Converter=…}"` | `wpf:WpfElement.Visibility="{Binding …}"` (`xmlns:wpf="using:WpfCompat"`): the converters produce WpfCompat's `Visibility`. Never bind one to `IsVisible`, which reads Visible (0) as false |
 | `{Binding IsEnabled, …}` (reading it) | `IsEffectivelyEnabled`: WPF's `IsEnabled` includes the parents', Avalonia's doesn't |
@@ -162,6 +171,21 @@ Templates and themes:
 | `ItemContainerGenerator.ContainerFromIndex` (grid rows) | `CopyPasteDataGrid.GetRow(index)` |
 | `c.Content.GetType() == typeof(TextBlock)` on a grid cell | `c.Content is TextBlock`: ProDataGrid's text cells are a TextBlock subclass |
 | `MoveFocus(new TraversalRequest(…))` | WpfCompat.Input's `FocusNavigation` |
+| `System.Windows.Media.Media3D.Point3D` | `WpfCompat.Media.Media3D.Point3D` |
+| `FlowDocument.PageWidth` | WpfCompat's `FlowDocument.PageWidth`: the read-only `RichTextBox` lays the document out at that width and scrolls sideways |
+| `IsVisible` (visible and in a window) / `IsVisibleChanged` | `IsEffectivelyVisible && TopLevel.GetTopLevel(this) != null`, and watch `IsVisibleProperty` on the control and its ancestors while attached: Avalonia 12's `IsEffectivelyVisibleChanged` is internal (see `MarkovChainTraceControl`) |
+| Non-readonly `DependencyProperty` fields | `static readonly` styled properties (Avalonia's analyzer, AVP1000) |
+| `Window.GetWindow(this)` | `TopLevel.GetTopLevel(this) as Window` |
+| `w.Owner = o; w.Show()` | `w.Show(o)`: Avalonia's `Show()` ignores an owner set beforehand |
+| `FrameworkElementFactory` + `ControlTemplate` (code-built templates) | `FuncControlTemplate<T>` that builds the element |
+| `FindName("x")` | `FindControl<T>("x")` |
+| `DispatcherOperation.Task` | `DispatcherOperation.GetTask()` |
+| `Mouse.UpdateCursor()` | nothing: WpfCompat's `Mouse.OverrideCursor` applies at once |
+| `DataGrid.UnselectAll()` | `SelectedItem = null`: ProDataGrid's `SelectedItems.Clear()` raises no `SelectionChanged` |
+| `VisualTreeHelper.HitTest(v, p).VisualHit` | `v.GetVisualAt(p)` |
+| A generated column's `((Binding)c.Binding).StringFormat` / `.Converter` | `((ReflectionBinding)c.Binding)…`: Avalonia 12's `BindingBase` has neither |
+| A `CollectionViewSource` with `SortDescriptions` as a combo box's items | `WpfCompat.Data.CollectionViewSource`, set with `combo.SetItemsSourceKeepingSelection(view)` (a plain set lets a two-way `SelectedValue` write null back) |
+| `host.Content = element.Plot`, for a plot several documents show | `host.TakeContent(element.Plot)` (WpfCompat): Avalonia throws while the plot still has a parent |
 
 - Dialogs wait, as in WPF (plan §5.3): `ShowDialog()` and `DialogResult` (WpfCompat's), WpfCompat's
   file and folder dialogs and clipboard, and `GenericControls.MessageBox.Show`. Keep upstream's order
@@ -275,6 +299,36 @@ Watch for others when porting:
   a static initializer that any thread may run first (see FrameworkInterfaces' `Messenger`).
 - **MSTest 3.6 with parallel tests** can run the assembly cleanup more than once: make it idempotent
   (`Interlocked.Exchange(ref _session, null)?.Dispose()`).
+- **`CacheMode="BitmapCache"`** keeps the first bitmap of content that draws itself: don't put it on
+  content that changes (OxyPlot.Wpf's `DrawingVisualHost.UseBitmapCache` keeps the preference but sets
+  no cache).
+- **A column's `HeaderTheme="{DynamicResource …}"`** is null until the grid is in a window, and a local
+  value doesn't clear the resource binding (see `ParameterPriorsControl.HeaderThemeOf`).
+- **`ElementName` inside a DataTemplate** can find names in the enclosing XAML: Avalonia's template name
+  scope falls back to the control's.
+- **`Environment.NewLine` is CR LF only on Windows.** RMC-BestFit builds its plots' tracker formats
+  with it, and its projects were saved on Windows, so on macOS and Linux a view setting its format
+  would change the saved plot and mark the project unsaved. OxyPlot.Wpf's `Series` keeps a saved CR LF
+  format when the new one differs only in bare line feeds (`CoerceTrackerFormatString`). Any other
+  string that's saved and built with `Environment.NewLine` needs the same care.
+- **Inherited properties change when a control joins or leaves the tree** (`FontFamily`, say): handlers
+  that set a dirty flag or record undo must ignore changes that don't change what's saved (see
+  OxyPlot.Wpf's `Series`).
+- **A plain ProDataGrid** shows no rows when given unlimited height (in a ScrollViewer or an Auto row),
+  and its generated columns ignore a `StringFormat` set in `AutoGeneratingColumn`: `CopyPasteDataGrid`
+  handles both.
+- **Headless clicks in the shell:** move the pointer before pressing, as a mouse does. MainWindow notes
+  the pane under the pointer on mouse moves, and an explorer click relies on it to keep its selection
+  when it activates the node's document (see `BestFitShell.Click`).
+- **`[STATestMethod]` has no synchronization context,** so `async void` handlers continue on the thread
+  pool: drive such windows with `HeadlessSession.Run` and pump the dispatcher. Two quick clicks on one
+  spot are a double click (which opens an explorer node's document). Start WpfCompat's
+  `CommandManager` before focusing anything in a test.
+- **`x:Shared="False"` resources** give a new instance per lookup: compare icons by their drawing, not
+  by reference.
+- **Without a desktop lifetime (headless tests),** WpfCompat's `Modal.ActiveWindow` can return a window
+  an earlier test closed, so a dialog fails with "Cannot show a window with a closed owner": click into
+  the test's own window first.
 - **Grid themes:** set scroll bar visibility to `Auto`, WPF's default (ProDataGrid's is `Disabled`). A
   bare `DataGrid` gets the header-height fix only once a `CopyPasteDataGrid` exists: another reason to
   always use `CopyPasteDataGrid`. Grids laid out with unbounded height log layout-cycle warnings; that
@@ -293,6 +347,13 @@ Watch for others when porting:
   object on a worker thread.
 
 ## 7. Tests and checks
+
+- **Agents sharing a machine:** `taskkill /IM` by image name kills every agent's test run, since every
+  worktree's test executable has the same name. Run tests from a renamed copy of the test executable
+  (`cp RMC.BestFit.App.Tests.exe mine-apptests.exe`), which still loads the right assemblies. Close
+  windows and projects between tests: a full App run should stay within a few GB.
+- **View tests** merge Themes' `Defaults.axaml` and `Controls/Merged.axaml` as ThemeService does, and
+  use the examples' en-US culture.
 
 - **Tests that need natives or downloads:** `tests/Hec.Dss.Tests` skips when the natives or sample
   data are missing, and fails instead under an environment variable that CI sets
