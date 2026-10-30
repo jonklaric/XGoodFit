@@ -11,6 +11,7 @@
   <Folder Name="/tests/" />
   <Folder Name="/tests/Framework/">
     <Project Path="tests/Framework/GenericControls.Tests/GenericControls.Tests.csproj" />
+    <Project Path="tests/Framework/OxyPlot.Wpf.Tests/OxyPlot.Wpf.Tests.csproj" />
     <Project Path="tests/Framework/Themes.Tests/Themes.Tests.csproj" />
     <Project Path="tests/Framework/WpfCompat.Tests/WpfCompat.Tests.csproj" />
   </Folder>
