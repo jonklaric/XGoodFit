@@ -103,6 +103,21 @@ public sealed class TwoWayConverterTests
     }
 
     [TestMethod]
+    public void ANullTheTargetCannotHold_ComesBackAsItsTypesDefault_AndIsLeftAlone()
+    {
+        // A plot without a border brush, in a colour editor: the editor's colour can't be null, so it holds
+        // (and may give back) the colour type's default. WPF's binding leaves the source null.
+        var converter = new TwoWayConverter();
+        var culture = System.Globalization.CultureInfo.InvariantCulture;
+        Assert.IsNull(converter.Convert(null, typeof(Color), null, culture));
+        Assert.AreSame(Avalonia.Data.BindingOperations.DoNothing, converter.ConvertBack(default(Color), typeof(IBrush), null, culture));
+        // A colour picker shown none gives back a brush of that colour.
+        Assert.AreSame(Avalonia.Data.BindingOperations.DoNothing, converter.ConvertBack(new SolidColorBrush(default(Color)), typeof(IBrush), null, culture));
+        // A colour the user picks is written back.
+        Assert.AreEqual(Colors.Red, converter.ConvertBack(Colors.Red, typeof(IBrush), null, culture));
+    }
+
+    [TestMethod]
     [DataRow(12.0, "12", true)]
     [DataRow(12.0, "12.5", false)]
     [DataRow(double.NaN, double.NaN, true)]
