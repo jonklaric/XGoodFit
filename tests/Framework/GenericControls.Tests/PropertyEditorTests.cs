@@ -157,6 +157,54 @@ public sealed class PropertyEditorTests
         });
     }
 
+    /// <summary>
+    /// As WPF's: a click writes the check box's state through IsSelected's binding to its source before Checked or
+    /// Unchecked is raised, so a handler reads the new state from the source (the Point Process panel's Is Seasonal
+    /// shows its block year so).
+    /// </summary>
+    [TestMethod]
+    public void BooleanProperty_RaisesCheckedAndUnchecked_AfterItsBindingWritesTheSource()
+    {
+        HeadlessSession.Run(() =>
+        {
+            var source = new BooleanSource();
+            var control = new BooleanPropertyControl { Title = "Seasonal", DataContext = source };
+            control.Bind(BooleanPropertyControl.IsSelectedProperty, new Avalonia.Data.Binding(nameof(BooleanSource.Value)) { Mode = Avalonia.Data.BindingMode.TwoWay });
+            Window window = TestInput.Show(control, out _, 500);
+            CheckBox box = Inner<CheckBox>(control);
+            var seen = new List<string>();
+            control.Checked += (_, _) => seen.Add("Checked " + source.Value);
+            control.Unchecked += (_, _) => seen.Add("Unchecked " + source.Value);
+
+            window.Click(box);
+            window.Click(box);
+            CollectionAssert.AreEqual(new[] { "Checked True", "Unchecked False" }, seen);
+            Assert.IsFalse(control.IsSelected);
+            window.Close();
+        });
+    }
+
+    /// <summary>A bound source for <see cref="BooleanProperty_RaisesCheckedAndUnchecked_AfterItsBindingWritesTheSource"/>.</summary>
+    public sealed class BooleanSource : System.ComponentModel.INotifyPropertyChanged
+    {
+        private bool _value;
+
+        /// <inheritdoc/>
+        public event System.ComponentModel.PropertyChangedEventHandler? PropertyChanged;
+
+        /// <summary>The bound value.</summary>
+        public bool Value
+        {
+            get => _value;
+            set
+            {
+                if (_value == value) return;
+                _value = value;
+                PropertyChanged?.Invoke(this, new System.ComponentModel.PropertyChangedEventArgs(nameof(Value)));
+            }
+        }
+    }
+
     [TestMethod]
     public void FontWeightSelector_OffersWpfsWeights_ByName()
     {
