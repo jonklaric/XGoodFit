@@ -1,0 +1,195 @@
+<!--
+    XGoodFit port of upstream's GUI/BivariateAnalysis/Bivariate/BivariateAnalysisControl.xaml:
+    - The PreviewMouseDown handler is added in the code-behind (Avalonia has no Preview events in XAML), and
+      the combo box items' ToolTip is ToolTip.Tip.
+    - Styles are themes: the tab items', grids' and splitter's Style, and the columns' HeaderStyle and
+      CellStyle (HeaderTheme and CellTheme). Avalonia's XAML can't name a grid column: the code-behind finds
+      upstream's named columns by position.
+    - The tables' numbers format in WPF's binding culture (WpfCompat's FormattingCulture, plan §5.2).
+-->
+<UserControl  x:Class="RMC_BestFit.BivariateAnalysisControl" x:Name="BivariateControl"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="using:RMC_BestFit"
+             xmlns:cntrls="using:GenericControls"
+             xmlns:oxy="http://oxyplot.org/wpf"
+             xmlns:oxyCntrls="using:OxyPlotControls"
+             xmlns:wpf="using:WpfCompat"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800"
+             Loaded="UserControl_Loaded"
+             Unloaded="UserControl_Unloaded"
+             LostFocus="UserControl_LostFocus"
+             Background="{DynamicResource EnvironmentWindowBackground}"
+             Foreground="{DynamicResource EnvironmentWindowText}"
+            >
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary>
+                    <cntrls:DoubleToNAConverter x:Key="NAConverter"/>
+                    <cntrls:BooleanToVisibilityConverter x:Key="BoolToVisConverter"/>
+                </ResourceDictionary>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <Grid>
+        <TabControl Grid.Row="0" Margin="4" TabStripPlacement="Left" Background="Transparent">
+            <TabItem x:Name="DistributionResultsTabItem" Header="Distribution Results" Theme="{DynamicResource VerticalTabItemStyle}">
+                <TabControl Grid.Row="0" Margin="4" TabStripPlacement="Top" Background="Transparent" SelectionChanged="InnerTabControl_SelectionChanged">
+                    <TabItem x:Name="CopulaResultsTabItem"  Header="X-Y Plot" Theme="{DynamicResource HorizontalTabItemStyle}" >
+                        <ScrollViewer x:Name="Viewer" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <Label Content="Axis Type" Margin="0" Grid.Row="0" Grid.Column="0"/>
+                                <ComboBox Name="AxisTypeComboBox" Margin="4" Width="200" Grid.Row="1" Grid.Column="0" SelectedIndex="0" SelectionChanged="XParameterComboBox_SelectionChanged">
+                                    <ComboBoxItem ToolTip.Tip="Plots the true marginal x and y values.">Value</ComboBoxItem>
+                                    <ComboBoxItem ToolTip.Tip="Plots the CDF of the marginal x and y values.">Probability</ComboBoxItem>
+                                </ComboBox>
+
+                                <Label Content="Plot Type" Margin="0" Grid.Row="0" Grid.Column="1"/>
+                                <ComboBox Name="PlotTypeComboBox" Margin="4" Width="200" Grid.Row="1" Grid.Column="1" SelectedIndex="0" SelectionChanged="YParameterComboBox_SelectionChanged">
+                                    <ComboBoxItem ToolTip.Tip="Creates a scatter plot from 10,000 simulated points.">Scatter Plot</ComboBoxItem>
+                                    <ComboBoxItem ToolTip.Tip="Creates a contour plot from the bivariate log densities.">Density Contour Plot</ComboBoxItem>
+                                    <ComboBoxItem ToolTip.Tip="Creates a contour plot from the bivariate joint exceedance probabilities.">Probability Contour Plot</ComboBoxItem>
+                                </ComboBox>
+
+                                <Grid x:Name="PlotGrid"  Grid.Row="2" Grid.ColumnSpan="3">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="1*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <!--Copula Plot-->
+                                    <ContentControl x:Name="CopulaPlotHost" Grid.Column="0" Margin="2,2,0,0" />
+                                    <!--Chronology Plot Toolbar-->
+                                    <oxyCntrls:OxyPlotToolbar x:Name="CopulaPlotToolbar" Grid.Column="1" Background="Transparent" VerticalAlignment="Stretch" ToolBarOrientation="Vertical" PropertiesCalled="PlotToolbar_PropertiesCalled"/>
+                                </Grid>
+                            </Grid>
+                        </ScrollViewer>
+                    </TabItem>
+                    <TabItem Header="Tabular Results" Theme="{DynamicResource HorizontalTabItemStyle}">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="0.75*"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="0.25*" MinWidth="200" MaxWidth="500"/>
+                            </Grid.ColumnDefinitions>
+
+                            <cntrls:SeparatorWithHeader Header="Bivariate Frequency Results" Grid.Column="0" Grid.Row="0" Margin="5" />
+
+                            <cntrls:CopyPasteDataGrid x:Name="FrequencyCurveTable" Grid.Column="0" Grid.Row="1" Margin="0,0,2,0"  Theme="{DynamicResource CopyPasteDataGridStyle}"  
+                                                    AutoGenerateColumns="False" SelectionMode="Extended" SelectionUnit="Cell" HeadersVisibility="Column" IsReadOnly="True"
+                                                    CanUserAddInsertDeleteRows="False" CanUserDeleteRows="False" CanUserAddRows="False" CanUserResizeRows="False" 
+                                                    CanUserResizeColumns="True" CanUserSortColumns="True" CanUserReorderColumns="False"  >
+
+                                <cntrls:CopyPasteDataGrid.Columns>
+                                    <DataGridTextColumn  Header="X" IsReadOnly="True"  MinWidth="30"  Width="0.14286*"
+                                                    Binding="{Binding Path=X, ConverterCulture={x:Static wpf:FormattingCulture.Current}}"
+                                                    HeaderTheme="{DynamicResource  Center_ColumnHeaderStyle}" 
+                                                    CellTheme="{DynamicResource  Right_CellStyle}" />
+                                    <DataGridTextColumn  Header="Y" IsReadOnly="True"  MinWidth="30"  Width="0.14286*"
+                                                    Binding="{Binding Path=Y, ConverterCulture={x:Static wpf:FormattingCulture.Current}}"
+                                                    HeaderTheme="{DynamicResource  Center_ColumnHeaderStyle}" 
+                                                    CellTheme="{DynamicResource  Right_CellStyle}" />
+                                    <DataGridTextColumn  Header="Upper" IsReadOnly="True" MinWidth="30"  Width="0.14286*" 
+                                                    Binding="{Binding Path=Upper, ConverterCulture={x:Static wpf:FormattingCulture.Current}}"
+                                                    HeaderTheme="{DynamicResource  Center_ColumnHeaderStyle}" 
+                                                    CellTheme="{DynamicResource  Right_CellStyle}"/>
+                                    <DataGridTextColumn  Header="Lower" IsReadOnly="True" MinWidth="30"  Width="0.14286*"
+                                                    Binding="{Binding Path=Lower, ConverterCulture={x:Static wpf:FormattingCulture.Current}}"
+                                                    HeaderTheme="{DynamicResource  Center_ColumnHeaderStyle}" 
+                                                    CellTheme="{DynamicResource  Right_CellStyle}"/>
+                                    <DataGridTextColumn  Header="Posterior Predictive" IsReadOnly="True" MinWidth="30"  Width="0.14286*"
+                                                    Binding="{Binding Path=Predictive, ConverterCulture={x:Static wpf:FormattingCulture.Current}}"
+                                                    HeaderTheme="{DynamicResource  Center_ColumnHeaderStyle}" 
+                                                    CellTheme="{DynamicResource  Right_CellStyle}"/>
+                                    <DataGridTextColumn  Header="Posterior Mode" IsReadOnly="True" MinWidth="30"  Width="0.14286*" 
+                                                    Binding="{Binding Path=Mode, ConverterCulture={x:Static wpf:FormattingCulture.Current}}"
+                                                    HeaderTheme="{DynamicResource  Center_ColumnHeaderStyle}" 
+                                                    CellTheme="{DynamicResource  Right_CellStyle}"/>
+                                </cntrls:CopyPasteDataGrid.Columns>
+                            </cntrls:CopyPasteDataGrid>
+
+
+                            <GridSplitter  Grid.Column="1" Grid.Row="1" ResizeBehavior="PreviousAndNext" HorizontalAlignment="Left" VerticalAlignment="Stretch" Background="Transparent" Theme="{DynamicResource VerticalGridSplitterStyle}"/>
+
+                            <cntrls:SeparatorWithHeader Header="Summary Statistics" Grid.Column="2" Grid.Row="0" Margin="5"/>
+
+                            <Grid Grid.Column="2" Grid.Row="1" Margin="2,0,0,0">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+                                <cntrls:CopyPasteDataGrid Name="SummaryStatisticsTable" Grid.Row="0" Margin="4,0,0,0" HeadersVisibility="Column" Theme="{DynamicResource CopyPasteDataGridStyle}"
+                                                AutoGenerateColumns="False" SelectionMode="Extended" SelectionUnit="Cell" IsReadOnly="True" 
+                                                CanUserDeleteRows="False" CanUserAddRows="False" CanUserResizeColumns="True" 
+                                                CanUserResizeRows="False" CanUserSortColumns="False" CanUserReorderColumns="False"
+                                                LoadingRow="SummaryStatisticsTable_LoadingRow">
+
+                                    <cntrls:CopyPasteDataGrid.Columns>
+                                        <DataGridTextColumn  Header="Measure" IsReadOnly="True" MinWidth="50" Width="0.5*"
+                                                        Binding="{Binding Path=Name}" 
+                                                        HeaderTheme="{DynamicResource  Left_ColumnHeaderStyle}"
+                                                        CellTheme="{DynamicResource  Left_CellStyle}"/>
+                                        <DataGridTextColumn  Header="Posterior Mode" IsReadOnly="True"  MinWidth="50" Width="0.5*"
+                                                        Binding="{Binding Path=Value, StringFormat='F4', FallbackValue=N/A, TargetNullValue=N/A, Converter={StaticResource NAConverter}, ConverterCulture={x:Static wpf:FormattingCulture.Current}}" 
+                                                        HeaderTheme="{DynamicResource  Center_ColumnHeaderStyle}"
+                                                        CellTheme="{DynamicResource  Right_CellStyle}"/>
+                                    </cntrls:CopyPasteDataGrid.Columns>
+                                </cntrls:CopyPasteDataGrid>
+                            </Grid>
+                        </Grid>
+                    </TabItem>
+                </TabControl>
+            </TabItem>
+            <TabItem x:Name="ParameterSetsTabItem" Header="Parameter Sets" Theme="{DynamicResource VerticalTabItemStyle}">
+                <local:ParameterSetsControl x:Name ="ParameterSetsControl" Grid.Row="1" Analysis="{Binding ElementName=BivariateControl, Path=Element.BayesianAnalysis, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}"/>
+            </TabItem>
+            <TabItem x:Name="InfluenceDiagnosticsTabItem" Header="Influence" Theme="{DynamicResource VerticalTabItemStyle}">
+                <local:InfluenceDiagnosticsControl x:Name="InfluenceDiagnosticsControl" Grid.Row="1"
+                    Analysis="{Binding ElementName=BivariateControl, Path=Element.BayesianAnalysis, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}"
+                    PlotPropertiesCalled="PlotToolbar_PropertiesCalled"/>
+            </TabItem>
+            <TabItem x:Name="KernelDensityTabItem" Header="Kernel Density" Theme="{DynamicResource VerticalTabItemStyle}">
+                <local:KernelDensityControl x:Name ="KernelDensityControl" Grid.Row="1" Analysis="{Binding ElementName=BivariateControl, Path=Element.BayesianAnalysis, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}"
+                                            PlotPropertiesCalled="PlotToolbar_PropertiesCalled"/>
+            </TabItem>
+            <TabItem x:Name="HistogramTabItem" Header="Histogram" Theme="{DynamicResource VerticalTabItemStyle}">
+                <local:HistogramControl x:Name ="HistogramControl" Grid.Row="1" Analysis="{Binding ElementName=BivariateControl, Path=Element.BayesianAnalysis, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}"
+                                        PlotPropertiesCalled="PlotToolbar_PropertiesCalled"/>
+            </TabItem>
+            <TabItem x:Name="MeanLikelihoodTabItem" Header="Mean Likelihood" Theme="{DynamicResource VerticalTabItemStyle}">
+                <local:MeanLikelihoodControl x:Name ="MeanLikelihoodControl" Grid.Row="1" Analysis="{Binding ElementName=BivariateControl, Path=Element.BayesianAnalysis, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}"
+                                             PlotPropertiesCalled="PlotToolbar_PropertiesCalled"/>
+            </TabItem>
+            <TabItem x:Name="AutocorrelationTabItem" Header="Autocorrelation" Theme="{DynamicResource VerticalTabItemStyle}">
+                <local:AutocorrelationControl x:Name ="AutocorrelationControl" Grid.Row="1" Analysis="{Binding ElementName=BivariateControl, Path=Element.BayesianAnalysis, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}"
+                                              PlotPropertiesCalled="PlotToolbar_PropertiesCalled"/>
+            </TabItem>
+            <TabItem x:Name="MarkovChainTabItem" Header="Markov Chain Traces" Theme="{DynamicResource VerticalTabItemStyle}">
+                <local:MarkovChainTraceControl x:Name ="MarkovChainTraceControl" Grid.Row="1" Analysis="{Binding ElementName=BivariateControl, Path=Element.BayesianAnalysis, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}"
+                                               PlotPropertiesCalled="PlotToolbar_PropertiesCalled"/>
+            </TabItem>
+            <TabItem x:Name="MCMCReportTabItem" Header="MCMC Report" Theme="{DynamicResource VerticalTabItemStyle}">
+                <local:MCMCReportControl x:Name="MCMCReportControl" Analysis="{Binding ElementName=BivariateControl, Path=Element.BayesianAnalysis, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}"/>
+            </TabItem>
+        </TabControl>
+    </Grid>
+</UserControl>
