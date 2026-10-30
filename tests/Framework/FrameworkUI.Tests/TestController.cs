@@ -99,10 +99,14 @@ public static class Shell
     /// <summary>The temporary folder the shell's files go in for the current test.</summary>
     public static string Folder { get; private set; } = string.Empty;
 
-    /// <summary>Points the shell's files at a new temporary folder, with the given settings saved there.</summary>
+    /// <summary>
+    /// Points the shell's files at a new temporary folder, with the given settings saved there. It is in
+    /// the tests' folder rather than the system's temporary folder, where the shell takes a project for a
+    /// new, unsaved one (MainWindow.SaveProject saves it as a new file).
+    /// </summary>
     public static void UseTemporaryFolder(Action? settings = null)
     {
-        Folder = Path.Combine(Path.GetTempPath(), "xgf-shell-" + Guid.NewGuid().ToString("N"));
+        Folder = Path.Combine(AppContext.BaseDirectory, "ShellTests", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(Folder);
         ShellPublicVariables.UserSettingsFolderPath = Path.Combine(Folder, "UserSettings") + Path.DirectorySeparatorChar;
         ShellPublicVariables.UserSettingsFilePath = ShellPublicVariables.UserSettingsFolderPath + "UserSettings.xml";
@@ -146,10 +150,13 @@ public static class Shell
         return (window, controller);
     }
 
-    /// <summary>Closes <paramref name="window"/> and deletes the temporary folder.</summary>
+    /// <summary>Closes <paramref name="window"/>, unless a test closed it, and deletes the temporary folder.</summary>
     public static void Close(Window window)
     {
-        window.Close();
+        if (window.IsVisible)
+        {
+            window.Close();
+        }
         Dispatcher.UIThread.RunJobs();
         try
         {

@@ -6,9 +6,20 @@ using Avalonia.Threading;
 
 namespace FrameworkUI.Tests;
 
-/// <summary>Keyboard and mouse input for the headless tests, as a user gives it.</summary>
+/// <summary>
+/// Keyboard and mouse input for the headless tests, as a user gives it: after each, the jobs it queued run
+/// and a frame is rendered, as the docking controls act on their layout.
+/// </summary>
 internal static class TestInput
 {
+    // Runs the queued jobs and renders a frame.
+    public static void Frame()
+    {
+        Dispatcher.UIThread.RunJobs();
+        AvaloniaHeadlessPlatform.ForceRenderTimerTick();
+        Dispatcher.UIThread.RunJobs();
+    }
+
     // A point of a visual, in its window's coordinates.
     public static Point PointOf(this TopLevel window, Visual visual, Point point) => visual.TranslatePoint(point, window)!.Value;
 
@@ -21,7 +32,7 @@ internal static class TestInput
         Point at = window.CenterOf(visual);
         window.MouseDown(at, button, modifiers);
         window.MouseUp(at, button, modifiers);
-        Dispatcher.UIThread.RunJobs();
+        Frame();
     }
 
     // Two left clicks in quick succession at the centre of a visual: the second press has a click count of two.
@@ -32,7 +43,7 @@ internal static class TestInput
         window.MouseUp(at, MouseButton.Left);
         window.MouseDown(at, MouseButton.Left);
         window.MouseUp(at, MouseButton.Left);
-        Dispatcher.UIThread.RunJobs();
+        Frame();
     }
 
     // Types text one character at a time, as a keyboard does.
@@ -42,7 +53,7 @@ internal static class TestInput
         {
             window.KeyTextInput(c.ToString());
         }
-        Dispatcher.UIThread.RunJobs();
+        Frame();
     }
 
     // Presses and releases a key.
@@ -50,6 +61,6 @@ internal static class TestInput
     {
         window.KeyPress(key, modifiers, PhysicalKey.None, null);
         window.KeyRelease(key, modifiers, PhysicalKey.None, null);
-        Dispatcher.UIThread.RunJobs();
+        Frame();
     }
 }

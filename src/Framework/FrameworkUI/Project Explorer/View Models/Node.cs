@@ -640,6 +640,21 @@ namespace FrameworkUI.ProjectExplorer
 
         #endregion
 
+        /// <summary>
+        /// Handles a key press as WPF's tree view item does: Enter neither expands nor collapses the node.
+        /// </summary>
+        /// <remarks>
+        /// XGoodFit port: Avalonia's TreeViewItem toggles its expansion on Enter, and so a parent's on
+        /// a child's unhandled Enter: Enter, which ends a rename or edits an element, would collapse the
+        /// collection. WPF's TreeViewItem has no Enter key, so the nodes' own Enter handlers are all.
+        /// </remarks>
+        /// <param name="e">The event data.</param>
+        protected override void OnKeyDown(KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter) return;
+            base.OnKeyDown(e);
+        }
+
         #region Rename Node
 
         /// <summary>

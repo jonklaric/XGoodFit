@@ -23,7 +23,7 @@ public sealed class DockThemeTests
     private static readonly ThemeColor[] Colours = [ThemeColor.Light, ThemeColor.Dark, ThemeColor.Blue];
 
     // The dock's background in each theme colour: AvalonDock's VS2013 Background.
-    private static Color Background(ThemeColor colour) => colour switch
+    internal static Color Background(ThemeColor colour) => colour switch
     {
         ThemeColor.Dark => Color.Parse("#2D2D30"),
         ThemeColor.Blue => Color.Parse("#293955"),
@@ -201,7 +201,7 @@ public sealed class DockThemeTests
             .GetVisualDescendants().OfType<Button>().First(b => b.Classes.Contains("avalondock-close"))
             .GetVisualDescendants().OfType<Border>().First(b => b.Name == "PART_Border").IsVisible;
 
-    private static Color BrushColour(StyledElement element, string key) =>
+    internal static Color BrushColour(StyledElement element, string key) =>
         ((ISolidColorBrush)element.FindResource(key)!).Color;
 
     // The keys a theme dictionary's palette defines (its own entries and its merged dictionaries').

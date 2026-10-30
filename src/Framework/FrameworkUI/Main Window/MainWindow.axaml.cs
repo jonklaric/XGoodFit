@@ -1253,6 +1253,10 @@ namespace FrameworkUI
                 document.IsEnabled = true;
                 if (document.Content != null) ((UIElement)document.Content).IsEnabled = true;
             }
+            // XGoodFit port: WPF AvalonDock's document pane activates the document it selects
+            // (LayoutDocumentPaneControl.OnSelectionChanged), which shows its properties and selects its
+            // node (Document_IsActiveChanged); Dock's AvalonDock adapter doesn't, so the shell does.
+            if (document.IsSelected && !document.IsActive && document.Parent is LayoutDocumentPane) document.IsActive = true;
         }
 
         /// <summary>
