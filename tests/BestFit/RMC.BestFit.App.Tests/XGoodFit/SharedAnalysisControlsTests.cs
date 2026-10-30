@@ -381,6 +381,9 @@ namespace RMC.BestFit.App.Tests.XGoodFit
             var selector = (DistributionSelectorControl)((Border)popup.Child).Child;
             Assert.AreEqual(11, selector.Distributions.Count, "upstream's eleven prior distributions");
             Assert.AreEqual(before, selector.SelectedDistribution.DisplayLabel);
+            // Upstream titles the editor with the parameter's Name, which a stationary distribution's parameters
+            // leave empty (their label is OwnerName): "Select Distribution for :", as in RMC-BestFit.
+            Assert.AreEqual(parameters[0].Name, selector.DistributionTitle);
             var normal = new Normal(40, 5);
             selector.SelectedDistribution = normal;
             toggle.IsChecked = false;
