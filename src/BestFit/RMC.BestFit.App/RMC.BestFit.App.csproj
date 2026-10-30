@@ -132,6 +132,42 @@
     <UpstreamCompileInclude Include="GUI/UnivariateAnalysis/Mixture/MixtureDistributionRow.cs" />
   </ItemGroup>
 
+  <!--
+    Each GUI area's upstream files that compile unchanged, one item group per area, so that areas ported
+    in parallel merge cleanly.
+  -->
+  <!-- Upstream files that compile unchanged: Bootstrap: MainProjectNode, GUI/Support and the batch run window. -->
+  <ItemGroup>
+  </ItemGroup>
+
+  <!-- Upstream files that compile unchanged: Shared analysis controls: GUI/Support/Controls. -->
+  <ItemGroup>
+  </ItemGroup>
+
+  <!-- Upstream files that compile unchanged: Input Data and Distribution Fitting Analysis. -->
+  <ItemGroup>
+  </ItemGroup>
+
+  <!-- Upstream files that compile unchanged: Time Series Data, with the shared AlternativeControl. -->
+  <ItemGroup>
+  </ItemGroup>
+
+  <!-- Upstream files that compile unchanged: Univariate Distribution Analysis: Univariate, Bulletin 17C, Point Process, Mixture, Composite. -->
+  <ItemGroup>
+  </ItemGroup>
+
+  <!-- Upstream files that compile unchanged: Bivariate Distribution Analysis: Bivariate, Coincident Frequency. -->
+  <ItemGroup>
+  </ItemGroup>
+
+  <!-- Upstream files that compile unchanged: Rating Curve Analysis. -->
+  <ItemGroup>
+  </ItemGroup>
+
+  <!-- Upstream files that compile unchanged: Time Series Analysis. -->
+  <ItemGroup>
+  </ItemGroup>
+
   <ItemGroup>
     <!--
       App.xaml's BestFit and USACE pictures. BestFit is the application's icon (XGoodFitIcon), which the

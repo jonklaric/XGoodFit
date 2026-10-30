@@ -11,7 +11,8 @@
     - GUI/Support/WpfTestHost.cs is ported: it merges the same resource dictionaries, as Avalonia
       resources, into the headless application.
 
-    PORT IN PROGRESS: add each GUI area's upstream tests with the area.
+    PORT IN PROGRESS: each GUI area's upstream tests are added with the area, in the area's item group
+    below (one per area, so that areas ported in parallel merge cleanly).
   -->
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
@@ -91,6 +92,38 @@
     <UpstreamCompileInclude Include="GUI/Support/HypothesisTestResultTests.cs" />
     <UpstreamCompileInclude Include="GUI/Support/SummaryStatisticTests.cs" />
     <UpstreamCompileInclude Include="GUI/Support/TimeSeriesResultTimelineTests.cs" />
+  </ItemGroup>
+
+  <!-- Upstream test files: Bootstrap: MainProjectNode, GUI/Support and the batch run window. -->
+  <ItemGroup>
+  </ItemGroup>
+
+  <!-- Upstream test files: Shared analysis controls: GUI/Support/Controls. -->
+  <ItemGroup>
+  </ItemGroup>
+
+  <!-- Upstream test files: Input Data and Distribution Fitting Analysis. -->
+  <ItemGroup>
+  </ItemGroup>
+
+  <!-- Upstream test files: Time Series Data, with the shared AlternativeControl. -->
+  <ItemGroup>
+  </ItemGroup>
+
+  <!-- Upstream test files: Univariate Distribution Analysis: Univariate, Bulletin 17C, Point Process, Mixture, Composite. -->
+  <ItemGroup>
+  </ItemGroup>
+
+  <!-- Upstream test files: Bivariate Distribution Analysis: Bivariate, Coincident Frequency. -->
+  <ItemGroup>
+  </ItemGroup>
+
+  <!-- Upstream test files: Rating Curve Analysis. -->
+  <ItemGroup>
+  </ItemGroup>
+
+  <!-- Upstream test files: Time Series Analysis. -->
+  <ItemGroup>
   </ItemGroup>
 
 </Project>
