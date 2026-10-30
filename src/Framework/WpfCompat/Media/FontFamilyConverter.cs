@@ -14,9 +14,9 @@ namespace WpfCompat.Media;
 /// <item>To text: WPF writes the text the family was made from, such as <c>Segoe UI</c> or
 /// <c>Arial, Verdana</c>. Avalonia families can also name font files, which XGoodFit uses for fallback
 /// fonts (Themes' default is <c>Segoe UI, avares://Themes/Assets/Fonts#Selawik</c>), and Avalonia's
-/// <c>ToString()</c> writes a resource key for those. This converter writes the family's installed-font
-/// names, so that default is written <c>Segoe UI</c>, as in WPF. A family made only of font files is
-/// written as its first family name.</item>
+/// <c>ToString()</c> writes a resource key for those. This converter writes the text unchanged, unless it
+/// names font files; then it writes only the installed-font names, so that default is written
+/// <c>Segoe UI</c>, as in WPF. A family made only of font files is written as its first family name.</item>
 /// <item>From text: a new <see cref="FontFamily"/> of that name.</item>
 /// </list>
 /// </remarks>
@@ -63,22 +63,35 @@ public class FontFamilyConverter : TypeConverter
 
         // The text the family was made from. Avalonia keeps it for a family of several fonts as its
         // key ("compositefont:" + text); a single installed font has no key, and its name is the text.
+        // A single font file's key is its file, which may be a relative URI.
         string? source = family.Key switch
         {
             null => family.FamilyNames.ToString(),
-            { Source: { Scheme: FontManager.CompositeFontScheme } uri } => uri.OriginalString[(FontManager.CompositeFontScheme.Length + 1)..],
+            { Source: { IsAbsoluteUri: true, Scheme: FontManager.CompositeFontScheme } uri } => uri.OriginalString[(FontManager.CompositeFontScheme.Length + 1)..],
             _ => null,
         };
+        if (source is null)
+        {
+            return family.Name;
+        }
 
-        var installed = source?.Split(',').Select(s => s.Trim()).Where(IsInstalledFontName).ToList();
-        return installed is { Count: > 0 } ? string.Join(", ", installed) : family.Name;
+        // As in WPF, the text is written as it was made, unless it names font files.
+        var segments = source.Split(',');
+        if (!segments.Any(IsFontFile))
+        {
+            return source;
+        }
+
+        var installed = string.Join(",", segments.Where(s => !IsFontFile(s) && !string.IsNullOrWhiteSpace(s))).Trim();
+        return installed.Length > 0 ? installed : family.Name;
     }
 
     // Avalonia's FontFamily parser reads a segment with exactly one '#' after a path as a font file
     // ("path#name"); anything else names an installed font.
-    private static bool IsInstalledFontName(string segment)
+    private static bool IsFontFile(string segment)
     {
-        int hash = segment.IndexOf('#');
-        return segment.Length > 0 && (hash <= 0 || segment.IndexOf('#', hash + 1) != -1);
+        string trimmed = segment.Trim();
+        int hash = trimmed.IndexOf('#');
+        return hash > 0 && trimmed.IndexOf('#', hash + 1) == -1;
     }
 }

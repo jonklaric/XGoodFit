@@ -111,9 +111,12 @@ public sealed class ConverterTests
         var converter = new FontFamilyConverter();
         Assert.AreEqual("Segoe UI", converter.ConvertToInvariantString(new FontFamily("Segoe UI")));
         Assert.AreEqual("Arial, Verdana", converter.ConvertToInvariantString(new FontFamily("Arial, Verdana")));
+        Assert.AreEqual("Arial,Verdana", converter.ConvertToInvariantString(new FontFamily("Arial,Verdana")), "as WPF, the text it was made from");
         Assert.AreEqual("Segoe UI", converter.ConvertToInvariantString(new FontFamily("Segoe UI, avares://Themes/Assets/Fonts#Selawik")),
             "the theme's embedded fallback font is XGoodFit's, not WPF's");
+        Assert.AreEqual("Arial, Verdana", converter.ConvertToInvariantString(new FontFamily("Arial, /Assets/Fonts#Selawik, Verdana")));
         Assert.AreEqual("Selawik", converter.ConvertToInvariantString(new FontFamily("avares://Themes/Assets/Fonts#Selawik")));
+        Assert.AreEqual("Selawik", converter.ConvertToInvariantString(new FontFamily("/Assets/Fonts#Selawik")), "a font file at a relative path");
         Assert.ThrowsException<ArgumentNullException>(() => converter.ConvertToInvariantString(null), "as in WPF");
 
         var family = (FontFamily)converter.ConvertFromInvariantString("Consolas")!;
