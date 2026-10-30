@@ -71,6 +71,8 @@ compared with its upstream original.
 | A tool tip in a `ComboBox.ItemContainerStyle` | `<ComboBox.Styles><Style Selector="ComboBoxItem">` setting `ToolTip.Tip` |
 | `Popup Placement="Right"` | `Placement="RightEdgeAlignedTop"`; `PopupAnimation` and `AllowsTransparency` aren't ported |
 | Combo box items that are numbers | an item template whose binding formats with `FormattingCulture` (D8) |
+| An enum `DataTrigger` | `Classes.x="{Binding P, Converter={x:Static ObjectConverters.Equal}, ConverterParameter={x:Static local:E.V}}"` with styles in the element's `Styles` |
+| A `DataTrigger`'s storyboard | a style animation on that class: it stops when the class goes, as `StopStoryboard` does |
 | `Visibility="Hidden"` | `Opacity="0"` with `IsHitTestVisible="False"` (keeps its space) |
 | `Visibility="{Binding …, Converter=…}"` | `wpf:WpfElement.Visibility="{Binding …}"` (`xmlns:wpf="using:WpfCompat"`): the converters produce WpfCompat's `Visibility`. Never bind one to `IsVisible`, which reads Visible (0) as false |
 | `{Binding IsEnabled, …}` (reading it) | `IsEffectivelyEnabled`: WPF's `IsEnabled` includes the parents', Avalonia's doesn't |
@@ -169,6 +171,13 @@ Templates and themes:
 | `FlowDocument.PageWidth` | WpfCompat's `FlowDocument.PageWidth`: the read-only `RichTextBox` lays the document out at that width and scrolls sideways |
 | `IsVisible` (visible and in a window) / `IsVisibleChanged` | `IsEffectivelyVisible && TopLevel.GetTopLevel(this) != null`, and watch `IsVisibleProperty` on the control and its ancestors while attached: Avalonia 12's `IsEffectivelyVisibleChanged` is internal (see `MarkovChainTraceControl`) |
 | Non-readonly `DependencyProperty` fields | `static readonly` styled properties (Avalonia's analyzer, AVP1000) |
+| `Window.GetWindow(this)` | `TopLevel.GetTopLevel(this) as Window` |
+| `w.Owner = o; w.Show()` | `w.Show(o)`: Avalonia's `Show()` ignores an owner set beforehand |
+| `FrameworkElementFactory` + `ControlTemplate` (code-built templates) | `FuncControlTemplate<T>` that builds the element |
+| `FindName("x")` | `FindControl<T>("x")` |
+| `DispatcherOperation.Task` | `DispatcherOperation.GetTask()` |
+| `Mouse.UpdateCursor()` | nothing: WpfCompat's `Mouse.OverrideCursor` applies at once |
+| `DataGrid.UnselectAll()` | `SelectedItem = null`: ProDataGrid's `SelectedItems.Clear()` raises no `SelectionChanged` |
 
 - Dialogs wait, as in WPF (plan §5.3): `ShowDialog()` and `DialogResult` (WpfCompat's), WpfCompat's
   file and folder dialogs and clipboard, and `GenericControls.MessageBox.Show`. Keep upstream's order
@@ -289,6 +298,18 @@ Watch for others when porting:
   value doesn't clear the resource binding (see `ParameterPriorsControl.HeaderThemeOf`).
 - **`ElementName` inside a DataTemplate** can find names in the enclosing XAML: Avalonia's template name
   scope falls back to the control's.
+- **Headless clicks in the shell:** move the pointer before pressing, as a mouse does. MainWindow notes
+  the pane under the pointer on mouse moves, and an explorer click relies on it to keep its selection
+  when it activates the node's document (see `BestFitShell.Click`).
+- **`[STATestMethod]` has no synchronization context,** so `async void` handlers continue on the thread
+  pool: drive such windows with `HeadlessSession.Run` and pump the dispatcher. Two quick clicks on one
+  spot are a double click (which opens an explorer node's document). Start WpfCompat's
+  `CommandManager` before focusing anything in a test.
+- **`x:Shared="False"` resources** give a new instance per lookup: compare icons by their drawing, not
+  by reference.
+- **Without a desktop lifetime (headless tests),** WpfCompat's `Modal.ActiveWindow` can return a window
+  an earlier test closed, so a dialog fails with "Cannot show a window with a closed owner": click into
+  the test's own window first.
 - **Grid themes:** set scroll bar visibility to `Auto`, WPF's default (ProDataGrid's is `Disabled`). A
   bare `DataGrid` gets the header-height fix only once a `CopyPasteDataGrid` exists: another reason to
   always use `CopyPasteDataGrid`. Grids laid out with unbounded height log layout-cycle warnings; that
