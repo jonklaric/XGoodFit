@@ -27,6 +27,13 @@
     <Nullable>enable</Nullable>
     <TestingPlatformShowTestsFailure>true</TestingPlatformShowTestsFailure>
     <UpstreamProjectDir>$(UpstreamBestFitSrc)RMC.BestFit.UI.Tests/</UpstreamProjectDir>
+    <!--
+      The two tests in category External download from live web services (USGS, NOAA GHCN) and fail
+      whenever one is down (seen: USGS HTTP 503). dotnet test leaves them out, as Numerics' live-service
+      tests are (scripts/run-upstream-tests.sh). Run them with
+      the test executable and its filter option set to TestCategory=External.
+    -->
+    <TestingPlatformCommandLineArguments>$(TestingPlatformCommandLineArguments) --filter TestCategory!=External</TestingPlatformCommandLineArguments>
   </PropertyGroup>
 
   <ItemGroup>
