@@ -38,6 +38,9 @@ dotnet build XGoodFit.slnx
 dotnet run --project tools/ThemeGallery
 ```
 
+Reading DSS files also needs HEC-DSS's native library, which is built from `upstream/hec-dss` with
+CMake and a C compiler: run `native/build-hecdss.sh` before `dotnet build` ([details](native/README.md)).
+
 To check that this machine gives the same results as the other platforms, you also need bash (on
 Windows, Git Bash, which comes with Git for Windows) and git 2.35 or later:
 
@@ -68,9 +71,9 @@ commit, version and licence.
 | Third-party libraries published on NuGet, such as SQLite | Their own repositories | Not stored: `dotnet build` restores them at pinned versions |
 | Sample data for the test suites | [RMC-BestFit examples](https://github.com/USACE-RMC/RMC-BestFit/tree/main/examples), [dss-test-data](https://github.com/HydrologicEngineeringCenter/dss-test-data) | Not stored: `scripts/fetch-sample-data.sh` downloads it |
 
-Upstream code is never edited. Portable upstream code compiles unmodified. The one planned exception
-is the file of native declarations in HEC's .NET wrapper: it no longer matches the HEC-DSS library,
-so a corrected copy will live in `src/`. The Windows-only WPF code is ported into `src/` file for
+Upstream code is never edited. Portable upstream code compiles unmodified. The one exception is the
+file of native declarations in HEC's .NET wrapper: it no longer matches the HEC-DSS library, so a
+corrected copy lives in `src/Hec.Dss`. The Windows-only WPF code is ported into `src/` file for
 file.
 
 ## Relationship to RMC-BestFit
