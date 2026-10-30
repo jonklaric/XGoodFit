@@ -234,6 +234,15 @@ namespace RMC.BestFit.App.Tests.XGoodFit
             Assert.IsTrue(grid.Columns[1].IsVisible);
             Assert.IsFalse(grid.Columns[1].IsReadOnly);
             Assert.AreEqual(element.Analyses[0].Weight.ToString(Us), CellText(grid, 0, 1));
+            // A weight edits in its cell, in WPF's binding culture. The edit changes the analyses, which gives the weight
+            // cells upstream's theme: Right_CellStyle, with a trigger on the rows' IsWeightValid, which they don't have,
+            // so it never flags a weight (an upstream bug).
+            CoincidentFrequencyViewTests.Edit(grid, 0, 1, "0.6");
+            Assert.AreEqual(0.6, element.Analyses[0].Weight);
+            Assert.AreEqual("0.6", CellText(grid, 0, 1));
+            Assert.AreSame(Application.Current.FindResource("Right_CellStyle"), grid.Columns[1].CellTheme.BasedOn);
+            Assert.IsTrue(grid.Columns[1].CellTheme.Setters.OfType<Avalonia.Styling.Setter>().Any(s => s.Property == NumericControls.DataTrigger.BindingProperty));
+            Assert.IsNull(NumericControls.DataTrigger.GetBinding(grid.GetCell(0, 1)), "the trigger's binding finds no IsWeightValid");
             type.SelectedItem = properties.CompositeTypeList.Single(i => i.Value == ModelAnalyses.CompositeType.ModelAverage);
             Settle();
             Assert.AreEqual(ModelAnalyses.CompositeType.ModelAverage, element.CompositeDistributionType);

@@ -470,7 +470,7 @@ namespace RMC.BestFit.App.Tests.XGoodFit
         }
 
         // Edits a grid's cell as a user does: selects it, types the text into its editor and commits it.
-        private static void Edit(GenericControls.CopyPasteDataGrid grid, int row, int column, string text)
+        internal static void Edit(GenericControls.CopyPasteDataGrid grid, int row, int column, string text)
         {
             grid.CurrentColumn = grid.Columns[column];
             grid.SelectedItem = grid.Items[row];
