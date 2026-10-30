@@ -1,0 +1,92 @@
+bestfit-file-description	1
+file	6-rating-curve-analysis/usgs-07024175-mississippi-rating-curve.bestfit	sha=c2335230a7c9d686	tables=3	cells=93
+pragma	encoding	UTF-8
+pragma	journal_mode	wal
+pragma	user_version	0
+pragma	application_id	0
+pragma	auto_vacuum	0
+table	Project	sha=f8c60fb8d7e2d45e	sql=bf204117c9f875b1	rows=1
+column	0	Name	TEXT
+column	1	Description	TEXT
+column	2	CreationDate	TEXT
+column	3	LastModified	TEXT
+column	4	FullFileName	TEXT
+column	5	SoftwareVersion	TEXT
+column	6	AvalonDockLayout	TEXT
+column	7	ProjectExplorerLayout	TEXT
+column	8	AvalonDockLayoutPrevious	TEXT
+column	9	ProjectExplorerLayoutPrevious	TEXT
+row	1	t:usgs-07024175-mississippi-rating-curve	t#301:c9d5a842760767af	t:3/26/2025 5:56:34 PM	t:9/30/2026 6:45:14 PM	p:{dir}\\usgs-07024175-mississippi-rating-curve.bestfit	t:2.0.1	t#2682:c448acaff81068e7/50ca4fc231c63f95:r	t#1051:aa9e5d17397fdcb4/ef062285b9b7dada:r	t#2518:c1fa9f801384caa1/984ee3bed243a328:r	t:
+table	Rating Curve Analysis	sha=c3f13a6687f5dc06	sql=9149a75e35043b1b	rows=1
+column	0	Name	TEXT
+column	1	Description	TEXT
+column	2	CreationDate	TEXT
+column	3	LastModified	TEXT
+column	4	StageData	TEXT
+column	5	DischargeData	TEXT
+column	6	MinStage	DOUBLE
+column	7	MaxStage	DOUBLE
+column	8	StageBins	INT4
+column	9	UseDefaultStageBins	BOOLEAN
+column	10	RatingCurve	TEXT
+column	11	BayesianAnalysis	TEXT
+column	12	MCMCResults	BLOB
+column	13	UncertaintyAnalysisResults	TEXT
+column	14	RatingCurvePlotSettings	TEXT
+column	15	ResidualPlotSettings	TEXT
+column	16	ResidualHistogramPlotSettings	TEXT
+column	17	ResidualQQPlotSettings	TEXT
+column	18	KernelDensityPlotSettings	TEXT
+column	19	HistogramPlotSettings	TEXT
+column	20	BivariatePlotSettings	TEXT
+column	21	MeanLikelihoodPlotSettings	TEXT
+column	22	AutocorrelationPlotSettings	TEXT
+column	23	MarkovChainTracesPlotSettings	TEXT
+column	24	FrequencyAnalysisResults	TEXT
+column	25	AnalysisResults	TEXT
+column	26	InfluenceDiagnosticsPlotSettings	TEXT
+column	27	MCMCReport	TEXT
+column	28	AnalysisXml	TEXT
+row	1	t:USGS 07024175 Rating Curve	t#316:e6e8d3aef86c3ff0	t:4/21/2026 11:18:14 PM	t:9/30/2026 6:45:14 PM	t:USGS 07024175 Measured Stage	t:USGS 07024175 Measured Discharge	r:-10.32	r:45.96	i:100	i:1	t#1217:6bc792fd2d295e2d/65ce8ccb0da47257:r	t#731:fe65d9513937068a	b#1834817:ebc3ea4b1b04796f>z#5283753:5335b1d49c5b6495	n	t#8261:90a295af47d8b5ef/1b4483c107818427:r	t#6217:a1686a52ed52d171/c1ab95e8b9aea257:r	t#6132:e6e6ef74cf8fa503/7b074bec72b72d93:r	t#6260:eb8b2674d0752990/9e1ef095ad478f45:r	t#5693:72047fa6e946fc60/8866c5f5ce695749:r	t#5304:b7a3a482dc08f371/462a7330d078c888:r	t#7749:978ad849369bf29a/eecaf3ec1f715298:r	t#5539:5a3f6aaf1cd3b0c4/8553b05d14efe043:r	t#6971:9d90a67d6ea0214a/9f76b660fe0100d3:r	t#11673:0997a38434f42281/c68a182020f9507a:r	n	t#9650:f96cac274ab2313e	t#5319:2ca31fc73e41c75e/3067f3008c634549:r	t:	t#877:9ef2dd3991c4505f/1e6fcd01d7f9a958:r
+table	Time Series Data	sha=16fd8be033ce84b6	sql=f88acb88f3ac8ca8	rows=2
+column	0	Name	TEXT
+column	1	Description	TEXT
+column	2	CreationDate	TEXT
+column	3	LastModified	TEXT
+column	4	TimeSeries	TEXT
+column	5	UnitLabel	TEXT
+column	6	EntryMethod	TEXT
+column	7	SeriesType	TEXT
+column	8	HECDSSFullFilename	TEXT
+column	9	HECDSSDataPathname	TEXT
+column	10	GHCNSiteNumber	TEXT
+column	11	USGSSiteNumber	TEXT
+column	12	DepthUnit	TEXT
+column	13	TimeInterval	TEXT
+column	14	StartDateTime	TEXT
+column	15	TimeSeriesPlotSettings	TEXT
+column	16	SeasonalityPlotSettings	TEXT
+column	17	DurationPlotSettings	TEXT
+column	18	CHMNSiteNumber	TEXT
+column	19	ABOMSiteNumber	TEXT
+column	20	DischargeUnit	TEXT
+column	21	HeightUnit	TEXT
+column	22	USGSRawText	TEXT
+column	23	ACFPlotSettings	TEXT
+column	24	PACFPlotSettings	TEXT
+column	25	TimeSeriesCompressed	BLOB
+column	26	USGSRawTextCompressed	BLOB
+row	1	t:USGS 07024175 Measured Stage	t#270:3684693e5da9f4cc	t:4/21/2026 9:04:14 PM	t:4/21/2026 9:10:24 PM	t:	t:Gage Height (ft)	t:USGS	t:MeasuredStage	t:	t:	t:00000000000	t:07024175	t:Inches	t:Irregular	t:2017-02-08T16:05:08.0000000Z	t#5527:278c4c6419f66c53/a82f80cc91517a63:r	t#10502:5923b227819ac3bb/c7a077c8babfaf9c:r	n	t:0000000	t:000000	t:CubicFeetPerSecond	t:Feet	t:	t#5194:2703205e514195c1/5eee4f0aa4187c2c:r	t#5225:b64569b17017792b/0608c59d12e4f32b:r	b#1394:96833464d5fce126>z#7943:c1d235e642c0cfe7/9c6300c944633dfa:r	b#7909:814f69bb27c07b68>z#109379:f9cf3a5f75f00c85
+row	2	t:USGS 07024175 Measured Discharge	t#248:bc0ff7087c47d3c6	t:4/21/2026 9:04:48 PM	t:4/21/2026 9:10:32 PM	t:	t:Flow (cfs)	t:USGS	t:MeasuredDischarge	t:	t:	t:00000000000	t:07024175	t:Inches	t:Irregular	t:2017-02-08T16:05:08.0000000Z	t#5521:b75d5f1229ddea5d/bbe11a57379d4168:r	t#10496:868a481e1e07c2bb/71e71a1ddb7719fc:r	n	t:0000000	t:000000	t:CubicFeetPerSecond	t:Feet	t:	t#5194:2703205e514195c1/5eee4f0aa4187c2c:r	t#5225:b64569b17017792b/0608c59d12e4f32b:r	b#1225:a967f74f84f3506b>z#7171:cf04c39f452cbc08/c81e5cd14be11602:r	b#7812:b732221e744ce347>z#112678:c3515cf1549c395e
+state	00 Time Series Data	4c94b97e6a73f726	66eae0f9e86047a2
+state	00 Time Series Data/00 TimeSeriesElement 'USGS 07024175 Measured Stage'	4f5eea614821dfb8	50b16c0afe8b03df
+state	00 Time Series Data/01 TimeSeriesElement 'USGS 07024175 Measured Discharge'	72ae431533a03724	527b9304ed30b574
+state	01 Input Data	4b47e20068fbbb01	7138759d2d2c7b9f
+state	02 Distribution Fitting Analysis	22c9cdb7873ae49a	4a4ead4bf90c0837
+state	03 Univariate Distribution Analysis	468896e1b6f7e6c8	0e3a3c46961dd428
+state	04 Bivariate Distribution Analysis	2df996a968e4df10	85c24dd973e8dafa
+state	05 Rating Curve Analysis	53231fa7fa9da854	771f60dc9817d061
+state	05 Rating Curve Analysis/00 RatingCurveAnalysis 'USGS 07024175 Rating Curve'	b60da1278d89c8c6	c32dbfd303d4ebc6
+state	06 Time Series Analysis	2f4a1830d606047e	0e6e4ee694390acc
+state	Project	95ede51acbb3f4ef	95ede51acbb3f4ef
+end

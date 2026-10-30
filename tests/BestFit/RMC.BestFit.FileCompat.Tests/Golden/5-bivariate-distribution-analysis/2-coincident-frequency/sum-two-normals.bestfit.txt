@@ -1,0 +1,180 @@
+bestfit-file-description	1
+file	5-bivariate-distribution-analysis/2-coincident-frequency/sum-two-normals.bestfit	sha=be436cd88949c363	tables=7	cells=550
+pragma	encoding	UTF-8
+pragma	journal_mode	wal
+pragma	user_version	0
+pragma	application_id	0
+pragma	auto_vacuum	0
+table	<Bivariate Distribution>	sha=5bace5514d437dc3	sql=43c4483f32a71a3f	rows=3
+column	0	Name	TEXT
+column	1	Description	TEXT
+column	2	CreationDate	TEXT
+column	3	LastModified	TEXT
+column	4	MarginalX	TEXT
+column	5	MarginalY	TEXT
+column	6	XYOrdinates	TEXT
+column	7	BivariateDistribution	TEXT
+column	8	BayesianAnalysis	TEXT
+column	9	MCMCResults	BLOB
+column	10	AnalysisResults	TEXT
+column	11	CopulaPlotSettings	TEXT
+column	12	KernelDensityPlotSettings	TEXT
+column	13	HistogramPlotSettings	TEXT
+column	14	BivariatePlotSettings	TEXT
+column	15	MeanLikelihoodPlotSettings	TEXT
+column	16	AutocorrelationPlotSettings	TEXT
+column	17	MarkovChainTracesPlotSettings	TEXT
+column	18	InfluenceDiagnosticsPlotSettings	TEXT
+column	19	MCMCReport	TEXT
+column	20	AnalysisXml	TEXT
+row	1	t:Normal Copula - Rho = 0.0	t#266:16e75bdea08c0d63	t:5/3/2026 8:35:58 AM	t:10/6/2026 9:14:58 PM	t:X Marginal - Rho = 0.0	t:Y Marginal - Rho = 0.0	t#345:ab5fcfa55090a168/28cf434e3544d9ff:r	t#480:4cb0504c995dc117/6bd95ed602f10826:r	t#734:a8fccbafc4b39673	b#523714:0771d872334f9af9>z#1897459:313adf97e237c6f3	t#267:74b950ca95fb4271	t#6060:60add3d215dcb360/c3da457e67dc9abd:r	t#5679:8f334020035fd82d/e3cbd2b1abaadc51:r	t#5290:4480053f85fca40f/4750be6c89d74cf7:r	t#6280:542e7148ca408659/b4be260df3c66797:r	t#5539:004483ae9d62f197/a6b549c2b16aebff:r	t#6963:bef9a434c3580e67/9b568d2a8e465aa4:r	t#4592:5a6e4301769d2b63/b27fe2dab86849af:r	t#5314:085567b25b97b9ec/93059f09d993770c:r	t:	t#1159:628855afa2f1dcb6/ce862b7da757764e:r
+row	2	t:Normal Copula - Rho = -0.5	t#268:2ac9879fc9a750ac	t:5/4/2026 5:02:40 PM	t:10/6/2026 9:14:58 PM	t:X Marginal - Rho = -0.5	t:Y Marginal - Rho = -0.5	t#345:ab5fcfa55090a168/28cf434e3544d9ff:r	t#480:29f6f1c75725fb6d/f2131fd1e3171338:r	t#733:b361b4414396a0db	b#496617:0726e0f043d03313>z#1861388:799b2ff24d48d6b8	t#269:85a484fe739f84a9	t#6060:440ecde8bce86db3/f891e2b1039d8464:r	t#5679:79f11dde928e196e/f9d080fcc2fca8e4:r	t#5290:c9780edd2d1d50be/2ffc516da2e8165d:r	t#6280:542e7148ca408659/b4be260df3c66797:r	t#5539:9f14449f2e18aa98/7729d6e84e8efe17:r	t#6964:9a8ce7dae9558681/7bd38cc80c08cce5:r	t#4592:93b8348b7d1c6e6f/d4ba2cbb8d7381d9:r	t#5314:c64a0a0d9703d309/612dcdc241c4f4c9:r	t:	t#1158:395b80debfb387ef/31171353edc1bad4:r
+row	3	t:Normal Copula - Rho =+0.5	t#267:34d765c3adf117f7	t:5/4/2026 5:04:21 PM	t:10/6/2026 9:14:58 PM	t:X Marginal - Rho = +0.5	t:Y Marginal - Rho =+0.5	t#345:ab5fcfa55090a168/28cf434e3544d9ff:r	t#479:f59102e6ed74b2ba/e9ad554dda3c9bcf:r	t#735:06adf8f25f8fa406	b#495992:a15874bdd87dcdcc>z#1816322:f1da5e593c98fdf5	t#270:bb3c126c1ceb18ed	t#6060:440ecde8bce86db3/f891e2b1039d8464:r	t#5679:79f11dde928e196e/f9d080fcc2fca8e4:r	t#5290:c9780edd2d1d50be/2ffc516da2e8165d:r	t#6280:542e7148ca408659/b4be260df3c66797:r	t#5539:9f14449f2e18aa98/7729d6e84e8efe17:r	t#6963:6edce658088ecff2/8857b851782f5d14:r	t#4592:93b8348b7d1c6e6f/d4ba2cbb8d7381d9:r	t#5314:c64a0a0d9703d309/612dcdc241c4f4c9:r	t:	t#1160:d70e2eee9f3ccbc6/09d2c37f8fc3978d:r
+table	<Coincident Frequency>	sha=cd9f7bb21a187d1a	sql=9aa6cc89cccf95d4	rows=3
+column	0	Name	TEXT
+column	1	Description	TEXT
+column	2	CreationDate	TEXT
+column	3	LastModified	TEXT
+column	4	BivariateAnalysis	TEXT
+column	5	InputData	TEXT
+column	6	XValues	TEXT
+column	7	YValues	TEXT
+column	8	BivariateResponse	TEXT
+column	9	NumberOfBins	TEXT
+column	10	BayesianAnalysis	TEXT
+column	11	AnalysisResults	TEXT
+column	12	ZOutputValues	TEXT
+column	13	FrequencyPlotSettings	TEXT
+row	1	t:CFA - Rho = 0.0	t#242:40c976ef748d8515	t:5/3/2026 8:36:53 AM	t:10/6/2026 9:14:58 PM	t:Normal Copula - Rho = 0.0	t:X+Y Data - Rho = 0.0	t:65,75,90,100,110,125,135	t:22,39,63,80,97,121,138	t#193:aca99a6bba86ccf1	t:20	t#591:6ae81a8e235d9826	t#1749:29a697a8cc45afd8	t#345:7b895b63ff20d6b4	t#8246:29a36d1c6fa2a344/0f2499a92241e0ae:r
+row	2	t:CFA - Rho = -0.5	t#244:eff0c635a405c8cd	t:5/4/2026 5:03:55 PM	t:10/6/2026 9:14:58 PM	t:Normal Copula - Rho = -0.5	t:X+Y Data - Rho = -0.5	t:65,75,90,100,110,125,135	t:22,39,63,80,97,121,138	t#193:aca99a6bba86ccf1	t:50	t#591:42054cc2ea70b751	t#4243:2f44ecaecf1d7d88	t#914:e207e1200097c83a	t#8246:6cc2412eacb42eff/224655586bcd948d:r
+row	3	t:CFA - Rho = +0.5	t#243:a65eb3084eb08602	t:5/4/2026 5:04:42 PM	t:10/6/2026 9:14:58 PM	t:Normal Copula - Rho =+0.5	t:X+Y Data - Rho = +0.5	t:65,75,90,100,110,125,135	t:22,39,63,80,97,121,138	t#193:aca99a6bba86ccf1	t:50	t#591:42054cc2ea70b751	t#4147:9e3a6329245b400c	t#914:e207e1200097c83a	t#8246:6cc2412eacb42eff/224655586bcd948d:r
+table	<Univariate Distribution>	sha=49b80d7fdbf16ac3	sql=192652ba4c99d235	rows=6
+column	0	Name	TEXT
+column	1	Description	TEXT
+column	2	CreationDate	TEXT
+column	3	LastModified	TEXT
+column	4	InputData	TEXT
+column	5	UnivariateDistribution	TEXT
+column	6	BayesianAnalysis	TEXT
+column	7	MCMCResults	BLOB
+column	8	AnalysisResults	TEXT
+column	9	ChronologyAnalysisResults	TEXT
+column	10	ProbabilityOrdinates	TEXT
+column	11	FrequencyPlotSettings	TEXT
+column	12	ChronologyPlotSettings	TEXT
+column	13	InfluenceDiagnosticsPlotSettings	TEXT
+column	14	KernelDensityPlotSettings	TEXT
+column	15	HistogramPlotSettings	TEXT
+column	16	BivariatePlotSettings	TEXT
+column	17	MeanLikelihoodPlotSettings	TEXT
+column	18	AutocorrelationPlotSettings	TEXT
+column	19	MarkovChainTracesPlotSettings	TEXT
+column	20	AnalysisXml	TEXT
+column	21	MCMCReport	TEXT
+row	1	t:X Marginal - Rho = 0.0	t#140:a1609d0afd8926b7	t:5/3/2026 8:34:16 AM	t:9/17/2026 4:00:55 PM	t:X Data - Rho = 0.0	t#1764:fcac9f6e1bf1e791/b19d1c1d25403577:r	t#732:d5ec2ce837d2a0ad	b#715542:93ef923c319cdded>z#2331718:bdb42326b19ff3ab	t#2183:d2659549e9ecc30e/609a21f550a5fa2a:r	t:	t#439:5840f09d7e1a6c45	t#8252:b5d517637e305f38/81990406b9befbc1:r	t#4603:380beff033c8e850/53d64ac1d97fa1c1:r	t#5319:2ca31fc73e41c75e/3067f3008c634549:r	t#5667:1e0bc66cb17d54aa/ef4ccfd058dfe21e:r	t#5278:ec5be3dd93aac04a/bbdefd6b5ea4e4f7:r	t#7705:98be905d7d1c7458/6ee81fb8c639fce9:r	t#5539:a7ebe8805814eee3/a14e435a94b972fa:r	t#6958:355b154b16364851/f34971b44484e80d:r	t#4592:e00b33408b532b25/334d3790af79139f:r	t#1286:c61afa7c102d0ddf/cfaca25feda9f5c8:r	t:
+row	2	t:Y Marginal - Rho = 0.0	t#140:478ccc4f0bf4661b	t:5/3/2026 8:35:21 AM	t:9/17/2026 4:00:55 PM	t:Y Data - Rho = 0.0	t#1756:0860fb0695c9a418/31bea5fca62cbd64:r	t#729:456b6b035fce080a	b#717695:9797569bd450f1c1>z#2311397:f27901f47937f191	t#2186:117ec090f2c8b08d/b2f7efcf6d72d563:r	t:	t#439:5840f09d7e1a6c45	t#8252:73666dd7e6a7fdf0/357ff45f065cb6bd:r	t#4603:3f73bc5eb31f89b9/6729c719f3c0d7fc:r	t#5314:c64a0a0d9703d309/612dcdc241c4f4c9:r	t#5667:a55d2c9a8f066241/0cab7095937086c0:r	t#5278:911f10430840047a/754e9e62c45240ca:r	t#7705:10e288f52274c3dd/502cab8488e42ac1:r	t#5539:9f14449f2e18aa98/7729d6e84e8efe17:r	t#6958:1d738d0fe35eb399/2965e4b61c053dda:r	t#4592:93b8348b7d1c6e6f/d4ba2cbb8d7381d9:r	t#1283:bdd75e865a43f9d3/b37ff54ac3812b08:r	t:
+row	3	t:X Marginal - Rho = -0.5	t#141:341b2c9646228d9f	t:5/4/2026 4:49:09 PM	t:9/17/2026 4:00:55 PM	t:X Data - Rho = -0.5	t#1756:83f83fda6ea51261/ed50f362cead44ea:r	t#732:11ca9c34611b687e	b#712935:0987a9a68e8c94e8>z#2314820:ee704f448bff199f	t#2190:3de6d9d6b085179c/f17872b43feb49f4:r	t:	t#439:5840f09d7e1a6c45	t#8252:73666dd7e6a7fdf0/357ff45f065cb6bd:r	t#4603:3f73bc5eb31f89b9/6729c719f3c0d7fc:r	t#5314:c64a0a0d9703d309/612dcdc241c4f4c9:r	t#5667:a55d2c9a8f066241/0cab7095937086c0:r	t#5278:911f10430840047a/754e9e62c45240ca:r	t#7704:b0b7dc45a7a16b75/39eedcec350cb3f2:r	t#5539:9f14449f2e18aa98/7729d6e84e8efe17:r	t#6957:98ce071f4211308f/b02cc7a0d7c828b4:r	t#4592:93b8348b7d1c6e6f/d4ba2cbb8d7381d9:r	t#1286:b42f3c78167c6b84/0b941b6d72d18e5c:r	t:
+row	4	t:Y Marginal - Rho = -0.5	t#141:a582ac3d96198f5f	t:5/4/2026 4:49:24 PM	t:9/17/2026 4:00:55 PM	t:Y Data - Rho = -0.5	t#1753:4776604712dcc838/11a70035c4f1e638:r	t#732:7bce6231a4dfd84a	b#720456:31ab829ecc9797f6>z#2311297:57b8a8d92126b54c	t#2181:943fa90ca1ebe238/efea1eb135048c44:r	t:	t#439:5840f09d7e1a6c45	t#8252:73666dd7e6a7fdf0/357ff45f065cb6bd:r	t#4603:3f73bc5eb31f89b9/6729c719f3c0d7fc:r	t#5314:c64a0a0d9703d309/612dcdc241c4f4c9:r	t#5667:a55d2c9a8f066241/0cab7095937086c0:r	t#5278:911f10430840047a/754e9e62c45240ca:r	t#7705:ff475277506518c4/f02053e7dcf1b751:r	t#5539:9f14449f2e18aa98/7729d6e84e8efe17:r	t#6958:1d738d0fe35eb399/2965e4b61c053dda:r	t#4592:93b8348b7d1c6e6f/d4ba2cbb8d7381d9:r	t#1286:781bc24f4b0a810a/3ac80d946620cfb9:r	t:
+row	5	t:X Marginal - Rho = +0.5	t#141:3c951bc5a27264c4	t:5/4/2026 4:49:41 PM	t:9/17/2026 4:00:55 PM	t:X Data - Rho = +0.5	t#1764:60129b3c9a559b7b/adb5dff9c61226c7:r	t#732:759c8923d650234c	b#715035:7fc66e3d19467d94>z#2338698:5cfc208f87a59de3	t#2192:26f2aa4d5a61e89a/ce6ab2e15a7e9b5d:r	t:	t#439:5840f09d7e1a6c45	t#8252:73666dd7e6a7fdf0/357ff45f065cb6bd:r	t#4603:3f73bc5eb31f89b9/6729c719f3c0d7fc:r	t#5314:c64a0a0d9703d309/612dcdc241c4f4c9:r	t#5667:a55d2c9a8f066241/0cab7095937086c0:r	t#5278:911f10430840047a/754e9e62c45240ca:r	t#7705:ea02f264fbb260e2/3150beb0a5c68e34:r	t#5539:9f14449f2e18aa98/7729d6e84e8efe17:r	t#6957:98ce071f4211308f/b02cc7a0d7c828b4:r	t#4592:93b8348b7d1c6e6f/d4ba2cbb8d7381d9:r	t#1286:be3eda3427e79d81/0cbba440aa1ae65b:r	t:
+row	6	t:Y Marginal - Rho =+0.5	t#141:2f20fea9c11ffa4a	t:5/4/2026 5:03:01 PM	t:9/17/2026 4:00:55 PM	t:Y Data - Rho = +0.5	t#1750:01b1e5003a9199ee/5fe619181070e3c4:r	t#732:c26b87e9c0a0b659	b#717101:5bc50de815cd2e21>z#2311131:7b95057f0ed1c777	t#2184:dc3b65e05dd3b8c4/8cf197db4ef46500:r	t:	t#439:5840f09d7e1a6c45	t#8252:73666dd7e6a7fdf0/357ff45f065cb6bd:r	t#4603:3f73bc5eb31f89b9/6729c719f3c0d7fc:r	t#5314:c64a0a0d9703d309/612dcdc241c4f4c9:r	t#5667:a55d2c9a8f066241/0cab7095937086c0:r	t#5278:911f10430840047a/754e9e62c45240ca:r	t#7705:7a1258044a5c0547/ff4ad67bda5f91b9:r	t#5539:9f14449f2e18aa98/7729d6e84e8efe17:r	t#6957:98ce071f4211308f/b02cc7a0d7c828b4:r	t#4592:93b8348b7d1c6e6f/d4ba2cbb8d7381d9:r	t#1286:b192f15a6805e9e8/f739e340c2cf90f0:r	t:
+table	Bivariate Distribution Analysis	sha=fdaa8d8b0b108d5d	sql=ba810e1b5ec29928	rows=6
+column	0	Name	TEXT
+column	1	Type	TEXT
+row	1	t:Normal Copula - Rho = 0.0	t:RMC.BestFit.UI.BivariateAnalysis
+row	2	t:CFA - Rho = 0.0	t:RMC.BestFit.UI.CoincidentFrequencyAnalysis
+row	3	t:Normal Copula - Rho = -0.5	t:RMC.BestFit.UI.BivariateAnalysis
+row	4	t:CFA - Rho = -0.5	t:RMC.BestFit.UI.CoincidentFrequencyAnalysis
+row	5	t:Normal Copula - Rho =+0.5	t:RMC.BestFit.UI.BivariateAnalysis
+row	6	t:CFA - Rho = +0.5	t:RMC.BestFit.UI.CoincidentFrequencyAnalysis
+table	Input Data	sha=935b19ea96fc73eb	sql=d536de5c86337186	rows=9
+column	0	Name	TEXT
+column	1	Description	TEXT
+column	2	CreationDate	TEXT
+column	3	LastModified	TEXT
+column	4	ExactDataMethod	TEXT
+column	5	DataFrame	TEXT
+column	6	UnitLabel	TEXT
+column	7	IndexLabel	TEXT
+column	8	USGSSiteNumber	TEXT
+column	9	UseMultipleGrubbsBeckTest	BOOLEAN
+column	10	TimeSeriesElement	TEXT
+column	11	BlockFunction	TEXT
+column	12	TimeBlock	TEXT
+column	13	StartMonth	INT4
+column	14	EndMonth	INT4
+column	15	SmoothingFunction	TEXT
+column	16	Period	INT4
+column	17	Threshold	DOUBLE
+column	18	MinStepsBetweenPeaks	INT4
+column	19	IsProcessed	BOOLEAN
+column	20	ChronologyPlotSettings	TEXT
+column	21	FrequencyPlotSettings	TEXT
+column	22	SeasonalityPlotSettings	TEXT
+column	23	DensityPlotSettings	TEXT
+column	24	HistogramPlotSettings	TEXT
+column	25	QQPlotSettings	TEXT
+column	26	ACFPlotSettings	TEXT
+column	27	PACFPlotSettings	TEXT
+column	28	MRLPlotSettings	TEXT
+column	29	ModifiedScalePlotSettings	TEXT
+column	30	ShapePlotSettings	TEXT
+row	1	t:X Data - Rho = 0.0	t#202:41a77d3b34565626	t:5/3/2026 8:31:04 AM	t:5/3/2026 8:42:07 AM	t:Manual	t#15513:15146ee4c3ab7832/5b73d2d0fdccb1c8:r	t:Value	t:Year	t:00000000	i:1	t:	t:Maximum	t:CalendarYear	i:10	i:9	t:None	i:1	r:0	i:1	i:0	t#5387:62b982352713dc1f/14ead8f1276fba78:r	t#5452:6a669c5a902441e0/39700d488859b3b5:r	t#4651:485ae51e9908be90/f627168d1629fdf1:r	t#4621:d27d469e9b06a1b8/ec66c0b28fab1600:r	t#4623:83891b7f491765ec/00f6f15ffc09fb66:r	t#4654:31c65fb9ffdab673/449d12bb4c4970dd:r	t#4626:eb221798a6e69160/309239f5bed5f95b:r	t#4642:271a1a0cca6b7cd0/94db91231448007e:r	t#4604:72fceb0feba00e36/f54686f1451d6bfb:r	t#4617:bd1cbff8840b0fa4/5d57c1cc278b81f5:r	t#4599:33ad547799c64842/08cc3d7ab5fc47fa:r
+row	2	t:Y Data - Rho = 0.0	t#202:6ab03311a86cb5e7	t:5/3/2026 8:32:09 AM	t:5/3/2026 8:42:19 AM	t:Manual	t#15643:a82fce15c8c714bd/c89647b33767c9d2:r	t:Value	t:Year	t:00000000	i:1	t:	t:Maximum	t:CalendarYear	i:10	i:9	t:None	i:1	r:0	i:1	i:0	t#5387:62b982352713dc1f/14ead8f1276fba78:r	t#5452:6a669c5a902441e0/39700d488859b3b5:r	t#4651:485ae51e9908be90/f627168d1629fdf1:r	t#4621:d27d469e9b06a1b8/ec66c0b28fab1600:r	t#4623:83891b7f491765ec/00f6f15ffc09fb66:r	t#4654:31c65fb9ffdab673/449d12bb4c4970dd:r	t#4626:eb221798a6e69160/309239f5bed5f95b:r	t#4642:271a1a0cca6b7cd0/94db91231448007e:r	t#4604:72fceb0feba00e36/f54686f1451d6bfb:r	t#4617:bd1cbff8840b0fa4/5d57c1cc278b81f5:r	t#4599:33ad547799c64842/08cc3d7ab5fc47fa:r
+row	3	t:X+Y Data - Rho = 0.0	t#203:b215d943d4c7a1bf	t:5/3/2026 8:32:32 AM	t:5/3/2026 8:42:30 AM	t:Manual	t#15621:166a1ece83af60c5/bec72b4293147936:r	t:Value	t:Year	t:00000000	i:1	t:	t:Maximum	t:CalendarYear	i:10	i:9	t:None	i:1	r:0	i:1	i:0	t#5387:62b982352713dc1f/14ead8f1276fba78:r	t#5452:6a669c5a902441e0/39700d488859b3b5:r	t#4651:485ae51e9908be90/f627168d1629fdf1:r	t#4621:d27d469e9b06a1b8/ec66c0b28fab1600:r	t#4623:83891b7f491765ec/00f6f15ffc09fb66:r	t#4654:31c65fb9ffdab673/449d12bb4c4970dd:r	t#4626:eb221798a6e69160/309239f5bed5f95b:r	t#4642:271a1a0cca6b7cd0/94db91231448007e:r	t#4604:72fceb0feba00e36/f54686f1451d6bfb:r	t#4617:bd1cbff8840b0fa4/5d57c1cc278b81f5:r	t#4599:33ad547799c64842/08cc3d7ab5fc47fa:r
+row	4	t:X Data - Rho = -0.5	t#202:41a77d3b34565626	t:5/4/2026 4:47:01 PM	t:5/4/2026 4:48:22 PM	t:Manual	t#15573:c70b2d26bb172b74/cf1b5d3a6c3092ee:r	t:Value	t:Year	t:00000000	i:1	t:	t:Maximum	t:CalendarYear	i:10	i:9	t:None	i:1	r:0	i:1	i:0	t#5387:62b982352713dc1f/14ead8f1276fba78:r	t#5452:6a669c5a902441e0/39700d488859b3b5:r	t#4651:485ae51e9908be90/f627168d1629fdf1:r	t#4621:d27d469e9b06a1b8/ec66c0b28fab1600:r	t#4623:83891b7f491765ec/00f6f15ffc09fb66:r	t#4654:31c65fb9ffdab673/449d12bb4c4970dd:r	t#4626:eb221798a6e69160/309239f5bed5f95b:r	t#4642:271a1a0cca6b7cd0/94db91231448007e:r	t#4604:72fceb0feba00e36/f54686f1451d6bfb:r	t#4617:bd1cbff8840b0fa4/5d57c1cc278b81f5:r	t#4599:33ad547799c64842/08cc3d7ab5fc47fa:r
+row	5	t:Y Data - Rho = -0.5	t#202:6ab03311a86cb5e7	t:5/4/2026 4:47:08 PM	t:5/4/2026 4:48:22 PM	t:Manual	t#15651:bc25c5eb7568dbab/e74b7d41d3bece8f:r	t:Value	t:Year	t:00000000	i:1	t:	t:Maximum	t:CalendarYear	i:10	i:9	t:None	i:1	r:0	i:1	i:0	t#5387:62b982352713dc1f/14ead8f1276fba78:r	t#5452:6a669c5a902441e0/39700d488859b3b5:r	t#4651:485ae51e9908be90/f627168d1629fdf1:r	t#4621:d27d469e9b06a1b8/ec66c0b28fab1600:r	t#4623:83891b7f491765ec/00f6f15ffc09fb66:r	t#4654:31c65fb9ffdab673/449d12bb4c4970dd:r	t#4626:eb221798a6e69160/309239f5bed5f95b:r	t#4642:271a1a0cca6b7cd0/94db91231448007e:r	t#4604:72fceb0feba00e36/f54686f1451d6bfb:r	t#4617:bd1cbff8840b0fa4/5d57c1cc278b81f5:r	t#4599:33ad547799c64842/08cc3d7ab5fc47fa:r
+row	6	t:X+Y Data - Rho = -0.5	t#203:b215d943d4c7a1bf	t:5/4/2026 4:47:15 PM	t:5/4/2026 4:48:22 PM	t:Manual	t#15589:bc8d717ee545e75e/1c942f123ca011d5:r	t:Value	t:Year	t:00000000	i:1	t:	t:Maximum	t:CalendarYear	i:10	i:9	t:None	i:1	r:0	i:1	i:0	t#5387:62b982352713dc1f/14ead8f1276fba78:r	t#5452:6a669c5a902441e0/39700d488859b3b5:r	t#4651:485ae51e9908be90/f627168d1629fdf1:r	t#4621:d27d469e9b06a1b8/ec66c0b28fab1600:r	t#4623:83891b7f491765ec/00f6f15ffc09fb66:r	t#4654:31c65fb9ffdab673/449d12bb4c4970dd:r	t#4626:eb221798a6e69160/309239f5bed5f95b:r	t#4642:271a1a0cca6b7cd0/94db91231448007e:r	t#4604:72fceb0feba00e36/f54686f1451d6bfb:r	t#4617:bd1cbff8840b0fa4/5d57c1cc278b81f5:r	t#4599:33ad547799c64842/08cc3d7ab5fc47fa:r
+row	7	t:X Data - Rho = +0.5	t#202:41a77d3b34565626	t:5/4/2026 4:47:27 PM	t:5/4/2026 4:48:45 PM	t:Manual	t#15544:87f4e9af1f5b5cc1/5bbb6da4952eeb22:r	t:Value	t:Year	t:00000000	i:1	t:	t:Maximum	t:CalendarYear	i:10	i:9	t:None	i:1	r:0	i:1	i:0	t#5387:62b982352713dc1f/14ead8f1276fba78:r	t#5452:6a669c5a902441e0/39700d488859b3b5:r	t#4651:485ae51e9908be90/f627168d1629fdf1:r	t#4621:d27d469e9b06a1b8/ec66c0b28fab1600:r	t#4623:83891b7f491765ec/00f6f15ffc09fb66:r	t#4654:31c65fb9ffdab673/449d12bb4c4970dd:r	t#4626:eb221798a6e69160/309239f5bed5f95b:r	t#4642:271a1a0cca6b7cd0/94db91231448007e:r	t#4604:72fceb0feba00e36/f54686f1451d6bfb:r	t#4617:bd1cbff8840b0fa4/5d57c1cc278b81f5:r	t#4599:33ad547799c64842/08cc3d7ab5fc47fa:r
+row	8	t:Y Data - Rho = +0.5	t#202:6ab03311a86cb5e7	t:5/4/2026 4:47:35 PM	t:5/4/2026 4:49:02 PM	t:Manual	t#15651:58f58f91eb5110b5/3ca97c5fbc079798:r	t:Value	t:Year	t:00000000	i:1	t:	t:Maximum	t:CalendarYear	i:10	i:9	t:None	i:1	r:0	i:1	i:0	t#5387:62b982352713dc1f/14ead8f1276fba78:r	t#5452:6a669c5a902441e0/39700d488859b3b5:r	t#4651:485ae51e9908be90/f627168d1629fdf1:r	t#4621:d27d469e9b06a1b8/ec66c0b28fab1600:r	t#4623:83891b7f491765ec/00f6f15ffc09fb66:r	t#4654:31c65fb9ffdab673/449d12bb4c4970dd:r	t#4626:eb221798a6e69160/309239f5bed5f95b:r	t#4642:271a1a0cca6b7cd0/94db91231448007e:r	t#4604:72fceb0feba00e36/f54686f1451d6bfb:r	t#4617:bd1cbff8840b0fa4/5d57c1cc278b81f5:r	t#4599:33ad547799c64842/08cc3d7ab5fc47fa:r
+row	9	t:X+Y Data - Rho = +0.5	t#203:b215d943d4c7a1bf	t:5/4/2026 4:47:42 PM	t:5/4/2026 4:49:02 PM	t:Manual	t#15574:b1443a2cd7e926ce/6537d4082832bfb5:r	t:Value	t:Year	t:00000000	i:1	t:	t:Maximum	t:CalendarYear	i:10	i:9	t:None	i:1	r:0	i:1	i:0	t#5387:62b982352713dc1f/14ead8f1276fba78:r	t#5452:6a669c5a902441e0/39700d488859b3b5:r	t#4651:485ae51e9908be90/f627168d1629fdf1:r	t#4621:d27d469e9b06a1b8/ec66c0b28fab1600:r	t#4623:83891b7f491765ec/00f6f15ffc09fb66:r	t#4654:31c65fb9ffdab673/449d12bb4c4970dd:r	t#4626:eb221798a6e69160/309239f5bed5f95b:r	t#4642:271a1a0cca6b7cd0/94db91231448007e:r	t#4604:72fceb0feba00e36/f54686f1451d6bfb:r	t#4617:bd1cbff8840b0fa4/5d57c1cc278b81f5:r	t#4599:33ad547799c64842/08cc3d7ab5fc47fa:r
+table	Project	sha=253a21e89c24dc8e	sql=324f6a1c96ebab27	rows=1
+column	0	Name	TEXT
+column	1	Description	TEXT
+column	2	CreationDate	TEXT
+column	3	LastModified	TEXT
+column	4	FullFileName	TEXT
+column	5	SoftwareVersion	TEXT
+column	6	AvalonDockLayout	TEXT
+column	7	ProjectExplorerLayout	TEXT
+column	8	AvalonDockLayoutPrevious	TEXT
+column	9	ProjectExplorerLayoutPrevious	TEXT
+row	1	t:sum-two-normals	t#327:833228b4cd745561	t:5/3/2026 8:30:40 AM	t:10/6/2026 9:15:49 PM	p:{dir}\\sum-two-normals.bestfit	t:2.0.1	t#1541:a2907a6dd8314a8d/540e4ae90349eaec:r	t#2517:bdc81b6ad9423435/c307b916c843ce8c:r	t#1954:d003de9cb4faea5c/bb6fd4851dc12a7a:r	t#2517:72e5f59b111d4bdd/472b2777336f7387:r
+table	Univariate Distribution Analysis	sha=82e3c174203fd325	sql=63dff5382d17bd53	rows=6
+column	0	Name	TEXT
+column	1	Type	TEXT
+row	1	t:X Marginal - Rho = 0.0	t:RMC.BestFit.UI.UnivariateAnalysis
+row	2	t:Y Marginal - Rho = 0.0	t:RMC.BestFit.UI.UnivariateAnalysis
+row	3	t:X Marginal - Rho = -0.5	t:RMC.BestFit.UI.UnivariateAnalysis
+row	4	t:Y Marginal - Rho = -0.5	t:RMC.BestFit.UI.UnivariateAnalysis
+row	5	t:X Marginal - Rho = +0.5	t:RMC.BestFit.UI.UnivariateAnalysis
+row	6	t:Y Marginal - Rho =+0.5	t:RMC.BestFit.UI.UnivariateAnalysis
+state	00 Time Series Data	7c890208af994c26	66eae0f9e86047a2
+state	01 Input Data	beed2f16ea1a70ce	7138759d2d2c7b9f
+state	01 Input Data/00 InputData 'X Data - Rho = 0.0'	a47ab0e53152fec9	f2df92548ca5ad26
+state	01 Input Data/01 InputData 'Y Data - Rho = 0.0'	18d8793f2ad3455a	7a7d529bd0a2603c
+state	01 Input Data/02 InputData 'X+Y Data - Rho = 0.0'	a7fc76bb49b07f39	00e6b230c8790b95
+state	01 Input Data/03 InputData 'X Data - Rho = -0.5'	4b5b22f8e848fe59	84887e0de4c30a69
+state	01 Input Data/04 InputData 'Y Data - Rho = -0.5'	44dec9553b02762e	70ddd704259a20f7
+state	01 Input Data/05 InputData 'X+Y Data - Rho = -0.5'	adeef5ca91bb9e38	33e293f23922c974
+state	01 Input Data/06 InputData 'X Data - Rho = +0.5'	fedcb55031244d19	6533dc9ba6cd51ad
+state	01 Input Data/07 InputData 'Y Data - Rho = +0.5'	b77ddbab09337a5e	3c786079ad05e4d4
+state	01 Input Data/08 InputData 'X+Y Data - Rho = +0.5'	c3eb813f450771d1	3d99a17eabb4f332
+state	02 Distribution Fitting Analysis	22c9cdb7873ae49a	4a4ead4bf90c0837
+state	03 Univariate Distribution Analysis	089a864d64be65ef	0e3a3c46961dd428
+state	03 Univariate Distribution Analysis/00 UnivariateAnalysis 'X Marginal - Rho = 0.0'	e5caf5ebb9806fce	0a3f47d0b1a77277
+state	03 Univariate Distribution Analysis/01 UnivariateAnalysis 'Y Marginal - Rho = 0.0'	b4f83d563e399bab	9a1d5a4dea9e7d88
+state	03 Univariate Distribution Analysis/02 UnivariateAnalysis 'X Marginal - Rho = -0.5'	8d5815d594d27217	35c198e0d7f49dfc
+state	03 Univariate Distribution Analysis/03 UnivariateAnalysis 'Y Marginal - Rho = -0.5'	0b7d7205e5b69b7a	d5822dce03d9b750
+state	03 Univariate Distribution Analysis/04 UnivariateAnalysis 'X Marginal - Rho = +0.5'	410243fdf18f1f80	6988a35bc2101ba1
+state	03 Univariate Distribution Analysis/05 UnivariateAnalysis 'Y Marginal - Rho =+0.5'	7c04fd0f86266397	619ddb9f31b63b50
+state	04 Bivariate Distribution Analysis	856f7722c17d1d3d	85c24dd973e8dafa
+state	04 Bivariate Distribution Analysis/00 BivariateAnalysis 'Normal Copula - Rho = 0.0'	567f378ead4b802f	8ac511828a475949
+state	04 Bivariate Distribution Analysis/01 CoincidentFrequencyAnalysis 'CFA - Rho = 0.0'	93a36b6e7d3873c3	d1c0fff1b9969731
+state	04 Bivariate Distribution Analysis/02 BivariateAnalysis 'Normal Copula - Rho = -0.5'	bee512e2d073b3b7	d30d6ed91b64d540
+state	04 Bivariate Distribution Analysis/03 CoincidentFrequencyAnalysis 'CFA - Rho = -0.5'	ef01c2f2f950f1bd	96e41a3c698c9c5c
+state	04 Bivariate Distribution Analysis/04 BivariateAnalysis 'Normal Copula - Rho =+0.5'	36347187921e4a3d	c60c3984c06e0792
+state	04 Bivariate Distribution Analysis/05 CoincidentFrequencyAnalysis 'CFA - Rho = +0.5'	4d99513a2106c225	86e782f4896cf18b
+state	05 Rating Curve Analysis	5b9e46ee16c64e96	771f60dc9817d061
+state	06 Time Series Analysis	2f4a1830d606047e	0e6e4ee694390acc
+state	Project	16da460fde437331	16da460fde437331
+end

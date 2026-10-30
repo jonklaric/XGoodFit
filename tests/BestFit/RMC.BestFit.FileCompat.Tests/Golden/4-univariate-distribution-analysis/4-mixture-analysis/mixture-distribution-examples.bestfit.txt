@@ -1,0 +1,100 @@
+bestfit-file-description	1
+file	4-univariate-distribution-analysis/4-mixture-analysis/mixture-distribution-examples.bestfit	sha=45e7131b4e388e69	tables=4	cells=172
+pragma	encoding	UTF-8
+pragma	journal_mode	wal
+pragma	user_version	0
+pragma	application_id	0
+pragma	auto_vacuum	0
+table	<Mixture Distribution>	sha=822367a24fa86039	sql=6d19e6a383a8e6ce	rows=3
+column	0	Name	TEXT
+column	1	Description	TEXT
+column	2	CreationDate	TEXT
+column	3	LastModified	TEXT
+column	4	InputData	TEXT
+column	5	Distributions	TEXT
+column	6	MixtureDistribution	TEXT
+column	7	BayesianAnalysis	TEXT
+column	8	MCMCResults	BLOB
+column	9	AnalysisResults	TEXT
+column	10	ProbabilityOrdinates	TEXT
+column	11	FrequencyPlotSettings	TEXT
+column	12	KernelDensityPlotSettings	TEXT
+column	13	HistogramPlotSettings	TEXT
+column	14	BivariatePlotSettings	TEXT
+column	15	MeanLikelihoodPlotSettings	TEXT
+column	16	AutocorrelationPlotSettings	TEXT
+column	17	MarkovChainTracesPlotSettings	TEXT
+column	18	InfluenceDiagnosticsPlotSettings	TEXT
+column	19	MCMCReport	TEXT
+column	20	AnalysisXml	TEXT
+row	1	t:Mixture Distribution - 2 Normals	t#237:98fb0b83068a4179	t:4/13/2026 7:54:51 PM	t:9/11/2026 9:06:37 PM	t:Mixture of 2 Normals - Data	t:Normal|Normal	t#1998:5ffbb31f1dd84c46/971032e68dc1844c:r	t#735:bfdc4fd3eda8bd78	b#2922101:4989c47baccfd08e>z#7825426:12c9838a2508e69f	t#2432:9cc4cd8ea9c09477/e960a18d1753a371:r	t#439:5840f09d7e1a6c45	t#8252:b5d517637e305f38/81990406b9befbc1:r	t#5675:a2ee6cc3651f5789/4aa3d9bfb7662f4a:r	t#5286:a118961f5242482c/c9cb623e26f86e96:r	t#7714:76cebdd90f9b15c0/1336dca5b4af72eb:r	t#5539:5a3f6aaf1cd3b0c4/8553b05d14efe043:r	t#6962:d43c1606e8fc280a/3f9c2f47598a6ee5:r	t#15117:868b79360dd91f15/f2fa4577c8074072:r	t#5319:2ca31fc73e41c75e/3067f3008c634549:r	t:	t#1283:a3b341357d98f38b/3ddb7f69ca1d689f:r
+row	2	t:Mixture Distribution - 3 Normals	t#237:c00504139a0d7bda	t:4/13/2026 7:56:33 PM	t:9/11/2026 6:42:20 PM	t:Mixture of 3 Normals - Data	t:Normal|Normal|Normal	t#2830:d2824b7bbb19ad88/e76c4fd80ddb2269:r	t#734:5155c7c598a08b78	b#6127205:e59c2b0a3411d162>z#15195334:7d9b7ad7d98a4068	t#2520:34c02366a71f0677/0f8ba310fccb6d27:r	t#439:5840f09d7e1a6c45	t#8252:b5d517637e305f38/81990406b9befbc1:r	t#5675:a2ee6cc3651f5789/4aa3d9bfb7662f4a:r	t#5286:a118961f5242482c/c9cb623e26f86e96:r	t#7719:c355c1669aa739b4/60ad2c86afa401fb:r	t#5539:5a3f6aaf1cd3b0c4/8553b05d14efe043:r	t#6962:d43c1606e8fc280a/3f9c2f47598a6ee5:r	t#20492:a993907c4075920c/c390f3b8ac7882de:r	t#5319:2ca31fc73e41c75e/3067f3008c634549:r	t:	t#1282:e903e872b5293fb2/a3c4624df19fdd81:r
+row	3	t:Mixture Distribution - 2 Normals - Zero-Inflated	t#344:4e4961ada20f9214	t:4/13/2026 8:39:26 PM	t:9/11/2026 6:36:26 PM	t:Mixture of 2 Normals and Zero Inflated - Data	t:Normal|Normal	t#2086:2c2c6dcc58b70c38/3a49230a553f4c77:r	t#735:ef53e22e87e7cb41	b#2938239:c71c109eeb4f7688>z#7870961:bce8f925f38a2619	t#2347:0a2626fa4820524f/08a71a3da9a20a10:r	t#464:ceaf33ded7fc0d7b	t#8251:be9020191bc52587/347474cc5d4686ae:r	t#5675:a2ee6cc3651f5789/4aa3d9bfb7662f4a:r	t#5286:a118961f5242482c/c9cb623e26f86e96:r	t#7713:01fad594795fe392/eb3d8111122164d7:r	t#5539:5a3f6aaf1cd3b0c4/8553b05d14efe043:r	t#6962:d43c1606e8fc280a/3f9c2f47598a6ee5:r	t#15189:a55b5adaa55c9eec/669d01d58c991f40:r	t#5319:2ca31fc73e41c75e/3067f3008c634549:r	t:	t#1308:a628676b86a8dde3/b3231d92d52f7331:r
+table	Input Data	sha=c4e156cf2268f261	sql=d536de5c86337186	rows=3
+column	0	Name	TEXT
+column	1	Description	TEXT
+column	2	CreationDate	TEXT
+column	3	LastModified	TEXT
+column	4	ExactDataMethod	TEXT
+column	5	DataFrame	TEXT
+column	6	UnitLabel	TEXT
+column	7	IndexLabel	TEXT
+column	8	USGSSiteNumber	TEXT
+column	9	UseMultipleGrubbsBeckTest	BOOLEAN
+column	10	TimeSeriesElement	TEXT
+column	11	BlockFunction	TEXT
+column	12	TimeBlock	TEXT
+column	13	StartMonth	INT4
+column	14	EndMonth	INT4
+column	15	SmoothingFunction	TEXT
+column	16	Period	INT4
+column	17	Threshold	DOUBLE
+column	18	MinStepsBetweenPeaks	INT4
+column	19	IsProcessed	BOOLEAN
+column	20	ChronologyPlotSettings	TEXT
+column	21	FrequencyPlotSettings	TEXT
+column	22	SeasonalityPlotSettings	TEXT
+column	23	DensityPlotSettings	TEXT
+column	24	HistogramPlotSettings	TEXT
+column	25	QQPlotSettings	TEXT
+column	26	ACFPlotSettings	TEXT
+column	27	PACFPlotSettings	TEXT
+column	28	MRLPlotSettings	TEXT
+column	29	ModifiedScalePlotSettings	TEXT
+column	30	ShapePlotSettings	TEXT
+row	1	t:Mixture of 2 Normals - Data	t#202:66fbe98e931f3f33	t:4/13/2026 7:45:04 PM	t:4/13/2026 7:47:07 PM	t:Manual	t#15640:ac43d110bf19d652/2a907fb95357eab6:r	t:Value	t:Year	t:00000000	i:1	t:	t:Maximum	t:CalendarYear	i:10	i:9	t:None	i:1	r:0	i:1	i:0	t#5387:62b982352713dc1f/14ead8f1276fba78:r	t#5452:2c150fada99987ad/08bdc9949f60287a:r	t#4651:485ae51e9908be90/f627168d1629fdf1:r	t#4621:d27d469e9b06a1b8/ec66c0b28fab1600:r	t#4623:83891b7f491765ec/00f6f15ffc09fb66:r	t#4654:31c65fb9ffdab673/449d12bb4c4970dd:r	t#4626:eb221798a6e69160/309239f5bed5f95b:r	t#4642:271a1a0cca6b7cd0/94db91231448007e:r	t#4604:72fceb0feba00e36/f54686f1451d6bfb:r	t#4617:bd1cbff8840b0fa4/5d57c1cc278b81f5:r	t#4599:33ad547799c64842/08cc3d7ab5fc47fa:r
+row	2	t:Mixture of 3 Normals - Data	t#202:66fbe98e931f3f33	t:4/13/2026 7:47:28 PM	t:4/13/2026 7:47:46 PM	t:Manual	t#15567:eda2a8a6d51db475/218228d0fbc48e66:r	t:Value	t:Year	t:00000000	i:1	t:	t:Maximum	t:CalendarYear	i:10	i:9	t:None	i:1	r:0	i:1	i:0	t#5387:62b982352713dc1f/14ead8f1276fba78:r	t#5452:6a669c5a902441e0/39700d488859b3b5:r	t#4651:485ae51e9908be90/f627168d1629fdf1:r	t#5651:35e9c1bd146ddb42/132092ebc352ca06:r	t#4623:83891b7f491765ec/00f6f15ffc09fb66:r	t#4654:31c65fb9ffdab673/449d12bb4c4970dd:r	t#4626:eb221798a6e69160/309239f5bed5f95b:r	t#4642:271a1a0cca6b7cd0/94db91231448007e:r	t#4604:72fceb0feba00e36/f54686f1451d6bfb:r	t#4617:bd1cbff8840b0fa4/5d57c1cc278b81f5:r	t#4599:33ad547799c64842/08cc3d7ab5fc47fa:r
+row	3	t:Mixture of 2 Normals and Zero Inflated - Data	t#234:8fe05073b0525ad2	t:4/13/2026 7:48:20 PM	t:4/13/2026 7:48:35 PM	t:Manual	t#15484:a58fb1c0f5d1ad22/1d6ed8aa9685b9c2:r	t:Value	t:Year	t:00000000	i:1	t:	t:Maximum	t:CalendarYear	i:10	i:9	t:None	i:1	r:0	i:1	i:0	t#5387:62b982352713dc1f/14ead8f1276fba78:r	t#5452:6a669c5a902441e0/39700d488859b3b5:r	t#4651:485ae51e9908be90/f627168d1629fdf1:r	t#4621:d27d469e9b06a1b8/ec66c0b28fab1600:r	t#4623:83891b7f491765ec/00f6f15ffc09fb66:r	t#4654:31c65fb9ffdab673/449d12bb4c4970dd:r	t#4626:eb221798a6e69160/309239f5bed5f95b:r	t#4642:271a1a0cca6b7cd0/94db91231448007e:r	t#4604:72fceb0feba00e36/f54686f1451d6bfb:r	t#4617:bd1cbff8840b0fa4/5d57c1cc278b81f5:r	t#4599:33ad547799c64842/08cc3d7ab5fc47fa:r
+table	Project	sha=94c713feab52dff6	sql=bf204117c9f875b1	rows=1
+column	0	Name	TEXT
+column	1	Description	TEXT
+column	2	CreationDate	TEXT
+column	3	LastModified	TEXT
+column	4	FullFileName	TEXT
+column	5	SoftwareVersion	TEXT
+column	6	AvalonDockLayout	TEXT
+column	7	ProjectExplorerLayout	TEXT
+column	8	AvalonDockLayoutPrevious	TEXT
+column	9	ProjectExplorerLayoutPrevious	TEXT
+row	1	t:mixture-distribution-examples	t#283:b363091c9f123527	t:4/13/2026 7:43:05 PM	t:10/6/2026 8:59:59 PM	p:{dir}\\mixture-distribution-examples.bestfit	t:2.0.1	t#1919:b537505512c762c4/4a1ffc4b92a2a5ba:r	t#1356:4250e53f08c4a8f2/6578e75278d0f3d2:r	t#1919:ed4c3671bb28ea35/d1ef64b3ba75032c:r	t#1437:9ca236a3d50269ba/e3f92d6c17fac93a:r
+table	Univariate Distribution Analysis	sha=67d5f0b4020251ca	sql=63dff5382d17bd53	rows=3
+column	0	Name	TEXT
+column	1	Type	TEXT
+row	1	t:Mixture Distribution - 2 Normals	t:RMC.BestFit.UI.MixtureAnalysis
+row	2	t:Mixture Distribution - 3 Normals	t:RMC.BestFit.UI.MixtureAnalysis
+row	3	t:Mixture Distribution - 2 Normals - Zero-Inflated	t:RMC.BestFit.UI.MixtureAnalysis
+state	00 Time Series Data	7c890208af994c26	66eae0f9e86047a2
+state	01 Input Data	80ad9cc59ef724d7	7138759d2d2c7b9f
+state	01 Input Data/00 InputData 'Mixture of 2 Normals - Data'	1b530a06acd6dd78	6d5a1a8130a4ba77
+state	01 Input Data/01 InputData 'Mixture of 3 Normals - Data'	7bd978cc9b0df67b	89f4cf10eb3944f6
+state	01 Input Data/02 InputData 'Mixture of 2 Normals and Zero Inflated - Data'	1f5e7e4f1e06368e	1551332f94df67e2
+state	02 Distribution Fitting Analysis	22c9cdb7873ae49a	4a4ead4bf90c0837
+state	03 Univariate Distribution Analysis	fd314459a6167603	0e3a3c46961dd428
+state	03 Univariate Distribution Analysis/00 MixtureAnalysis 'Mixture Distribution - 2 Normals'	fbe8c0627762990a	11590bc6ddca4604
+state	03 Univariate Distribution Analysis/01 MixtureAnalysis 'Mixture Distribution - 3 Normals'	7c14a7140330b365	bc5fd1934ad0269a
+state	03 Univariate Distribution Analysis/02 MixtureAnalysis 'Mixture Distribution - 2 Normals - Zero-Inflated'	095747148dd9917b	fbdaee2abfcafb54
+state	04 Bivariate Distribution Analysis	2df996a968e4df10	85c24dd973e8dafa
+state	05 Rating Curve Analysis	5b9e46ee16c64e96	771f60dc9817d061
+state	06 Time Series Analysis	2f4a1830d606047e	0e6e4ee694390acc
+state	Project	f634ce1d97b1755d	f634ce1d97b1755d
+end

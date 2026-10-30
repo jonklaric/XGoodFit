@@ -1,0 +1,72 @@
+bestfit-file-description	1
+file	1-time-series-data/1-usgs-download/usgs-download-example.bestfit	sha=3d2c583eead76e9c	tables=2	cells=226
+pragma	encoding	UTF-8
+pragma	journal_mode	wal
+pragma	user_version	0
+pragma	application_id	0
+pragma	auto_vacuum	0
+table	Project	sha=1d5fb065ee831bfb	sql=bf204117c9f875b1	rows=1
+column	0	Name	TEXT
+column	1	Description	TEXT
+column	2	CreationDate	TEXT
+column	3	LastModified	TEXT
+column	4	FullFileName	TEXT
+column	5	SoftwareVersion	TEXT
+column	6	AvalonDockLayout	TEXT
+column	7	ProjectExplorerLayout	TEXT
+column	8	AvalonDockLayoutPrevious	TEXT
+column	9	ProjectExplorerLayoutPrevious	TEXT
+row	1	t:usgs-download-example	t#236:3671068ef1ac1f78	t:2/19/2026 8:55:25 PM	t:7/15/2026 7:19:19 PM	p:{dir}\\usgs-download-example.bestfit	t:2.0.1	t#2547:f3761a03a68df981/6f04b50c3c4d8011:r	t#1522:8bb514491113e0ab/51c57955183a7784:r	t#2354:a91539341e55bd68/f9ab8fe351b15071:r	t#1598:6de0bae2ec4a17fa/1dbf4bb6d44dc827:r
+table	Time Series Data	sha=3425655f920d0e24	sql=82979bb0bc28dd39	rows=8
+column	0	Name	TEXT
+column	1	Description	TEXT
+column	2	CreationDate	TEXT
+column	3	LastModified	TEXT
+column	4	TimeSeries	TEXT
+column	5	UnitLabel	TEXT
+column	6	EntryMethod	TEXT
+column	7	SeriesType	TEXT
+column	8	HECDSSFullFilename	TEXT
+column	9	HECDSSDataPathname	TEXT
+column	10	GHCNSiteNumber	TEXT
+column	11	USGSSiteNumber	TEXT
+column	12	CHMNSiteNumber	TEXT
+column	13	ABOMSiteNumber	TEXT
+column	14	DepthUnit	TEXT
+column	15	DischargeUnit	TEXT
+column	16	HeightUnit	TEXT
+column	17	TimeInterval	TEXT
+column	18	StartDateTime	TEXT
+column	19	USGSRawText	TEXT
+column	20	TimeSeriesPlotSettings	TEXT
+column	21	SeasonalityPlotSettings	TEXT
+column	22	ACFPlotSettings	TEXT
+column	23	PACFPlotSettings	TEXT
+column	24	TimeSeriesCompressed	BLOB
+column	25	USGSRawTextCompressed	BLOB
+column	26	DurationPlotSettings	TEXT
+row	1	t:USGS - 01134500 - Daily Discharge	t#173:eec61d5d3dd19fde	t:2/20/2026 3:13:07 PM	t:7/15/2026 7:19:19 PM	t:	t:Flow (cfs)	t:USGS	t:DailyDischarge	t:	t:	t:00000000000	t:01134500	t:0000000	t:000000	t:Inches	t:CubicFeetPerSecond	t:Feet	t:OneDay	t:1947-01-01T00:00:00.0000000	t:	t#5521:c110dc0e13f625a0/2f132f5746f45940:r	t#4668:2b2f4e493d6824ec/f25aa1c5817ba262:r	t#4624:908ad392fa61f430/4aad9161a0a8616b:r	t#4640:09195fc8fa2fc53d/c43ddd9215c383ef:r	b#147200:c452a7e41a617631>z#2076065:a8ecab2ed8603e42/d5ca57d89c6cf563:r	b#130098:d4bb2bc4fe47ed4d>z#927676:8e65bef6bb4f2e10	t:
+row	2	t:USGS - 07010000 - Daily Stage	t#253:3a183d5a021d936f	t:2/20/2026 3:16:39 PM	t:7/15/2026 7:19:19 PM	t:	t:Value	t:USGS	t:DailyStage	t:	t:	t:00000000000	t:07010000	t:0000000	t:000000	t:Inches	t:CubicFeetPerSecond	t:Feet	t:OneDay	t:1982-10-01T00:00:00.0000000	t:	t#5516:3d200b2382a9e104/5b446bcb1f986b43:r	t#4663:3feccb9ec0fd4102/6b5183e1b7753b54:r	t#4624:908ad392fa61f430/4aad9161a0a8616b:r	t#4640:09195fc8fa2fc53d/c43ddd9215c383ef:r	b#103580:6ff6d76e696229ca>z#1297453:2f2903e65553d748/ac3835a7521abc3c:r	b#84366:34333c258096b31f>z#527445:9f9b42f9eb01a2a9	t:
+row	3	t:USGS - 01646500 - Instantaneous Discharge	t#211:7e6d60a71ca6dc17	t:2/20/2026 3:22:02 PM	t:7/15/2026 7:19:19 PM	t:	t:Flow (cfs)	t:USGS	t:InstantaneousDischarge	t:	t:	t:00000000000	t:01646500	t:0000000	t:000000	t:Inches	t:CubicFeetPerSecond	t:Feet	t:Irregular	t:1972-06-09T01:00:00.0000000	t:	t#5521:c110dc0e13f625a0/2f132f5746f45940:r	t#4668:2b2f4e493d6824ec/f25aa1c5817ba262:r	t#6302:e671b72c625a0e94/2adfbba0f0219907:r	t#6317:6830e28804fddea6/6a0fac658145ded5:r	b#4646874:248cea566ce52195>z#90806134:551bc94da0db81d5/c60c7f5987d00bcc:r	b#4320423:cbdcaf5e8583df0e>z#56721687:e479ecfd77c07708	t:
+row	4	t:USGS - 01646500 - Instantaneous Stage	t#211:9b35970c09cd7d5e	t:2/20/2026 3:24:47 PM	t:7/15/2026 7:19:22 PM	t:	t:Stage (ft)	t:USGS	t:InstantaneousStage	t:	t:	t:00000000000	t:01646500	t:0000000	t:000000	t:Inches	t:CubicFeetPerSecond	t:Feet	t:Irregular	t:2007-10-01T01:00:00.0000000	t:	t#5521:97909cb741f3b2e7/a2fefdffd1769f4c:r	t#4668:3fd5352b57028115/3ee4e94d368cc29f:r	t#6302:28989ab60201f72d/2a10c4bc004261dc:r	t#6333:787f6f48a4ceea20/3b31fa6b77522951:r	b#2801870:673e815bbcdaa831>z#59698944:f9dab757e4b68aa2/9182b5ca737aa909:r	b#2431460:5e0017decf7fcb7e>z#30408510:dc1febc0513b47d4	t:
+row	5	t:USGS - 01570500 - Measured Discharge	t#166:ac2c44eee2988f44	t:2/20/2026 3:27:41 PM	t:7/15/2026 7:19:24 PM	t:	t:Flow (cfs)	t:USGS	t:MeasuredDischarge	t:	t:	t:00000000000	t:01570500	t:0000000	t:000000	t:Inches	t:CubicFeetPerSecond	t:Feet	t:Irregular	t:1897-03-31T05:00:00.0000000Z	t:	t#5530:2aa7a267a960a2a7/070089565944aa34:r	t#4677:7cba917ff59dbcaa/656a3e3faf86db8a:r	t#6941:e2d496a683e46bbd/501f1489cc8b1d81:r	t#6988:50c5e7b455dfa093/10f843f1d17d9c26:r	b#3643:09b1ab9c1201491e>z#30123:8f0ada18600f49f6/ced3b01e6df5695b:r	b#31546:7e13ddbdf4933183>z#596778:ccc472a3692ad2d0	t:
+row	6	t:USGS - 01570500 - Measured Stage	t#168:6eded7dfeebbdbfe	t:2/20/2026 3:28:17 PM	t:7/15/2026 7:19:24 PM	t:	t:Stage (ft)	t:USGS	t:MeasuredStage	t:	t:	t:00000000000	t:01570500	t:0000000	t:000000	t:Inches	t:CubicFeetPerSecond	t:Feet	t:Irregular	t:1897-03-31T05:00:00.0000000Z	t:	t#5521:97909cb741f3b2e7/a2fefdffd1769f4c:r	t#4668:3fd5352b57028115/3ee4e94d368cc29f:r	t#6941:878531fbd02fe5ec/a8d0fbfb6ec713da:r	t#6988:05f2a692257c89eb/de6e60c707d13d99:r	b#8522:a99123dd7fed1c57>z#78577:6bfdf4185d358c44/dccf33e7085fc416:r	b#93947:096dd50258ae618b>z#1771607:07f83d14e90bec6f	t:
+row	7	t:USGS - 01614000 - Peak Discharge	t#171:ea82c4024e0c49eb	t:2/20/2026 7:18:04 PM	t:7/15/2026 7:19:24 PM	t:	t:Flow (cfs)	t:USGS	t:PeakDischarge	t:	t:	t:00000000000	t:01614000	t:0000000	t:000000	t:Inches	t:CubicFeetPerSecond	t:Feet	t:OneDay	t:1929-04-17T00:00:00.0000000	t:	t#5521:c110dc0e13f625a0/2f132f5746f45940:r	t#4668:2b2f4e493d6824ec/f25aa1c5817ba262:r	t#4624:908ad392fa61f430/4aad9161a0a8616b:r	t#4640:09195fc8fa2fc53d/c43ddd9215c383ef:r	b#692:9aa0cd3ff21e886a>z#4958:5cc93c28cb7346d4/44a75254ba759f7a:r	b#2318:ee3530feb08c055c>z#6737:5f935175c20e6b78/1c23af44d52ac44a:r	t:
+row	8	t:USGS - 01614000 - Peak Stage	t#159:5411172a5df7b1f9	t:2/20/2026 7:18:39 PM	t:7/15/2026 7:19:24 PM	t:	t:Stage (ft)	t:USGS	t:PeakStage	t:	t:	t:00000000000	t:01614000	t:0000000	t:000000	t:Inches	t:CubicFeetPerSecond	t:Feet	t:OneDay	t:1929-04-17T00:00:00.0000000	t:	t#5521:97909cb741f3b2e7/a2fefdffd1769f4c:r	t#4668:3fd5352b57028115/3ee4e94d368cc29f:r	t#4624:908ad392fa61f430/4aad9161a0a8616b:r	t#4640:09195fc8fa2fc53d/c43ddd9215c383ef:r	b#773:fb0cb822e3be3c7f>z#5514:a42f50f2314dc1d6/3ba6e36625b588dd:r	b#2318:33f57ed48e1ad441>z#6737:8b81861962bdc3d1/e75c4c18caec8b32:r	t:
+state	00 Time Series Data	d083bfffacc82f67	66eae0f9e86047a2
+state	00 Time Series Data/00 TimeSeriesElement 'USGS - 01134500 - Daily Discharge'	592f76d05920c962	24824bb32429f230
+state	00 Time Series Data/01 TimeSeriesElement 'USGS - 07010000 - Daily Stage'	b5cc4daa5824f8b6	072d268786fcd3f6
+state	00 Time Series Data/02 TimeSeriesElement 'USGS - 01646500 - Instantaneous Discharge'	bf90246b81adf15f	25b0bbf9619414b4
+state	00 Time Series Data/03 TimeSeriesElement 'USGS - 01646500 - Instantaneous Stage'	d76f5cc53b23064b	2c0d3c187160dcdd
+state	00 Time Series Data/04 TimeSeriesElement 'USGS - 01570500 - Measured Discharge'	0ce0766db8d6659a	5613f0595d25049f
+state	00 Time Series Data/05 TimeSeriesElement 'USGS - 01570500 - Measured Stage'	c887eff7288f5247	c59dcd198cdf15ae
+state	00 Time Series Data/06 TimeSeriesElement 'USGS - 01614000 - Peak Discharge'	b150f64590de93b7	5481da1b8070e364
+state	00 Time Series Data/07 TimeSeriesElement 'USGS - 01614000 - Peak Stage'	e5a8165b71c130e5	8c0f5c6dcd2d0a76
+state	01 Input Data	4b47e20068fbbb01	7138759d2d2c7b9f
+state	02 Distribution Fitting Analysis	22c9cdb7873ae49a	4a4ead4bf90c0837
+state	03 Univariate Distribution Analysis	468896e1b6f7e6c8	0e3a3c46961dd428
+state	04 Bivariate Distribution Analysis	2df996a968e4df10	85c24dd973e8dafa
+state	05 Rating Curve Analysis	5b9e46ee16c64e96	771f60dc9817d061
+state	06 Time Series Analysis	2f4a1830d606047e	0e6e4ee694390acc
+state	Project	30d21d00129e9986	30d21d00129e9986
+end

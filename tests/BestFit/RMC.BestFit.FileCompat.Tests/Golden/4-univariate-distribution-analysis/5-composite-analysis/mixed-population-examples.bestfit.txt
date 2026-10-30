@@ -1,0 +1,177 @@
+bestfit-file-description	1
+file	4-univariate-distribution-analysis/5-composite-analysis/mixed-population-examples.bestfit	sha=a21dce75a5010652	tables=7	cells=346
+pragma	encoding	UTF-8
+pragma	journal_mode	wal
+pragma	user_version	0
+pragma	application_id	0
+pragma	auto_vacuum	0
+table	<Bulletin 17C>	sha=a46cb2f950ccb9b1	sql=2973ee9da03a2084	rows=0
+column	0	Name	TEXT
+column	1	Description	TEXT
+column	2	CreationDate	TEXT
+column	3	LastModified	TEXT
+column	4	InputData	TEXT
+column	5	Bulletin17CDistribution	TEXT
+column	6	BayesianAnalysis	TEXT
+column	7	MCMCResults	BLOB
+column	8	AnalysisResults	TEXT
+column	9	ProbabilityOrdinates	TEXT
+column	10	FrequencyPlotSettings	TEXT
+column	11	KernelDensityPlotSettings	TEXT
+column	12	HistogramPlotSettings	TEXT
+column	13	BivariatePlotSettings	TEXT
+column	14	InfluenceDiagnosticsPlotSettings	TEXT
+column	15	AnalysisXml	TEXT
+column	16	MCMCReport	TEXT
+column	17	GMMReport	TEXT
+table	<Composite Distribution>	sha=7cdd6aed746e6792	sql=b683e6959ee0fa0d	rows=3
+column	0	Name	TEXT
+column	1	Description	TEXT
+column	2	CreationDate	TEXT
+column	3	LastModified	TEXT
+column	4	InputData	TEXT
+column	5	BayesianAnalysis	TEXT
+column	6	CompositeDistributionType	TEXT
+column	7	ModelAverageMethod	TEXT
+column	8	Dependency	TEXT
+column	9	IsMaximum	BOOLEAN
+column	10	Analyses	TEXT
+column	11	ProbabilityOrdinates	TEXT
+column	12	FrequencyPlotSettings	TEXT
+column	13	MCMCReport	TEXT
+column	14	AnalysisResults	TEXT
+column	15	CorrelationMatrix	TEXT
+row	1	t:Competing Flood Types	t#299:7defa956daea47a3	t:4/14/2026 5:50:07 PM	t:10/6/2026 8:55:15 PM	t:Full POR - Annual Max Series	t#591:42054cc2ea70b751	t:CompetingRisks	t:DIC	t:Independent	i:1	t#201:06fc1b4d00cabbc8/1998f9029befa77b:r	t#439:5840f09d7e1a6c45	t#10096:c8f452bfea7fe241/cd9125900bea094f:r	n	t#2376:595b4349e6f28f46/0e79d10f1870dc2b:r	t:
+row	2	t:Mixture of Flood Types	t#293:6bcaa4e78240536a	t:4/14/2026 6:49:09 PM	t:10/6/2026 8:55:15 PM	t:AMS Mixture of Flood Types	t#591:42054cc2ea70b751	t:Mixture	t:DIC	t:Independent	i:1	t#211:092aad09ea19f640/bc25133b3da9a791:r	t#439:5840f09d7e1a6c45	t#10077:8a0cfe6c4ae135e2/0c6985d9346c711c:r	n	t#2319:66d37a7b6f96fc00/661baa5d7efe3bac:r	t:
+row	3	t:Composite Analysis_7	t:	t:10/6/2026 11:53:22 PM	t:10/7/2026 12:00:04 AM	t:Full POR - Annual Max Series	t#591:42054cc2ea70b751	t:CompetingRisks	t:DIC	t:Independent	i:1	t#201:06fc1b4d00cabbc8/1998f9029befa77b:r	t#439:5840f09d7e1a6c45	t#10078:75e77daa1983a1ae/d51387e2f0664f85:r	n	t#2376:595b4349e6f28f46/0e79d10f1870dc2b:r	t:
+table	<Mixture Distribution>	sha=7124df37f8c05c9c	sql=e1739d15091b9326	rows=0
+column	0	Name	TEXT
+column	1	Description	TEXT
+column	2	CreationDate	TEXT
+column	3	LastModified	TEXT
+column	4	InputData	TEXT
+column	5	Distributions	TEXT
+column	6	MixtureDistribution	TEXT
+column	7	BayesianAnalysis	TEXT
+column	8	MCMCResults	BLOB
+column	9	AnalysisResults	TEXT
+column	10	ProbabilityOrdinates	TEXT
+column	11	FrequencyPlotSettings	TEXT
+column	12	KernelDensityPlotSettings	TEXT
+column	13	HistogramPlotSettings	TEXT
+column	14	BivariatePlotSettings	TEXT
+column	15	MeanLikelihoodPlotSettings	TEXT
+column	16	AutocorrelationPlotSettings	TEXT
+column	17	MarkovChainTracesPlotSettings	TEXT
+column	18	InfluenceDiagnosticsPlotSettings	TEXT
+column	19	AnalysisXml	TEXT
+column	20	MCMCReport	TEXT
+table	<Univariate Distribution>	sha=75d1bb518e5ec1cd	sql=192652ba4c99d235	rows=4
+column	0	Name	TEXT
+column	1	Description	TEXT
+column	2	CreationDate	TEXT
+column	3	LastModified	TEXT
+column	4	InputData	TEXT
+column	5	UnivariateDistribution	TEXT
+column	6	BayesianAnalysis	TEXT
+column	7	MCMCResults	BLOB
+column	8	AnalysisResults	TEXT
+column	9	ChronologyAnalysisResults	TEXT
+column	10	ProbabilityOrdinates	TEXT
+column	11	FrequencyPlotSettings	TEXT
+column	12	ChronologyPlotSettings	TEXT
+column	13	InfluenceDiagnosticsPlotSettings	TEXT
+column	14	KernelDensityPlotSettings	TEXT
+column	15	HistogramPlotSettings	TEXT
+column	16	BivariatePlotSettings	TEXT
+column	17	MeanLikelihoodPlotSettings	TEXT
+column	18	AutocorrelationPlotSettings	TEXT
+column	19	MarkovChainTracesPlotSettings	TEXT
+column	20	AnalysisXml	TEXT
+column	21	MCMCReport	TEXT
+row	1	t:Full POR Snow Driven	t#154:5736fba12fc622c0	t:4/14/2026 4:44:07 PM	t:10/6/2026 8:55:15 PM	t:Full POR - Snow Driven Floods	t#1776:bf51df0605d7dab6/3bde3c1365aaa2ac:r	t#732:2d708d87a2183d16	b#703223:9d3ec46716738c81>z#2338292:82bd2bf52ebf9a8f	t#2195:21fce05e8cebe1be/536163201de9a954:r	t:	t#439:5840f09d7e1a6c45	t#8271:e5a0edf6171b400c/ff1d71bf6836b1ed:r	t#4608:38393c63506c0c48/500c29040b2dcb22:r	t#5319:2ca31fc73e41c75e/3067f3008c634549:r	t#5685:7b4a20bba2b2f7d5/efb259a35b028e02:r	t#5296:68c7e8c773563d20/e00f92c922f95a26:r	t#7742:43e00e4a3dee121d/1733f495db614ae5:r	t#5539:5a3f6aaf1cd3b0c4/8553b05d14efe043:r	t#6967:3f0be5809458fb48/08b3043a0d2dd5da:r	t#9907:d3c8f122e42a980b/7a35a03bf3a3d97b:r	t#1286:fad2e885ef739fcf/3c84a4c296c74300:r	t:
+row	2	t:Full POR Rainfall Driven	t#158:ae621f06fe8f783b	t:4/14/2026 5:39:18 PM	t:10/6/2026 8:55:15 PM	t:Full POR - Rainfall Driven Floods	t#1776:3485aae52d24a046/7e9230130247922e:r	t#732:58905675d40353a9	b#706109:580d5a77868b2878>z#2330125:df202250f104c125	t#2196:377543ec3c503bd2/e7a163eb237f45f4:r	t:	t#439:5840f09d7e1a6c45	t#8272:46f0c0f1eec1313c/475eb6d19c4a2474:r	t#4608:38393c63506c0c48/500c29040b2dcb22:r	t#5319:2ca31fc73e41c75e/3067f3008c634549:r	t#5685:7b4a20bba2b2f7d5/efb259a35b028e02:r	t#5296:68c7e8c773563d20/e00f92c922f95a26:r	t#7742:2e7df33b188dd7c2/17ff75f2947bbfc9:r	t#5539:5a3f6aaf1cd3b0c4/8553b05d14efe043:r	t#6967:3f0be5809458fb48/08b3043a0d2dd5da:r	t#8145:56e859bd5aaf81d7/78474c47a0cc1ef5:r	t#1286:29e5f25e30178cb4/9d36d625cc3f9204:r	t:
+row	3	t:Sub-Sample - Snow Driven	t#160:d8a0840d97224767	t:4/14/2026 6:48:12 PM	t:10/6/2026 8:55:15 PM	t:AMS Sub-Sample - Snow Driven Floods	t#1776:e2966041396a06a4/fe19174ddd3e8c9b:r	t#731:b974a8a5a9e525ef	b#705998:b2a8b154e27a7825>z#2338791:cf98f61bdeb852e6	t#2194:edc396928a06c836/62ccd0e4cc65d88a:r	t:	t#439:5840f09d7e1a6c45	t#8254:1081f483b349ac91/1c5b7e0c85ffe514:r	t#4608:38393c63506c0c48/500c29040b2dcb22:r	t#5319:2ca31fc73e41c75e/3067f3008c634549:r	t#5685:7b4a20bba2b2f7d5/efb259a35b028e02:r	t#5296:68c7e8c773563d20/e00f92c922f95a26:r	t#7742:601e7ab7af51cce2/62489faeefb35733:r	t#5539:5a3f6aaf1cd3b0c4/8553b05d14efe043:r	t#6966:6542ea989c791ef3/16938001057eece6:r	t#9907:d3c8f122e42a980b/7a35a03bf3a3d97b:r	t#1285:b02597c4da3325ce/78d33154ad8d13f6:r	t:
+row	4	t:Sub-Sample - Rain Driven	t#160:b045f38dd2adec98	t:4/14/2026 6:48:45 PM	t:10/6/2026 8:55:15 PM	t:AMS Sub-Sample - Rain Driven Floods	t#1776:c2d55c580f783a75/55ac1004bf1f90f6:r	t#730:6592a0fb0cc0c98c	b#722103:684ca2e204c806fb>z#2349607:ef26aa6dcb742a5d	t#2192:c1bf379c03b190f2/73ec0dcf669d21a1:r	t:	t#439:5840f09d7e1a6c45	t#8254:1081f483b349ac91/1c5b7e0c85ffe514:r	t#4608:38393c63506c0c48/500c29040b2dcb22:r	t#5319:2ca31fc73e41c75e/3067f3008c634549:r	t#5685:7b4a20bba2b2f7d5/efb259a35b028e02:r	t#5296:68c7e8c773563d20/e00f92c922f95a26:r	t#7743:efd9121cee88ad48/5ccb743f5b1cc5ba:r	t#5539:5a3f6aaf1cd3b0c4/8553b05d14efe043:r	t#6967:3f0be5809458fb48/08b3043a0d2dd5da:r	t#8145:56e859bd5aaf81d7/78474c47a0cc1ef5:r	t#1284:27c456d765523a7b/69148c7c29512fa6:r	t:
+table	Input Data	sha=06e55ac46699d8fe	sql=d536de5c86337186	rows=6
+column	0	Name	TEXT
+column	1	Description	TEXT
+column	2	CreationDate	TEXT
+column	3	LastModified	TEXT
+column	4	ExactDataMethod	TEXT
+column	5	DataFrame	TEXT
+column	6	UnitLabel	TEXT
+column	7	IndexLabel	TEXT
+column	8	USGSSiteNumber	TEXT
+column	9	UseMultipleGrubbsBeckTest	BOOLEAN
+column	10	TimeSeriesElement	TEXT
+column	11	BlockFunction	TEXT
+column	12	TimeBlock	TEXT
+column	13	StartMonth	INT4
+column	14	EndMonth	INT4
+column	15	SmoothingFunction	TEXT
+column	16	Period	INT4
+column	17	Threshold	DOUBLE
+column	18	MinStepsBetweenPeaks	INT4
+column	19	IsProcessed	BOOLEAN
+column	20	ChronologyPlotSettings	TEXT
+column	21	FrequencyPlotSettings	TEXT
+column	22	SeasonalityPlotSettings	TEXT
+column	23	DensityPlotSettings	TEXT
+column	24	HistogramPlotSettings	TEXT
+column	25	QQPlotSettings	TEXT
+column	26	ACFPlotSettings	TEXT
+column	27	PACFPlotSettings	TEXT
+column	28	MRLPlotSettings	TEXT
+column	29	ModifiedScalePlotSettings	TEXT
+column	30	ShapePlotSettings	TEXT
+row	1	t:AMS Sub-Sample - Snow Driven Floods	t#131:4ddd2b6dd87af004	t:4/14/2026 6:11:24 PM	t:4/14/2026 6:47:11 PM	t:Manual	t#11639:7b86cf3819438c4b/be22c84986f32a58:r	t:Flow (cfs)	t:Year	t:00000000	i:1	t:	t:Maximum	t:CalendarYear	i:10	i:9	t:None	i:1	r:0	i:1	i:0	t#5392:5790fadf7b96bb11/39b7aa1c80ff2e07:r	t#5457:7aa548d288ff447d/57e11f1aea113a47:r	t#4651:485ae51e9908be90/f627168d1629fdf1:r	t#4626:e69790a3c0b1ed34/2a3e8370948ec314:r	t#4628:2449f6a03a56cf9f/7a507e31636b0ed2:r	t#4654:31c65fb9ffdab673/449d12bb4c4970dd:r	t#4626:eb221798a6e69160/309239f5bed5f95b:r	t#4642:271a1a0cca6b7cd0/94db91231448007e:r	t#4604:72fceb0feba00e36/f54686f1451d6bfb:r	t#4617:bd1cbff8840b0fa4/5d57c1cc278b81f5:r	t#4599:33ad547799c64842/08cc3d7ab5fc47fa:r
+row	2	t:Full POR - Snow Driven Floods	t:Full synthetic snow-population series, cfs; 100 values.	t:4/14/2026 4:40:05 PM	t:4/14/2026 6:44:01 PM	t:Manual	t#15709:43d4faacd94e7e18/4092d6cab579c3c2:r	t:Flow (cfs)	t:Year	t:00000000	i:1	t:	t:Maximum	t:CalendarYear	i:10	i:9	t:None	i:1	r:0	i:1	i:0	t#5392:5790fadf7b96bb11/39b7aa1c80ff2e07:r	t#5457:10ed2f97ff688a34/e8738086db15d84a:r	t#4651:485ae51e9908be90/f627168d1629fdf1:r	t#4626:e69790a3c0b1ed34/2a3e8370948ec314:r	t#4628:2449f6a03a56cf9f/7a507e31636b0ed2:r	t#4654:31c65fb9ffdab673/449d12bb4c4970dd:r	t#4626:eb221798a6e69160/309239f5bed5f95b:r	t#4642:271a1a0cca6b7cd0/94db91231448007e:r	t#4604:72fceb0feba00e36/f54686f1451d6bfb:r	t#4617:bd1cbff8840b0fa4/5d57c1cc278b81f5:r	t#4599:33ad547799c64842/08cc3d7ab5fc47fa:r
+row	3	t:Full POR - Rainfall Driven Floods	t:Full synthetic rain-population series, cfs; 100 values.	t:4/14/2026 4:40:32 PM	t:4/14/2026 6:44:01 PM	t:Manual	t#15652:954e60be7d6fdc6e/82e5c578c267f913:r	t:Flow (cfs)	t:Year	t:00000000	i:1	t:	t:Maximum	t:CalendarYear	i:10	i:9	t:None	i:1	r:0	i:1	i:0	t#5392:5790fadf7b96bb11/39b7aa1c80ff2e07:r	t#5457:10ed2f97ff688a34/e8738086db15d84a:r	t#4651:485ae51e9908be90/f627168d1629fdf1:r	t#4626:e69790a3c0b1ed34/2a3e8370948ec314:r	t#4628:2449f6a03a56cf9f/7a507e31636b0ed2:r	t#4654:31c65fb9ffdab673/449d12bb4c4970dd:r	t#4626:eb221798a6e69160/309239f5bed5f95b:r	t#4642:271a1a0cca6b7cd0/94db91231448007e:r	t#4604:72fceb0feba00e36/f54686f1451d6bfb:r	t#4617:bd1cbff8840b0fa4/5d57c1cc278b81f5:r	t#4599:33ad547799c64842/08cc3d7ab5fc47fa:r
+row	4	t:Full POR - Annual Max Series	t#92:71515966314d6cb0	t:4/14/2026 4:41:05 PM	t:4/14/2026 6:44:01 PM	t:Manual	t#15673:a419c65300de2a25/83ad623177b8eba3:r	t:Flow (cfs)	t:Year	t:00000000	i:1	t:	t:Maximum	t:CalendarYear	i:10	i:9	t:None	i:1	r:0	i:1	i:0	t#5392:5790fadf7b96bb11/39b7aa1c80ff2e07:r	t#5457:7aa548d288ff447d/57e11f1aea113a47:r	t#4651:485ae51e9908be90/f627168d1629fdf1:r	t#4626:e69790a3c0b1ed34/2a3e8370948ec314:r	t#4628:2449f6a03a56cf9f/7a507e31636b0ed2:r	t#4654:31c65fb9ffdab673/449d12bb4c4970dd:r	t#4626:eb221798a6e69160/309239f5bed5f95b:r	t#4642:271a1a0cca6b7cd0/94db91231448007e:r	t#4604:72fceb0feba00e36/f54686f1451d6bfb:r	t#4617:bd1cbff8840b0fa4/5d57c1cc278b81f5:r	t#4599:33ad547799c64842/08cc3d7ab5fc47fa:r
+row	5	t:AMS Sub-Sample - Rain Driven Floods	t#131:a5210a24be4dde14	t:4/14/2026 6:47:25 PM	t:4/14/2026 6:47:54 PM	t:Manual	t#4260:e13995465985accf/b0d8837a7e17736a:r	t:Flow (cfs)	t:Year	t:00000000	i:1	t:	t:Maximum	t:CalendarYear	i:10	i:9	t:None	i:1	r:0	i:1	i:0	t#5392:5790fadf7b96bb11/39b7aa1c80ff2e07:r	t#5457:7aa548d288ff447d/57e11f1aea113a47:r	t#4651:485ae51e9908be90/f627168d1629fdf1:r	t#4626:e69790a3c0b1ed34/2a3e8370948ec314:r	t#4628:2449f6a03a56cf9f/7a507e31636b0ed2:r	t#4654:31c65fb9ffdab673/449d12bb4c4970dd:r	t#4626:eb221798a6e69160/309239f5bed5f95b:r	t#4642:271a1a0cca6b7cd0/94db91231448007e:r	t#4604:72fceb0feba00e36/f54686f1451d6bfb:r	t#4617:bd1cbff8840b0fa4/5d57c1cc278b81f5:r	t#4599:33ad547799c64842/08cc3d7ab5fc47fa:r
+row	6	t:AMS Mixture of Flood Types	t#149:4648201eda2734ba	t:4/14/2026 8:05:08 PM	t:4/14/2026 8:06:23 PM	t:Manual	t#15701:0e4d385d60f9c848/c3ec723dfde746de:r	t:Value	t:Year	t:00000000	i:1	t:	t:Maximum	t:CalendarYear	i:10	i:9	t:None	i:1	r:0	i:1	i:0	t#5387:62b982352713dc1f/14ead8f1276fba78:r	t#5452:6a669c5a902441e0/39700d488859b3b5:r	t#4651:485ae51e9908be90/f627168d1629fdf1:r	t#4621:d27d469e9b06a1b8/ec66c0b28fab1600:r	t#4623:83891b7f491765ec/00f6f15ffc09fb66:r	t#4654:31c65fb9ffdab673/449d12bb4c4970dd:r	t#4626:eb221798a6e69160/309239f5bed5f95b:r	t#4642:271a1a0cca6b7cd0/94db91231448007e:r	t#4604:72fceb0feba00e36/f54686f1451d6bfb:r	t#4617:bd1cbff8840b0fa4/5d57c1cc278b81f5:r	t#4599:33ad547799c64842/08cc3d7ab5fc47fa:r
+table	Project	sha=24dd9737e4bec04f	sql=bf204117c9f875b1	rows=1
+column	0	Name	TEXT
+column	1	Description	TEXT
+column	2	CreationDate	TEXT
+column	3	LastModified	TEXT
+column	4	FullFileName	TEXT
+column	5	SoftwareVersion	TEXT
+column	6	AvalonDockLayout	TEXT
+column	7	ProjectExplorerLayout	TEXT
+column	8	AvalonDockLayoutPrevious	TEXT
+column	9	ProjectExplorerLayoutPrevious	TEXT
+row	1	t:mixed-population-examples	t#285:4e142b5a6546f6b8	t:4/14/2026 4:39:01 PM	t:10/7/2026 12:00:04 AM	p:{dir}\\mixed-population-examples.bestfit	t:2.0.1	t#2327:31e1fabea471529b/4f13dfb34e93438c:r	t#2329:58616d92a57af0eb/443c565c5b8a172a:r	t#2327:87f603f4e8168577/acbf8ad889a4a2cc:r	t#2246:c26a21af8b3f8f64/049e853d80422ab5:r
+table	Univariate Distribution Analysis	sha=ad0b5f1a0eed72d1	sql=63dff5382d17bd53	rows=7
+column	0	Name	TEXT
+column	1	Type	TEXT
+row	1	t:Full POR Snow Driven	t:RMC.BestFit.UI.UnivariateAnalysis
+row	2	t:Full POR Rainfall Driven	t:RMC.BestFit.UI.UnivariateAnalysis
+row	3	t:Competing Flood Types	t:RMC.BestFit.UI.CompositeAnalysis
+row	4	t:Sub-Sample - Snow Driven	t:RMC.BestFit.UI.UnivariateAnalysis
+row	5	t:Sub-Sample - Rain Driven	t:RMC.BestFit.UI.UnivariateAnalysis
+row	6	t:Mixture of Flood Types	t:RMC.BestFit.UI.CompositeAnalysis
+row	7	t:Composite Analysis_7	t:RMC.BestFit.UI.CompositeAnalysis
+state	00 Time Series Data	7c890208af994c26	66eae0f9e86047a2
+state	01 Input Data	70c4ae14e1b369a0	7138759d2d2c7b9f
+state	01 Input Data/00 InputData 'AMS Sub-Sample - Snow Driven Floods'	0a74590470b51a88	1131167e623c52c1
+state	01 Input Data/01 InputData 'Full POR - Snow Driven Floods'	dad7e7b3a0f8b8b5	c34754e0737afe80
+state	01 Input Data/02 InputData 'Full POR - Rainfall Driven Floods'	ed1883b4e43b32d4	48dabb97db0e2386
+state	01 Input Data/03 InputData 'Full POR - Annual Max Series'	ba097494d5820699	dff2b91567ec74d1
+state	01 Input Data/04 InputData 'AMS Sub-Sample - Rain Driven Floods'	294255a4198e889e	76780c3a99cc0f01
+state	01 Input Data/05 InputData 'AMS Mixture of Flood Types'	6f5562b7f41c9c4d	42a2ef95c9bcc5d3
+state	02 Distribution Fitting Analysis	22c9cdb7873ae49a	4a4ead4bf90c0837
+state	03 Univariate Distribution Analysis	2819fe3e48a56986	0e3a3c46961dd428
+state	03 Univariate Distribution Analysis/00 UnivariateAnalysis 'Full POR Snow Driven'	d4bfb5354ceb9c8e	8d6f92cd2d54e06c
+state	03 Univariate Distribution Analysis/01 UnivariateAnalysis 'Full POR Rainfall Driven'	529f046f80540270	37a5beee4277e3e1
+state	03 Univariate Distribution Analysis/02 CompositeAnalysis 'Competing Flood Types'	26ecf16bee6e775b	40c6daccccd3ddf4
+state	03 Univariate Distribution Analysis/03 UnivariateAnalysis 'Sub-Sample - Snow Driven'	a57d19982d259df1	e2ddc219712d4710
+state	03 Univariate Distribution Analysis/04 UnivariateAnalysis 'Sub-Sample - Rain Driven'	105b3f6d772ed4f3	76e6d16fe491666d
+state	03 Univariate Distribution Analysis/05 CompositeAnalysis 'Mixture of Flood Types'	4e0dfa0b00defa22	c16ddd33247b2144
+state	03 Univariate Distribution Analysis/06 CompositeAnalysis 'Composite Analysis_7'	f3ddd9c4e9766b8d	bf82458f025a2fd5
+state	04 Bivariate Distribution Analysis	2df996a968e4df10	85c24dd973e8dafa
+state	05 Rating Curve Analysis	5b9e46ee16c64e96	771f60dc9817d061
+state	06 Time Series Analysis	2f4a1830d606047e	0e6e4ee694390acc
+state	Project	f8624b3e0e0eabc0	f8624b3e0e0eabc0
+end

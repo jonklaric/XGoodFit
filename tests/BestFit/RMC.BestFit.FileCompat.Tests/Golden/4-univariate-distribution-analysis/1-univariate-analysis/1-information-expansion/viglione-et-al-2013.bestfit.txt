@@ -1,0 +1,165 @@
+bestfit-file-description	1
+file	4-univariate-distribution-analysis/1-univariate-analysis/1-information-expansion/viglione-et-al-2013.bestfit	sha=d088e8a583829326	tables=6	cells=440
+pragma	encoding	UTF-8
+pragma	journal_mode	wal
+pragma	user_version	0
+pragma	application_id	0
+pragma	auto_vacuum	0
+table	<Bulletin 17C>	sha=6240039a6f517c26	sql=ea151120cd8d0c2c	rows=0
+column	0	Name	TEXT
+column	1	Description	TEXT
+column	2	CreationDate	TEXT
+column	3	LastModified	TEXT
+column	4	InputData	TEXT
+column	5	Bulletin17CDistribution	TEXT
+column	6	BayesianAnalysis	TEXT
+column	7	MCMCResults	BLOB
+column	8	AnalysisResults	TEXT
+column	9	ProbabilityOrdinates	TEXT
+column	10	UncertaintyMethod	TEXT
+column	11	FrequencyPlotSettings	TEXT
+column	12	KernelDensityPlotSettings	TEXT
+column	13	HistogramPlotSettings	TEXT
+column	14	BivariatePlotSettings	TEXT
+column	15	AnalysisXml	TEXT
+table	<Univariate Distribution>	sha=695c06eedd640582	sql=23f01eb404004a5e	rows=10
+column	0	Name	TEXT
+column	1	Description	TEXT
+column	2	CreationDate	TEXT
+column	3	LastModified	TEXT
+column	4	InputData	TEXT
+column	5	UnivariateDistribution	TEXT
+column	6	BayesianAnalysis	TEXT
+column	7	MCMCResults	BLOB
+column	8	AnalysisResults	TEXT
+column	9	ChronologyAnalysisResults	TEXT
+column	10	ProbabilityOrdinates	TEXT
+column	11	FrequencyPlotSettings	TEXT
+column	12	ChronologyPlotSettings	TEXT
+column	13	SensitivityPlotSettings	TEXT
+column	14	KernelDensityPlotSettings	TEXT
+column	15	HistogramPlotSettings	TEXT
+column	16	BivariatePlotSettings	TEXT
+column	17	MeanLikelihoodPlotSettings	TEXT
+column	18	AutocorrelationPlotSettings	TEXT
+column	19	MarkovChainTracesPlotSettings	TEXT
+column	20	InfluenceDiagnosticsPlotSettings	TEXT
+column	21	AnalysisXml	TEXT
+column	22	MCMCReport	TEXT
+row	1	t:MCMC - Systematic (1951-2001)	t#200:f8a0fefc209144a6	t:4/2/2026 7:21:05 PM	t:9/30/2026 6:31:04 PM	t:Systematic (1951-2001)	t#2453:48b263fa13cbba74/22c8a9ed9e955c4f:r	t#732:6cb8303f0fa6c733	b#1246536:cf32c6b82a70200f>z#3640610:12a07601fbbd228e	t#2240:f7243a5ccbf0c0ea/4925397650de7137:r	t:	t#439:5840f09d7e1a6c45	t#8264:9f4be89ddd83dbce/ea771bb2e482fc0b:r	t#4618:7f68ae6e241777f0/20bab4a442e271f3:r	n	t#5675:1c70894fb54753b4/27d4ba7fc0a9899f:r	t#5286:c947dbf8a34972f8/ada1cb5f2e6cb3cc:r	t#7709:02b27b136954530d/9bf27b360c23a0c4:r	t#5539:5a3f6aaf1cd3b0c4/8553b05d14efe043:r	t#6962:776daccacb748831/46fb16ac752279bc:r	t#9879:1a121e415414c4d2/079cb5b880453f94:r	t#5319:2ca31fc73e41c75e/3067f3008c634549:r	t#1286:73ab0ddff1810c61/931e0ab059be18d6:r	t:
+row	2	t:MCMC - Systematic (1951-2005)	t#200:20ed66bfcf827d4a	t:4/3/2026 12:31:11 PM	t:9/30/2026 6:31:04 PM	t:Systematic (1951-2005)	t#2453:cbaee890ecb05521/a77312bb82e0ddd3:r	t#733:26afdf2d9fc87f30	b#1237784:139b92e5f0fedf08>z#3629921:c775e0a008553b85	t#2231:c90dc0869eb508e2/dc438c79a204b009:r	t:	t#439:5840f09d7e1a6c45	t#8249:8b5be40570bfce7e/5ea4276531a7b1d1:r	t#4603:380beff033c8e850/53d64ac1d97fa1c1:r	n	t#5675:1c70894fb54753b4/27d4ba7fc0a9899f:r	t#5286:c947dbf8a34972f8/ada1cb5f2e6cb3cc:r	t#7709:1c253adb82e24e6c/44c8108e50c90178:r	t#5539:5a3f6aaf1cd3b0c4/8553b05d14efe043:r	t#6961:bd1aca78b160d3c4/6242a9a4633484f1:r	t#9907:d3c8f122e42a980b/7a35a03bf3a3d97b:r	t#5319:2ca31fc73e41c75e/3067f3008c634549:r	t#1287:12ec9b7f746805c8/78f6d4ff45523f94:r	t:
+row	3	t:MCMC - Systematic (1951-2001) + Temporal	t#221:9a1fa2b71db27e96	t:4/3/2026 12:32:31 PM	t:9/30/2026 6:31:04 PM	t:Systematic (1951-2001) + Temporal Expansion	t#2453:1eae9b53f2d3c48e/108db2b8436c3192:r	t#732:8bc0a09c2fa36ade	b#1238759:b466a5f6c0410f7a>z#3636359:0f0ad3bdc92da534	t#2237:2c582073aa01beef/28f00a30e6bede04:r	t:	t#439:5840f09d7e1a6c45	t#9072:63467599ceca9d8d/24e2daf7afaf6d9b:r	t#4618:7f68ae6e241777f0/20bab4a442e271f3:r	n	t#5675:1c70894fb54753b4/27d4ba7fc0a9899f:r	t#5286:c947dbf8a34972f8/ada1cb5f2e6cb3cc:r	t#7709:a31ad0b6639db758/b40ffb1e111f5efa:r	t#5539:5a3f6aaf1cd3b0c4/8553b05d14efe043:r	t#6961:bd1aca78b160d3c4/6242a9a4633484f1:r	t#9907:d3c8f122e42a980b/7a35a03bf3a3d97b:r	t#5319:2ca31fc73e41c75e/3067f3008c634549:r	t#1286:52c9cc06d66026fe/eca20e9fe9b51bc1:r	t:
+row	4	t:MCMC - Systematic (1951-2005) + Temporal	t#221:9d91b079b6b3df57	t:4/3/2026 12:33:40 PM	t:9/30/2026 6:31:04 PM	t:Systematic (1951-2005) + Temporal Expansion	t#2453:09a3210c839c28ea/8ea9ff5a557cce72:r	t#733:d921ecbf96304406	b#1238358:9815d46e3a0569c8>z#3632254:ec1144973ffd5d8d	t#2238:6c7dddcebc249eb1/dc237691c8553854:r	t:	t#439:5840f09d7e1a6c45	t#9057:4a705ef75ada3b57/4af47a2f9aa3cee6:r	t#4603:380beff033c8e850/53d64ac1d97fa1c1:r	n	t#5675:1c70894fb54753b4/27d4ba7fc0a9899f:r	t#5286:c947dbf8a34972f8/ada1cb5f2e6cb3cc:r	t#7709:4e31e78d0c1f2bbd/6d0a3ee1cad5278f:r	t#5539:5a3f6aaf1cd3b0c4/8553b05d14efe043:r	t#6962:776daccacb748831/46fb16ac752279bc:r	t#9907:d3c8f122e42a980b/7a35a03bf3a3d97b:r	t#5319:2ca31fc73e41c75e/3067f3008c634549:r	t#1287:8597809a5261c78c/5d653b1f3c522271:r	t:
+row	5	t:MCMC - Systematic (1951-2001) + Causal	t#238:9b105ed3e91d7358	t:4/3/2026 12:34:21 PM	t:9/30/2026 6:31:04 PM	t:Systematic (1951-2001)	t#2585:bc444285ce36d2d5/94cdb3b3d9565f35:r	t#733:80cf600a28c167bf	b#1235227:06e318c4c517a0a5>z#3632044:5bd68a1f32cb645b	t#2236:34fd6191fc98cbc3/473d294b1d88e4c2:r	t:	t#439:5840f09d7e1a6c45	t#9074:a6730e277c689072/dd0e3c059e33c902:r	t#4618:7f68ae6e241777f0/20bab4a442e271f3:r	n	t#5675:1c70894fb54753b4/27d4ba7fc0a9899f:r	t#5286:c947dbf8a34972f8/ada1cb5f2e6cb3cc:r	t#7709:a8f7b633267f0999/a6a1d5d2118f6ed9:r	t#5539:5a3f6aaf1cd3b0c4/8553b05d14efe043:r	t#6962:776daccacb748831/46fb16ac752279bc:r	t#9902:4f256f63efb59292/18ee55da862d777d:r	t#6004:778479b1cfb67bae/d8e4550859cbdd89:r	t#1287:b0a75d9d2f5a9a79/ed202df3e00ddaaa:r	t:
+row	6	t:MCMC - Systematic (1951-2005) + Causal	t#238:cfce55834fb95148	t:4/3/2026 2:34:25 PM	t:9/30/2026 6:31:05 PM	t:Systematic (1951-2005)	t#2585:01ea03c0766b96ef/eff9c4be27c03cb9:r	t#732:ed091c6f424798c0	b#1235353:88dd18f5e29a1f52>z#3630394:01055403e718cd84	t#2232:6145c62429ecc946/967ec9d9a77c5e06:r	t:	t#439:5840f09d7e1a6c45	t#9059:0defd79049b00692/549afb7e84d25c3e:r	t#4603:380beff033c8e850/53d64ac1d97fa1c1:r	n	t#5675:1c70894fb54753b4/27d4ba7fc0a9899f:r	t#5286:c947dbf8a34972f8/ada1cb5f2e6cb3cc:r	t#7709:691d89c385e9ad02/2ad566f3c756d5dd:r	t#5539:5a3f6aaf1cd3b0c4/8553b05d14efe043:r	t#6961:bd1aca78b160d3c4/6242a9a4633484f1:r	t#9902:4f256f63efb59292/18ee55da862d777d:r	t#6004:778479b1cfb67bae/d8e4550859cbdd89:r	t#1286:3fbfdf1cadf3cbe4/5cdbdd141ae7b974:r	t:
+row	7	t:MCMC - Systematic (1951-2001) + Temporal + Causal	t#259:c38e5de05a4d39c4	t:4/3/2026 2:35:06 PM	t:9/30/2026 6:31:05 PM	t:Systematic (1951-2001) + Temporal Expansion	t#2585:aa4073b9f7297c38/fa60b0464672ed56:r	t#733:1f6a48bda013f3df	b#1236758:c90baf2d3f199b15>z#3632256:f98f04f1af68a475	t#2239:47f530e178fef077/a779c2b182ac25d6:r	t:	t#439:5840f09d7e1a6c45	t#9882:904655fbee0f4a50/c6587d7bc5300b55:r	t#4618:7f68ae6e241777f0/20bab4a442e271f3:r	n	t#5675:1c70894fb54753b4/27d4ba7fc0a9899f:r	t#5286:c947dbf8a34972f8/ada1cb5f2e6cb3cc:r	t#7708:8030aab8601a9b65/57da78e5fd722b45:r	t#5539:5a3f6aaf1cd3b0c4/8553b05d14efe043:r	t#6962:776daccacb748831/46fb16ac752279bc:r	t#9902:4f256f63efb59292/18ee55da862d777d:r	t#6004:778479b1cfb67bae/d8e4550859cbdd89:r	t#1287:18762350895f15df/ce018dd64c99140a:r	t:
+row	8	t:MCMC - Systematic (1951-2005) + Temporal + Causal	t#259:3ef8ef26e9064a9a	t:4/3/2026 2:35:46 PM	t:9/30/2026 6:31:05 PM	t:Systematic (1951-2005) + Temporal Expansion	t#2585:e9f068886ecdace7/3bb76288d1d39169:r	t#733:954cff885cdd4d7b	b#1233822:5af09fd3f5d14769>z#3630657:200304fb0cbc627c	t#2235:018c46c42a387e6f/785cb9b3f4c09690:r	t:	t#439:5840f09d7e1a6c45	t#9867:3f0f334c06a995d2/d22e86bc3b0d91f5:r	t#4603:380beff033c8e850/53d64ac1d97fa1c1:r	n	t#5675:1c70894fb54753b4/27d4ba7fc0a9899f:r	t#5286:c947dbf8a34972f8/ada1cb5f2e6cb3cc:r	t#7709:be6a1a18772c9d03/1e2fb9bed031fd35:r	t#5539:5a3f6aaf1cd3b0c4/8553b05d14efe043:r	t#6962:776daccacb748831/46fb16ac752279bc:r	t#9902:4f256f63efb59292/18ee55da862d777d:r	t#6004:778479b1cfb67bae/d8e4550859cbdd89:r	t#1287:313f1cd0b2f483a0/6543f188ca5301a6:r	t:
+row	9	t:MCMC - Systematic (1951-2001) + 3 Quantile Priors	t#238:ace2d13811382952	t:4/3/2026 2:37:03 PM	t:9/30/2026 8:47:07 PM	t:Systematic (1951-2001)	t#2826:394e08a495aaa226/eae3127bb2f427a6:r	t#733:2825c0f2214b22d1	b#978290:b77e7a7f0928d77c>z#2880161:b098ebdc14567094	t#2239:b72fa1837b90618c/7d7afb81397b3f35:r	t:	t#439:5840f09d7e1a6c45	t#9074:154721f3f19fc99f/9031e45c43ea9f1d:r	t#4618:7f68ae6e241777f0/20bab4a442e271f3:r	n	t#5675:1c70894fb54753b4/27d4ba7fc0a9899f:r	t#5286:c947dbf8a34972f8/ada1cb5f2e6cb3cc:r	t#7708:1e0cfff20a80e946/b74a3b8dd0af4c51:r	t#5539:5a3f6aaf1cd3b0c4/8553b05d14efe043:r	t#6962:fa94faf0bf34b73a/51390346db94252c:r	t#9879:a6ff5c3aa957b5db/8868487693120e7d:r	t#6004:778479b1cfb67bae/d8e4550859cbdd89:r	t#1287:06144923456e2d7d/03f4a0376d5bdc8c:r	t:
+row	10	t:Univariate Analysis_10	t:	t:9/30/2026 8:22:00 PM	t:9/30/2026 8:24:01 PM	t:Systematic (1951-2005) + Temporal Expansion	t#2453:09a3210c839c28ea/8ea9ff5a557cce72:r	t#733:5cd3fdd6c40d6a98	b#1238358:9815d46e3a0569c8>z#3632254:ec1144973ffd5d8d	t#2238:6c7dddcebc249eb1/dc237691c8553854:r	t:	t#439:5840f09d7e1a6c45	t#9057:4a705ef75ada3b57/4af47a2f9aa3cee6:r	t#4603:380beff033c8e850/53d64ac1d97fa1c1:r	n	t#5675:1c70894fb54753b4/27d4ba7fc0a9899f:r	t#5286:c947dbf8a34972f8/ada1cb5f2e6cb3cc:r	t#7709:4e31e78d0c1f2bbd/6d0a3ee1cad5278f:r	t#5539:5a3f6aaf1cd3b0c4/8553b05d14efe043:r	t#6962:776daccacb748831/46fb16ac752279bc:r	t#4592:e00b33408b532b25/334d3790af79139f:r	t#5319:2ca31fc73e41c75e/3067f3008c634549:r	t#1287:ada4e2b0b9795d54/a64198e254e3bf76:r	t:
+table	Distribution Fitting Analysis	sha=d1874e3092e1517f	sql=5eca6e5222444246	rows=4
+column	0	Name	TEXT
+column	1	Description	TEXT
+column	2	CreationDate	TEXT
+column	3	LastModified	TEXT
+column	4	InputData	TEXT
+column	5	FittedDistributions	TEXT
+column	6	ProbabilityOrdinates	TEXT
+column	7	IsEstimated	BOOLEAN
+column	8	FrequencyPlotSettings	TEXT
+column	9	PDFPlotSettings	TEXT
+column	10	CDFPlotSettings	TEXT
+column	11	PPPlotSettings	TEXT
+column	12	QQPlotSettings	TEXT
+column	13	AnalysisXml	TEXT
+row	1	t:Fit - Systematic (1951-2001)	t#223:a22883d8124437c5	t:3/31/2026 10:53:52 AM	t:9/11/2026 6:23:17 PM	t:Systematic (1951-2001)	t#4153:0219a65d70ac7e01/9de82e3e213aefac:r	t#439:5840f09d7e1a6c45	i:1	t#18798:0e2edefb074e647e/1410f1efbe4bcce5:r	t#18834:d3baa7204f7f723a/3373e5bf5cbec0a5:r	t#19002:f384ac8a36f123a3/0f44742d7dd6157c:r	t#18973:2ca1d13fba88fffe/399e973ced7f6c79:r	t#18975:dd09df1709a89bfb/c67c962ddfc8ae2c:r	t#4793:3edae20300ece26a/ce77c8a99f854f94:r
+row	2	t:Fit - Systematic (1951-2005)	t#223:405a780905fee562	t:3/31/2026 10:58:04 AM	t:9/11/2026 6:23:17 PM	t:Systematic (1951-2005)	t#4150:b1c643c9e161f6cd/562ebe51c9778b55:r	t#439:5840f09d7e1a6c45	i:1	t#18783:002313667501350a/6abac2321b4a9b1a:r	t#4642:e5b33f4ae56a1f74/b60aa36fd42a8a64:r	t#4668:56267de8e3b06e98/7ae2b0cf27cf0d9f:r	t#4548:98a0f66dd6cfaca0/0c587b7b65583922:r	t#4640:60e038b495b978d5/ed4b040e1d5af8a9:r	t#4790:68e36e2cdf0fba2c/ee9884532d6a49ef:r
+row	3	t:Fit - Systematic (1951-2001) + Temporal Expansion	t#244:4a054b7420eb1a1f	t:3/31/2026 10:59:59 AM	t:9/30/2026 8:21:42 PM	t:Systematic (1951-2001) + Temporal Expansion	t#4151:93e7bfc99c001269/8f3ce68e53c0dec5:r	t#439:5840f09d7e1a6c45	i:1	t#11663:c9f9a53c19d4f600/ab3340e308eb86ce:r	t#18834:84650b469a853cae/f9482515d26acfbf:r	t#19810:717dbe0a9c69a54d/a2295c90ae0795a2:r	t#18973:0691d03385e04b22/02b10d316d46c74f:r	t#10951:10d8ac54543a27bb/64c5eb7a584da7b7:r	t#4791:ea4bb3594422c6b2/86dbc4968f672f94:r
+row	4	t:Fit - Systematic (1951-2005) + Temporal Expansion	t#244:efd036e9b147426a	t:3/31/2026 11:29:12 AM	t:9/11/2026 6:23:31 PM	t:Systematic (1951-2005) + Temporal Expansion	t#4147:94516bcfb543ea79/a045084db2658be5:r	t#439:5840f09d7e1a6c45	i:1	t#19591:150dfd0fe5c7f954/3ae4f001c15ddcf0:r	t#18819:4c163beac609e0d4/0b6ac594df742510:r	t#19795:03777ed8a281ec82/89351d50b8e47d78:r	t#18973:647d096c8c855d9e/ec11aa8fc2e75e90:r	t#4640:60e038b495b978d5/ed4b040e1d5af8a9:r	t#4787:49cb0e9e1f312900/161773584f44299a:r
+table	Input Data	sha=b40b2303a743ca3d	sql=d536de5c86337186	rows=4
+column	0	Name	TEXT
+column	1	Description	TEXT
+column	2	CreationDate	TEXT
+column	3	LastModified	TEXT
+column	4	ExactDataMethod	TEXT
+column	5	DataFrame	TEXT
+column	6	UnitLabel	TEXT
+column	7	IndexLabel	TEXT
+column	8	USGSSiteNumber	TEXT
+column	9	UseMultipleGrubbsBeckTest	BOOLEAN
+column	10	TimeSeriesElement	TEXT
+column	11	BlockFunction	TEXT
+column	12	TimeBlock	TEXT
+column	13	StartMonth	INT4
+column	14	EndMonth	INT4
+column	15	SmoothingFunction	TEXT
+column	16	Period	INT4
+column	17	Threshold	DOUBLE
+column	18	MinStepsBetweenPeaks	INT4
+column	19	IsProcessed	BOOLEAN
+column	20	ChronologyPlotSettings	TEXT
+column	21	FrequencyPlotSettings	TEXT
+column	22	SeasonalityPlotSettings	TEXT
+column	23	DensityPlotSettings	TEXT
+column	24	HistogramPlotSettings	TEXT
+column	25	QQPlotSettings	TEXT
+column	26	ACFPlotSettings	TEXT
+column	27	PACFPlotSettings	TEXT
+column	28	MRLPlotSettings	TEXT
+column	29	ModifiedScalePlotSettings	TEXT
+column	30	ShapePlotSettings	TEXT
+row	1	t:Systematic (1951-2001)	t:Kamp annual peak discharge, m\u00B3/s; systematic period before the 2002 flood.	t:3/28/2026 8:22:15 PM	t:4/2/2026 7:19:27 PM	t:Manual	t#7766:085e4485cf699066/83b84f8120ea97fc:r	t:Peak Discharge (cms)	t:Year	t:00000000	i:1	t:	t:Maximum	t:CalendarYear	i:10	i:9	t:None	i:1	r:0	i:1	i:0	t#5402:71fd643d796fc7e1/881153750ced39ab:r	t#5467:27dbee66aa799a0b/7b890bbe9d6c842c:r	t#4651:6b85ebc41a421f57/09c96393592dae26:r	t#5666:3cd5d7ff2a8eaf37/caa87f28cddc4182:r	t#5284:4ab3a3389babd054/8fde4644554b12ea:r	t#6349:4cdc396450914d54/7a4f0c607e363c56:r	t#6941:1c9d4237bac3eb30/6081627d7fc6456a:r	t#6988:61e08f3e0b770d17/1365490b94e043a4:r	t#4604:2ba13a6f72b992d3/00e4bd00c9c834b7:r	t#4617:bd1cbff8840b0fa4/5d57c1cc278b81f5:r	t#4599:33ad547799c64842/08cc3d7ab5fc47fa:r
+row	2	t:Systematic (1951-2005)	t#111:62a7a115808bfbba	t:3/28/2026 8:23:54 PM	t:3/28/2026 8:24:42 PM	t:Manual	t#8284:d00dc81966946eee/d427be366e3c4249:r	t:Value	t:Year	t:00000000	i:1	t:	t:Maximum	t:CalendarYear	i:10	i:9	t:None	i:1	r:0	i:1	i:0	t#5387:436fdde72312e3a7/3457c83205de86e1:r	t#5452:5269e47bd772a7f0/dbfe7c6e7c4d3239:r	t#4651:6b85ebc41a421f57/09c96393592dae26:r	t#5651:8df2260d5221a5e7/91fdf0e7e7434d8b:r	t#5269:1dacb5537de7c946/366bf29d9906ed25:r	t#6349:bf0c96709b37fef3/794f65405825bf68:r	t#6943:336998fc2c4f1088/91299a283bbe0e2d:r	t#6990:0d8ab492e022750e/c24c57a0f0d12e0e:r	t#4604:2ba13a6f72b992d3/00e4bd00c9c834b7:r	t#4617:bd1cbff8840b0fa4/5d57c1cc278b81f5:r	t#4599:33ad547799c64842/08cc3d7ab5fc47fa:r
+row	3	t:Systematic (1951-2001) + Temporal Expansion	t#94:ac4914a66ebf831c	t:3/28/2026 8:25:19 PM	t:9/11/2026 6:23:17 PM	t:Manual	t#8336:6682ad79ce17e297/c11d58218fb5d4e3:r	t:Peak Discharge (cms)	t:Year	t:00000000	i:1	t:	t:Maximum	t:CalendarYear	i:10	i:9	t:None	i:1	r:0	i:1	i:0	t#7188:4ae4438315d133e8/c7b4d6bd20f850e0:r	t#6275:1752b3c4fbfde37e/596491e3aca673c2:r	t#4651:6b85ebc41a421f57/09c96393592dae26:r	t#5666:3cd5d7ff2a8eaf37/caa87f28cddc4182:r	t#5284:4ab3a3389babd054/8fde4644554b12ea:r	t#6349:4cdc396450914d54/7a4f0c607e363c56:r	t#6941:1c9d4237bac3eb30/6081627d7fc6456a:r	t#6988:61e08f3e0b770d17/1365490b94e043a4:r	t#4604:2ba13a6f72b992d3/00e4bd00c9c834b7:r	t#4617:bd1cbff8840b0fa4/5d57c1cc278b81f5:r	t#4599:33ad547799c64842/08cc3d7ab5fc47fa:r
+row	4	t:Systematic (1951-2005) + Temporal Expansion	t#104:00fdd781d4569d50	t:3/28/2026 8:27:38 PM	t:9/11/2026 6:23:17 PM	t:Manual	t#8933:ba0e800868502a55/5040f429a3dba45b:r	t:Value	t:Year	t:00000000	i:1	t:	t:Maximum	t:CalendarYear	i:10	i:9	t:None	i:1	r:0	i:1	i:0	t#7173:2a4d7943d7cdb8f0/c9370bbcc586df17:r	t#6260:a6d49ff0707f1296/daccd48336b556c2:r	t#4651:6b85ebc41a421f57/09c96393592dae26:r	t#5651:8df2260d5221a5e7/91fdf0e7e7434d8b:r	t#5269:1dacb5537de7c946/366bf29d9906ed25:r	t#6349:4cdc396450914d54/7a4f0c607e363c56:r	t#6943:16ae6a09a0a09088/f83c1be20b2f9feb:r	t#6990:ad616b5c3a5f411f/e4dec79a3b2c5e0b:r	t#4604:2ba13a6f72b992d3/00e4bd00c9c834b7:r	t#4617:bd1cbff8840b0fa4/5d57c1cc278b81f5:r	t#4599:33ad547799c64842/08cc3d7ab5fc47fa:r
+table	Project	sha=78ecc1777e5e54f6	sql=bf204117c9f875b1	rows=1
+column	0	Name	TEXT
+column	1	Description	TEXT
+column	2	CreationDate	TEXT
+column	3	LastModified	TEXT
+column	4	FullFileName	TEXT
+column	5	SoftwareVersion	TEXT
+column	6	AvalonDockLayout	TEXT
+column	7	ProjectExplorerLayout	TEXT
+column	8	AvalonDockLayoutPrevious	TEXT
+column	9	ProjectExplorerLayoutPrevious	TEXT
+row	1	t:viglione-et-al-2013	t#302:da5332728654836d	t:3/28/2026 8:21:41 PM	t:9/30/2026 8:47:07 PM	p:{dir}\\viglione-et-al-2013.bestfit	t:2.0.1	t#2773:4b18bf5f2f735bcb/f3775c2b694d0e7d:r	t#2567:ed01ee76ebdd430a/1f02fdd59fc08a40:r	t#2774:62947cd8ee8b5da4/f6a7838d67fbd0e3:r	t#2482:301b2ce5b2966b7d/5496d1e5672ef7af:r
+table	Univariate Distribution Analysis	sha=47ecc2e9974aa851	sql=63dff5382d17bd53	rows=10
+column	0	Name	TEXT
+column	1	Type	TEXT
+row	1	t:MCMC - Systematic (1951-2001)	t:RMC.BestFit.UI.UnivariateAnalysis
+row	2	t:MCMC - Systematic (1951-2005)	t:RMC.BestFit.UI.UnivariateAnalysis
+row	3	t:MCMC - Systematic (1951-2001) + Temporal	t:RMC.BestFit.UI.UnivariateAnalysis
+row	4	t:MCMC - Systematic (1951-2005) + Temporal	t:RMC.BestFit.UI.UnivariateAnalysis
+row	5	t:MCMC - Systematic (1951-2001) + Causal	t:RMC.BestFit.UI.UnivariateAnalysis
+row	6	t:MCMC - Systematic (1951-2005) + Causal	t:RMC.BestFit.UI.UnivariateAnalysis
+row	7	t:MCMC - Systematic (1951-2001) + Temporal + Causal	t:RMC.BestFit.UI.UnivariateAnalysis
+row	8	t:MCMC - Systematic (1951-2005) + Temporal + Causal	t:RMC.BestFit.UI.UnivariateAnalysis
+row	9	t:MCMC - Systematic (1951-2001) + 3 Quantile Priors	t:RMC.BestFit.UI.UnivariateAnalysis
+row	10	t:Univariate Analysis_10	t:RMC.BestFit.UI.UnivariateAnalysis
+state	00 Time Series Data	7c890208af994c26	66eae0f9e86047a2
+state	01 Input Data	f8c32979e3e7940f	7138759d2d2c7b9f
+state	01 Input Data/00 InputData 'Systematic (1951-2001)'	ba1632d06f9a5550	f4ce520204ed9796
+state	01 Input Data/01 InputData 'Systematic (1951-2005)'	2ab5308218ab3e49	97299166c8e01966
+state	01 Input Data/02 InputData 'Systematic (1951-2001) + Temporal Expansion'	22edf0d7e101584d	6427afc085af6175
+state	01 Input Data/03 InputData 'Systematic (1951-2005) + Temporal Expansion'	e616593ebf9abade	3ed8f1c2946702c6
+state	02 Distribution Fitting Analysis	8627646c9c0f9cf3	4a4ead4bf90c0837
+state	02 Distribution Fitting Analysis/00 FittingAnalysis 'Fit - Systematic (1951-2001)'	1832906ae4b3093e	487dcc95fb7ae07e
+state	02 Distribution Fitting Analysis/01 FittingAnalysis 'Fit - Systematic (1951-2005)'	6f740b5664226134	f2d5d1a41e9fd4c0
+state	02 Distribution Fitting Analysis/02 FittingAnalysis 'Fit - Systematic (1951-2001) + Temporal Expansion'	afb1c2576b0b10a0	df53c37c9beda625
+state	02 Distribution Fitting Analysis/03 FittingAnalysis 'Fit - Systematic (1951-2005) + Temporal Expansion'	f153e7fe997c33ca	8acf711534f91d7a
+state	03 Univariate Distribution Analysis	a626661f9788ad68	0e3a3c46961dd428
+state	03 Univariate Distribution Analysis/00 UnivariateAnalysis 'MCMC - Systematic (1951-2001)'	68281599e405888d	e6791ed52608fa02
+state	03 Univariate Distribution Analysis/01 UnivariateAnalysis 'MCMC - Systematic (1951-2005)'	599248a23b30f2fc	eefb2928fb9eeb4b
+state	03 Univariate Distribution Analysis/02 UnivariateAnalysis 'MCMC - Systematic (1951-2001) + Temporal'	e09cde05806c7f32	11b7ce398306095d
+state	03 Univariate Distribution Analysis/03 UnivariateAnalysis 'MCMC - Systematic (1951-2005) + Temporal'	296bec79bc3a1e1b	d452343d9a44e42e
+state	03 Univariate Distribution Analysis/04 UnivariateAnalysis 'MCMC - Systematic (1951-2001) + Causal'	1f2a820b41cdd6b6	b5154d6ef40867a9
+state	03 Univariate Distribution Analysis/05 UnivariateAnalysis 'MCMC - Systematic (1951-2005) + Causal'	f6b9d5e680c6cd0a	0cd7d0aae0b75ca0
+state	03 Univariate Distribution Analysis/06 UnivariateAnalysis 'MCMC - Systematic (1951-2001) + Temporal + Causal'	ed205c8bd3f7a8b1	d4eac02b19e80634
+state	03 Univariate Distribution Analysis/07 UnivariateAnalysis 'MCMC - Systematic (1951-2005) + Temporal + Causal'	803aa747a0aeaf5c	d7d556ea525338cd
+state	03 Univariate Distribution Analysis/08 UnivariateAnalysis 'MCMC - Systematic (1951-2001) + 3 Quantile Priors'	f505e8d20d0cc908	862ea27ee7fe9989
+state	03 Univariate Distribution Analysis/09 UnivariateAnalysis 'Univariate Analysis_10'	536eb057c2aa7d6d	451879cae04b9766
+state	04 Bivariate Distribution Analysis	2df996a968e4df10	85c24dd973e8dafa
+state	05 Rating Curve Analysis	5b9e46ee16c64e96	771f60dc9817d061
+state	06 Time Series Analysis	2f4a1830d606047e	0e6e4ee694390acc
+state	Project	e176f7110252f523	e176f7110252f523
+end

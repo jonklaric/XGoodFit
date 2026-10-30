@@ -1,0 +1,150 @@
+bestfit-file-description	1
+file	4-univariate-distribution-analysis/1-univariate-analysis/5-nonstationary-ffa/nsffa-brays-bayou-texas.bestfit	sha=f5de73933bf09abc	tables=6	cells=320
+pragma	encoding	UTF-8
+pragma	journal_mode	wal
+pragma	user_version	0
+pragma	application_id	0
+pragma	auto_vacuum	0
+table	<Composite Distribution>	sha=f675bb380f0f87c8	sql=b683e6959ee0fa0d	rows=1
+column	0	Name	TEXT
+column	1	Description	TEXT
+column	2	CreationDate	TEXT
+column	3	LastModified	TEXT
+column	4	InputData	TEXT
+column	5	BayesianAnalysis	TEXT
+column	6	CompositeDistributionType	TEXT
+column	7	ModelAverageMethod	TEXT
+column	8	Dependency	TEXT
+column	9	IsMaximum	BOOLEAN
+column	10	Analyses	TEXT
+column	11	ProbabilityOrdinates	TEXT
+column	12	FrequencyPlotSettings	TEXT
+column	13	MCMCReport	TEXT
+column	14	AnalysisResults	TEXT
+column	15	CorrelationMatrix	TEXT
+row	1	t:Bayesian Model Average	t#263:15bc5a4a622c21f8	t:4/18/2026 7:06:26 PM	t:9/17/2026 6:41:25 PM	t:USGS 08075000 Brays Bayou - Metric	t#591:42054cc2ea70b751	t:ModelAverage	t:DIC	t:Independent	i:1	t#357:e33a118ffee23556/6c8f541db832ab9a:r	t#439:5840f09d7e1a6c45	t#11009:48a26e07b839455c/d5b82983a8300c81:r	n	t#2558:f268604f7bacf514/82a4569d7993500e:r	t:
+table	<Univariate Distribution>	sha=c291572ed5c53bbe	sql=09cbaf58c37595de	rows=7
+column	0	Name	TEXT
+column	1	Description	TEXT
+column	2	CreationDate	TEXT
+column	3	LastModified	TEXT
+column	4	InputData	TEXT
+column	5	UnivariateDistribution	TEXT
+column	6	BayesianAnalysis	TEXT
+column	7	MCMCResults	BLOB
+column	8	AnalysisResults	TEXT
+column	9	ChronologyAnalysisResults	TEXT
+column	10	ProbabilityOrdinates	TEXT
+column	11	FrequencyPlotSettings	TEXT
+column	12	ChronologyPlotSettings	TEXT
+column	13	InfluenceDiagnosticsPlotSettings	TEXT
+column	14	KernelDensityPlotSettings	TEXT
+column	15	HistogramPlotSettings	TEXT
+column	16	BivariatePlotSettings	TEXT
+column	17	MeanLikelihoodPlotSettings	TEXT
+column	18	AutocorrelationPlotSettings	TEXT
+column	19	MarkovChainTracesPlotSettings	TEXT
+column	20	AnalysisXml	TEXT
+column	21	MCMCReport	TEXT
+row	1	t:NSFFA - Constant	t#331:b15b9db5a027dd13	t:4/3/2026 3:32:46 PM	t:9/17/2026 6:41:23 PM	t:USGS 08075000 Brays Bayou - Metric	t#2497:db3ea38bc096b9f9/73efa3bcd9d10f35:r	t#731:0cc5c97ec9476696	b#1203875:972fdc8b362ec6e8>z#3623251:bf1267dab08fd914	t#2232:2d109bf72e004080/9c7a4a630b4c311f:r	t#7567:49141f5aec5d724c/fcd6f7033ad108aa:r	t#439:5840f09d7e1a6c45	t#8264:9f4be89ddd83dbce/ea771bb2e482fc0b:r	t#8332:d06313f062f98d3d/bb13826e2ef27998:r	t#5319:2ca31fc73e41c75e/3067f3008c634549:r	t#5695:7aaeea789d158406/9960f2694f174eec:r	t#5306:41e5a629e4a0ce43/fb15a5bb4ba83890:r	t#7762:8e3d33c8631f3ed9/230c454b0b3fd39d:r	t#5539:5a3f6aaf1cd3b0c4/8553b05d14efe043:r	t#6972:ec4112d6cfae2cfb/54dcf30a3c69db47:r	t#9912:8abbd00a674a7f0f/88ca2502b601a1b9:r	t#1285:4908a74d3ee4320a/18085c50189b6bac:r	t:
+row	2	t:NSFFA - Linear	t#329:8e8a8fa715f22b5b	t:4/3/2026 3:46:53 PM	t:9/17/2026 6:41:23 PM	t:USGS 08075000 Brays Bayou - Metric	t#3134:c93e3035ef86165d/a4fd7946e785a62b:r	t#732:ac1337250d2aa55c	b#1850289:772626cdfc73e4e7>z#5253999:e9de8b72d3c77632	t#2233:a9ab18ec6b271f59/7d6c4604f26ee9bb:r	t#7531:c1b308d52fc5b1ad/5277553b06c7707c:r	t#439:5840f09d7e1a6c45	t#8264:9f4be89ddd83dbce/ea771bb2e482fc0b:r	t#8334:c4798468a83355a1/b9723fd7ad5875e6:r	t#5319:2ca31fc73e41c75e/3067f3008c634549:r	t#5695:7aaeea789d158406/9960f2694f174eec:r	t#5306:41e5a629e4a0ce43/fb15a5bb4ba83890:r	t#7760:a00c3419a9b4bd84/ce24391e5229905c:r	t#5539:5a3f6aaf1cd3b0c4/8553b05d14efe043:r	t#6972:ec4112d6cfae2cfb/54dcf30a3c69db47:r	t#11674:7dd52678f14cd5eb/a053cd60d8b4ab30:r	t#1286:e2c241df85ec7d72/505df109d17dafa7:r	t:
+row	3	t:NSFFA - Logistic	t#331:8ed7515b08de85aa	t:4/3/2026 3:59:29 PM	t:9/17/2026 6:41:23 PM	t:USGS 08075000 Brays Bayou - Metric	t#3142:1692d3e68819b1fa/951394cb34d66adc:r	t#733:f7e0efe803a8df98	b#1850737:1ab23e2d2871bc9a>z#5255756:fc4368611f01689c	t#2226:d71cc0461c7c8b31/9e32d546b6af80d1:r	t#7529:1c38cf0215c7978a/41ef4921a206e441:r	t#439:5840f09d7e1a6c45	t#8264:9f4be89ddd83dbce/ea771bb2e482fc0b:r	t#8335:8266ff86befbe7b7/1e710572d819f9f3:r	t#5319:2ca31fc73e41c75e/3067f3008c634549:r	t#5695:7aaeea789d158406/9960f2694f174eec:r	t#5306:41e5a629e4a0ce43/fb15a5bb4ba83890:r	t#7760:23280700639b652e/88bda97b7c155243:r	t#5539:5a3f6aaf1cd3b0c4/8553b05d14efe043:r	t#6971:2fe46ad6619a037e/6648cf07197705e7:r	t#11674:7dd52678f14cd5eb/a053cd60d8b4ab30:r	t#1287:e258e8c1df5a732a/56064802cb3f8ee0:r	t:
+row	4	t:NSFFA - Step	t#335:504ba576a2ab2ecf	t:4/3/2026 4:42:24 PM	t:9/17/2026 6:41:24 PM	t:USGS 08075000 Brays Bayou - Metric	t#3506:79e0cc29c2a9d777/8c6909bd13ef25f0:r	t#733:05f73fedb9a48584	b#2525236:c473b1b093022b4d>z#6949557:8e689ae604294b1c	t#2234:e830eadc2ee696ad/dc65bbe4fe7c6559:r	t#7463:618eafeed38ed866/0536f204ef84abb4:r	t#439:5840f09d7e1a6c45	t#8264:9f4be89ddd83dbce/ea771bb2e482fc0b:r	t#8335:b01aa4104b80c180/d73b0e3975b28abc:r	t#5319:2ca31fc73e41c75e/3067f3008c634549:r	t#5701:014402b0906c4877/354fc0d0ba4493cb:r	t#5312:68b10a137cfeebb5/68d15098f0e9e11b:r	t#7765:59ef90514935d413/bf9060537d182cc2:r	t#5539:5a3f6aaf1cd3b0c4/8553b05d14efe043:r	t#6975:59a7df4c1f91911b/41579c7556b81c23:r	t#13439:de991eb5ea5f5611/fa421ccf081b6d19:r	t#1287:4811269827601d7a/02de34a2441480d5:r	t:
+row	5	t:NSFFA - Linear - Logistic	t#329:063ff47e906b65d6	t:4/3/2026 4:51:43 PM	t:9/17/2026 6:41:24 PM	t:USGS 08075000 Brays Bayou - Metric	t#3780:7f888986774139d7/e00776a74d2e1cdd:r	t#735:d5a767801715c802	b#2620825:44ff57f6b81b0edf>z#7172393:d6b4e76c0efbfe0a	t#2223:e29c59e637159b72/a43beee53c5611da:r	t#7514:ff6e3290b179c30a/9f27c4f0e68af896:r	t#439:5840f09d7e1a6c45	t#8264:9f4be89ddd83dbce/ea771bb2e482fc0b:r	t#8343:0466e8dd648a8fd5/7becda03777c5b92:r	t#5319:2ca31fc73e41c75e/3067f3008c634549:r	t#5695:7aaeea789d158406/9960f2694f174eec:r	t#5306:41e5a629e4a0ce43/fb15a5bb4ba83890:r	t#7760:0fb524a95f6bdde4/d740cc878a123b72:r	t#5539:5a3f6aaf1cd3b0c4/8553b05d14efe043:r	t#6971:2fe46ad6619a037e/6648cf07197705e7:r	t#13438:00c1159fef7419fc/33338854c6375b66:r	t#1289:72e770a824f2c035/3836c7f8c6996e55:r	t:
+row	6	t:NSFFA - Logistic - Logistic	t#331:bb8cf4a9740ca74c	t:4/3/2026 4:53:37 PM	t:9/17/2026 6:41:24 PM	t:USGS 08075000 Brays Bayou - Metric	t#3783:8bdc57ac35698085/fb6aa9b256feb467:r	t#735:696e619c7455e23d	b#3146289:b2540365f020e51e>z#8668604:b8d34142aa86d6f0	t#2229:a478b3fb5c1d65a7/2485b53a8ec92afe:r	t#7521:25a8a7e2fd169426/70f1f359232436c5:r	t#439:5840f09d7e1a6c45	t#8264:9f4be89ddd83dbce/ea771bb2e482fc0b:r	t#8345:b1ce7db63fdec931/c5e3f6e6a006e481:r	t#5319:2ca31fc73e41c75e/3067f3008c634549:r	t#5695:7aaeea789d158406/9960f2694f174eec:r	t#5306:41e5a629e4a0ce43/fb15a5bb4ba83890:r	t#7759:4270d758bbcd09cb/a9cfe6c9f79902be:r	t#5539:5a3f6aaf1cd3b0c4/8553b05d14efe043:r	t#6971:fc725313c98ff233/7ee0afbe8c37bdf9:r	t#13438:00c1159fef7419fc/33338854c6375b66:r	t#1289:24881176527cb0cc/33bb8c6b18e5c6a6:r	t:
+row	7	t:NSFFA - Step - Logistic	t#335:f55f857924c301a0	t:4/3/2026 4:59:22 PM	t:9/17/2026 6:41:25 PM	t:USGS 08075000 Brays Bayou - Metric	t#4156:c8dd263a368dcfe2/8d23b081dfc911e3:r	t#732:eb692256c617ecbe	b#3420817:638f0ebd57bacc74>z#9141990:d931d5b61cd3080d	t#2235:446ce919e49b57bb/cfe438026b54811e:r	t#7529:42bf71514d021647/b04c313fbcd982a0:r	t#439:5840f09d7e1a6c45	t#8264:9f4be89ddd83dbce/ea771bb2e482fc0b:r	t#8341:332c4b25be46824d/cab2469408196d0d:r	t#5319:2ca31fc73e41c75e/3067f3008c634549:r	t#5701:014402b0906c4877/354fc0d0ba4493cb:r	t#5312:68b10a137cfeebb5/68d15098f0e9e11b:r	t#7767:8a29a2a97ad0bbf7/422db51a08e37f76:r	t#5539:5a3f6aaf1cd3b0c4/8553b05d14efe043:r	t#6975:59a7df4c1f91911b/41579c7556b81c23:r	t#15205:c333a5e820752734/6064d1365fcaa8b8:r	t#1286:36560c5370d5fd57/d27e7b6b5f67a557:r	t:
+table	Distribution Fitting Analysis	sha=518c9c0d6013caef	sql=5eca6e5222444246	rows=0
+column	0	Name	TEXT
+column	1	Description	TEXT
+column	2	CreationDate	TEXT
+column	3	LastModified	TEXT
+column	4	InputData	TEXT
+column	5	FittedDistributions	TEXT
+column	6	ProbabilityOrdinates	TEXT
+column	7	IsEstimated	BOOLEAN
+column	8	FrequencyPlotSettings	TEXT
+column	9	PDFPlotSettings	TEXT
+column	10	CDFPlotSettings	TEXT
+column	11	PPPlotSettings	TEXT
+column	12	QQPlotSettings	TEXT
+column	13	AnalysisXml	TEXT
+table	Input Data	sha=e323e6f5b323ef36	sql=d536de5c86337186	rows=4
+column	0	Name	TEXT
+column	1	Description	TEXT
+column	2	CreationDate	TEXT
+column	3	LastModified	TEXT
+column	4	ExactDataMethod	TEXT
+column	5	DataFrame	TEXT
+column	6	UnitLabel	TEXT
+column	7	IndexLabel	TEXT
+column	8	USGSSiteNumber	TEXT
+column	9	UseMultipleGrubbsBeckTest	BOOLEAN
+column	10	TimeSeriesElement	TEXT
+column	11	BlockFunction	TEXT
+column	12	TimeBlock	TEXT
+column	13	StartMonth	INT4
+column	14	EndMonth	INT4
+column	15	SmoothingFunction	TEXT
+column	16	Period	INT4
+column	17	Threshold	DOUBLE
+column	18	MinStepsBetweenPeaks	INT4
+column	19	IsProcessed	BOOLEAN
+column	20	ChronologyPlotSettings	TEXT
+column	21	FrequencyPlotSettings	TEXT
+column	22	SeasonalityPlotSettings	TEXT
+column	23	DensityPlotSettings	TEXT
+column	24	HistogramPlotSettings	TEXT
+column	25	QQPlotSettings	TEXT
+column	26	ACFPlotSettings	TEXT
+column	27	PACFPlotSettings	TEXT
+column	28	MRLPlotSettings	TEXT
+column	29	ModifiedScalePlotSettings	TEXT
+column	30	ShapePlotSettings	TEXT
+row	1	t:USGS 08075000 Brays Bayou	t#206:15fabc15d96eeade	t:4/3/2026 3:04:39 PM	t:4/3/2026 4:07:36 PM	t:USGSPeakDischarge	t#27015:97afc611e3bd9883/bd3560341467c1de:r	t:Peak Discharge (cfs)	t:Year	t:08075000	i:1	t:	t:Maximum	t:CalendarYear	i:10	i:9	t:None	i:1	r:0	i:1	i:1	t#6408:4b1a3f9efbbf71d3/5544e6fdbe9a6d08:r	t#5467:5af5e7150e861546/c54b10098c5f379c:r	t#4651:6b85ebc41a421f57/09c96393592dae26:r	t#4636:c5eb674f18cbebd2/8f59df9e1464e93d:r	t#4638:563daa3b05798c11/f0478ed7e0e0a8cc:r	t#4654:8747814e5cd90813/2092f1d101270365:r	t#4626:280270ea276ead65/c091de4343c99a05:r	t#4642:26b02815c4734bda/09e13cba1cc75f1c:r	t#4604:2ba13a6f72b992d3/00e4bd00c9c834b7:r	t#4617:bd1cbff8840b0fa4/5d57c1cc278b81f5:r	t#4599:33ad547799c64842/08cc3d7ab5fc47fa:r
+row	2	t:USGS 08075000 Brays Bayou - Metric	t#188:2f39780476fb95bf	t:4/3/2026 4:05:12 PM	t:4/3/2026 6:22:13 PM	t:Manual	t#13200:e08158f9c2e7464c/005e4c504530d8be:r	t:Peak Discharge (cms)	t:Year	t:00000000	i:1	t:	t:Maximum	t:CalendarYear	i:10	i:9	t:None	i:1	r:0	i:1	i:0	t#7114:24350174c074aadd/bb991962c63724bd:r	t#5467:27dbee66aa799a0b/7b890bbe9d6c842c:r	t#4651:6b85ebc41a421f57/09c96393592dae26:r	t#4636:be43c42d78dfd03a/d9dcdec96705c0b4:r	t#4638:7a9ab3a097d3c48e/b844bec0f2ca5fd7:r	t#4654:8747814e5cd90813/2092f1d101270365:r	t#4626:280270ea276ead65/c091de4343c99a05:r	t#4642:26b02815c4734bda/09e13cba1cc75f1c:r	t#4604:2ba13a6f72b992d3/00e4bd00c9c834b7:r	t#4617:bd1cbff8840b0fa4/5d57c1cc278b81f5:r	t#4599:33ad547799c64842/08cc3d7ab5fc47fa:r
+row	3	t:USGS 08075000 Brays Bayou_copy	t#206:15fabc15d96eeade	t:5/23/2026 3:25:16 PM	t:5/23/2026 3:25:17 PM	t:USGSPeakDischarge	t#27015:97afc611e3bd9883/bd3560341467c1de:r	t:Peak Discharge (cfs)	t:Year	t:08075000	i:1	t:	t:Maximum	t:CalendarYear	i:10	i:9	t:None	i:1	r:0	i:1	i:1	t#6408:4b1a3f9efbbf71d3/5544e6fdbe9a6d08:r	t#5467:5af5e7150e861546/c54b10098c5f379c:r	t#4651:6b85ebc41a421f57/09c96393592dae26:r	t#4636:c5eb674f18cbebd2/8f59df9e1464e93d:r	t#4638:563daa3b05798c11/f0478ed7e0e0a8cc:r	t#4654:8747814e5cd90813/2092f1d101270365:r	t#4626:280270ea276ead65/c091de4343c99a05:r	t#4642:26b02815c4734bda/09e13cba1cc75f1c:r	t#4604:2ba13a6f72b992d3/00e4bd00c9c834b7:r	t#4617:bd1cbff8840b0fa4/5d57c1cc278b81f5:r	t#4599:33ad547799c64842/08cc3d7ab5fc47fa:r
+row	4	t:USGS 08075000 Brays Bayou_copy_copy	t#206:15fabc15d96eeade	t:5/23/2026 3:25:58 PM	t:5/24/2026 4:19:05 PM	t:USGSPeakDischarge	t#27046:4f260f1cfcdbac58/3577d2b4ef90862a:r	t:Peak Discharge (cfs)	t:Year	t:08075000	i:1	t:	t:Maximum	t:CalendarYear	i:10	i:9	t:None	i:1	r:0	i:1	i:1	t#6408:e09dce0b330a2b5d/d57824fea4147b09:r	t#5467:5af5e7150e861546/c54b10098c5f379c:r	t#4651:ef8fad523f9e2bf1/85bddb834d4fe391:r	t#4636:a9309db906e3b36c/ab93f274293959dd:r	t#4638:9184c020b350dc66/f0b229227faf5979:r	t#4654:5051fb27987c80fe/b55ca01541870420:r	t#4626:d530c9f5f360a3e6/9e8a65fa663f4252:r	t#4642:48c2a235117c79b8/43384cf4f968499a:r	t#4604:4ab1f9eb7290e741/29ed7c87ea1c32b7:r	t#4617:bd1cbff8840b0fa4/5d57c1cc278b81f5:r	t#4599:33ad547799c64842/08cc3d7ab5fc47fa:r
+table	Project	sha=29e4048eeb331b6e	sql=bf204117c9f875b1	rows=1
+column	0	Name	TEXT
+column	1	Description	TEXT
+column	2	CreationDate	TEXT
+column	3	LastModified	TEXT
+column	4	FullFileName	TEXT
+column	5	SoftwareVersion	TEXT
+column	6	AvalonDockLayout	TEXT
+column	7	ProjectExplorerLayout	TEXT
+column	8	AvalonDockLayoutPrevious	TEXT
+column	9	ProjectExplorerLayoutPrevious	TEXT
+row	1	t:nsffa-brays-bayou-texas	t#314:cdcafc2532eca18b	t:4/3/2026 3:03:28 PM	t:9/17/2026 6:41:23 PM	p:{dir}\\nsffa-brays-bayou-texas.bestfit	t:2.0.1	t#1620:4fa7f752345de331/48917eb9c331574d:r	t#1796:f11bc44d835ba4f5/5ffa669abf60eef7:r	t#3196:37d5e408f3226f0e/7e4bc8cb1f3c924f:r	t#1965:9d14ac5f2730f40a/5a7f98b7b0d74554:r
+table	Univariate Distribution Analysis	sha=0631e415bf433ac1	sql=63dff5382d17bd53	rows=8
+column	0	Name	TEXT
+column	1	Type	TEXT
+row	1	t:NSFFA - Constant	t:RMC.BestFit.UI.UnivariateAnalysis
+row	2	t:NSFFA - Linear	t:RMC.BestFit.UI.UnivariateAnalysis
+row	3	t:NSFFA - Logistic	t:RMC.BestFit.UI.UnivariateAnalysis
+row	4	t:NSFFA - Step	t:RMC.BestFit.UI.UnivariateAnalysis
+row	5	t:NSFFA - Linear - Logistic	t:RMC.BestFit.UI.UnivariateAnalysis
+row	6	t:NSFFA - Logistic - Logistic	t:RMC.BestFit.UI.UnivariateAnalysis
+row	7	t:NSFFA - Step - Logistic	t:RMC.BestFit.UI.UnivariateAnalysis
+row	8	t:Bayesian Model Average	t:RMC.BestFit.UI.CompositeAnalysis
+state	00 Time Series Data	7c890208af994c26	66eae0f9e86047a2
+state	01 Input Data	f8c32979e3e7940f	7138759d2d2c7b9f
+state	01 Input Data/00 InputData 'USGS 08075000 Brays Bayou'	3bf8615c348f0fb1	9be21a8dcbf5d712
+state	01 Input Data/01 InputData 'USGS 08075000 Brays Bayou - Metric'	db9bdf8767625760	33716a240a479a40
+state	01 Input Data/02 InputData 'USGS 08075000 Brays Bayou_copy'	496102b25b67e863	f90950badb71cb45
+state	01 Input Data/03 InputData 'USGS 08075000 Brays Bayou_copy_copy'	a5bf39e07446401c	38ed9f1dac2f9c2c
+state	02 Distribution Fitting Analysis	22c9cdb7873ae49a	4a4ead4bf90c0837
+state	03 Univariate Distribution Analysis	b477e218684dc188	0e3a3c46961dd428
+state	03 Univariate Distribution Analysis/00 UnivariateAnalysis 'NSFFA - Constant'	d1c761649c9d2d10	1bb92f44be23230e
+state	03 Univariate Distribution Analysis/01 UnivariateAnalysis 'NSFFA - Linear'	f8a729473dec1718	f4a7dd2e97107dd1
+state	03 Univariate Distribution Analysis/02 UnivariateAnalysis 'NSFFA - Logistic'	6e74206ef6bc0284	2b4feb127404d020
+state	03 Univariate Distribution Analysis/03 UnivariateAnalysis 'NSFFA - Step'	8c4b719f8e238bf5	56bbc0ed520bc852
+state	03 Univariate Distribution Analysis/04 UnivariateAnalysis 'NSFFA - Linear - Logistic'	f4ca27b28bc59fc1	285dc546e0ab0336
+state	03 Univariate Distribution Analysis/05 UnivariateAnalysis 'NSFFA - Logistic - Logistic'	0444eac26998171c	944e905225053f84
+state	03 Univariate Distribution Analysis/06 UnivariateAnalysis 'NSFFA - Step - Logistic'	ec5ba5717febc17b	2745befafda858b2
+state	03 Univariate Distribution Analysis/07 CompositeAnalysis 'Bayesian Model Average'	c98d2294cc830300	a4d644070a3a3a4e
+state	04 Bivariate Distribution Analysis	2df996a968e4df10	85c24dd973e8dafa
+state	05 Rating Curve Analysis	5b9e46ee16c64e96	771f60dc9817d061
+state	06 Time Series Analysis	2f4a1830d606047e	0e6e4ee694390acc
+state	Project	35e5f55bd6541cbe	35e5f55bd6541cbe
+end

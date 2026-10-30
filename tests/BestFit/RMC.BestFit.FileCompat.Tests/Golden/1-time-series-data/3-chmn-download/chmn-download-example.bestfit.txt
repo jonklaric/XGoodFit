@@ -1,0 +1,67 @@
+bestfit-file-description	1
+file	1-time-series-data/3-chmn-download/chmn-download-example.bestfit	sha=7fadb619912b5369	tables=2	cells=166
+pragma	encoding	UTF-8
+pragma	journal_mode	wal
+pragma	user_version	0
+pragma	application_id	0
+pragma	auto_vacuum	0
+table	Project	sha=c7b40e81d7b90b2c	sql=bf204117c9f875b1	rows=1
+column	0	Name	TEXT
+column	1	Description	TEXT
+column	2	CreationDate	TEXT
+column	3	LastModified	TEXT
+column	4	FullFileName	TEXT
+column	5	SoftwareVersion	TEXT
+column	6	AvalonDockLayout	TEXT
+column	7	ProjectExplorerLayout	TEXT
+column	8	AvalonDockLayoutPrevious	TEXT
+column	9	ProjectExplorerLayoutPrevious	TEXT
+row	1	t:chmn-download-example	t#240:8dc657e645d026f4	t:2/19/2026 11:15:37 PM	t:7/15/2026 7:20:51 PM	p:{dir}\\chmn-download-example.bestfit	t:2.0.1	t#2144:f86c8af179c77970/79e4bd21732fa0e5:r	t#1322:0f858d8a3631f8d4/32b3bf2f32facebe:r	t#3214:8603c521bd18f1d8/581546125ab3c082:r	t#1417:ef3178a5a672a00d/670d64741d33e6cc:r
+table	Time Series Data	sha=4cb8870796fb2759	sql=eeb0b02b53954765	rows=6
+column	0	Name	TEXT
+column	1	Description	TEXT
+column	2	CreationDate	TEXT
+column	3	LastModified	TEXT
+column	4	TimeSeries	TEXT
+column	5	UnitLabel	TEXT
+column	6	EntryMethod	TEXT
+column	7	SeriesType	TEXT
+column	8	HECDSSFullFilename	TEXT
+column	9	HECDSSDataPathname	TEXT
+column	10	GHCNSiteNumber	TEXT
+column	11	USGSSiteNumber	TEXT
+column	12	CHMNSiteNumber	TEXT
+column	13	ABOMSiteNumber	TEXT
+column	14	DepthUnit	TEXT
+column	15	DischargeUnit	TEXT
+column	16	HeightUnit	TEXT
+column	17	TimeInterval	TEXT
+column	18	StartDateTime	TEXT
+column	19	USGSRawText	TEXT
+column	20	TimeSeriesPlotSettings	TEXT
+column	21	SeasonalityPlotSettings	TEXT
+column	22	ACFPlotSettings	TEXT
+column	23	PACFPlotSettings	TEXT
+column	24	TimeSeriesCompressed	BLOB
+column	25	USGSRawTextCompressed	BLOB
+row	1	t:CHMN - 08MG005 - Daily Discharge	t#184:fd1e033f829501f2	t:2/20/2026 4:45:16 PM	t:7/15/2026 7:20:51 PM	t:	t:Flow (cms)	t:CHMN	t:DailyDischarge	t:	t:	t:00000000000	t:00000000	t:08MG005	t:000000	t:Inches	t:CubicFeetPerSecond	t:Feet	t:OneDay	t:1914-01-01T00:00:00.0000000	t:	t#5521:cb41aed91268ec1b/1255bca90d8ab185:r	t#4668:0a730c735c23fce0/ae261eabd26c5ea0:r	t#4624:908ad392fa61f430/4aad9161a0a8616b:r	t#4640:09195fc8fa2fc53d/c43ddd9215c383ef:r	b#206832:93217774f68dea58>z#3090722:4f741c3ecc96f26c/70ee77a1f3a8acce:r	b#0:e3b0c44298fc1c14
+row	2	t:CHMN - 08MG005 - Daily Stage	t#163:d8bc7466710e91a8	t:2/20/2026 4:46:11 PM	t:7/15/2026 7:20:51 PM	t:	t:Stage (m)	t:CHMN	t:DailyStage	t:	t:	t:00000000000	t:00000000	t:08MG005	t:000000	t:Inches	t:CubicFeetPerSecond	t:Feet	t:OneDay	t:2011-03-10T00:00:00.0000000	t:	t#5520:44d7fe34f6406e0e/acb76e97eb297080:r	t#4667:ede0bd63846e6a9a/c0b5c5d9cd9739aa:r	t#4624:908ad392fa61f430/4aad9161a0a8616b:r	t#4640:09195fc8fa2fc53d/c43ddd9215c383ef:r	b#31829:8e83fb5b2cc02bf3>z#409599:bb8162091c11e636/bb63112135a4247f:r	b#0:e3b0c44298fc1c14
+row	3	t:CHMN - 08MG005 - Instantaneous Discharge	t#207:596f09f205dcac59	t:2/20/2026 4:46:59 PM	t:7/15/2026 7:20:51 PM	t:	t:Flow (cms)	t:CHMN	t:InstantaneousDischarge	t:	t:	t:00000000000	t:00000000	t:08MG005	t:000000	t:Inches	t:CubicFeetPerSecond	t:Feet	t:FiveMinute	t:2025-01-15T19:25:00.0000000	t:	t#5521:cb41aed91268ec1b/1255bca90d8ab185:r	t#10392:388518f595ad97ce/99845d59f482d0b8:r	t#6945:47f7a8bca5599465/633675c0c74c590a:r	t#6991:52124c9a14a4fa2e/6795ae4377200959:r	b#643964:e26e0232abea5f96>z#12003007:a50592c8bd91702f/9c5be521fe20e3e1:r	b#0:e3b0c44298fc1c14
+row	4	t:CHMN - 08MG005 - Instantaneous Stage	t#209:eb6401c9c908cbcc	t:2/20/2026 4:47:38 PM	t:7/15/2026 7:20:51 PM	t:	t:Stage (m)	t:CHMN	t:InstantaneousStage	t:	t:	t:00000000000	t:00000000	t:08MG005	t:000000	t:Inches	t:CubicFeetPerSecond	t:Feet	t:FiveMinute	t:2025-01-15T19:25:00.0000000	t:	t#5520:44d7fe34f6406e0e/acb76e97eb297080:r	t#4667:ede0bd63846e6a9a/c0b5c5d9cd9739aa:r	t#6302:77465b407b7f9014/acdebabcdd6cf791:r	t#6318:af20e30e79b21b71/4ce03b159683c89c:r	b#769563:614965c00e099a5c>z#12750905:b979ff2b8e8120b9/a83290656aad76ce:r	b#0:e3b0c44298fc1c14
+row	5	t:CHMN - 08MG005 - Peak Discharge	t#174:f20b3c9bae8de0a4	t:2/20/2026 4:50:41 PM	t:7/15/2026 7:20:51 PM	t:	t:Flow (cms)	t:CHMN	t:PeakDischarge	t:	t:	t:00000000000	t:00000000	t:08MG005	t:000000	t:Inches	t:CubicFeetPerSecond	t:Feet	t:Irregular	t:1949-08-17T15:15:00.0000000	t:	t#5521:cb41aed91268ec1b/1255bca90d8ab185:r	t#4668:0a730c735c23fce0/ae261eabd26c5ea0:r	t#6296:91f34d2f952444c0/ac0cf5f64a5739f4:r	t#6328:dbc03ffdc015ede9/21ecbdcc091fa44e:r	b#807:c37435bded2a7889>z#4535:3eef993c114a3d67/81f857905d8d90c0:r	b#0:e3b0c44298fc1c14
+row	6	t:CHMN - 08MG005 - Peak Stage	t#162:eadd1ddb7985495b	t:2/20/2026 4:51:11 PM	t:7/15/2026 7:20:51 PM	t:	t:Stage (m)	t:CHMN	t:PeakStage	t:	t:	t:00000000000	t:00000000	t:08MG005	t:000000	t:Inches	t:CubicFeetPerSecond	t:Feet	t:Irregular	t:2012-07-17T05:20:00.0000000	t:	t#5520:44d7fe34f6406e0e/acb76e97eb297080:r	t#4667:ede0bd63846e6a9a/c0b5c5d9cd9739aa:r	t#6298:a693fafdc7d415b9/73014ea3210fea2e:r	t#6330:e228f06979f63b7c/9723aebb41a45b9f:r	b#287:13f8f6c8163b92a7>z#1117:8ac8d0f84b5f3a66/60008dfcd10b30ae:r	b#0:e3b0c44298fc1c14
+state	00 Time Series Data	3aaecc724e8d81a5	66eae0f9e86047a2
+state	00 Time Series Data/00 TimeSeriesElement 'CHMN - 08MG005 - Daily Discharge'	9882e22cb456ce39	c01d982295a632bd
+state	00 Time Series Data/01 TimeSeriesElement 'CHMN - 08MG005 - Daily Stage'	0245617bdf66d64b	0c4478a7c905c3e5
+state	00 Time Series Data/02 TimeSeriesElement 'CHMN - 08MG005 - Instantaneous Discharge'	5ec4c61d1bc1ca82	444d30e90e7daccf
+state	00 Time Series Data/03 TimeSeriesElement 'CHMN - 08MG005 - Instantaneous Stage'	caabf400f5ad62ab	4f226f92f0cca5c9
+state	00 Time Series Data/04 TimeSeriesElement 'CHMN - 08MG005 - Peak Discharge'	577aa1de27bedca9	3cfdb19a3f701e47
+state	00 Time Series Data/05 TimeSeriesElement 'CHMN - 08MG005 - Peak Stage'	72b6750cdbeb2377	af9ca0bb1342c482
+state	01 Input Data	4b47e20068fbbb01	7138759d2d2c7b9f
+state	02 Distribution Fitting Analysis	22c9cdb7873ae49a	4a4ead4bf90c0837
+state	03 Univariate Distribution Analysis	468896e1b6f7e6c8	0e3a3c46961dd428
+state	04 Bivariate Distribution Analysis	2df996a968e4df10	85c24dd973e8dafa
+state	05 Rating Curve Analysis	5b9e46ee16c64e96	771f60dc9817d061
+state	06 Time Series Analysis	2f4a1830d606047e	0e6e4ee694390acc
+state	Project	22d78486e5747402	22d78486e5747402
+end

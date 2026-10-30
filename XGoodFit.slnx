@@ -23,6 +23,7 @@
     <Project Path="tests/Hec.Dss.Tests/Hec.Dss.Tests.csproj" />
   </Folder>
   <Folder Name="/tests/BestFit/">
+    <Project Path="tests/BestFit/RMC.BestFit.FileCompat.Tests/RMC.BestFit.FileCompat.Tests.csproj" />
     <Project Path="tests/BestFit/RMC.BestFit.UI.Tests/RMC.BestFit.UI.Tests.csproj" />
   </Folder>
   <Folder Name="/tests/Framework/">

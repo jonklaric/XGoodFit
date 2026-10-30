@@ -1,0 +1,174 @@
+bestfit-file-description	1
+file	4-univariate-distribution-analysis/2-bulletin-17C-analysis/2-information-expansion/Case Study/blakely-mountain-dam-b17c-metric.bestfit	sha=74ce93708c545b0a	tables=6	cells=343
+pragma	encoding	UTF-8
+pragma	journal_mode	wal
+pragma	user_version	0
+pragma	application_id	0
+pragma	auto_vacuum	0
+table	<Bulletin 17C>	sha=439c356509344ca3	sql=2973ee9da03a2084	rows=12
+column	0	Name	TEXT
+column	1	Description	TEXT
+column	2	CreationDate	TEXT
+column	3	LastModified	TEXT
+column	4	InputData	TEXT
+column	5	Bulletin17CDistribution	TEXT
+column	6	BayesianAnalysis	TEXT
+column	7	MCMCResults	BLOB
+column	8	AnalysisResults	TEXT
+column	9	ProbabilityOrdinates	TEXT
+column	10	FrequencyPlotSettings	TEXT
+column	11	KernelDensityPlotSettings	TEXT
+column	12	HistogramPlotSettings	TEXT
+column	13	BivariatePlotSettings	TEXT
+column	14	InfluenceDiagnosticsPlotSettings	TEXT
+column	15	AnalysisXml	TEXT
+column	16	MCMCReport	TEXT
+column	17	GMMReport	TEXT
+row	1	t:Systematic	t#264:546e62f9d23a641c	t:4/7/2026 7:20:09 PM	t:10/6/2026 9:03:06 PM	t:Systematic - 1Day	t#1512:35090234973941e3/a4dc4b6821e36937:r	t#602:0c27532671ee7eee	b#335912:f4c3cf59ebabc9c8>z#1073069:769a60a78a41d397	t#2237:a898ec8a472e27c3/f00b9de53e677c5f:r	t#439:5840f09d7e1a6c45	t#8362:e8491caf39105ea2/620419937d8b5445:r	t#5675:f39ef603bcd20feb/c2871cecfd2caa50:r	t#5286:3da510af084de73a/d23064bdb646d17c:r	t#7732:003b200755d6b3ba/09d48d65dc665222:r	t#5319:2ca31fc73e41c75e/3067f3008c634549:r	t#2367:54ee61f65b764c5d/2b6890c014d754ad:r	t:	t#3730:16a212170d735e1e/d2032cbf17cde2f9:r
+row	2	t:Systematic + Historical	t#277:f7806b7f25d7cd56	t:4/7/2026 7:20:26 PM	t:10/6/2026 9:03:06 PM	t:Systematic + Historical - 1Day	t#1506:49be3218c591c337/a527acfc387ee49b:r	t#602:0c27532671ee7eee	b#335901:228413610f93fe86>z#1073321:017d416ee16c746f	t#2228:d90cdc426dc49a1c/9ffc78d7d32a51a6:r	t#439:5840f09d7e1a6c45	t#9170:a8decacc396f646f/0ff3219e17367b7d:r	t#5675:f39ef603bcd20feb/c2871cecfd2caa50:r	t#5286:3da510af084de73a/d23064bdb646d17c:r	t#7733:0f3375618a986f32/e6c6666b8dfdbe09:r	t#5319:2ca31fc73e41c75e/3067f3008c634549:r	t#2368:f939a85a2c78e207/4b187239dfd151e4:r	t:	t#3730:da09d5c98260b953/9993da3987c5079b:r
+row	3	t:Systematic + Historical + Paleo	t#285:8b9eac386d318a26	t:4/7/2026 7:20:45 PM	t:10/6/2026 9:03:06 PM	t:Systematic + Historical + Paleo - 1Day	t#1510:3eda23d064355674/b9e0a71a4f322144:r	t#602:0c27532671ee7eee	b#335640:dd6f4dcf51610c54>z#1074072:4a76091d51b4669e	t#2228:dd90420f9292670d/ba4abf2ca708d9d2:r	t#439:5840f09d7e1a6c45	t#10566:de37bc4b425bb300/89ed7b2ea1ae5b57:r	t#5675:f39ef603bcd20feb/c2871cecfd2caa50:r	t#5286:3da510af084de73a/d23064bdb646d17c:r	t#7733:dd674cc9e30976b0/1d0de2524ce673f3:r	t#5319:2ca31fc73e41c75e/3067f3008c634549:r	t#2373:b02981bfa8731c36/67c7d05131789716:r	t:	t#3730:5b828f0cddcfc6ca/8ae97d98faeecc56:r
+row	4	t:Systematic + Reg Skew	t#341:756f8c9f5a93f5c1	t:4/7/2026 7:21:37 PM	t:10/6/2026 9:03:06 PM	t:Systematic - 1Day	t#1527:e5b8a798bb25136e/1592f7b743e8e923:r	t#602:0c27532671ee7eee	b#335931:11d5ae1a0bc829b3>z#1074161:46caf8a3b5fd2512	t#2224:116762b6c1118a10/c7f58be7e108b905:r	t#439:5840f09d7e1a6c45	t#8362:e8491caf39105ea2/620419937d8b5445:r	t#5675:f39ef603bcd20feb/c2871cecfd2caa50:r	t#5286:3da510af084de73a/d23064bdb646d17c:r	t#7733:c4cf73d13a2fd7d8/d4dc588f520aa03f:r	t#6007:75d4651638b8f9ac/c3898afdf85908a4:r	t#2364:991681bc6a564acb/b43f54700290399d:r	t:	t#3899:a86e91dc3c453838/63fe88e60a755697:r
+row	5	t:Systematic + Historical + Reg Skew	t#354:9947bee1d7e5cf9c	t:4/7/2026 7:22:13 PM	t:10/6/2026 9:03:06 PM	t:Systematic + Historical - 1Day	t#1527:fe8a51404189bee7/5dc2616b817652a8:r	t#602:0c27532671ee7eee	b#335792:2a65f71542fd8ac5>z#1074281:8b89787ae4ee1911	t#2226:c017a4faaae983df/d4d553356e27bdf9:r	t#439:5840f09d7e1a6c45	t#9170:a8decacc396f646f/0ff3219e17367b7d:r	t#5675:f39ef603bcd20feb/c2871cecfd2caa50:r	t#5286:3da510af084de73a/d23064bdb646d17c:r	t#7732:e818c15f3cb09dd6/54da0390c8aefa72:r	t#6007:75d4651638b8f9ac/c3898afdf85908a4:r	t#2369:c018c1e5954b7522/4784ef6aad9609b1:r	t:	t#3899:0334b9a1169d1ee1/12f03738263e815f:r
+row	6	t:Systematic + Historical + Paleo + Reg Skew	t#362:9e6d211be500997a	t:4/7/2026 7:23:01 PM	t:10/6/2026 9:03:06 PM	t:Systematic + Historical + Paleo - 1Day	t#1547:d9f48216081478f0/09988e2b94a37396:r	t#602:0c27532671ee7eee	b#335620:dd103c164fc9e7d5>z#1074673:b598cb2e3e6649ad	t#2231:dcd25527c1a495c7/6a0da3a8b5bef1c9:r	t#439:5840f09d7e1a6c45	t#9201:4a9b425404ec55ec/5146ab500fa47e58:r	t#5675:f39ef603bcd20feb/c2871cecfd2caa50:r	t#5286:3da510af084de73a/d23064bdb646d17c:r	t#7732:9435462272b73122/0b64b9d2a5de5abb:r	t#6007:75d4651638b8f9ac/c3898afdf85908a4:r	t#2376:1d21467344e833ad/2c1985fcd9e66de7:r	t:	t#3900:3570e2c4548e6806/eed2c921d55d5259:r
+row	8	t:Systematic + Historical + Paleo + Reg Skew + QPen	t#429:aa304601e6b7167d	t:4/8/2026 10:32:03 AM	t:10/6/2026 9:12:11 PM	t:Systematic + Historical + Paleo - 1Day	t#1544:fa86924aef5257ea/eef526b685cf8fce:r	t#602:0c27532671ee7eee	b#335822:a21767f122058fd4>z#1075450:e97f90f75ad7283b	t#2229:748e9d1ed7c7d4f5/b9c780c76fead3e3:r	t#439:5840f09d7e1a6c45	t#12000:1123bc21de9b73aa/70d56a7c23626bac:r	t#6544:723a92dfa235be84/e313b1d6ee71155c:r	t#5286:3da510af084de73a/d23064bdb646d17c:r	t#7733:81e9fc8312ba467a/2f9a3eeba47e3bcc:r	t#6010:015c84688501464b/5da07b84bd641f03:r	t#2371:dc0c8c87106a80c6/b92b5bb22d9846ab:r	t:	t#4042:84d9f30a03fd19dc/8dde61b0e03e5906:r
+row	9	t:Systematic + QPen	t#358:3f4daec002c9fd63	t:5/26/2026 6:09:13 PM	t:10/6/2026 9:03:06 PM	t:Systematic - 1Day	t#1529:b4ff8bdce0ba26a0/62ddb0bb54f2f140:r	t#602:0c27532671ee7eee	b#336242:c30bea7655074000>z#1074363:050a91a490ac3c4c	t#2227:3536efe42f4a1c32/1075d34b28cf8fd3:r	t#439:5840f09d7e1a6c45	t#9172:143841be98a8519b/d16c9d37e53f8f7c:r	t#5675:f39ef603bcd20feb/c2871cecfd2caa50:r	t#5286:3da510af084de73a/d23064bdb646d17c:r	t#7733:d4a32258010b9308/b05e9184929084e5:r	t#6007:75d4651638b8f9ac/c3898afdf85908a4:r	t#2363:43dc32e678d2528d/3c56fc89531c3e48:r	t:	t#3846:36a433280b3a75f2/65344f86a2618aa6:r
+row	10	t:Systematic + Historical + QPen	t#371:7e849d2cab958673	t:5/26/2026 6:09:53 PM	t:10/6/2026 9:03:06 PM	t:Systematic + Historical - 1Day	t#1529:d2799200e13a5d46/2e19297da0beb26f:r	t#602:0c27532671ee7eee	b#336029:47ef2f507912e08a>z#1074378:27d230698d38e51c	t#2226:16e26d9ccbe12bb4/20566589e3a420ac:r	t#439:5840f09d7e1a6c45	t#9980:6c3b62319b4db944/c2464b0be4cc5bae:r	t#5675:f39ef603bcd20feb/c2871cecfd2caa50:r	t#5286:3da510af084de73a/d23064bdb646d17c:r	t#7732:f778ac37b731f5e8/14b0c3fa6778fbe9:r	t#6007:75d4651638b8f9ac/c3898afdf85908a4:r	t#2368:b855eab1541bd7a7/330f05061e18b6ec:r	t:	t#3849:15010255b44e1a79/02d562d0e3e34c7c:r
+row	11	t:Systematic + Historical + Paleo + QPen	t#379:05bb3f371a39edf3	t:5/26/2026 6:10:51 PM	t:10/6/2026 9:03:06 PM	t:Systematic + Historical + Paleo - 1Day	t#1529:db675a684f0aac74/0eb785d86aabfec3:r	t#602:0c27532671ee7eee	b#335729:f0c0689d1e141944>z#1075189:79f11482d7d26d79	t#2232:b8367cf53cddc282/804d30d43ef32cad:r	t#439:5840f09d7e1a6c45	t#9980:6c3b62319b4db944/c2464b0be4cc5bae:r	t#5675:f39ef603bcd20feb/c2871cecfd2caa50:r	t#5286:3da510af084de73a/d23064bdb646d17c:r	t#7733:b15ae8539af46071/698c417a7dab3e57:r	t#6007:75d4651638b8f9ac/c3898afdf85908a4:r	t#2375:addf132fd14e99bb/341fb070259ce630:r	t:	t#3849:6769cf0eed2bdfb2/c2575f4419670f8e:r
+row	12	t:Systematic + Reg Skew + QPen	t#408:0d9f5baab3cdee22	t:5/26/2026 6:11:44 PM	t:10/6/2026 9:03:06 PM	t:Systematic - 1Day	t#1544:bfab1edb3b94d702/4741cc5ae0ad269a:r	t#602:0c27532671ee7eee	b#336218:044933f0f30e628c>z#1074968:2593435c158f1f24	t#2226:5e433fba81e6c550/5fe2494344c92894:r	t#439:5840f09d7e1a6c45	t#9172:143841be98a8519b/d16c9d37e53f8f7c:r	t#5675:f39ef603bcd20feb/c2871cecfd2caa50:r	t#5286:3da510af084de73a/d23064bdb646d17c:r	t#7733:cb105f6c2549646a/d7b14aeec42f24a0:r	t#6007:75d4651638b8f9ac/c3898afdf85908a4:r	t#2368:41cdbd66e7e8aea7/09116ae0b3b75c49:r	t:	t#4041:10977b1b341fbb5a/8a5774a2d6501114:r
+row	13	t:Systematic + Historical + Reg Skew + QPen	t#421:14de26a886481da6	t:5/26/2026 6:12:11 PM	t:10/6/2026 9:03:06 PM	t:Systematic + Historical - 1Day	t#1546:b1dd7a6ffc5242bc/5b8ad6ec17e16b02:r	t#602:0c27532671ee7eee	b#336082:101cbf6461fb4435>z#1075088:6466329d4a85d9a2	t#2232:076579411479bef3/2765f9a574bfcf61:r	t#439:5840f09d7e1a6c45	t#9980:6c3b62319b4db944/c2464b0be4cc5bae:r	t#5675:f39ef603bcd20feb/c2871cecfd2caa50:r	t#5286:3da510af084de73a/d23064bdb646d17c:r	t#7732:4124b1913a679e6e/892850595140b884:r	t#6007:75d4651638b8f9ac/c3898afdf85908a4:r	t#2370:b8cc0af5f0ed6d3f/b39c8ee2ecdf09f3:r	t:	t#4041:78e18384d3868d76/c734bd035b69bd5b:r
+table	<Univariate Distribution>	sha=2fd6a4acb8c0ccbf	sql=192652ba4c99d235	rows=0
+column	0	Name	TEXT
+column	1	Description	TEXT
+column	2	CreationDate	TEXT
+column	3	LastModified	TEXT
+column	4	InputData	TEXT
+column	5	UnivariateDistribution	TEXT
+column	6	BayesianAnalysis	TEXT
+column	7	MCMCResults	BLOB
+column	8	AnalysisResults	TEXT
+column	9	ChronologyAnalysisResults	TEXT
+column	10	ProbabilityOrdinates	TEXT
+column	11	FrequencyPlotSettings	TEXT
+column	12	ChronologyPlotSettings	TEXT
+column	13	InfluenceDiagnosticsPlotSettings	TEXT
+column	14	KernelDensityPlotSettings	TEXT
+column	15	HistogramPlotSettings	TEXT
+column	16	BivariatePlotSettings	TEXT
+column	17	MeanLikelihoodPlotSettings	TEXT
+column	18	AutocorrelationPlotSettings	TEXT
+column	19	MarkovChainTracesPlotSettings	TEXT
+column	20	AnalysisXml	TEXT
+column	21	MCMCReport	TEXT
+table	Input Data	sha=a83a635e0d589bfc	sql=d536de5c86337186	rows=3
+column	0	Name	TEXT
+column	1	Description	TEXT
+column	2	CreationDate	TEXT
+column	3	LastModified	TEXT
+column	4	ExactDataMethod	TEXT
+column	5	DataFrame	TEXT
+column	6	UnitLabel	TEXT
+column	7	IndexLabel	TEXT
+column	8	USGSSiteNumber	TEXT
+column	9	UseMultipleGrubbsBeckTest	BOOLEAN
+column	10	TimeSeriesElement	TEXT
+column	11	BlockFunction	TEXT
+column	12	TimeBlock	TEXT
+column	13	StartMonth	INT4
+column	14	EndMonth	INT4
+column	15	SmoothingFunction	TEXT
+column	16	Period	INT4
+column	17	Threshold	DOUBLE
+column	18	MinStepsBetweenPeaks	INT4
+column	19	IsProcessed	BOOLEAN
+column	20	ChronologyPlotSettings	TEXT
+column	21	FrequencyPlotSettings	TEXT
+column	22	SeasonalityPlotSettings	TEXT
+column	23	DensityPlotSettings	TEXT
+column	24	HistogramPlotSettings	TEXT
+column	25	QQPlotSettings	TEXT
+column	26	ACFPlotSettings	TEXT
+column	27	PACFPlotSettings	TEXT
+column	28	MRLPlotSettings	TEXT
+column	29	ModifiedScalePlotSettings	TEXT
+column	30	ShapePlotSettings	TEXT
+row	1	t:Systematic - 1Day	t#299:31fb1c16866928c6	t:4/7/2026 7:16:36 PM	t:5/12/2026 8:16:25 PM	t:Manual	t#14515:4fcb47723bcef62d/c129ebe1d6004be4:r	t:Flow (m 3 /s)	t:Water Year	t:00000000	i:1	t:	t:Maximum	t:CalendarYear	i:10	i:9	t:None	i:1	r:0	i:1	i:0	t#6389:32f4597a54e8932a/b8391b415c6bda12:r	t#5460:239f702ed4b802ff/ffee959e59e07d5c:r	t#4651:ef8fad523f9e2bf1/85bddb834d4fe391:r	t#4629:5797393da7623301/de823ff7f4dec1b1:r	t#4631:17db9061536791e6/efb619435c77021f:r	t#4654:5051fb27987c80fe/b55ca01541870420:r	t#4626:d530c9f5f360a3e6/9e8a65fa663f4252:r	t#4642:48c2a235117c79b8/43384cf4f968499a:r	t#4604:4ab1f9eb7290e741/29ed7c87ea1c32b7:r	t#4617:bd1cbff8840b0fa4/5d57c1cc278b81f5:r	t#4599:33ad547799c64842/08cc3d7ab5fc47fa:r
+row	2	t:Systematic + Historical - 1Day	t#299:3fce8b9ac9514ebb	t:4/7/2026 7:17:16 PM	t:5/29/2026 6:26:44 PM	t:Manual	t#14834:eb9d71b698d5de6d/97a0a3ffb08da6b1:r	t:Flow (m 3 /s)	t:Water Year	t:00000000	i:1	t:	t:Maximum	t:CalendarYear	i:10	i:9	t:None	i:1	r:0	i:1	i:0	t#9962:8de5032d607fa4fa/4fb9d2fea8cbb7c1:r	t#6268:3da000eb6505765d/1b2dc3207e7f6b55:r	t#4651:ef8fad523f9e2bf1/85bddb834d4fe391:r	t#4629:5797393da7623301/de823ff7f4dec1b1:r	t#4631:17db9061536791e6/efb619435c77021f:r	t#4654:5051fb27987c80fe/b55ca01541870420:r	t#4626:d530c9f5f360a3e6/9e8a65fa663f4252:r	t#4642:48c2a235117c79b8/43384cf4f968499a:r	t#4604:4ab1f9eb7290e741/29ed7c87ea1c32b7:r	t#4617:bd1cbff8840b0fa4/5d57c1cc278b81f5:r	t#4599:33ad547799c64842/08cc3d7ab5fc47fa:r
+row	3	t:Systematic + Historical + Paleo - 1Day	t#299:f978adff523b76ba	t:4/7/2026 7:17:45 PM	t:5/29/2026 6:30:37 PM	t:Manual	t#15276:21e5d5541abf398d/692e7e95331eb868:r	t:Flow (m 3 /s)	t:Water Year	t:00000000	i:1	t:	t:Maximum	t:CalendarYear	i:10	i:9	t:None	i:1	r:0	i:1	i:0	t#12486:82e6a715cd58e8c2/0ef427e702abb681:r	t#6268:3da000eb6505765d/1b2dc3207e7f6b55:r	t#4651:ef8fad523f9e2bf1/85bddb834d4fe391:r	t#4629:5797393da7623301/de823ff7f4dec1b1:r	t#4631:17db9061536791e6/efb619435c77021f:r	t#4654:5051fb27987c80fe/b55ca01541870420:r	t#4626:d530c9f5f360a3e6/9e8a65fa663f4252:r	t#4642:48c2a235117c79b8/43384cf4f968499a:r	t#4604:4ab1f9eb7290e741/29ed7c87ea1c32b7:r	t#4617:bd1cbff8840b0fa4/5d57c1cc278b81f5:r	t#4599:33ad547799c64842/08cc3d7ab5fc47fa:r
+table	Project	sha=09fc839fb3052119	sql=bf204117c9f875b1	rows=1
+column	0	Name	TEXT
+column	1	Description	TEXT
+column	2	CreationDate	TEXT
+column	3	LastModified	TEXT
+column	4	FullFileName	TEXT
+column	5	SoftwareVersion	TEXT
+column	6	AvalonDockLayout	TEXT
+column	7	ProjectExplorerLayout	TEXT
+column	8	AvalonDockLayoutPrevious	TEXT
+column	9	ProjectExplorerLayoutPrevious	TEXT
+row	1	t:blakely-mountain-dam-b17c-metric	t#354:f8520bf79e6fa30f	t:4/7/2026 7:15:58 PM	t:10/6/2026 9:12:11 PM	p:{dir}\\blakely-mountain-dam-b17c-metric.bestfit	t:2.0.1	t#2067:14a1784081fa4a74/d095911ce48d3cf9:r	t#2164:89e22e3db8c2749a/ba3f2606d0db6629:r	t#2067:9d51b66425221860/cb25476e91347b57:r	t#2161:58f0a333ed63cffd/b103877a505f0e00:r
+table	Time Series Data	sha=bcbd00d0693490dc	sql=70ca8b7ae0eb0d0a	rows=0
+column	0	Name	TEXT
+column	1	Description	TEXT
+column	2	CreationDate	TEXT
+column	3	LastModified	TEXT
+column	4	TimeSeries	TEXT
+column	5	UnitLabel	TEXT
+column	6	EntryMethod	TEXT
+column	7	SeriesType	TEXT
+column	8	HECDSSFullFilename	TEXT
+column	9	HECDSSDataPathname	TEXT
+column	10	GHCNSiteNumber	TEXT
+column	11	USGSSiteNumber	TEXT
+column	12	CHMNSiteNumber	TEXT
+column	13	ABOMSiteNumber	TEXT
+column	14	DepthUnit	TEXT
+column	15	DischargeUnit	TEXT
+column	16	HeightUnit	TEXT
+column	17	TimeInterval	TEXT
+column	18	StartDateTime	TEXT
+column	19	USGSRawText	TEXT
+column	20	TimeSeriesPlotSettings	TEXT
+column	21	SeasonalityPlotSettings	TEXT
+column	22	ACFPlotSettings	TEXT
+column	23	PACFPlotSettings	TEXT
+column	24	TimeSeriesCompressed	BLOB
+column	25	USGSRawTextCompressed	BLOB
+table	Univariate Distribution Analysis	sha=a5e7597da22bfe60	sql=63dff5382d17bd53	rows=12
+column	0	Name	TEXT
+column	1	Type	TEXT
+row	1	t:Systematic	t:RMC.BestFit.UI.B17CAnalysis
+row	2	t:Systematic + Historical	t:RMC.BestFit.UI.B17CAnalysis
+row	3	t:Systematic + Historical + Paleo	t:RMC.BestFit.UI.B17CAnalysis
+row	4	t:Systematic + Reg Skew	t:RMC.BestFit.UI.B17CAnalysis
+row	5	t:Systematic + Historical + Reg Skew	t:RMC.BestFit.UI.B17CAnalysis
+row	6	t:Systematic + Historical + Paleo + Reg Skew	t:RMC.BestFit.UI.B17CAnalysis
+row	7	t:Systematic + Historical + Paleo + Reg Skew + QPen	t:RMC.BestFit.UI.B17CAnalysis
+row	8	t:Systematic + QPen	t:RMC.BestFit.UI.B17CAnalysis
+row	9	t:Systematic + Historical + QPen	t:RMC.BestFit.UI.B17CAnalysis
+row	10	t:Systematic + Historical + Paleo + QPen	t:RMC.BestFit.UI.B17CAnalysis
+row	11	t:Systematic + Reg Skew + QPen	t:RMC.BestFit.UI.B17CAnalysis
+row	12	t:Systematic + Historical + Reg Skew + QPen	t:RMC.BestFit.UI.B17CAnalysis
+state	00 Time Series Data	7c890208af994c26	66eae0f9e86047a2
+state	01 Input Data	80ad9cc59ef724d7	7138759d2d2c7b9f
+state	01 Input Data/00 InputData 'Systematic - 1Day'	10e9d8d5a3b57dcb	6a28ea1c8d098fc6
+state	01 Input Data/01 InputData 'Systematic + Historical - 1Day'	199732b2d4f21f4e	dab907c95fc11428
+state	01 Input Data/02 InputData 'Systematic + Historical + Paleo - 1Day'	24863430bf584ab6	cbb933da0ec59a1c
+state	02 Distribution Fitting Analysis	22c9cdb7873ae49a	4a4ead4bf90c0837
+state	03 Univariate Distribution Analysis	81cfc92c7f982318	0e3a3c46961dd428
+state	03 Univariate Distribution Analysis/00 B17CAnalysis 'Systematic'	53f291ec31c3c1fc	00612ba8bdb12de0
+state	03 Univariate Distribution Analysis/01 B17CAnalysis 'Systematic + Historical'	fc58ae9542d7ecf4	03069c8db6cd8ceb
+state	03 Univariate Distribution Analysis/02 B17CAnalysis 'Systematic + Historical + Paleo'	c0d5ba8531baaee1	84db5dd8604bfda5
+state	03 Univariate Distribution Analysis/03 B17CAnalysis 'Systematic + Reg Skew'	7a0767b9d8233c8a	b2104561412a0bc8
+state	03 Univariate Distribution Analysis/04 B17CAnalysis 'Systematic + Historical + Reg Skew'	13ba498a39dd39ce	05fa4da905695e13
+state	03 Univariate Distribution Analysis/05 B17CAnalysis 'Systematic + Historical + Paleo + Reg Skew'	110ad758b2080132	d1ed543fae093e1d
+state	03 Univariate Distribution Analysis/06 B17CAnalysis 'Systematic + Historical + Paleo + Reg Skew + QPen'	2d5ac6f384a948aa	c2115098f606a8f8
+state	03 Univariate Distribution Analysis/07 B17CAnalysis 'Systematic + QPen'	0dfe9eeeeeeb21dd	a04c51c83a0a0414
+state	03 Univariate Distribution Analysis/08 B17CAnalysis 'Systematic + Historical + QPen'	3cb7128c09722894	6b0cb1501d196a05
+state	03 Univariate Distribution Analysis/09 B17CAnalysis 'Systematic + Historical + Paleo + QPen'	7a120cd34d30a5a9	457ade1532404c71
+state	03 Univariate Distribution Analysis/10 B17CAnalysis 'Systematic + Reg Skew + QPen'	cdba4d52ca333cc5	2b5d33a536b8ac1f
+state	03 Univariate Distribution Analysis/11 B17CAnalysis 'Systematic + Historical + Reg Skew + QPen'	61fb6ecd3e1cb130	0dc2ae1f3d47de13
+state	04 Bivariate Distribution Analysis	2df996a968e4df10	85c24dd973e8dafa
+state	05 Rating Curve Analysis	5b9e46ee16c64e96	771f60dc9817d061
+state	06 Time Series Analysis	2f4a1830d606047e	0e6e4ee694390acc
+state	Project	3dffbf079d272407	3dffbf079d272407
+end

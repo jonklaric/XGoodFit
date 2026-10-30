@@ -1,0 +1,67 @@
+bestfit-file-description	1
+file	1-time-series-data/4-abom-download/abom-download-example.bestfit	sha=78673f1f1c18ff40	tables=2	cells=166
+pragma	encoding	UTF-8
+pragma	journal_mode	wal
+pragma	user_version	0
+pragma	application_id	0
+pragma	auto_vacuum	0
+table	Project	sha=2dfce5e9fb58834d	sql=bf204117c9f875b1	rows=1
+column	0	Name	TEXT
+column	1	Description	TEXT
+column	2	CreationDate	TEXT
+column	3	LastModified	TEXT
+column	4	FullFileName	TEXT
+column	5	SoftwareVersion	TEXT
+column	6	AvalonDockLayout	TEXT
+column	7	ProjectExplorerLayout	TEXT
+column	8	AvalonDockLayoutPrevious	TEXT
+column	9	ProjectExplorerLayoutPrevious	TEXT
+row	1	t:abom-download-example	t#261:47e19c8b0644b2cd	t:2/19/2026 11:16:22 PM	t:7/27/2026 11:41:20 PM	p:{dir}\\abom-download-example.bestfit	t:2.0.1	t#2158:b9972363eb94019b/1307e762be291573:r	t#1402:50c94acafb555c8b/5a33928f6b571dfa:r	t#1987:ce7b76c3716ed99a/041d2f2260af3351:r	t#1326:4f7576e258450df1/85f98a8bc9e0a1f4:r
+table	Time Series Data	sha=3a28ec47d82cb810	sql=eeb0b02b53954765	rows=6
+column	0	Name	TEXT
+column	1	Description	TEXT
+column	2	CreationDate	TEXT
+column	3	LastModified	TEXT
+column	4	TimeSeries	TEXT
+column	5	UnitLabel	TEXT
+column	6	EntryMethod	TEXT
+column	7	SeriesType	TEXT
+column	8	HECDSSFullFilename	TEXT
+column	9	HECDSSDataPathname	TEXT
+column	10	GHCNSiteNumber	TEXT
+column	11	USGSSiteNumber	TEXT
+column	12	CHMNSiteNumber	TEXT
+column	13	ABOMSiteNumber	TEXT
+column	14	DepthUnit	TEXT
+column	15	DischargeUnit	TEXT
+column	16	HeightUnit	TEXT
+column	17	TimeInterval	TEXT
+column	18	StartDateTime	TEXT
+column	19	USGSRawText	TEXT
+column	20	TimeSeriesPlotSettings	TEXT
+column	21	SeasonalityPlotSettings	TEXT
+column	22	ACFPlotSettings	TEXT
+column	23	PACFPlotSettings	TEXT
+column	24	TimeSeriesCompressed	BLOB
+column	25	USGSRawTextCompressed	BLOB
+row	1	t:ABOM - 410730 - Daily Precipitation	t#154:04d11f4e6fc5b9d3	t:2/20/2026 3:41:39 PM	t:7/27/2026 11:38:36 PM	t:	t:Precipitation (mm)	t:ABOM	t:DailyPrecipitation	t:	t:	t:00000000000	t:00000000	t:0000000	t:410730	t:Millimeters	t:CubicFeetPerSecond	t:Feet	t:OneDay	t:2003-01-31T00:00:00.0000000	t:	t#5529:d5e83a620623b3c8/85519dc96c87f2c5:r	t#4676:4011e2e887cbc352/fba9ff4429302e4d:r	t#6300:12e2af542c4d7c52/dc814449d76ba48a:r	t#6332:34576150d036aa62/e1caf08c0c50ba77:r	b#34330:b9104bc6afe6ad96>z#627104:44e9c8f0de701c18/19455fb9f30dcc16:r	b#0:e3b0c44298fc1c14
+row	2	t:ABOM - 410730 - Daily Discharge	t#155:66088c60ef5381c4	t:2/20/2026 3:44:59 PM	t:7/27/2026 11:41:20 PM	t:	t:Flow (cms)	t:ABOM	t:DailyDischarge	t:	t:	t:00000000000	t:00000000	t:0000000	t:410730	t:Inches	t:CubicFeetPerSecond	t:Feet	t:OneDay	t:1963-07-03T00:00:00.0000000	t:	t#5521:12486218e8563129/9cdd25016b846e26:r	t#10272:fe015c689f6a9175/5a8c5e7f5da707d6:r	t#6943:294144666be621bb/4f7e9a3c5916b9f1:r	t#6990:894bd72a36932474/1924b0303577c171:r	b#153412:daf9a00604dee061>z#1891274:1472388f2b04bc76/5405404e8e09e2f0:r	b#0:e3b0c44298fc1c14
+row	3	t:ABOM - 410761 - Daily Discharge	t#178:92beb9790f20e72f	t:2/20/2026 4:31:58 PM	t:7/15/2026 7:22:10 PM	t:	t:Flow (cms)	t:ABOM	t:DailyDischarge	t:	t:	t:00000000000	t:00000000	t:0000000	t:410761	t:Inches	t:CubicFeetPerSecond	t:Feet	t:OneDay	t:1974-11-13T00:00:00.0000000	t:	t#5521:cb41aed91268ec1b/1255bca90d8ab185:r	t#4668:0a730c735c23fce0/ae261eabd26c5ea0:r	t#6300:80cb4a41ec76970d/c94d48c3dd3bf52e:r	t#4673:655c3c2ae8d8d576/20a7b202cafc0cd3:r	b#138636:12f6d138cd888b1b>z#1546486:6f4e733f6c5b2e8f/60a5bfd3a840bcee:r	b#0:e3b0c44298fc1c14
+row	4	t:ABOM - 409202 - Daily Stage	t#159:6f163f0695f822d0	t:2/20/2026 4:33:23 PM	t:7/15/2026 7:22:10 PM	t:	t:Stage (m)	t:ABOM	t:DailyStage	t:	t:	t:00000000000	t:00000000	t:0000000	t:409202	t:Inches	t:CubicFeetPerSecond	t:Feet	t:OneDay	t:1974-12-10T00:00:00.0000000	t:	t#5520:44d7fe34f6406e0e/acb76e97eb297080:r	t#4667:ede0bd63846e6a9a/c0b5c5d9cd9739aa:r	t#6298:312860099c1fab43/a1b346e5b8995db3:r	t#6329:5bf41c51c07c9e56/808a14afb905c4eb:r	b#119097:1e5505167cf43245>z#1531126:bb1bfc5d315c9a20/1ac375a0e7edf313:r	b#0:e3b0c44298fc1c14
+row	5	t:ABOM - 410730 - Instantaneous Discharge	t#162:10079bcc715b6448	t:2/20/2026 4:35:45 PM	t:7/15/2026 7:22:10 PM	t:	t:Flow (cms)	t:ABOM	t:InstantaneousDischarge	t:	t:	t:00000000000	t:00000000	t:0000000	t:410730	t:Inches	t:CubicFeetPerSecond	t:Feet	t:Irregular	t:1963-07-03T16:29:00.0000000	t:	t#5521:cb41aed91268ec1b/1255bca90d8ab185:r	t#4668:0a730c735c23fce0/ae261eabd26c5ea0:r	t#4624:908ad392fa61f430/4aad9161a0a8616b:r	t#4640:09195fc8fa2fc53d/c43ddd9215c383ef:r	b#1652139:41afba0e9df3839e>z#18237307:c1b59b4236d77593/56b02958d68c660b:r	b#0:e3b0c44298fc1c14
+row	6	t:ABOM - 409202 - Instantaneous Stage	t#166:0c6d69d71419a4d0	t:2/20/2026 4:37:33 PM	t:7/15/2026 7:22:11 PM	t:	t:Stage (m)	t:ABOM	t:InstantaneousStage	t:	t:	t:00000000000	t:00000000	t:0000000	t:409202	t:Inches	t:CubicFeetPerSecond	t:Feet	t:Irregular	t:1974-12-10T13:00:00.0000000	t:	t#5520:44d7fe34f6406e0e/acb76e97eb297080:r	t#4667:ede0bd63846e6a9a/c0b5c5d9cd9739aa:r	t#4624:908ad392fa61f430/4aad9161a0a8616b:r	t#4640:09195fc8fa2fc53d/c43ddd9215c383ef:r	b#3250883:0a9f76c6df5a197b>z#54364250:8d915ada3ef3b0cf/04d6a4495d7e4aab:r	b#0:e3b0c44298fc1c14
+state	00 Time Series Data	3aaecc724e8d81a5	66eae0f9e86047a2
+state	00 Time Series Data/00 TimeSeriesElement 'ABOM - 410730 - Daily Precipitation'	7b856edb5d762e21	8e21cdcee0371d7e
+state	00 Time Series Data/01 TimeSeriesElement 'ABOM - 410730 - Daily Discharge'	e0a2e4148a32cbeb	1e8acda03591bedb
+state	00 Time Series Data/02 TimeSeriesElement 'ABOM - 410761 - Daily Discharge'	0af9fb8f2947f05e	e1f1ad165bf0c547
+state	00 Time Series Data/03 TimeSeriesElement 'ABOM - 409202 - Daily Stage'	82e8c377c15d0783	c6eb69c4478dec7a
+state	00 Time Series Data/04 TimeSeriesElement 'ABOM - 410730 - Instantaneous Discharge'	168fd3f7e015cc2c	93a9a591376f8d8d
+state	00 Time Series Data/05 TimeSeriesElement 'ABOM - 409202 - Instantaneous Stage'	198e7ed5ed903dd2	c94551696460fe38
+state	01 Input Data	4b47e20068fbbb01	7138759d2d2c7b9f
+state	02 Distribution Fitting Analysis	22c9cdb7873ae49a	4a4ead4bf90c0837
+state	03 Univariate Distribution Analysis	468896e1b6f7e6c8	0e3a3c46961dd428
+state	04 Bivariate Distribution Analysis	2df996a968e4df10	85c24dd973e8dafa
+state	05 Rating Curve Analysis	5b9e46ee16c64e96	771f60dc9817d061
+state	06 Time Series Analysis	2f4a1830d606047e	0e6e4ee694390acc
+state	Project	d78981c881ad9d53	d78981c881ad9d53
+end

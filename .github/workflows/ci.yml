@@ -60,6 +60,23 @@ jobs:
         env:
           XGOODFIT_REQUIRE_HECDSS: '1'
 
+      # The tests above include the file-compatibility suite (tests/BestFit/RMC.BestFit.FileCompat.Tests):
+      # every example opened and saved by the port, compared with what upstream's WPF RMC-BestFit saves.
+      # This shows what it found here, including the platform differences it accepts outside Windows.
+      - name: File-compatibility summary
+        if: always()
+        shell: bash
+        run: cat artifacts/filecompat/*/summary.txt 2>/dev/null || echo "No file-compatibility summary was written."
+
+      # Windows only: upstream's own WPF RMC-BestFit opens and saves the examples again, and must write
+      # exactly the golden data the suite compares the port with (Golden/README.md in its tests).
+      - name: WPF reference matches the golden data
+        if: runner.os == 'Windows'
+        shell: bash
+        run: |
+          dotnet run -c Release --project tools/BestFitFileCompat.Wpf -- reference sample-data/RMC-BestFit/examples artifacts/filecompat/wpf --runs 1
+          dotnet run -c Release --no-build --project tools/BestFitFileCompat.Wpf -- compare tests/BestFit/RMC.BestFit.FileCompat.Tests/Golden artifacts/filecompat/wpf
+
       # Exclusions and per-OS limits are documented in the script.
       - name: Upstream portable test suites
         shell: bash
@@ -76,6 +93,13 @@ jobs:
         with:
           name: probe-${{ matrix.name }}
           path: probe-${{ matrix.name }}.txt
+          if-no-files-found: ignore
+
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: filecompat-${{ matrix.name }}
+          path: artifacts/filecompat/
           if-no-files-found: ignore
 
       - uses: actions/upload-artifact@v7

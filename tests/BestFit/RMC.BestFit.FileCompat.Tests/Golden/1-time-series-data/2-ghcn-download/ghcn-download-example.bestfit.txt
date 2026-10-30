@@ -1,0 +1,59 @@
+bestfit-file-description	1
+file	1-time-series-data/2-ghcn-download/ghcn-download-example.bestfit	sha=b73710b735aef459	tables=2	cells=62
+pragma	encoding	UTF-8
+pragma	journal_mode	wal
+pragma	user_version	0
+pragma	application_id	0
+pragma	auto_vacuum	0
+table	Project	sha=e966f207e6553e8f	sql=bf204117c9f875b1	rows=1
+column	0	Name	TEXT
+column	1	Description	TEXT
+column	2	CreationDate	TEXT
+column	3	LastModified	TEXT
+column	4	FullFileName	TEXT
+column	5	SoftwareVersion	TEXT
+column	6	AvalonDockLayout	TEXT
+column	7	ProjectExplorerLayout	TEXT
+column	8	AvalonDockLayoutPrevious	TEXT
+column	9	ProjectExplorerLayoutPrevious	TEXT
+row	1	t:ghcn-download-example	t#333:7be1e5b6982d2fd7	t:2/19/2026 11:11:28 PM	t:7/15/2026 7:19:53 PM	p:{dir}\\ghcn-download-example.bestfit	t:2.0.1	t#2144:259b7ded26640dbd/0ca6511ab7fe916d:r	t#947:fe1328ca13af76f1/f6853efdd1b45c76:r	t#2559:a42352547380e995/d3211db3708f8c8a:r	t#1046:3f46144b4d4a3fb7/9013ba94b7a7b2c4:r
+table	Time Series Data	sha=e9e570947f346945	sql=eeb0b02b53954765	rows=2
+column	0	Name	TEXT
+column	1	Description	TEXT
+column	2	CreationDate	TEXT
+column	3	LastModified	TEXT
+column	4	TimeSeries	TEXT
+column	5	UnitLabel	TEXT
+column	6	EntryMethod	TEXT
+column	7	SeriesType	TEXT
+column	8	HECDSSFullFilename	TEXT
+column	9	HECDSSDataPathname	TEXT
+column	10	GHCNSiteNumber	TEXT
+column	11	USGSSiteNumber	TEXT
+column	12	CHMNSiteNumber	TEXT
+column	13	ABOMSiteNumber	TEXT
+column	14	DepthUnit	TEXT
+column	15	DischargeUnit	TEXT
+column	16	HeightUnit	TEXT
+column	17	TimeInterval	TEXT
+column	18	StartDateTime	TEXT
+column	19	USGSRawText	TEXT
+column	20	TimeSeriesPlotSettings	TEXT
+column	21	SeasonalityPlotSettings	TEXT
+column	22	ACFPlotSettings	TEXT
+column	23	PACFPlotSettings	TEXT
+column	24	TimeSeriesCompressed	BLOB
+column	25	USGSRawTextCompressed	BLOB
+row	1	t:GHCN - USC00040741 - Daily Precipitation	t#244:23802e2c303f6df3	t:2/20/2026 4:56:57 PM	t:7/15/2026 7:19:53 PM	t:	t:Precipitation (in)	t:GHCN	t:DailyPrecipitation	t:	t:	t:USC00040741	t:00000000	t:0000000	t:000000	t:Inches	t:CubicFeetPerSecond	t:Feet	t:OneDay	t:1960-07-01T00:00:00.0000000	t:	t#5529:b246f9ef3ac60848/63eef10048ef1eb5:r	t#10280:efb02f36f18e8dbc/7fb8e1ad2a19bd9e:r	t#6300:26a5d64921ec5df8/73ed457d6fd2ff1b:r	t#6332:2dc26cd5afab6ffd/691949143e849b0f:r	b#84520:374c1dbe9e5de34f>z#1690389:ea249fc657550f71/4f4721ac388aa8e5:r	b#0:e3b0c44298fc1c14
+row	2	t:GHCN - USC00046685 - Daily Snow	t#360:e760f76c512f5d08	t:2/20/2026 4:57:47 PM	t:7/15/2026 7:19:53 PM	t:	t:Snow (in)	t:GHCN	t:DailySnow	t:	t:	t:USC00046685	t:00000000	t:0000000	t:000000	t:Inches	t:CubicFeetPerSecond	t:Feet	t:OneDay	t:1957-05-01T00:00:00.0000000	t:	t#5520:5fe9c644e21f7403/7ffeda53af4465e1:r	t#4667:e63b4552c3a5d319/269618a219972b95:r	t#6300:26a5d64921ec5df8/73ed457d6fd2ff1b:r	t#6332:d0213eb133a98522/dbb3707a41b89187:r	b#68007:2f12965de4ced7d2>z#1621600:87142bb38362a97e/1ae4de5227dd44a1:r	b#0:e3b0c44298fc1c14
+state	00 Time Series Data	4c94b97e6a73f726	66eae0f9e86047a2
+state	00 Time Series Data/00 TimeSeriesElement 'GHCN - USC00040741 - Daily Precipitation'	df7dd6b00ecb6518	1c6ba78dca1e1354
+state	00 Time Series Data/01 TimeSeriesElement 'GHCN - USC00046685 - Daily Snow'	10ade4768fd28fd5	bc2493792844d449
+state	01 Input Data	4b47e20068fbbb01	7138759d2d2c7b9f
+state	02 Distribution Fitting Analysis	22c9cdb7873ae49a	4a4ead4bf90c0837
+state	03 Univariate Distribution Analysis	468896e1b6f7e6c8	0e3a3c46961dd428
+state	04 Bivariate Distribution Analysis	2df996a968e4df10	85c24dd973e8dafa
+state	05 Rating Curve Analysis	5b9e46ee16c64e96	771f60dc9817d061
+state	06 Time Series Analysis	2f4a1830d606047e	0e6e4ee694390acc
+state	Project	2c714997bd297fd5	2c714997bd297fd5
+end

@@ -1,0 +1,161 @@
+bestfit-file-description	1
+file	4-univariate-distribution-analysis/3-point-process-analysis/point-process-examples.bestfit	sha=db838c67bff8ca48	tables=6	cells=300
+pragma	encoding	UTF-8
+pragma	journal_mode	wal
+pragma	user_version	0
+pragma	application_id	0
+pragma	auto_vacuum	0
+table	<Point Process>	sha=cbdfc28375a85211	sql=3e1f72ae1145308a	rows=3
+column	0	Name	TEXT
+column	1	Description	TEXT
+column	2	CreationDate	TEXT
+column	3	LastModified	TEXT
+column	4	InputData	TEXT
+column	5	PointProcess	TEXT
+column	6	BayesianAnalysis	TEXT
+column	7	MCMCResults	BLOB
+column	8	AnalysisResults	TEXT
+column	9	ProbabilityOrdinates	TEXT
+column	10	FrequencyPlotSettings	TEXT
+column	11	KernelDensityPlotSettings	TEXT
+column	12	HistogramPlotSettings	TEXT
+column	13	BivariatePlotSettings	TEXT
+column	14	MeanLikelihoodPlotSettings	TEXT
+column	15	AutocorrelationPlotSettings	TEXT
+column	16	MarkovChainTracesPlotSettings	TEXT
+column	17	InfluenceDiagnosticsPlotSettings	TEXT
+column	18	MCMCReport	TEXT
+column	19	AnalysisXml	TEXT
+row	1	t:USC00040741 - Point Process	t#260:d8594dbf13efddb1	t:4/14/2026 4:25:10 PM	t:10/6/2026 9:00:48 PM	t:USC00040741 - POT	t#1394:4536afbba8538242/bc80188f4405e8df:r	t#733:ad2f3be1bb2fdc15	b#1229065:84ceabfba47a42bc>z#3665190:80948d65b81c987e	t#2431:cce7c170744c2d9b/e8c9350dea3d8b8e:r	t#439:5840f09d7e1a6c45	t#9051:1d9fd98e77ecf532/f2366f1b8aee6fd2:r	t#5675:1c70894fb54753b4/27d4ba7fc0a9899f:r	t#5286:c947dbf8a34972f8/ada1cb5f2e6cb3cc:r	t#7709:199d31f4ac65fb46/24f01bb408dad34b:r	t#5539:5a3f6aaf1cd3b0c4/8553b05d14efe043:r	t#6961:bd1aca78b160d3c4/6242a9a4633484f1:r	t#9902:4f256f63efb59292/18ee55da862d777d:r	t#5319:2ca31fc73e41c75e/3067f3008c634549:r	t:	t#1291:951910509f8caaa8/c88978e2ca58b289:r
+row	2	t:USC00042402 - Point Process	t#263:50052376e4ea3a3f	t:4/14/2026 4:28:40 PM	t:10/6/2026 9:00:48 PM	t:USC00042402 - POT	t#1396:9cbdf93e00325b5e/20204be48dce0573:r	t#732:f459b428a6bbdd9a	b#1214980:744afb86eb8ec8c3>z#3639461:a36df75eba71ddb0	t#2427:37b35e3ade40b229/395c3396733fa1d6:r	t#439:5840f09d7e1a6c45	t#9051:1d9fd98e77ecf532/f2366f1b8aee6fd2:r	t#5675:1c70894fb54753b4/27d4ba7fc0a9899f:r	t#5286:c947dbf8a34972f8/ada1cb5f2e6cb3cc:r	t#7709:fb3612f71c8802ec/49bd1a0a95b7a6d5:r	t#5539:5a3f6aaf1cd3b0c4/8553b05d14efe043:r	t#6961:bd1aca78b160d3c4/6242a9a4633484f1:r	t#9902:4f256f63efb59292/18ee55da862d777d:r	t#5319:2ca31fc73e41c75e/3067f3008c634549:r	t:	t#1290:c11e128de512570d/a28ce85cb115784d:r
+row	3	t:USC00040741 - Seasonal Point Process	t#259:c75fb14d39efe7df	t:4/14/2026 4:31:55 PM	t:10/6/2026 9:00:49 PM	t:USC00040741 - POT	t#2756:0167d98dec9f0254/bdcd801d09a3a756:r	t#735:c61f5d976f9740c9	b#5522075:1213d0c1f96d706b>z#14107154:8e345f0c7ffd2be4	t#2519:27b22e677b9b95f1/d7e1eba7bd755b98:r	t#439:5840f09d7e1a6c45	t#10861:080c934dd1122a85/3d422d9169be7e15:r	t#5683:c7b53eb66781d597/23cb6fe040dd2211:r	t#5294:fed841c692241b78/d0f514bfd940fc78:r	t#7731:d99bd963733ef487/4d45d1b9528fb369:r	t#5539:5a3f6aaf1cd3b0c4/8553b05d14efe043:r	t#6965:12049eb58e15de21/5cb4e5ad9ae4147f:r	t#18621:d607ed5832000940/3788d78a38188ab1:r	t#5319:2ca31fc73e41c75e/3067f3008c634549:r	t:	t#1293:a66f9b45ba7a8de7/9efab548d383f07e:r
+table	<Univariate Distribution>	sha=197277f28c40f4f1	sql=192652ba4c99d235	rows=2
+column	0	Name	TEXT
+column	1	Description	TEXT
+column	2	CreationDate	TEXT
+column	3	LastModified	TEXT
+column	4	InputData	TEXT
+column	5	UnivariateDistribution	TEXT
+column	6	BayesianAnalysis	TEXT
+column	7	MCMCResults	BLOB
+column	8	AnalysisResults	TEXT
+column	9	ChronologyAnalysisResults	TEXT
+column	10	ProbabilityOrdinates	TEXT
+column	11	FrequencyPlotSettings	TEXT
+column	12	ChronologyPlotSettings	TEXT
+column	13	InfluenceDiagnosticsPlotSettings	TEXT
+column	14	KernelDensityPlotSettings	TEXT
+column	15	HistogramPlotSettings	TEXT
+column	16	BivariatePlotSettings	TEXT
+column	17	MeanLikelihoodPlotSettings	TEXT
+column	18	AutocorrelationPlotSettings	TEXT
+column	19	MarkovChainTracesPlotSettings	TEXT
+column	20	AnalysisXml	TEXT
+column	21	MCMCReport	TEXT
+row	1	t:USC00040741 - GEV	t#249:15058ca9489426db	t:4/14/2026 4:27:46 PM	t:10/6/2026 9:00:48 PM	t:USC00040741 - AMS	t#2441:d4d138db37c670e5/545d4abea5f867ea:r	t#733:d03c6086660bbed8	b#1236010:7a9f57d6675eec8a>z#3668557:0ca7f95f888f11f3	t#2245:02d663b50dd0b71b/ab4eca0db893fd68:r	t:	t#439:5840f09d7e1a6c45	t#8257:18de890dc150063e/8a222accb7aad8a5:r	t#4611:3873970f81b7d417/8d48fd2e23fca602:r	t#5319:2ca31fc73e41c75e/3067f3008c634549:r	t#5675:1c70894fb54753b4/27d4ba7fc0a9899f:r	t#5286:c947dbf8a34972f8/ada1cb5f2e6cb3cc:r	t#7710:3f482a8f9489f40a/a6a5347d835e3afa:r	t#5539:5a3f6aaf1cd3b0c4/8553b05d14efe043:r	t#6962:776daccacb748831/46fb16ac752279bc:r	t#9907:d3c8f122e42a980b/7a35a03bf3a3d97b:r	t#1287:c41bdf39ca887abc/b53d1f81fc03e218:r	t:
+row	2	t:USC00042402 - GEV	t#249:48dfb6270a72f5cf	t:4/14/2026 4:29:24 PM	t:10/6/2026 9:00:49 PM	t:USC00042402 - AMS	t#2444:e7e36173d925be1f/a31a44c2f85d1dd3:r	t#731:fc7c56c3952b045f	b#1233133:0bac0c27e6088c96>z#3658606:009b195d5d040b0d	t#2240:ffb1a156baeab34e/324dfe58d8e29965:r	t:	t#439:5840f09d7e1a6c45	t#8257:18de890dc150063e/8a222accb7aad8a5:r	t#4611:3873970f81b7d417/8d48fd2e23fca602:r	t#5319:2ca31fc73e41c75e/3067f3008c634549:r	t#5675:1c70894fb54753b4/27d4ba7fc0a9899f:r	t#5286:c947dbf8a34972f8/ada1cb5f2e6cb3cc:r	t#7710:ae5b8e583a28577b/beeb76d09d14d45e:r	t#5539:5a3f6aaf1cd3b0c4/8553b05d14efe043:r	t#6961:bd1aca78b160d3c4/6242a9a4633484f1:r	t#9902:4f256f63efb59292/18ee55da862d777d:r	t#1285:c5c865e68339c042/3b013d76942e2eac:r	t:
+table	Input Data	sha=b451406ceee9ef03	sql=d536de5c86337186	rows=4
+column	0	Name	TEXT
+column	1	Description	TEXT
+column	2	CreationDate	TEXT
+column	3	LastModified	TEXT
+column	4	ExactDataMethod	TEXT
+column	5	DataFrame	TEXT
+column	6	UnitLabel	TEXT
+column	7	IndexLabel	TEXT
+column	8	USGSSiteNumber	TEXT
+column	9	UseMultipleGrubbsBeckTest	BOOLEAN
+column	10	TimeSeriesElement	TEXT
+column	11	BlockFunction	TEXT
+column	12	TimeBlock	TEXT
+column	13	StartMonth	INT4
+column	14	EndMonth	INT4
+column	15	SmoothingFunction	TEXT
+column	16	Period	INT4
+column	17	Threshold	DOUBLE
+column	18	MinStepsBetweenPeaks	INT4
+column	19	IsProcessed	BOOLEAN
+column	20	ChronologyPlotSettings	TEXT
+column	21	FrequencyPlotSettings	TEXT
+column	22	SeasonalityPlotSettings	TEXT
+column	23	DensityPlotSettings	TEXT
+column	24	HistogramPlotSettings	TEXT
+column	25	QQPlotSettings	TEXT
+column	26	ACFPlotSettings	TEXT
+column	27	PACFPlotSettings	TEXT
+column	28	MRLPlotSettings	TEXT
+column	29	ModifiedScalePlotSettings	TEXT
+column	30	ShapePlotSettings	TEXT
+row	1	t:USC00040741 - POT	t#279:e7e4e564822cf398	t:4/14/2026 4:03:53 PM	t:9/30/2026 9:15:33 PM	t:PeaksOverThresholdSeries	t#40090:6d1763279d4024e0/293c92e1446d9d67:r	t:Rainfall (in)	t:Year	t:00000000	i:1	t:USC00040741	t:Maximum	t:CalendarYear	i:10	i:9	t:None	i:1	r:1	i:1	i:1	t#5395:9bfaf941b90ed3ad/840183859dd7dbc6:r	t#5460:0dcd39b182d693cb/951f820b5dcc0bc7:r	t#4651:0dd310a4bfc9a708/10cf688a87fdc182:r	t#5659:7fca352b75d4cad4/58edb6b0d98821d5:r	t#5277:435548a6dac4f28c/8e6a3d081db83d43:r	t#4654:a3bcbf503cf36eb5/de85fd59c932b4ef:r	t#4626:6f8b833bc137ffb2/a74f64385c5eea8f:r	t#4642:018b654eabe9f1ed/19b9c9322e7c1af0:r	t#7322:2de7d7988f33745f/16251cdafd5b5cf2:r	t#7351:d88a1769f84d5fa1/40c6d0f8c2ea8f16:r	t#7308:8344fe40666e76d4/df7d4cb658a1e663:r
+row	2	t:USC00040741 - AMS	t#227:8e5bbcc001f4ed38	t:4/14/2026 4:05:47 PM	t:7/16/2026 3:48:18 PM	t:BlockSeries	t#10716:5924c8db3c194d33/e33505ed5d7ed750:r	t:Rainfall (in)	t:Year	t:00000000	i:1	t:USC00040741	t:Maximum	t:WaterYear	i:10	i:9	t:None	i:1	r:1	i:1	i:1	t#5395:f651f096849a8a96/391a6f40e2603022:r	t#5460:0dcd39b182d693cb/951f820b5dcc0bc7:r	t#5295:378232565b50e132/ebdda8839e15e1ea:r	t#5659:1c5608af03d2e0b7/b3a080409daf94c9:r	t#5277:a3280d64d5c7094c/c87f3126cfd7b8d8:r	t#4654:5051fb27987c80fe/b55ca01541870420:r	t#6943:25843e75b42fcc1a/78b2e932d9f3a789:r	t#6990:e04ac79e7f463b4b/ad70322fa9dece72:r	t#7322:b60dc7010f3e31db/d50a3ad15a055a7c:r	t#7351:d88a1769f84d5fa1/40c6d0f8c2ea8f16:r	t#7308:8344fe40666e76d4/df7d4cb658a1e663:r
+row	3	t:USC00042402 - POT	t#277:39f1e2bc088c4b98	t:4/14/2026 4:06:50 PM	t:7/16/2026 3:48:18 PM	t:PeaksOverThresholdSeries	t#69130:4976d5aceffa2805/9f263fef978ba658:r	t:Rainfall (in)	t:Year	t:00000000	i:1	t:USC00042402	t:Maximum	t:CalendarYear	i:10	i:9	t:None	i:1	r:2.5	i:1	i:1	t#5395:f651f096849a8a96/391a6f40e2603022:r	t#5460:0dcd39b182d693cb/951f820b5dcc0bc7:r	t#4651:ef8fad523f9e2bf1/85bddb834d4fe391:r	t#5659:1c5608af03d2e0b7/b3a080409daf94c9:r	t#5277:a3280d64d5c7094c/c87f3126cfd7b8d8:r	t#4654:5051fb27987c80fe/b55ca01541870420:r	t#4626:d530c9f5f360a3e6/9e8a65fa663f4252:r	t#4642:48c2a235117c79b8/43384cf4f968499a:r	t#7324:ccd933bb2e6e07da/92c2040e82890617:r	t#7353:44c91114c21adf53/729a6ed788f4c2e0:r	t#7310:cfdf1ac852a91155/dadfa41e00e56831:r
+row	4	t:USC00042402 - AMS	t#225:5dec2e499e1be972	t:4/14/2026 4:21:08 PM	t:7/16/2026 3:48:18 PM	t:BlockSeries	t#18963:9345a83f7c840918/e0279c5708f5f8d5:r	t:Rainfall (in)	t:Year	t:00000000	i:1	t:USC00042402	t:Maximum	t:WaterYear	i:9	i:9	t:None	i:1	r:2	i:1	i:1	t#5395:f651f096849a8a96/391a6f40e2603022:r	t#5460:0dcd39b182d693cb/951f820b5dcc0bc7:r	t#4651:ef8fad523f9e2bf1/85bddb834d4fe391:r	t#5659:1c5608af03d2e0b7/b3a080409daf94c9:r	t#5277:a3280d64d5c7094c/c87f3126cfd7b8d8:r	t#4654:5051fb27987c80fe/b55ca01541870420:r	t#4626:d530c9f5f360a3e6/9e8a65fa663f4252:r	t#4642:48c2a235117c79b8/43384cf4f968499a:r	t#7322:7633bdca32742e1d/23a9d92cdec0c77f:r	t#7351:ae0965cd57fb84e3/19953fab473c66f6:r	t#7308:25aea0f7ca3586d3/582cee1c55572d4c:r
+table	Project	sha=3f7467e350cbf38e	sql=bf204117c9f875b1	rows=1
+column	0	Name	TEXT
+column	1	Description	TEXT
+column	2	CreationDate	TEXT
+column	3	LastModified	TEXT
+column	4	FullFileName	TEXT
+column	5	SoftwareVersion	TEXT
+column	6	AvalonDockLayout	TEXT
+column	7	ProjectExplorerLayout	TEXT
+column	8	AvalonDockLayoutPrevious	TEXT
+column	9	ProjectExplorerLayoutPrevious	TEXT
+row	1	t:point-process-examples	t#297:b3098585998d6246	t:4/14/2026 3:57:55 PM	t:10/6/2026 9:00:48 PM	p:{dir}\\point-process-examples.bestfit	t:2.0.1	t#1574:f9f974aa6f7ab290/55aae6d941ffa7a5:r	t#1677:f89c1b99b1aafaf4/84fd6f3a7d92f7b7:r	t#1836:8b2492a55d33a9e5/d9df28d557bb4b6c:r	t#1762:4e2202bea5b095fd/063955e9396e0a27:r
+table	Time Series Data	sha=9c1aad9c36f0cdee	sql=70ca8b7ae0eb0d0a	rows=2
+column	0	Name	TEXT
+column	1	Description	TEXT
+column	2	CreationDate	TEXT
+column	3	LastModified	TEXT
+column	4	TimeSeries	TEXT
+column	5	UnitLabel	TEXT
+column	6	EntryMethod	TEXT
+column	7	SeriesType	TEXT
+column	8	HECDSSFullFilename	TEXT
+column	9	HECDSSDataPathname	TEXT
+column	10	GHCNSiteNumber	TEXT
+column	11	USGSSiteNumber	TEXT
+column	12	CHMNSiteNumber	TEXT
+column	13	ABOMSiteNumber	TEXT
+column	14	DepthUnit	TEXT
+column	15	DischargeUnit	TEXT
+column	16	HeightUnit	TEXT
+column	17	TimeInterval	TEXT
+column	18	StartDateTime	TEXT
+column	19	USGSRawText	TEXT
+column	20	TimeSeriesPlotSettings	TEXT
+column	21	SeasonalityPlotSettings	TEXT
+column	22	ACFPlotSettings	TEXT
+column	23	PACFPlotSettings	TEXT
+column	24	TimeSeriesCompressed	BLOB
+column	25	USGSRawTextCompressed	BLOB
+row	1	t:USC00040741	t#215:35965126da6ee60c	t:4/14/2026 4:02:35 PM	t:7/16/2026 3:48:17 PM	t:	t:Rainfall (in)	t:GHCN	t:DailyPrecipitation	t:	t:	t:USC00040741	t:00000000	t:0000000	t:000000	t:Inches	t:CubicFeetPerSecond	t:Feet	t:OneDay	t:1960-07-01T00:00:00.0000000	t:	t#5524:91ffce5b3b8e459b/a9174412ad6d5fb7:r	t#10395:014ef74d6b8de93e/60cca66cd2a24876:r	t#5194:6eac49f21f1b0780/1da52c640a77d0a3:r	t#5225:70ae3a7ec1c006c7/7ac43dabbc118b1f:r	b#84520:374c1dbe9e5de34f>z#1690389:ea249fc657550f71/4f4721ac388aa8e5:r	b#0:e3b0c44298fc1c14
+row	2	t:USC00042402	t#212:60c092f05cbbea8a	t:4/14/2026 4:03:03 PM	t:7/16/2026 3:48:18 PM	t:	t:Rainfall (in)	t:GHCN	t:DailyPrecipitation	t:	t:	t:USC00042402	t:00000000	t:0000000	t:000000	t:Inches	t:CubicFeetPerSecond	t:Feet	t:OneDay	t:1906-03-01T00:00:00.0000000	t:	t#5524:91ffce5b3b8e459b/a9174412ad6d5fb7:r	t#10499:39d43661f98cb41e/9a70371bb2705c62:r	t#5194:6eac49f21f1b0780/1da52c640a77d0a3:r	t#5225:70ae3a7ec1c006c7/7ac43dabbc118b1f:r	b#170008:14f9563d6e51de45>z#3129101:ce488e6213bef6f9/1e5f657405d4546c:r	b#0:e3b0c44298fc1c14
+table	Univariate Distribution Analysis	sha=6e49d2d7945b0aa0	sql=63dff5382d17bd53	rows=5
+column	0	Name	TEXT
+column	1	Type	TEXT
+row	1	t:USC00040741 - Point Process	t:RMC.BestFit.UI.PointProcessAnalysis
+row	2	t:USC00040741 - GEV	t:RMC.BestFit.UI.UnivariateAnalysis
+row	3	t:USC00042402 - Point Process	t:RMC.BestFit.UI.PointProcessAnalysis
+row	4	t:USC00042402 - GEV	t:RMC.BestFit.UI.UnivariateAnalysis
+row	5	t:USC00040741 - Seasonal Point Process	t:RMC.BestFit.UI.PointProcessAnalysis
+state	00 Time Series Data	4c94b97e6a73f726	66eae0f9e86047a2
+state	00 Time Series Data/00 TimeSeriesElement 'USC00040741'	858183f31e10ff03	e1c695c0f2b6fc57
+state	00 Time Series Data/01 TimeSeriesElement 'USC00042402'	f44b39eb7e85bd3b	40b30637377d7a2a
+state	01 Input Data	f8c32979e3e7940f	7138759d2d2c7b9f
+state	01 Input Data/00 InputData 'USC00040741 - POT'	9fe134ea51e584ea	6718cf7128e4d5fa
+state	01 Input Data/01 InputData 'USC00040741 - AMS'	bfb5610ca10215f9	02734c0e4e360249
+state	01 Input Data/02 InputData 'USC00042402 - POT'	7db85044e77da658	f3ff88d73ad3f8dd
+state	01 Input Data/03 InputData 'USC00042402 - AMS'	19d114ec29a7ebe6	1a6acf2d589a24f1
+state	02 Distribution Fitting Analysis	22c9cdb7873ae49a	4a4ead4bf90c0837
+state	03 Univariate Distribution Analysis	b5d151df9a2d0949	0e3a3c46961dd428
+state	03 Univariate Distribution Analysis/00 PointProcessAnalysis 'USC00040741 - Point Process'	ec671990ee9feaf0	31709584917a53b3
+state	03 Univariate Distribution Analysis/01 UnivariateAnalysis 'USC00040741 - GEV'	4e45116f3aa92ac9	ee9c585929441ab3
+state	03 Univariate Distribution Analysis/02 PointProcessAnalysis 'USC00042402 - Point Process'	6f5abf2f580da747	0e1a0d870232bb7c
+state	03 Univariate Distribution Analysis/03 UnivariateAnalysis 'USC00042402 - GEV'	daf2af373f98a553	ba52803ff21df8f7
+state	03 Univariate Distribution Analysis/04 PointProcessAnalysis 'USC00040741 - Seasonal Point Process'	7cf666dd7ed9e2c3	3da4ab2f9f3202e8
+state	04 Bivariate Distribution Analysis	2df996a968e4df10	85c24dd973e8dafa
+state	05 Rating Curve Analysis	5b9e46ee16c64e96	771f60dc9817d061
+state	06 Time Series Analysis	2f4a1830d606047e	0e6e4ee694390acc
+state	Project	e13825baa70fb341	e13825baa70fb341
+end

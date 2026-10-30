@@ -1,0 +1,100 @@
+bestfit-file-description	1
+file	6-rating-curve-analysis/synthetic-rating-curve-examples.bestfit	sha=2b92b5663ef1d72b	tables=3	cells=205
+pragma	encoding	UTF-8
+pragma	journal_mode	wal
+pragma	user_version	0
+pragma	application_id	0
+pragma	auto_vacuum	0
+table	Project	sha=fa253721c2fdf713	sql=bf204117c9f875b1	rows=1
+column	0	Name	TEXT
+column	1	Description	TEXT
+column	2	CreationDate	TEXT
+column	3	LastModified	TEXT
+column	4	FullFileName	TEXT
+column	5	SoftwareVersion	TEXT
+column	6	AvalonDockLayout	TEXT
+column	7	ProjectExplorerLayout	TEXT
+column	8	AvalonDockLayoutPrevious	TEXT
+column	9	ProjectExplorerLayoutPrevious	TEXT
+row	1	t:synthetic-rating-curve-examples	t#307:0f919e0cd76615d3	t:3/14/2025 5:32:03 PM	t:9/16/2026 6:26:43 PM	p:{dir}\\synthetic-rating-curve-examples.bestfit	t:2.0.1	t#2718:0c88c4e68eebe032/923a93e3cb783772:r	t#1349:aef4eecee476e7e6/3cdd31fef9d33b69:r	t#2719:a2464309a73d5c72/f807cf6f119e0683:r	t:
+table	Rating Curve Analysis	sha=ecb3db7de58fef7b	sql=ec47503dcc7acad8	rows=3
+column	0	Name	TEXT
+column	1	Description	TEXT
+column	2	CreationDate	TEXT
+column	3	LastModified	TEXT
+column	4	StageData	TEXT
+column	5	DischargeData	TEXT
+column	6	MinStage	DOUBLE
+column	7	MaxStage	DOUBLE
+column	8	StageBins	INT4
+column	9	UseDefaultStageBins	BOOLEAN
+column	10	RatingCurve	TEXT
+column	11	BayesianAnalysis	TEXT
+column	12	MCMCResults	BLOB
+column	13	UncertaintyAnalysisResults	TEXT
+column	14	RatingCurvePlotSettings	TEXT
+column	15	KernelDensityPlotSettings	TEXT
+column	16	HistogramPlotSettings	TEXT
+column	17	BivariatePlotSettings	TEXT
+column	18	MeanLikelihoodPlotSettings	TEXT
+column	19	AutocorrelationPlotSettings	TEXT
+column	20	MarkovChainTracesPlotSettings	TEXT
+column	21	ResidualPlotSettings	TEXT
+column	22	ResidualHistogramPlotSettings	TEXT
+column	23	ResidualQQPlotSettings	TEXT
+column	24	FrequencyAnalysisResults	TEXT
+column	25	AnalysisResults	TEXT
+column	26	InfluenceDiagnosticsPlotSettings	TEXT
+column	27	MCMCReport	TEXT
+column	28	AnalysisXml	TEXT
+row	1	t:1 Segment Rating Curve	t#287:2813725cbd9d43c6	t:4/21/2026 11:12:29 PM	t:9/16/2026 4:42:57 PM	t:Stage Data	t:1 Segment - Flow Data	r:-0.7326817927	r:21.7691008757	i:100	i:1	t#1177:14f6444d6d7e34a7/1232217ad2798531:r	t#732:c06f26eb5ff980ff	b#1784310:4cfd6b9935c44d6c>z#5222672:4850efb9083f7c3a	n	t#8260:e44979477eae500b/60535df18811b0e1:r	t#5693:72047fa6e946fc60/8866c5f5ce695749:r	t#5304:b7a3a482dc08f371/462a7330d078c888:r	t#7747:013d0be2bb006b2d/a46033795bce5ba6:r	t#5539:5a3f6aaf1cd3b0c4/8553b05d14efe043:r	t#6971:9d90a67d6ea0214a/9f76b660fe0100d3:r	t#11673:0997a38434f42281/c68a182020f9507a:r	t#6217:a1686a52ed52d171/c1ab95e8b9aea257:r	t#6132:e6e6ef74cf8fa503/7b074bec72b72d93:r	t#6260:eb8b2674d0752990/9e1ef095ad478f45:r	n	t#9126:adb8491a8fc25197	t#5319:2ca31fc73e41c75e/3067f3008c634549:r	t:	t#893:e4467ab2cd243880/2d0342cde20bb80e:r
+row	2	t:2 Segment Rating Curve	t#287:f05af28db3864295	t:4/21/2026 11:13:21 PM	t:9/16/2026 6:26:43 PM	t:Stage Data	t:2 Segment - Flow Data	r:-0.7326817927	r:21.7691008757	i:100	i:1	t#2019:6f2289ca4e450868/b546a531606a82cd:r	t#731:e3e62998e0df4e1e	b#4318040:25288d6da702283d>z#11350584:32a495b9e86029d7	n	t#8260:e44979477eae500b/60535df18811b0e1:r	t#5693:72047fa6e946fc60/8866c5f5ce695749:r	t#5304:b7a3a482dc08f371/462a7330d078c888:r	t#7747:bcb201b95d21e3a5/934e992b8772b7ad:r	t#5539:5a3f6aaf1cd3b0c4/8553b05d14efe043:r	t#6970:55d66e06aa693440/5414d2647acbde41:r	t#16969:609f138acc35751e/294f6512a8bff13c:r	t#6217:a1686a52ed52d171/c1ab95e8b9aea257:r	t#6132:e6e6ef74cf8fa503/7b074bec72b72d93:r	t#6260:eb8b2674d0752990/9e1ef095ad478f45:r	n	t#9120:6513a9db7929224e	t#5319:2ca31fc73e41c75e/3067f3008c634549:r	t:	t#892:4bda78c2483e5d88/143ab9173f0a4a1d:r
+row	3	t:3 Segment Rating Curve	t#433:9f3d1978df02d167	t:4/21/2026 11:16:12 PM	t:9/16/2026 4:42:58 PM	t:Stage Data	t:3 Segment - Flow Data	r:-0.7326817927	r:21.7691008757	i:100	i:1	t#2705:6ba50bc2c164e4af/6501ea5635631d6b:r	t#737:1c46f819bf8d2f44	b#7970467:433a043b0fdc6c1f>z#19859750:9bb4814d69a4e30a	n	t#8260:11ed0181b525264b/d598f83e760b9e82:r	t#5693:25a247b0a778ac29/7ac45d4f4d69615e:r	t#5304:44ecf806ed8953a2/f54aa51340373017:r	t#7748:9617557cb4e7b0ee/3bab9444b47f08eb:r	t#5539:004483ae9d62f197/a6b549c2b16aebff:r	t#6970:e360a2f8c59dfb9c/8644d736867500f4:r	t#22267:13fff8149834ddcf/f34e6e6ce97561cd:r	t#6217:e9cdfde7881ef18e/bcae06c6946ea397:r	t#6132:6f00770b76e35324/7536ca4d6aa1b9d2:r	t#6260:53d2a84c4ba8466e/8589e03b1a7c232b:r	n	t#9134:5c8b343d39c31677	t#5314:085567b25b97b9ec/93059f09d993770c:r	t:	t#898:993c188c6c489fcf/a722841b6fd3f188:r
+table	Time Series Data	sha=8a898323c473a70a	sql=f88acb88f3ac8ca8	rows=4
+column	0	Name	TEXT
+column	1	Description	TEXT
+column	2	CreationDate	TEXT
+column	3	LastModified	TEXT
+column	4	TimeSeries	TEXT
+column	5	UnitLabel	TEXT
+column	6	EntryMethod	TEXT
+column	7	SeriesType	TEXT
+column	8	HECDSSFullFilename	TEXT
+column	9	HECDSSDataPathname	TEXT
+column	10	GHCNSiteNumber	TEXT
+column	11	USGSSiteNumber	TEXT
+column	12	DepthUnit	TEXT
+column	13	TimeInterval	TEXT
+column	14	StartDateTime	TEXT
+column	15	TimeSeriesPlotSettings	TEXT
+column	16	SeasonalityPlotSettings	TEXT
+column	17	DurationPlotSettings	TEXT
+column	18	CHMNSiteNumber	TEXT
+column	19	ABOMSiteNumber	TEXT
+column	20	DischargeUnit	TEXT
+column	21	HeightUnit	TEXT
+column	22	USGSRawText	TEXT
+column	23	ACFPlotSettings	TEXT
+column	24	PACFPlotSettings	TEXT
+column	25	TimeSeriesCompressed	BLOB
+column	26	USGSRawTextCompressed	BLOB
+row	1	t:Stage Data	t#188:ea2cba49c51b800c	t:3/14/2025 5:32:20 PM	t:4/21/2026 3:53:31 PM	t:	t:Stage (ft)	t:Manual	t:DailyDischarge	t:	t:	t:00000000000	t:00000000	t:Inches	t:OneDay	t:2000-01-01T00:00:00.0000000	t#5529:d8e4053d4edacd7c/4be5d1954e9d117f:r	t#10384:8a2670576f219c00/d232e8a21f0de013:r	t:	t:0000000	t:000000	t:CubicFeetPerSecond	t:Feet	t:	t#5194:6d1bdbd1e948ecd7/a3955e01ae78ad2f:r	t#5225:da92eaff34236989/1185b1711f97cab1:r	b#3288:895b0fd5d90b14f9>z#24881:eea7da0ce26cad5a/89b51c7b7a59b7e1:r	b#0:e3b0c44298fc1c14
+row	2	t:1 Segment - Flow Data	t#264:9ce241efe53aee0e	t:3/14/2025 5:32:38 PM	t:4/21/2026 3:54:12 PM	t:	t:Discharge (cfs)	t:Manual	t:DailyDischarge	t:	t:	t:00000000000	t:00000000	t:Inches	t:OneDay	t:2000-01-01T00:00:00.0000000	t#5534:aaf4d0126273552f/5b7425b01cba5a31:r	t#10389:104ecc77fed224b1/c6a6f86dfcc7fcc9:r	t:	t:0000000	t:000000	t:CubicFeetPerSecond	t:Feet	t:	t#5194:6d1bdbd1e948ecd7/a3955e01ae78ad2f:r	t#5225:da92eaff34236989/1185b1711f97cab1:r	b#3368:37f5a89c7468440d>z#25011:b58864a8620050ef/430f88abc1dd52c8:r	b#0:e3b0c44298fc1c14
+row	3	t:2 Segment - Flow Data	t#264:6fa27faec95fece8	t:3/14/2025 6:21:37 PM	t:4/21/2026 8:14:02 PM	t:	t:Discharge (cfs)	t:Manual	t:DailyDischarge	t:	t:	t:00000000000	t:00000000	t:Inches	t:OneDay	t:2000-01-01T00:00:00.0000000	t#5534:1bf5e9ed259b343e/90f27e313702d975:r	t#10389:fec472f439f0edb8/093d2dc41ff28fa8:r	t:	t:0000000	t:000000	t:CubicFeetPerSecond	t:Feet	t:	t#5194:2703205e514195c1/5eee4f0aa4187c2c:r	t#5225:b64569b17017792b/0608c59d12e4f32b:r	b#3346:e414861eaf1fd672>z#25008:07a74138854079a2/76b2cae8281ce5da:r	b#0:e3b0c44298fc1c14
+row	4	t:3 Segment - Flow Data	t#264:824e4aa4ff6357da	t:3/14/2025 6:34:52 PM	t:4/21/2026 8:20:40 PM	t:	t:Discharge (cfs)	t:Manual	t:DailyDischarge	t:	t:	t:00000000000	t:00000000	t:Inches	t:OneDay	t:2000-01-01T00:00:00.0000000	t#5534:1bf5e9ed259b343e/90f27e313702d975:r	t#10389:fec472f439f0edb8/093d2dc41ff28fa8:r	t:	t:	t:	t:CubicFeetPerSecond	t:Feet	t:	t#5194:2703205e514195c1/5eee4f0aa4187c2c:r	t#5225:b64569b17017792b/0608c59d12e4f32b:r	b#3396:3b5970002455ef13>z#25005:a52263d9965b3d0d/516f0e9dea989cc6:r	b#0:e3b0c44298fc1c14
+state	00 Time Series Data	901222c548267ccd	66eae0f9e86047a2
+state	00 Time Series Data/00 TimeSeriesElement 'Stage Data'	c66476196662a824	75577164759c3757
+state	00 Time Series Data/01 TimeSeriesElement '1 Segment - Flow Data'	534eaaa38f5004b2	d8358710e861d01e
+state	00 Time Series Data/02 TimeSeriesElement '2 Segment - Flow Data'	9a578370bdbd2741	366d92f195b39250
+state	00 Time Series Data/03 TimeSeriesElement '3 Segment - Flow Data'	5d3574232604e4e1	ec6c970c80d489a3
+state	01 Input Data	4b47e20068fbbb01	7138759d2d2c7b9f
+state	02 Distribution Fitting Analysis	22c9cdb7873ae49a	4a4ead4bf90c0837
+state	03 Univariate Distribution Analysis	468896e1b6f7e6c8	0e3a3c46961dd428
+state	04 Bivariate Distribution Analysis	2df996a968e4df10	85c24dd973e8dafa
+state	05 Rating Curve Analysis	5f2e69ae16a172ab	771f60dc9817d061
+state	05 Rating Curve Analysis/00 RatingCurveAnalysis '1 Segment Rating Curve'	78c93a74aec6a272	bfda039cd5ede21a
+state	05 Rating Curve Analysis/01 RatingCurveAnalysis '2 Segment Rating Curve'	c6e099fd4c094afd	730f7e895ecb4203
+state	05 Rating Curve Analysis/02 RatingCurveAnalysis '3 Segment Rating Curve'	60b8c14d7895b2ba	0c64ba3ddfc02730
+state	06 Time Series Analysis	2f4a1830d606047e	0e6e4ee694390acc
+state	Project	1c2ad6fede531ee5	1c2ad6fede531ee5
+end

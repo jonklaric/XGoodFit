@@ -1,0 +1,255 @@
+bestfit-file-description	1
+file	5-bivariate-distribution-analysis/2-coincident-frequency/waimea-river-stage-frequency.bestfit	sha=6c68b6a530671afb	tables=9	cells=901
+pragma	encoding	UTF-8
+pragma	journal_mode	wal
+pragma	user_version	0
+pragma	application_id	0
+pragma	auto_vacuum	0
+table	<Bivariate Distribution>	sha=75ffbfaa5ca5fa8c	sql=43c4483f32a71a3f	rows=7
+column	0	Name	TEXT
+column	1	Description	TEXT
+column	2	CreationDate	TEXT
+column	3	LastModified	TEXT
+column	4	MarginalX	TEXT
+column	5	MarginalY	TEXT
+column	6	XYOrdinates	TEXT
+column	7	BivariateDistribution	TEXT
+column	8	BayesianAnalysis	TEXT
+column	9	MCMCResults	BLOB
+column	10	AnalysisResults	TEXT
+column	11	CopulaPlotSettings	TEXT
+column	12	KernelDensityPlotSettings	TEXT
+column	13	HistogramPlotSettings	TEXT
+column	14	BivariatePlotSettings	TEXT
+column	15	MeanLikelihoodPlotSettings	TEXT
+column	16	AutocorrelationPlotSettings	TEXT
+column	17	MarkovChainTracesPlotSettings	TEXT
+column	18	InfluenceDiagnosticsPlotSettings	TEXT
+column	19	MCMCReport	TEXT
+column	20	AnalysisXml	TEXT
+row	1	t:Normal Copula	t#303:242bb3fdc76a5e0e	t:9/4/2024 6:56:17 PM	t:9/17/2026 4:02:59 PM	t:WaimeaPk - Exact + Historical + RR Prior_RSkew	t:MakaweliPk - Exact + RR Prior_RSkew	t#345:ab5fcfa55090a168/28cf434e3544d9ff:r	t#479:a378fd08ec0995a9/d4e9c88914a708ca:r	t#737:35aaf443b637b587	b#488518:b6d479e43d444a13>z#1829108:02e1aeda657bcb2e	t#197:1e1dc79d7316f1d9	t#6084:96969fbf483878dc/ddf7e81ceb63adeb:r	t#5687:f7c0fe7f8cc8be1c/a12abccf7ad5c7c3:r	t#5298:e89b01f97bb97145/6e8c631dd5bf837b:r	t#6280:542e7148ca408659/b4be260df3c66797:r	t#5547:63d7573c0ee1e005/745a6f152c67ddd4:r	t#6972:5fd9f32147d6d614/560f8f84f2317406:r	t#4605:df5a69d3cb44934b/925650e030396518:r	t#5314:085567b25b97b9ec/93059f09d993770c:r	t:	t#1162:60e68bf1edf6b5b7/a29fffc4e6588b66:r
+row	2	t:Gumbel Copula	t#303:bb47d7624d770b2a	t:9/4/2024 7:00:07 PM	t:9/17/2026 4:02:59 PM	t:WaimeaPk - Exact + Historical + RR Prior_RSkew	t:MakaweliPk - Exact + RR Prior_RSkew	t#345:ab5fcfa55090a168/28cf434e3544d9ff:r	t#408:22389b65b8e6df31/57671c0fa4663323:r	t#737:8a40751153a7d9a4	b#492681:9905a58eb2ec7e38>z#1801658:3a32702f2c290193	t#198:f424009f8daadda8	t#6244:2b0f04e377bd5da6/c242d3ff997e49bc:r	t#5687:f7c0fe7f8cc8be1c/a12abccf7ad5c7c3:r	t#5298:e89b01f97bb97145/6e8c631dd5bf837b:r	t#6280:542e7148ca408659/b4be260df3c66797:r	t#5547:63d7573c0ee1e005/745a6f152c67ddd4:r	t#6972:5fd9f32147d6d614/560f8f84f2317406:r	t#4605:df5a69d3cb44934b/925650e030396518:r	t#5314:085567b25b97b9ec/93059f09d993770c:r	t:	t#1162:725047aad25c110a/7fe55b360f0dda68:r
+row	3	t:Clayton Copula	t#304:ca844168e0372d32	t:9/4/2024 7:01:33 PM	t:9/17/2026 4:02:59 PM	t:WaimeaPk - Exact + Historical + RR Prior_RSkew	t:MakaweliPk - Exact + RR Prior_RSkew	t#345:ab5fcfa55090a168/28cf434e3544d9ff:r	t#411:bdf36ddfaf068b63/5ea098962b899b64:r	t#738:55c90d0d876cf6ad	b#496980:b90d99bc22111918>z#1823297:0b4ce3902fb46f9a	t#197:55e16a4fdf6780d8	t#6244:2b0f04e377bd5da6/c242d3ff997e49bc:r	t#5687:f7c0fe7f8cc8be1c/a12abccf7ad5c7c3:r	t#5298:e89b01f97bb97145/6e8c631dd5bf837b:r	t#6280:542e7148ca408659/b4be260df3c66797:r	t#5547:63d7573c0ee1e005/745a6f152c67ddd4:r	t#6972:5fd9f32147d6d614/560f8f84f2317406:r	t#4591:bc19129724cc0331/6822ab2c9c79702e:r	t#5314:085567b25b97b9ec/93059f09d993770c:r	t:	t#1163:c8d921b483961088/836ac1c2e11de092:r
+row	4	t:Joe Copula	t#300:d0a1d129b561ef2c	t:9/4/2024 7:05:35 PM	t:9/17/2026 4:03:00 PM	t:WaimeaPk - Exact + Historical + RR Prior_RSkew	t:MakaweliPk - Exact + RR Prior_RSkew	t#345:ab5fcfa55090a168/28cf434e3544d9ff:r	t#405:c0408748dd315d53/2c36fc8c1183e9c5:r	t#738:0f33dd0798107e70	b#495533:2f7b81799d81b8d1>z#1804396:29d40e514aa6ccb9	t#198:df063f54b3b758ea	t#5989:28f58c72a7bd71ed/3d35c77493c2cba5:r	t#5687:f7c0fe7f8cc8be1c/a12abccf7ad5c7c3:r	t#5298:e89b01f97bb97145/6e8c631dd5bf837b:r	t#6280:542e7148ca408659/b4be260df3c66797:r	t#5547:63d7573c0ee1e005/745a6f152c67ddd4:r	t#6972:5fd9f32147d6d614/560f8f84f2317406:r	t#4605:df5a69d3cb44934b/925650e030396518:r	t#5314:085567b25b97b9ec/93059f09d993770c:r	t:	t#1163:a19b49ff0d788ccb/5a990893b8fc8de5:r
+row	5	t:Frank Copula	t#302:b9ff1b4c2b44731d	t:9/4/2024 7:06:31 PM	t:9/17/2026 4:03:00 PM	t:WaimeaPk - Exact + Historical + RR Prior_RSkew	t:MakaweliPk - Exact + RR Prior_RSkew	t#345:ab5fcfa55090a168/28cf434e3544d9ff:r	t#415:9e219fdd5b6742f4/24099e76a3c70e1d:r	t#738:19605bdc60f82c47	b#498238:eb5d7eb2a400616e>z#1807485:f515d1a1835baed5	t#198:74b7ff4996433cd3	t#6244:2b0f04e377bd5da6/c242d3ff997e49bc:r	t#5687:f7c0fe7f8cc8be1c/a12abccf7ad5c7c3:r	t#5298:e89b01f97bb97145/6e8c631dd5bf837b:r	t#6280:542e7148ca408659/b4be260df3c66797:r	t#5547:63d7573c0ee1e005/745a6f152c67ddd4:r	t#6972:5fd9f32147d6d614/560f8f84f2317406:r	t#4605:df5a69d3cb44934b/925650e030396518:r	t#5314:085567b25b97b9ec/93059f09d993770c:r	t:	t#1163:31200eab41eea285/66dbc6c0e053ffdd:r
+row	6	t:AMH Copula	t#310:f60d98e0e4b3bb87	t:9/4/2024 7:07:13 PM	t:9/17/2026 4:03:00 PM	t:WaimeaPk - Exact + Historical + RR Prior_RSkew	t:MakaweliPk - Exact + RR Prior_RSkew	t#345:ab5fcfa55090a168/28cf434e3544d9ff:r	t#486:1d08b4686452e71a/d614093cbd46ce7d:r	t#738:d479dbf3f4462cac	b#479166:33851914815f10c2>z#1826751:1afed1f4cccb030f	t#197:f12c4708d61d28e3	t#6084:96969fbf483878dc/ddf7e81ceb63adeb:r	t#5687:f7c0fe7f8cc8be1c/a12abccf7ad5c7c3:r	t#5298:e89b01f97bb97145/6e8c631dd5bf837b:r	t#6280:542e7148ca408659/b4be260df3c66797:r	t#5547:63d7573c0ee1e005/745a6f152c67ddd4:r	t#6972:5fd9f32147d6d614/560f8f84f2317406:r	t#4605:df5a69d3cb44934b/925650e030396518:r	t#5314:085567b25b97b9ec/93059f09d993770c:r	t:	t#1163:06cde52135f871c6/a762b1ca92348155:r
+row	7	t:Normal Copula - Conditional	t#293:fcbb029666d2350c	t:10/9/2024 8:00:21 PM	t:9/17/2026 4:03:00 PM	t:WaimeaPk - Exact + Historical + RR Prior_RSkew	t:MakaweliPk - Cond - Exact	t#345:ab5fcfa55090a168/28cf434e3544d9ff:r	t#479:122cba9502493428/5c3cc0d9a81e2904:r	t#738:d90f2b296ced1918	b#531531:49aedb11392923c5>z#1901504:3bf56a145fc88a05	t#197:991049063420dec4	t#6135:6fd7046aa7f972e8/f7a6621eb0dae7ba:r	t#5687:f7c0fe7f8cc8be1c/a12abccf7ad5c7c3:r	t#5298:e89b01f97bb97145/6e8c631dd5bf837b:r	t#6280:542e7148ca408659/b4be260df3c66797:r	t#5547:63d7573c0ee1e005/745a6f152c67ddd4:r	t#6971:0d50e10db7e03993/aee2153111d03180:r	t#4605:df5a69d3cb44934b/925650e030396518:r	t#5314:085567b25b97b9ec/93059f09d993770c:r	t:	t#1163:8ab49c912fe65a7b/10b5b06661e83666:r
+table	<Coincident Frequency>	sha=4cef5430db3ef68c	sql=9aa6cc89cccf95d4	rows=1
+column	0	Name	TEXT
+column	1	Description	TEXT
+column	2	CreationDate	TEXT
+column	3	LastModified	TEXT
+column	4	BivariateAnalysis	TEXT
+column	5	InputData	TEXT
+column	6	XValues	TEXT
+column	7	YValues	TEXT
+column	8	BivariateResponse	TEXT
+column	9	NumberOfBins	TEXT
+column	10	BayesianAnalysis	TEXT
+column	11	AnalysisResults	TEXT
+column	12	ZOutputValues	TEXT
+column	13	FrequencyPlotSettings	TEXT
+row	1	t:CFA - Normal - Conditional	t#332:9d007b478d88983b	t:5/4/2026 8:37:27 PM	t:9/17/2026 4:03:09 PM	t:Normal Copula - Conditional	t:	t:2241,5342,12555,25544,30427,41676,47053,62140,70162,93827	t:2453,4363,7567,12531,19464	t#699:49369f4b8d097209	t:50	t#591:42054cc2ea70b751	t#4242:b838aed35e005891	t#947:cd77e24789dbf4c0	t#8384:1b73623c61fb89e7/255911a6dc2d6131:r
+table	<Univariate Distribution>	sha=9796863af25009ed	sql=634e244c3549607c	rows=7
+column	0	Name	TEXT
+column	1	Description	TEXT
+column	2	CreationDate	TEXT
+column	3	LastModified	TEXT
+column	4	InputData	TEXT
+column	5	UnivariateDistribution	TEXT
+column	6	BayesianAnalysis	TEXT
+column	7	MCMCResults	BLOB
+column	8	FrequencyAnalysisResults	TEXT
+column	9	ChronologyAnalysisResults	TEXT
+column	10	ProbabilityOrdinates	TEXT
+column	11	FrequencyPlotSettings	TEXT
+column	12	ChronologyPlotSettings	TEXT
+column	13	KernelDensityPlotSettings	TEXT
+column	14	HistogramPlotSettings	TEXT
+column	15	BivariatePlotSettings	TEXT
+column	16	MeanLikelihoodPlotSettings	TEXT
+column	17	AutocorrelationPlotSettings	TEXT
+column	18	MarkovChainTracesPlotSettings	TEXT
+column	19	AnalysisResults	TEXT
+column	20	InfluenceDiagnosticsPlotSettings	TEXT
+column	21	AnalysisXml	TEXT
+column	22	MCMCReport	TEXT
+row	1	t:MakaweliPk - Exact	t#267:41d284ba86836137	t:1/1/0001 7:00:00 AM	t:9/17/2026 4:02:59 PM	t:16036000_Makaweli_Peaks	t#2477:5f672c209f55b6a2/8457be8df66ddcac:r	t#716:bc5b3e05191abcdc	b#946339:6afa27dd050fef5b>z#2862672:c11e528fc460a573	t#1989:82c324ec44619cf1/36a0fbef3ffb2b37:r	t:	t#439:5840f09d7e1a6c45	t#4682:45d135fefea8b6d3/de59db2ffd6f57c0:r	t#4611:b0a8955fcb849c7b/d3fc6f99aa50c978:r	t#4593:41c9f94839c58e3d/2deea72bd74848b8:r	t#4593:41c9f94839c58e3d/2deea72bd74848b8:r	t#6327:56a83fa99f82d13d/c7355a90ebbd63eb:r	t#4641:4a2593cc92c384c2/ffa2636a65783f14:r	t#6284:6ac88c15c81da73a/b3297ce66600dda7:r	t#4619:4f6b3530be3b1f87/4291b3775edc7beb:r	t#2228:51d09aecee6c74ed/335fe9b094196c57:r	t#4556:2e014e2261b6de17/79d75507fa97e7c0:r	t#1270:a5f944b92b05a5f8/65f2fc80ad24d216:r	t:
+row	2	t:WaimeaPk - Exact + Historical + RR Prior	t#325:ee865ed923cf098f	t:1/1/0001 7:00:00 AM	t:9/17/2026 4:02:59 PM	t:16031000_Waimea_Peaks	t#3008:5d15b875ebb25cc6/1643fce0b2a56baa:r	t#733:e8c471d4948c9d96	b#1201557:0940e183d6b4f787>z#3618984:f604ee3606bfb20c	t#1997:efd0f6240b87c75a/0d4b6c02931ae28b:r	t:	t#439:5840f09d7e1a6c45	t#9906:f6b9c68088972c67/dc556e2db0ce7afa:r	t#4628:620e8785f9dd624b/9be3de913d806529:r	t#5693:f5e2a6f8bd8501ee/6ff45bee8050e112:r	t#5304:2b7352436bc47b91/02e46db11f3a8bbc:r	t#7751:6811a2186a2f0ad8/bd294f68563756af:r	t#5547:63d7573c0ee1e005/745a6f152c67ddd4:r	t#6975:6d53cf1480e1db3f/eeac333c0380476d:r	t#4591:bc19129724cc0331/6822ab2c9c79702e:r	t#2224:5a401e42b4ace113/4ccf7265c0b9977b:r	t#5999:6c43dec84bf3ffb9/57d641a90b9832ee:r	t#1287:03918a1aa96784bc/b155687e7b01220e:r	t:
+row	3	t:WaimeaPk - Exact + Historical	t#265:84954b29035c53e7	t:1/1/0001 7:00:00 AM	t:9/17/2026 4:02:59 PM	t:16031000_Waimea_Peaks	t#2477:8a5d684b21d3e800/37babbf8e53ae75b:r	t#716:af22dcddd4dd1052	b#943469:08715f9b8c76eb5b>z#2845517:b2acc7f4ec6941d8	t#2001:ac04a923b60cc877/d077700f6bcf042c:r	t:	t#439:5840f09d7e1a6c45	t#4682:45d135fefea8b6d3/de59db2ffd6f57c0:r	t#4611:b0a8955fcb849c7b/d3fc6f99aa50c978:r	t#4593:41c9f94839c58e3d/2deea72bd74848b8:r	t#4593:41c9f94839c58e3d/2deea72bd74848b8:r	t#6327:56a83fa99f82d13d/c7355a90ebbd63eb:r	t#4641:4a2593cc92c384c2/ffa2636a65783f14:r	t#6285:9f90eb8c65e224a8/ecc22bd17b75d0e4:r	t#4619:4f6b3530be3b1f87/4291b3775edc7beb:r	t#2230:7c9ebf573d04cf7a/f9a51f8d4b5b4f5f:r	t#4556:2e014e2261b6de17/79d75507fa97e7c0:r	t#1270:077e2d2ab374d98d/17f4c9193202bd66:r	t:
+row	4	t:MakaweliPk - Exact + RR Prior	t#327:956d8f41210fed52	t:1/1/0001 7:00:00 AM	t:9/17/2026 4:02:59 PM	t:16036000_Makaweli_Peaks	t#2946:11ce296a2bb1fc7a/62e77b1ddd3da5e0:r	t#716:426240fb39f06215	b#947340:b950d2d0ce740278>z#2862831:6e7105a205a5b413	t#1998:c88f4895d93fd8b5/55589a88388864c9:r	t:	t#439:5840f09d7e1a6c45	t#4682:45d135fefea8b6d3/de59db2ffd6f57c0:r	t#4611:b0a8955fcb849c7b/d3fc6f99aa50c978:r	t#4593:41c9f94839c58e3d/2deea72bd74848b8:r	t#4593:41c9f94839c58e3d/2deea72bd74848b8:r	t#6327:56a83fa99f82d13d/c7355a90ebbd63eb:r	t#4641:4a2593cc92c384c2/ffa2636a65783f14:r	t#6285:81a10d00835c567e/bd92588262ebe4ee:r	t#4619:4f6b3530be3b1f87/4291b3775edc7beb:r	t#2233:38407539647c74e4/33a7d5538332b895:r	t#4556:2e014e2261b6de17/79d75507fa97e7c0:r	t#1270:a16a72087ce8ebe5/941a45688dcfea79:r	t:
+row	5	t:MakaweliPk - Exact + RR Prior_RSkew	t#451:ab0a848ac7686976	t:1/1/0001 7:00:00 AM	t:9/17/2026 4:02:59 PM	t:16036000_Makaweli_Peaks	t#2990:60184b8d29790c21/89a4767b67638329:r	t#734:8a4218f1e9b5dd92	b#1212371:5cbd6d57034cf7d2>z#3643599:a97ec4b2eab2579e	t#2001:8461cf4669a75a97/5f724e81eb9dc826:r	t:	t#439:5840f09d7e1a6c45	t#9097:b470cb3d3a4f6616/8da8f9388eecfd32:r	t#4611:190efd188b52dd83/1c45a77da45d4f48:r	t#5693:f5e2a6f8bd8501ee/6ff45bee8050e112:r	t#5304:2b7352436bc47b91/02e46db11f3a8bbc:r	t#7750:4f1f1f862a3b9a89/d16a857a1d9ea548:r	t#5547:63d7573c0ee1e005/745a6f152c67ddd4:r	t#6975:6d53cf1480e1db3f/eeac333c0380476d:r	t#4591:bc19129724cc0331/6822ab2c9c79702e:r	t#2232:a2150c155687f540/5eeb174240f7c215:r	t#5999:6c43dec84bf3ffb9/57d641a90b9832ee:r	t#1288:c6e372fa35c14943/7d91fe5ef06f7a41:r	t:
+row	6	t:WaimeaPk - Exact + Historical + RR Prior_RSkew	t#449:4ecf3c2601404224	t:1/1/0001 7:00:00 AM	t:9/17/2026 4:02:59 PM	t:16031000_Waimea_Peaks	t#2982:63759f907acc3799/ef50147fc2bdc317:r	t#734:e0bcdbf5ce7976a9	b#1204868:44f46b460bdf8ae0>z#3625249:e34a5f47c9fc416b	t#2001:17dc403df8f16a35/a53dfc513a7bbc32:r	t:	t#439:5840f09d7e1a6c45	t#9928:964e7bf07b44b1bd/d935b76304814e3d:r	t#4628:620e8785f9dd624b/9be3de913d806529:r	t#5693:f5e2a6f8bd8501ee/6ff45bee8050e112:r	t#5304:2b7352436bc47b91/02e46db11f3a8bbc:r	t#7751:8d06d75bdbb6242b/639f2ac903d277f5:r	t#5547:63d7573c0ee1e005/745a6f152c67ddd4:r	t#6975:6d53cf1480e1db3f/eeac333c0380476d:r	t#4619:7334abaccb1d0cf0/6982513830fcc501:r	t#2233:0084288773dc46fc/c063add19df5444c:r	t#5999:6c43dec84bf3ffb9/57d641a90b9832ee:r	t#1288:ef27766c5dfd0fce/671cc357ca212b0f:r	t:
+row	7	t:MakaweliPk - Cond - Exact	t#279:1c73d6a489b90acb	t:10/9/2024 7:59:45 PM	t:9/17/2026 4:02:59 PM	t:16036000_Makaweli_Conditional_Peaks	t#2542:28fafa778474b9b9/3764aa86e00cb66b:r	t#733:5c3bcd2a66964de9	b#1211026:536897d4e56218b9>z#3621074:797a6a186e88a8bd	t#1995:99fb705b1ae61759/344adca4b2b76432:r	t:	t#439:5840f09d7e1a6c45	t#8287:baba5383acd3fadf/b7f6994ee944951d:r	t#4611:190efd188b52dd83/1c45a77da45d4f48:r	t#5693:f5e2a6f8bd8501ee/6ff45bee8050e112:r	t#5304:2b7352436bc47b91/02e46db11f3a8bbc:r	t#7750:4eb8f9abfdc71f67/9a935cc39d732e07:r	t#5547:63d7573c0ee1e005/745a6f152c67ddd4:r	t#6975:6d53cf1480e1db3f/eeac333c0380476d:r	t#4591:bc19129724cc0331/6822ab2c9c79702e:r	t#2228:29c52e02d5c70bf1/1d923c01df7ed1b3:r	t#5314:085567b25b97b9ec/93059f09d993770c:r	t#1287:684df12548847bd6/a9901e0543fc0e52:r	t:
+table	Bayesian Estimation Analysis	sha=3f505185deb79e3d	sql=41608a8221f3a47c	rows=10
+column	0	Name	TEXT
+column	1	Description	TEXT
+column	2	CreationDate	TEXT
+column	3	LastModified	TEXT
+column	4	InputData	TEXT
+column	5	ParentDistribution	TEXT
+column	6	PriorDistributions	TEXT
+column	7	UseDefaultFlatPriors	BOOLEAN
+column	8	PriorQuantileDistributions	TEXT
+column	9	EnablePriorQuantileDistributions	BOOLEAN
+column	10	UseSingleQuantile	BOOLEAN
+column	11	NumberOfChains	INT4
+column	12	WarmUpEvolutions	INT4
+column	13	Evolutions	INT4
+column	14	ThinningInterval	INT4
+column	15	DiagnosticInterval	INT4
+column	16	ConvergenceThreshold	DOUBLE
+column	17	UseSimulationDefaults	BOOLEAN
+column	18	PRNGSeed	INT4
+column	19	InitialPopulationLength	INT4
+column	20	Jump	DOUBLE
+column	21	JumpThreshold	DOUBLE
+column	22	Noise	DOUBLE
+column	23	UseAdvancedSimulationDefaults	BOOLEAN
+column	24	CredibleIntervalWidth	DOUBLE
+column	25	OutputLength	INT4
+column	26	OutputFrequencyOrdinates	TEXT
+column	27	FrequencyPlotSettings	TEXT
+column	28	MeanLikelihoodPlotSettings	TEXT
+column	29	GelmanRubinPlotSettings	TEXT
+column	30	KernelDensityPlotSettings	TEXT
+column	31	HistogramPlotSettings	TEXT
+column	32	AutocorrelationPlotSettings	TEXT
+column	33	MarkovChainTracesPlotSettings	TEXT
+column	34	BivariatePlotSettings	TEXT
+column	35	IsEstimated	BOOLEAN
+column	36	MCMCResults	BLOB
+row	1	t:16031000_WaimeaPk	t#333:67df050f798da285	t:8/21/2024 10:48:22 AM	t:8/21/2024 3:28:16 PM	t:16031000_WaimeaPk	t:LogPearsonTypeIII	t#204:eefb56c3f9ea47e4	i:1	t:<PriorQuantileDistributions />	i:0	i:1	i:6	i:1500	i:3000	i:20	i:100	r:1.01	i:1	i:12345	i:300	r:0.971630931303994	r:0.2	r:0.001	i:1	r:0.9	i:10000	t#511:8ad6052422ec50a7	t#3447:49a1aeaa587926e1/76c7f13029773194:r	t#3480:4d6f14ec8d39faf7/0f46e92452381f54:r	t:	t#3459:23d1c7648be5a68e/7e68fb2ecc141dab:r	t#3459:23d1c7648be5a68e/7e68fb2ecc141dab:r	t#3452:f79f20737f7a0b20/72f1336ed4e4a552:r	t#3461:d6af4c3552e37e82/60265e70c22e03ed:r	t#4489:5a2a40ba52ffd52e/fa9277a2b04889e9:r	i:1	b#1696856:749eb5bcbacd8a01>z#3812138:06f1e6176a8f62f7
+row	2	t:16036000_MakaweliPk	t#337:656e8a3397533075	t:8/21/2024 10:48:36 AM	t:8/21/2024 3:28:16 PM	t:16036000_MakaweliPk	t:LogPearsonTypeIII	t#204:d3b5293851040622	i:1	t:<PriorQuantileDistributions />	i:0	i:1	i:6	i:1500	i:3000	i:20	i:100	r:1.01	i:1	i:12345	i:300	r:0.971630931303994	r:0.2	r:0.001	i:1	r:0.9	i:10000	t#511:8ad6052422ec50a7	t#3447:49a1aeaa587926e1/76c7f13029773194:r	t#3480:4d6f14ec8d39faf7/0f46e92452381f54:r	t:	t#3459:23d1c7648be5a68e/7e68fb2ecc141dab:r	t#3459:23d1c7648be5a68e/7e68fb2ecc141dab:r	t#3452:f79f20737f7a0b20/72f1336ed4e4a552:r	t#3461:d6af4c3552e37e82/60265e70c22e03ed:r	t#4489:5a2a40ba52ffd52e/fa9277a2b04889e9:r	i:1	b#1716660:8022d9f5d6382206>z#3823424:3cee61d1936f9608
+row	3	t:16031000_WaimeaPk_RgSkew	t#340:bc37cbde45b9657a	t:8/21/2024 11:00:37 AM	t:8/21/2024 3:28:16 PM	t:16031000_WaimeaPk	t:LogPearsonTypeIII	t#211:d8ac6a4abaf63934	i:0	t:<PriorQuantileDistributions />	i:0	i:1	i:6	i:1500	i:3000	i:20	i:100	r:1.01	i:1	i:12345	i:300	r:0.971630931303994	r:0.2	r:0.001	i:1	r:0.9	i:10000	t#511:8ad6052422ec50a7	t#3447:49a1aeaa587926e1/76c7f13029773194:r	t#3480:4d6f14ec8d39faf7/0f46e92452381f54:r	t:	t#3459:23d1c7648be5a68e/7e68fb2ecc141dab:r	t#3459:23d1c7648be5a68e/7e68fb2ecc141dab:r	t#3452:f79f20737f7a0b20/72f1336ed4e4a552:r	t#3461:d6af4c3552e37e82/60265e70c22e03ed:r	t#4489:5a2a40ba52ffd52e/fa9277a2b04889e9:r	i:1	b#2144477:2a6fb8f3712c3694>z#3819200:5c0d254e4654e11d
+row	4	t:16036000_MakaweliPk_RgSkew	t#344:525fbba2eda1e793	t:8/21/2024 12:14:56 PM	t:8/21/2024 3:28:17 PM	t:16036000_MakaweliPk	t:LogPearsonTypeIII	t#211:e2a4b8733dd5ab10	i:0	t:<PriorQuantileDistributions />	i:0	i:1	i:6	i:1500	i:3000	i:20	i:100	r:1.01	i:1	i:12345	i:300	r:0.971630931303994	r:0.2	r:0.001	i:1	r:0.9	i:10000	t#511:8ad6052422ec50a7	t#7345:e126ac0d0c1a433f/e61c1e7ba417d8cc:r	t#4520:ca7d9a86b01c026a/d028bf29693bb0b9:r	t:	t#4611:8263e97f5a1e60d4/0142decb15d7f044:r	t#4198:d680eba934ebee99/658b1c0013a0bc8f:r	t#5154:ca6f13ed41d7a189/add736165cd615f4:r	t#9442:5c572cbc29c4e1bf/58049ed662f149ce:r	t#5853:37f2169c84a26e79/8b8cc78884d43ae4:r	i:1	b#2153307:6e520f06a5aeb34e>z#3824711:ecfa205e93eb26c6
+row	5	t:16031000_WaimeaPk_RgSkew_MGBT	t#350:caeeb3e4bfa92b79	t:8/21/2024 1:33:04 PM	t:8/21/2024 3:28:17 PM	t:16031000_WaimeaPk_MGBT	t:LogPearsonTypeIII	t#211:d8ac6a4abaf63934	i:0	t:<PriorQuantileDistributions />	i:0	i:1	i:6	i:1500	i:3000	i:20	i:100	r:1.01	i:1	i:12345	i:300	r:0.971630931303994	r:0.2	r:0.001	i:1	r:0.9	i:10000	t#511:8ad6052422ec50a7	t#3447:49a1aeaa587926e1/76c7f13029773194:r	t#3480:4d6f14ec8d39faf7/0f46e92452381f54:r	t:	t#3459:23d1c7648be5a68e/7e68fb2ecc141dab:r	t#3459:23d1c7648be5a68e/7e68fb2ecc141dab:r	t#3452:f79f20737f7a0b20/72f1336ed4e4a552:r	t#3461:d6af4c3552e37e82/60265e70c22e03ed:r	t#4489:5a2a40ba52ffd52e/fa9277a2b04889e9:r	i:1	b#2139274:712cba62800c0af1>z#3817946:13863815e45dc009
+row	6	t:16036000_MakaweliPk_RgSkew_Censored	t#369:3abdc7a9ee48d660	t:8/21/2024 1:33:23 PM	t:8/21/2024 3:28:17 PM	t:16036000_MakaweliPk_CensoredLowest2	t:LogPearsonTypeIII	t#211:e2a4b8733dd5ab10	i:0	t:<PriorQuantileDistributions />	i:0	i:1	i:6	i:1500	i:3000	i:20	i:100	r:1.01	i:1	i:12345	i:300	r:0.971630931303994	r:0.2	r:0.001	i:1	r:0.9	i:10000	t#511:8ad6052422ec50a7	t#3447:49a1aeaa587926e1/76c7f13029773194:r	t#3480:4d6f14ec8d39faf7/0f46e92452381f54:r	t:	t#3459:23d1c7648be5a68e/7e68fb2ecc141dab:r	t#3459:23d1c7648be5a68e/7e68fb2ecc141dab:r	t#3452:f79f20737f7a0b20/72f1336ed4e4a552:r	t#3461:d6af4c3552e37e82/60265e70c22e03ed:r	t#4489:5a2a40ba52ffd52e/fa9277a2b04889e9:r	i:1	b#2152313:f327f7063cb904a1>z#3824810:8de907a3637c5201
+row	7	t:16036000_MakaweliPk_SCALED2Waimea	t#365:d7134e919bb29d6c	t:8/21/2024 12:20:29 PM	t:8/21/2024 3:28:18 PM	t:16036000_MakaweliPk_SCALED2Waimea	t:LogPearsonTypeIII	t#211:e2a4b8733dd5ab10	i:0	t:<PriorQuantileDistributions />	i:0	i:1	i:6	i:1500	i:3000	i:20	i:100	r:1.01	i:1	i:12345	i:300	r:0.971630931303994	r:0.2	r:0.001	i:1	r:0.9	i:10000	t#511:8ad6052422ec50a7	t#3447:49a1aeaa587926e1/76c7f13029773194:r	t#3480:4d6f14ec8d39faf7/0f46e92452381f54:r	t:	t#3459:23d1c7648be5a68e/7e68fb2ecc141dab:r	t#3459:23d1c7648be5a68e/7e68fb2ecc141dab:r	t#3452:f79f20737f7a0b20/72f1336ed4e4a552:r	t#3461:d6af4c3552e37e82/60265e70c22e03ed:r	t#4489:5a2a40ba52ffd52e/fa9277a2b04889e9:r	i:1	b#2132449:69684e5119ce8267>z#3815504:83dcbdbe266c7c1f
+row	8	t:16031000_WaimeaPk_SCALED2Makaweli	t#365:9c18e5f6ac9ac4fb	t:8/21/2024 1:06:07 PM	t:8/21/2024 3:28:18 PM	t:16031000_WaimeaPk_SCALED2Makaweli	t:LogPearsonTypeIII	t#211:d8ac6a4abaf63934	i:0	t:<PriorQuantileDistributions />	i:0	i:1	i:6	i:1500	i:3000	i:20	i:100	r:1.01	i:1	i:12345	i:300	r:0.971630931303994	r:0.2	r:0.001	i:1	r:0.9	i:10000	t#511:8ad6052422ec50a7	t#3447:49a1aeaa587926e1/76c7f13029773194:r	t#3480:4d6f14ec8d39faf7/0f46e92452381f54:r	t:	t#3459:23d1c7648be5a68e/7e68fb2ecc141dab:r	t#3459:23d1c7648be5a68e/7e68fb2ecc141dab:r	t#3452:f79f20737f7a0b20/72f1336ed4e4a552:r	t#3461:d6af4c3552e37e82/60265e70c22e03ed:r	t#4489:5a2a40ba52ffd52e/fa9277a2b04889e9:r	i:1	b#2141855:a1d502b500cbaf20>z#3817286:5d13290121fc2f93
+row	9	t:16031000_WaimeaPk_SCALED2_85sqmi	t#363:9ec0c5bffcdfd1a7	t:8/21/2024 1:59:38 PM	t:8/21/2024 3:28:19 PM	t:16031000_WaimeaPk_SCALED2_85sqmi	t:LogPearsonTypeIII	t#211:d8ac6a4abaf63934	i:0	t:<PriorQuantileDistributions />	i:0	i:1	i:6	i:1500	i:3000	i:20	i:100	r:1.01	i:1	i:12345	i:300	r:0.971630931303994	r:0.2	r:0.001	i:1	r:0.9	i:10000	t#511:8ad6052422ec50a7	t#3447:49a1aeaa587926e1/76c7f13029773194:r	t#3480:4d6f14ec8d39faf7/0f46e92452381f54:r	t:	t#3459:23d1c7648be5a68e/7e68fb2ecc141dab:r	t#3459:23d1c7648be5a68e/7e68fb2ecc141dab:r	t#3452:f79f20737f7a0b20/72f1336ed4e4a552:r	t#3461:d6af4c3552e37e82/60265e70c22e03ed:r	t#4489:5a2a40ba52ffd52e/fa9277a2b04889e9:r	i:1	b#2142284:e756d066c013e7ac>z#3819959:7e705bf287f34ccd
+row	10	t:16036000_MakaweliPk_SCALED2_85sqmi	t#367:dc95e15213887927	t:8/21/2024 2:15:57 PM	t:8/21/2024 3:28:19 PM	t:16036000_MakaweliPk_SCALED2_85sqmi	t:LogPearsonTypeIII	t#211:e2a4b8733dd5ab10	i:0	t:<PriorQuantileDistributions />	i:0	i:1	i:6	i:1500	i:3000	i:20	i:100	r:1.01	i:1	i:12345	i:300	r:0.971630931303994	r:0.2	r:0.001	i:1	r:0.9	i:10000	t#511:8ad6052422ec50a7	t#3447:49a1aeaa587926e1/76c7f13029773194:r	t#3480:4d6f14ec8d39faf7/0f46e92452381f54:r	t:	t#3459:23d1c7648be5a68e/7e68fb2ecc141dab:r	t#3459:23d1c7648be5a68e/7e68fb2ecc141dab:r	t#3452:f79f20737f7a0b20/72f1336ed4e4a552:r	t#3461:d6af4c3552e37e82/60265e70c22e03ed:r	t#4489:5a2a40ba52ffd52e/fa9277a2b04889e9:r	i:1	b#2133835:ecb21ab21eea26f6>z#3815372:fbcbfcfb54a4ee9c
+table	Bivariate Distribution Analysis	sha=c3d0365be08a5755	sql=ba810e1b5ec29928	rows=8
+column	0	Name	TEXT
+column	1	Type	TEXT
+row	1	t:Normal Copula	t:RMC.BestFit.UI.BivariateAnalysis
+row	2	t:Gumbel Copula	t:RMC.BestFit.UI.BivariateAnalysis
+row	3	t:Clayton Copula	t:RMC.BestFit.UI.BivariateAnalysis
+row	4	t:Joe Copula	t:RMC.BestFit.UI.BivariateAnalysis
+row	5	t:Frank Copula	t:RMC.BestFit.UI.BivariateAnalysis
+row	6	t:AMH Copula	t:RMC.BestFit.UI.BivariateAnalysis
+row	7	t:Normal Copula - Conditional	t:RMC.BestFit.UI.BivariateAnalysis
+row	8	t:CFA - Normal - Conditional	t:RMC.BestFit.UI.CoincidentFrequencyAnalysis
+table	Distribution Fitting Analysis	sha=1c7554892262f86b	sql=06606238f90a5898	rows=1
+column	0	Name	TEXT
+column	1	Description	TEXT
+column	2	CreationDate	TEXT
+column	3	LastModified	TEXT
+column	4	InputData	TEXT
+column	5	IsFitted	BOOLEAN
+column	6	FittedDistributions	TEXT
+column	7	OutputFrequencyOrdinates	TEXT
+column	8	FrequencyPlotSettings	TEXT
+column	9	PDFPlotSettings	TEXT
+column	10	CDFPlotSettings	TEXT
+column	11	PPPlotSettings	TEXT
+column	12	QQPlotSettings	TEXT
+column	13	ProbabilityOrdinates	TEXT
+column	14	IsEstimated	BOOLEAN
+column	15	AnalysisXml	TEXT
+row	1	t:16031000_WaimeaPk	t#289:4d59bbd595b8b851	t:1/1/0001 7:00:00 AM	t:7/16/2026 4:17:22 PM	t:16031000_Waimea_Peaks	i:0	t#4128:68f0e904faa969be/23dff67d926ee30e:r	t#511:8ad6052422ec50a7	t#19570:79f7a1b5091fd998/e605da6877003bdd:r	t#18827:a926442930dd1730/18c786636390b3e3:r	t#11728:d99c5f01e5008771/6f5b43bc49ecd699:r	t#18971:1a2a8240ea88fd26/1f06d41e9bb47a59:r	t#18973:d39f804c2ac31c7b/c98c9d6e45371fbe:r	t#439:5840f09d7e1a6c45	i:1	t#4768:0eba149c37263ea7/b2615839dfe8e8de:r
+table	Input Data	sha=4e2cce78760dcab6	sql=fc93edb01e21abf9	rows=4
+column	0	Name	TEXT
+column	1	Description	TEXT
+column	2	CreationDate	TEXT
+column	3	LastModified	TEXT
+column	4	UnitLabel	TEXT
+column	5	UseMultipleGrubbsBeckTest	BOOLEAN
+column	6	LowOutlierThresholdValue	DOUBLE
+column	7	NumberOfLowOutliers	INT4
+column	8	PlottingParameter	DOUBLE
+column	9	ChronologyPlotSettings	TEXT
+column	10	FrequencyPlotSettings	TEXT
+column	11	SystematicDataList	TEXT
+column	12	IntervalDataList	TEXT
+column	13	ThresholdDataList	TEXT
+column	14	ExactDataMethod	TEXT
+column	15	DataFrame	TEXT
+column	16	IndexLabel	TEXT
+column	17	USGSSiteNumber	TEXT
+column	18	TimeSeriesElement	TEXT
+column	19	BlockFunction	TEXT
+column	20	TimeBlock	TEXT
+column	21	StartMonth	INT4
+column	22	EndMonth	INT4
+column	23	SmoothingFunction	TEXT
+column	24	Period	INT4
+column	25	Threshold	DOUBLE
+column	26	IndependenceFactor	DOUBLE
+column	27	MinStepsBetweenPeaks	INT4
+column	28	IsProcessed	BOOLEAN
+column	29	HistogramPlotSettings	TEXT
+column	30	QQPlotSettings	TEXT
+column	31	ACFPlotSettings	TEXT
+column	32	PACFPlotSettings	TEXT
+column	33	SeasonalityPlotSettings	TEXT
+column	34	DensityPlotSettings	TEXT
+column	35	MRLPlotSettings	TEXT
+column	36	ModifiedScalePlotSettings	TEXT
+column	37	ShapePlotSettings	TEXT
+row	1	t:16031000_Waimea_Peaks	t#205:bc4d95ac46522130	t:1/1/0001 7:00:00 AM	t:11/3/2024 5:04:44 PM	t:Annual Peak Flow (cfs)	i:1	r:0	i:0	r:0	t#4590:5bb68f997fd2933a/da8dbf5174f288ea:r	t#4653:d38ef530e39a7be7/1b9847138fb7ee3a:r	t#5791:f484167b596d144f	t:<IntervalDataList />	t:<ThresholdDataList />	t:Manual	t#9725:e7f7394119532295/f266def478c3cef1:r	t:Year	t:00000000	t:	t:Maximum	t:CalendarYear	i:10	i:9	t:None	i:1	r:0	r:0	i:1	i:0	t#4658:484a0f5e5c2eb297/49bf9b37ebc0832a:r	t#5506:32aff1fb8e6d89c3/33e259a08f73f21d:r	t#6304:3889501904ef52af/74fe81bb5c59962a:r	t#6336:f90ee2758a1f696d/e2a980be1ca90212:r	t#4658:333fe5cc9c92193f/432398990783bef5:r	t#4651:34bcfeafb6144d42/b40151e81be79b19:r	t#4604:e9c7deee2c3ab74b/c3ff3d2c80e0a7d8:r	t#4617:bd1cbff8840b0fa4/5d57c1cc278b81f5:r	t#4599:33ad547799c64842/08cc3d7ab5fc47fa:r
+row	2	t:16036000_Makaweli_Peaks	t#150:72fa205f2e511d6b	t:1/1/0001 7:00:00 AM	t:9/4/2024 6:40:58 PM	t:Value	i:0	r:0	i:0	r:0	t#4611:88e97b25c5692b2a/01b53e0a223c6bd4:r	t#4689:0eb26e47896d5105/208503a9f457b7d4:r	t#6785:313fe1be53e57dc8	t:<IntervalDataList />	t:<ThresholdDataList />	t:Manual	t#10996:0bbd2241e3e0145c/6af11b8f53961111:r	t:Year	t:00000000	t:	t:Maximum	t:CalendarYear	i:10	i:9	t:None	i:1	r:0	r:0	i:1	i:0	t#4641:7fbed0f98f6f7bb6/2c764868c900a688:r	t#5506:32aff1fb8e6d89c3/33e259a08f73f21d:r	t#6306:d1f710d98b9e49f3/7e1dd16272c63bb5:r	t#6338:6a043bc7e6fd2b39/b67bf11e32a6e542:r	t#4673:dfede09512d2fc23/1e56d2d7fdeb0942:r	t#4634:5b12c3c9f6d49f99/1e9bf5d2f30f2beb:r	t#4604:e9c7deee2c3ab74b/c3ff3d2c80e0a7d8:r	t#4617:bd1cbff8840b0fa4/5d57c1cc278b81f5:r	t#4599:33ad547799c64842/08cc3d7ab5fc47fa:r
+row	3	t:16036000_Makaweli_Conditional_Peaks	t#160:2083228459d79c11	t:10/9/2024 7:58:42 PM	t:10/10/2024 8:13:10 PM	t:Value	i:0	n	n	n	t#4611:88e97b25c5692b2a/01b53e0a223c6bd4:r	t#4689:0eb26e47896d5105/208503a9f457b7d4:r	n	n	n	t:Manual	t#7994:b1a3bc36dd518230/868eba85258195e7:r	t:Year	t:00000000	t:	t:Maximum	t:CalendarYear	i:10	i:9	t:None	i:1	r:0	n	i:1	i:0	t#4636:ef19e67d62a86bc4/997ac1115130617d:r	t#4662:2db6303894a5d857/349784b19b83800e:r	t#4632:cf1ae639c4c8c312/275d444097650bca:r	t#4648:f9ef2dbad1331002/bd1a4be1219be42f:r	t#4658:333fe5cc9c92193f/432398990783bef5:r	t#4634:5b12c3c9f6d49f99/1e9bf5d2f30f2beb:r	t#4604:e9c7deee2c3ab74b/c3ff3d2c80e0a7d8:r	t#4617:bd1cbff8840b0fa4/5d57c1cc278b81f5:r	t#4599:33ad547799c64842/08cc3d7ab5fc47fa:r
+row	4	t:Simulated Proof	t#160:86b1d9b2195e5545	t:5/4/2026 8:48:47 PM	t:5/5/2026 3:22:58 PM	t:Value	i:1	n	n	n	t#5387:35bb45167aa4f05f/3077f09254c2aa5b:r	t#5452:40c7dc5422b5fbc9/13490b5ee78436b4:r	n	n	n	t:Manual	t#1550096:8440635e13869f74/bbf091e8c3fc16cb:r	t:Year	t:00000000	t:	t:Maximum	t:CalendarYear	i:10	i:9	t:None	i:1	r:0	n	i:1	i:0	t#4623:c8de8c69a2457362/4b10be0f6c1def19:r	t#4654:5051fb27987c80fe/b55ca01541870420:r	t#4626:d530c9f5f360a3e6/9e8a65fa663f4252:r	t#4642:48c2a235117c79b8/43384cf4f968499a:r	t#4651:ef8fad523f9e2bf1/85bddb834d4fe391:r	t#4621:a8fc8a180f50c533/76b3f1433fa11376:r	t#4604:4ab1f9eb7290e741/29ed7c87ea1c32b7:r	t#4617:bd1cbff8840b0fa4/5d57c1cc278b81f5:r	t#4599:33ad547799c64842/08cc3d7ab5fc47fa:r
+table	Project	sha=f970d8717dac2c24	sql=c10238a3e83ab747	rows=1
+column	0	Name	TEXT
+column	1	Description	TEXT
+column	2	CreationDate	TEXT
+column	3	LastModified	TEXT
+column	4	FullFileName	TEXT
+column	5	SoftwareVersion	TEXT
+column	6	Layout	TEXT
+column	7	AvalonDockLayout	TEXT
+column	8	ProjectExplorerLayout	TEXT
+column	9	AvalonDockLayoutPrevious	TEXT
+column	10	ProjectExplorerLayoutPrevious	TEXT
+row	1	t:waimea-river-stage-frequency	t#396:520e719101ef0376	t:8/21/2024 10:26:17 AM	t:9/17/2026 4:03:09 PM	p:{dir}\\waimea-river-stage-frequency.bestfit	t:2.0.1	t#4413:d80aab0b4fc242a2/e37e5f28416490d9:r	t#1929:726ae118a7a9f31e/177c7bf830f39586:r	t#2502:626cefda9c773dbe/c865a95311203d7a:r	t#1930:c59d38bba477db8c/311a69923ef554c8:r	t#2674:24f7d47d4a92e9b6/d15a29f2a654b69d:r
+table	Univariate Distribution Analysis	sha=beb9e88609784b36	sql=63dff5382d17bd53	rows=7
+column	0	Name	TEXT
+column	1	Type	TEXT
+row	1	t:MakaweliPk - Exact	t:RMC.BestFit.UI.UnivariateAnalysis
+row	2	t:WaimeaPk - Exact + Historical + RR Prior	t:RMC.BestFit.UI.UnivariateAnalysis
+row	3	t:WaimeaPk - Exact + Historical	t:RMC.BestFit.UI.UnivariateAnalysis
+row	4	t:MakaweliPk - Exact + RR Prior	t:RMC.BestFit.UI.UnivariateAnalysis
+row	5	t:MakaweliPk - Exact + RR Prior_RSkew	t:RMC.BestFit.UI.UnivariateAnalysis
+row	6	t:WaimeaPk - Exact + Historical + RR Prior_RSkew	t:RMC.BestFit.UI.UnivariateAnalysis
+row	7	t:MakaweliPk - Cond - Exact	t:RMC.BestFit.UI.UnivariateAnalysis
+state	00 Time Series Data	7c890208af994c26	66eae0f9e86047a2
+state	01 Input Data	f8c32979e3e7940f	7138759d2d2c7b9f
+state	01 Input Data/00 InputData '16031000_Waimea_Peaks'	714c9086c1ada89e	de81934fb462998f
+state	01 Input Data/01 InputData '16036000_Makaweli_Peaks'	a5fff5aaac308ea7	441c1ba68a7505bc
+state	01 Input Data/02 InputData '16036000_Makaweli_Conditional_Peaks'	a60885bf28866595	d27afdd6ad36519b
+state	01 Input Data/03 InputData 'Simulated Proof'	13cef2be88cdaf08	1d0fa690a75be178
+state	02 Distribution Fitting Analysis	ea4b3556765a11ab	4a4ead4bf90c0837
+state	02 Distribution Fitting Analysis/00 FittingAnalysis '16031000_WaimeaPk'	920f5c02300e30a4	ef22285cc2391fd5
+state	03 Univariate Distribution Analysis	2819fe3e48a56986	0e3a3c46961dd428
+state	03 Univariate Distribution Analysis/00 UnivariateAnalysis 'MakaweliPk - Exact'	b7a42d3e9893b625	7a883f6d33819c22
+state	03 Univariate Distribution Analysis/01 UnivariateAnalysis 'WaimeaPk - Exact + Historical + RR Prior'	ca694161e046570b	84eff17854ce67c0
+state	03 Univariate Distribution Analysis/02 UnivariateAnalysis 'WaimeaPk - Exact + Historical'	4afeeade9e48f42a	97fcfb1d2f5f876d
+state	03 Univariate Distribution Analysis/03 UnivariateAnalysis 'MakaweliPk - Exact + RR Prior'	078fc2d55e99c71a	9d74ec22e994bf2d
+state	03 Univariate Distribution Analysis/04 UnivariateAnalysis 'MakaweliPk - Exact + RR Prior_RSkew'	6e75c76674fdcaf5	24dfabaf6849a49b
+state	03 Univariate Distribution Analysis/05 UnivariateAnalysis 'WaimeaPk - Exact + Historical + RR Prior_RSkew'	bc6418c9efea44ce	527b59b62c937c35
+state	03 Univariate Distribution Analysis/06 UnivariateAnalysis 'MakaweliPk - Cond - Exact'	b3450c9738989b23	9e5893261768f7fa
+state	04 Bivariate Distribution Analysis	9c69553269ac615c	85c24dd973e8dafa
+state	04 Bivariate Distribution Analysis/00 BivariateAnalysis 'Normal Copula'	5920c30382c6cf78	cb05c5334ab676a2
+state	04 Bivariate Distribution Analysis/01 BivariateAnalysis 'Gumbel Copula'	c42150b7f76dadc1	c2fe55ddac7823d8
+state	04 Bivariate Distribution Analysis/02 BivariateAnalysis 'Clayton Copula'	9a79520206475849	aba6a795f5c6ee91
+state	04 Bivariate Distribution Analysis/03 BivariateAnalysis 'Joe Copula'	ea3dc6763b2de7c2	101ef588d5a10f42
+state	04 Bivariate Distribution Analysis/04 BivariateAnalysis 'Frank Copula'	e931bcd5fb53705b	3d00f71a0e8e80eb
+state	04 Bivariate Distribution Analysis/05 BivariateAnalysis 'AMH Copula'	cbc9f60184778462	f6598a7bfa7ad0b2
+state	04 Bivariate Distribution Analysis/06 BivariateAnalysis 'Normal Copula - Conditional'	300828241fdf07d8	cb25248aee748d25
+state	04 Bivariate Distribution Analysis/07 CoincidentFrequencyAnalysis 'CFA - Normal - Conditional'	a079009753a4cc63	872b2635dcb6a066
+state	05 Rating Curve Analysis	5b9e46ee16c64e96	771f60dc9817d061
+state	06 Time Series Analysis	2f4a1830d606047e	0e6e4ee694390acc
+state	Project	c44e37df8d7aa577	c44e37df8d7aa577
+end
