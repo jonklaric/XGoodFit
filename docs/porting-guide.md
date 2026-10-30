@@ -68,6 +68,9 @@ compared with its upstream original.
 | Overlapping triggers | the same order: later styles win where they overlap |
 | `DataTrigger` | a bound class and a style in the element's `Styles`: `Classes.invalid="{Binding ElementName=c, Path=!IsValid}"` with `<Style Selector="Border.invalid">` (see `NameTextBox.axaml`); or a converter, or `Xaml.Behaviors` |
 | `Visibility="Collapsed"` | `IsVisible="False"` |
+| A tool tip in a `ComboBox.ItemContainerStyle` | `<ComboBox.Styles><Style Selector="ComboBoxItem">` setting `ToolTip.Tip` |
+| `Popup Placement="Right"` | `Placement="RightEdgeAlignedTop"`; `PopupAnimation` and `AllowsTransparency` aren't ported |
+| Combo box items that are numbers | an item template whose binding formats with `FormattingCulture` (D8) |
 | `Visibility="Hidden"` | `Opacity="0"` with `IsHitTestVisible="False"` (keeps its space) |
 | `Visibility="{Binding …, Converter=…}"` | `wpf:WpfElement.Visibility="{Binding …}"` (`xmlns:wpf="using:WpfCompat"`): the converters produce WpfCompat's `Visibility`. Never bind one to `IsVisible`, which reads Visible (0) as false |
 | `{Binding IsEnabled, …}` (reading it) | `IsEffectivelyEnabled`: WPF's `IsEnabled` includes the parents', Avalonia's doesn't |
@@ -162,6 +165,10 @@ Templates and themes:
 | `ItemContainerGenerator.ContainerFromIndex` (grid rows) | `CopyPasteDataGrid.GetRow(index)` |
 | `c.Content.GetType() == typeof(TextBlock)` on a grid cell | `c.Content is TextBlock`: ProDataGrid's text cells are a TextBlock subclass |
 | `MoveFocus(new TraversalRequest(…))` | WpfCompat.Input's `FocusNavigation` |
+| `System.Windows.Media.Media3D.Point3D` | `WpfCompat.Media.Media3D.Point3D` |
+| `FlowDocument.PageWidth` | WpfCompat's `FlowDocument.PageWidth`: the read-only `RichTextBox` lays the document out at that width and scrolls sideways |
+| `IsVisible` (visible and in a window) / `IsVisibleChanged` | `IsEffectivelyVisible && TopLevel.GetTopLevel(this) != null`, and watch `IsVisibleProperty` on the control and its ancestors while attached: Avalonia 12's `IsEffectivelyVisibleChanged` is internal (see `MarkovChainTraceControl`) |
+| Non-readonly `DependencyProperty` fields | `static readonly` styled properties (Avalonia's analyzer, AVP1000) |
 
 - Dialogs wait, as in WPF (plan §5.3): `ShowDialog()` and `DialogResult` (WpfCompat's), WpfCompat's
   file and folder dialogs and clipboard, and `GenericControls.MessageBox.Show`. Keep upstream's order
@@ -275,6 +282,13 @@ Watch for others when porting:
   a static initializer that any thread may run first (see FrameworkInterfaces' `Messenger`).
 - **MSTest 3.6 with parallel tests** can run the assembly cleanup more than once: make it idempotent
   (`Interlocked.Exchange(ref _session, null)?.Dispose()`).
+- **`CacheMode="BitmapCache"`** keeps the first bitmap of content that draws itself: don't put it on
+  content that changes (OxyPlot.Wpf's `DrawingVisualHost.UseBitmapCache` keeps the preference but sets
+  no cache).
+- **A column's `HeaderTheme="{DynamicResource …}"`** is null until the grid is in a window, and a local
+  value doesn't clear the resource binding (see `ParameterPriorsControl.HeaderThemeOf`).
+- **`ElementName` inside a DataTemplate** can find names in the enclosing XAML: Avalonia's template name
+  scope falls back to the control's.
 - **Grid themes:** set scroll bar visibility to `Auto`, WPF's default (ProDataGrid's is `Disabled`). A
   bare `DataGrid` gets the header-height fix only once a `CopyPasteDataGrid` exists: another reason to
   always use `CopyPasteDataGrid`. Grids laid out with unbounded height log layout-cycle warnings; that
