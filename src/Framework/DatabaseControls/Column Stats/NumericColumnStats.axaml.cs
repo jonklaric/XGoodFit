@@ -407,6 +407,7 @@ namespace DatabaseControls
         {
             if (edit.GetType() == typeof(CellEdit))
             {
+                SyncGroupingItemSelection();
                 double[] breaks = Array.ConvertAll(BreaksTable.DataView.GetColumn(0),
                     o => o is DBNull || (o is string s && string.IsNullOrWhiteSpace(s)) ? 0 : Convert.ToDouble(o));
 
@@ -441,7 +442,7 @@ namespace DatabaseControls
                 else
                 {
                     if (breaks.Length != ClassCount) ClassCount = breaks.Length;
-                    ManualIntervalItem.IsSelected = true;
+                    GroupingComboBox.SelectedItem = ManualIntervalItem; // XGoodFit port: WPF's ManualIntervalItem.IsSelected = true
                 }
             }
         }
@@ -515,6 +516,7 @@ namespace DatabaseControls
         /// <param name="e">Event arguments containing the selection change information.</param>
         private void GroupingComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            SyncGroupingItemSelection();
             ClassCountControl.Visibility = Visibility.Collapsed;
             HeadTailThresholdControl.Visibility = Visibility.Collapsed;
             DeviationsControl.Visibility = Visibility.Collapsed;
@@ -546,6 +548,20 @@ namespace DatabaseControls
         #endregion
 
         #region Private Methods
+
+        /// <summary>
+        /// XGoodFit addition: marks the selected classification item, and only it, as selected. WPF's ComboBox
+        /// keeps the IsSelected of items that are their own containers even while its drop-down has never
+        /// opened; Avalonia's only that of containers its drop-down has shown. The code reads the items'
+        /// IsSelected, as upstream's does.
+        /// </summary>
+        private void SyncGroupingItemSelection()
+        {
+            foreach (ComboBoxItem item in GroupingComboBox.Items.OfType<ComboBoxItem>())
+            {
+                item.IsSelected = ReferenceEquals(item, GroupingComboBox.SelectedItem);
+            }
+        }
 
         /// <summary>
         /// Updates the statistics data view with calculated statistics from the sorted data.
@@ -663,6 +679,7 @@ namespace DatabaseControls
         private void Plot()
         {
             if (GroupingComboBox.SelectedIndex == -1) GroupingComboBox.SelectedIndex = 0;
+            SyncGroupingItemSelection();
             if (_sortedData == null || _sortedData.Length == 0) return;
             Mouse.OverrideCursor = Cursors.Wait;
 

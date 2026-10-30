@@ -100,6 +100,12 @@ namespace DatabaseControls
         // XGoodFit port: Avalonia can't name grid definitions (TableViewer.axaml).
         private ColumnDefinition RowHeadersColumnDefinition => TableControlGrid.ColumnDefinitions[0];
 
+        // XGoodFit port: WPF's FindResource also reaches the application's resources from an element that
+        // isn't in a tree yet (NumericColumnStats fills its tables in its constructor); Avalonia's stops at
+        // the element's root.
+        private object? FindResourceOrApplication(object key) =>
+            this.TryFindResource(key) ?? Application.Current?.TryFindResource(key);
+
         #endregion
 
         #region Dependency Properties
@@ -805,7 +811,7 @@ namespace DatabaseControls
                             colLine.Stroke = tv.ColumnLineColor;
                     }
                     // Update column header border brushes and top boundary line (not recreated by LoadRows)
-                    var headerBorderBrush = (IBrush)tv.FindResource("DataGrid.Header.Border")!;
+                    var headerBorderBrush = (IBrush)tv.FindResourceOrApplication("DataGrid.Header.Border")!;
                     foreach (Control child in tv.ColumnHeadersGrid.Children)
                     {
                         if (child is ColumnHeader header)
@@ -1203,7 +1209,7 @@ namespace DatabaseControls
             var rowLine = new Line
             {
                 X1 = 0, Y1 = rowDistanceFromTop, Y2 = rowDistanceFromTop,
-                StrokeThickness = RowLineThickness, Stroke = (IBrush)this.FindResource("DataGrid.Header.Border")!
+                StrokeThickness = RowLineThickness, Stroke = (IBrush)FindResourceOrApplication("DataGrid.Header.Border")!
             };
             rowLine.Bind(Line.X2Property, lengthBinding);
             GridLinesCanvas.Children.Add(rowLine);
@@ -1373,7 +1379,7 @@ namespace DatabaseControls
             var rowLine = new Line
             {
                 X1 = 0, Y1 = rowDistanceFromTop, Y2 = rowDistanceFromTop,
-                StrokeThickness = RowLineThickness, Stroke = (IBrush)this.FindResource("DataGrid.Header.Border")!
+                StrokeThickness = RowLineThickness, Stroke = (IBrush)FindResourceOrApplication("DataGrid.Header.Border")!
             };
             rowLine.Bind(Line.X2Property, lengthBinding);
             GridLinesCanvas.Children.Add(rowLine);
