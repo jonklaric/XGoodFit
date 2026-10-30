@@ -1,12 +1,18 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using Avalonia.Controls;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using GenericControls;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using RMC.BestFit.Models;
 using RMC.BestFit.UI;
+using Wpf = OxyPlot.Wpf;
 
 namespace RMC.BestFit.App.Tests.XGoodFit
 {
@@ -50,6 +56,40 @@ namespace RMC.BestFit.App.Tests.XGoodFit
         {
             control.GetVisualDescendants().OfType<CheckBox>().Single().IsChecked = value;
             SharedControlsTesting.Settle();
+        }
+
+        /// <summary>
+        /// Checks a frequency plot whose saved value axis is linear against a walkthrough figure of it, which RMC-BestFit
+        /// drew on a factory-default plot with a logarithmic value axis: upstream's view leaves the data's zeros out only
+        /// on a logarithmic axis, so the figure's data points are the plot's positive ones. Then the figure as the
+        /// saved plot draws it, zeros included (<see cref="UnivariateAnalysisTesting.AssertFigure"/>).
+        /// </summary>
+        /// <param name="plot">The plot, shown and updated.</param>
+        /// <param name="figure">The figure's data.</param>
+        /// <param name="label">What the assertions say.</param>
+        internal static void AssertFigureOnLinearValueAxis(Wpf.Plot plot, JsonElement figure, string label)
+        {
+            Assert.AreEqual("log", figure.GetProperty("axes").GetProperty("y").GetProperty("scale").GetString(), label + ": the figure's value axis");
+            Assert.IsFalse(plot.Axes.Any(a => a.Key == "Yaxis" && a is Wpf.LogarithmicAxis), label + ": the saved plot's value axis is linear");
+            var node = JsonNode.Parse(figure.GetRawText());
+            foreach (JsonNode series in node["series"].AsArray().Where(s => (string)s["kind"] == "scatter"))
+            {
+                string title = (string)series["name"];
+                var scatter = (Wpf.ScatterPointSeries)plot.Series.Single(s => s.Title == title);
+                var points = ((IEnumerable)scatter.ItemsSource).Cast<ExactData>().Select(d => (X: d.PlottingPosition, Y: d.Value)).ToList();
+                var positive = points.Where(p => p.Y > 1E-16).ToList();
+                JsonArray x = series["x"].AsArray(), y = series["y"].AsArray();
+                Assert.AreEqual(x.Count, positive.Count, label + ": " + title + "'s positive points");
+                for (int i = 0; i < positive.Count; i++)
+                {
+                    UnivariateAnalysisTesting.AssertClose((double)x[i], positive[i].X, $"{label}: {title} {i}.X");
+                    UnivariateAnalysisTesting.AssertClose((double)y[i], positive[i].Y, $"{label}: {title} {i}.Y");
+                }
+                series["x"] = new JsonArray(points.Select(p => (JsonNode)JsonValue.Create(p.X)).ToArray());
+                series["y"] = new JsonArray(points.Select(p => (JsonNode)JsonValue.Create(p.Y)).ToArray());
+            }
+            using var drawn = JsonDocument.Parse(node.ToJsonString());
+            UnivariateAnalysisTesting.AssertFigure(plot, drawn.RootElement.Clone(), label);
         }
 
         /// <summary>Records the property changes of the objects given, as "Type.Property".</summary>
