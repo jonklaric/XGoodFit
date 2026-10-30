@@ -23,6 +23,11 @@ compared with its upstream original.
     XML in `.bestfit` files records type names such as `OxyPlot.Wpf.LinearAxis`, so a different
     namespace would break file compatibility.
 - New projects go in `XGoodFit.slnx`, and tests in `tests/` (MSTest.Sdk, headless; see below).
+- Upstream's test projects overlay the same way, so their tests run unchanged against the port (see
+  `tests/BestFit/RMC.BestFit.UI.Tests`). A test project can replace an MSTest attribute that a test
+  file uses with its own of the same name, declared in the namespace that contains the test files'
+  namespaces: C# finds it before the files' usings. That's how upstream's `[STATestMethod]` tests run
+  on Avalonia's UI thread.
 - `scripts/porting/xgf_port.py` ports a file by exact, checked replacements: it copies the upstream
   file and fails if a replacement doesn't match, so everything else stays as upstream wrote it.
 
@@ -124,6 +129,9 @@ Templates and themes:
 | `Application.Current.MainWindow` / `Windows` / `Shutdown()` | unchanged, with `using WpfCompat;` (the desktop lifetime's) |
 | `SystemParameters.VerticalScrollBarWidth`, drag distances | WpfCompat's `SystemParameters` |
 | `BindingOperations.GetBindingExpression` | `BindingOperations.GetBindingExpressionBase` |
+| `BindingOperations.ClearBinding(o, P)` | `BindingOperations.GetBindingExpressionBase(o, P)?.Dispose()`: Avalonia's `ClearValue` leaves a binding in place |
+| `BindingOperations.SetBinding(o, P, b)`, `new Binding(path)` | `o.Bind(P, b)`; `Binding` (namespace `Avalonia.Data`) keeps `Source`, `Mode`, `StringFormat`, `UpdateSourceTrigger` |
+| `GradientStopCollection` | `GradientStops` |
 
 - Dialogs wait, as in WPF (plan §5.3): `ShowDialog()` and `DialogResult` (WpfCompat's), WpfCompat's
   file and folder dialogs and clipboard, and `GenericControls.MessageBox.Show`. Keep upstream's order
@@ -189,6 +197,10 @@ Watch for others when porting:
     `[ModuleInitializer]`.
   - `dotnet test` hides MSTest's messages; run the test executable to see them.
 - **Popups in captures:** set `Popup.ShouldUseOverlayLayer`. The headless render timer uses real time.
+- **Dispatchers:** as in WPF, each object belongs to the dispatcher of the thread that made it, and the
+  first thread to create a dispatcher becomes the UI thread. A test project whose tests run in parallel
+  must start its headless application in `[AssemblyInitialize]`, before any test makes an Avalonia
+  object on a worker thread.
 
 ## 7. Tests and checks
 

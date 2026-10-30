@@ -1,0 +1,48 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Avalonia port of upstream/RMC-BestFit/src/RMC.BestFit.UI: BestFit's project and element layer
+    (the project, its element collections and analyses, their persistence in the project database,
+    plots and their undo, and DSS import). Upstream C# files compile unchanged unless a ported copy
+    exists here (Directory.Build.targets). WPF was used only for colours, brushes, thicknesses, the
+    element and project icons, and the OxyPlot.Wpf plots, which are the ported ones
+    (src/Framework/OxyPlot), so the ported files differ only in those types.
+
+    References: upstream's two framework packages are the projects they contain. RMC.Wpf.Framework.Core
+    is FrameworkInterfaces and Themes; RMC.Wpf.Framework.Models is DAG, DatabaseManager,
+    ExpressionParser and OxyPlot, of which this project uses DatabaseManager and OxyPlot. RMC.Numerics
+    comes with RMC.BestFit, built from source (Directory.Build.rsp). Hec.Dss is XGoodFit's build of
+    HEC's wrapper with its natives.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <OutputType>Library</OutputType>
+    <RootNamespace>RMC.BestFit.UI</RootNamespace>
+    <AssemblyName>RMC.BestFit.UI</AssemblyName>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+    <!-- As upstream: the assembly attributes are in Properties/AssemblyInfo.cs. -->
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <UpstreamProjectDir>$(UpstreamBestFitSrc)RMC.BestFit.UI/</UpstreamProjectDir>
+    <HecDssProject Condition="'$(HecDssProject)' == ''">$(RepositoryRoot)src/Hec.Dss/Hec.Dss.csproj</HecDssProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="$(UpstreamBestFitSrc)RMC.BestFit/RMC.BestFit.csproj" />
+    <ProjectReference Include="$(UpstreamFrameworkSrc)DatabaseManager/DatabaseManager.csproj" />
+    <ProjectReference Include="../../Framework/FrameworkInterfaces/FrameworkInterfaces.csproj" />
+    <ProjectReference Include="../../Framework/OxyPlot/OxyPlot.Wpf/OxyPlot.Wpf.csproj" />
+    <ProjectReference Include="../../Framework/WpfCompat/WpfCompat.csproj" />
+    <ProjectReference Include="$(HecDssProject)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- The project icon (BestFitProject.ProjectImage). -->
+    <AvaloniaResource Include="$(UpstreamProjectDir)Resources/BestFit_Icon.ico" Link="Resources/BestFit_Icon.ico" />
+  </ItemGroup>
+
+</Project>

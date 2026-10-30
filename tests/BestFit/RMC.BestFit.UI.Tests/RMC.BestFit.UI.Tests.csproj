@@ -1,0 +1,57 @@
+<Project Sdk="MSTest.Sdk/3.6.4">
+
+  <!--
+    Upstream's RMC.BestFit.UI tests (upstream/RMC-BestFit/src/RMC.BestFit.UI.Tests), run against the
+    Avalonia port. Every upstream test file compiles unchanged (Directory.Build.targets). The changes:
+    - [STATestMethod]: upstream ran the tests that make plots on STA threads, as WPF requires. Avalonia
+      objects that use the application belong to its UI thread, so this project's
+      STATestMethodAttribute runs those tests there, in a headless Avalonia session (HeadlessSession.cs).
+      It is declared in the RMC.BestFit.UI.Tests namespace, which the test files' own namespaces search
+      before MSTest's, so the test files need no change.
+    - CoreInfrastructure/PublicApiBaseline.txt: upstream's public API baseline, with the element and
+      project images as Avalonia's IImage instead of WPF's ImageSource, which moves those 13 lines in
+      the snapshot's sorted order. Every other member is upstream's.
+    - Two compatibility tests open example projects, which upstream finds in its checkout's examples/
+      folder. Here they come from the fetched sample data (scripts/fetch-sample-data.sh RMC-BestFit) and
+      are copied next to the tests, where the same search finds them. Without the sample data those two
+      tests fail.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <TestingPlatformShowTestsFailure>true</TestingPlatformShowTestsFailure>
+    <UpstreamProjectDir>$(UpstreamBestFitSrc)RMC.BestFit.UI.Tests/</UpstreamProjectDir>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- As upstream: the shared MSTest settings (method-level parallelism) and API snapshot helper. -->
+    <Compile Include="$(UpstreamBestFitSrc)TestCommon/MSTestSettings.cs" Link="upstream/MSTestSettings.cs" />
+    <Compile Include="$(UpstreamBestFitSrc)TestCommon/PublicApiContractSnapshot.cs" Link="upstream/CoreInfrastructure/PublicApiContractSnapshot.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia.HarfBuzz" />
+    <PackageReference Include="Avalonia.Headless" />
+    <PackageReference Include="Avalonia.Skia" />
+    <PackageReference Include="Avalonia.Themes.Simple" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="$(UpstreamBestFitSrc)RMC.BestFit/RMC.BestFit.csproj" />
+    <ProjectReference Include="../../../src/BestFit/RMC.BestFit.UI/RMC.BestFit.UI.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="CoreInfrastructure/PublicApiBaseline.txt"
+                      LogicalName="RMC.BestFit.UI.Tests.CoreInfrastructure.PublicApiBaseline.txt" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- The wildcards match only files that exist, so the build doesn't need the sample data. -->
+    <None Include="$(RepositoryRoot)sample-data/RMC-BestFit/examples/**/point-process-examples.bestfit;$(RepositoryRoot)sample-data/RMC-BestFit/examples/**/time-series-regression-example.bestfit"
+          Link="examples/%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>

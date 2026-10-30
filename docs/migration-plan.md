@@ -570,6 +570,10 @@ Sizes are relative, for one developer with AI-assisted porting: S ≈ ≤2 wk, M
 
 **Exit:** ported tests green on 3 OSes; file suite green.
 
+**Progress (2026-10-30):** `src/BestFit/RMC.BestFit.UI` is ported. 16 of its 38 C# files change: Avalonia's colours, brushes, thicknesses and images, WpfCompat's `ColorConverter` and `Visibility`, Avalonia's binding API for the axis-title defaults, and no Windows-only attribute. The other 22 compile unchanged. Its 13 element icons are an `.axaml` dictionary that follows the theme.
+- `tests/BestFit/RMC.BestFit.UI.Tests` runs upstream's tests unchanged, 1,131 of them with their data rows. Upstream's `[STATestMethod]` tests run on the headless UI thread, and the public API baseline differs only in the image type (`Avalonia.Media.IImage` for WPF's `ImageSource`). Two compatibility tests open example projects from the fetched sample data.
+- On Windows, 1,095 of upstream's tests pass, and XGoodFit's icon test. The other 36 read DSS files and need the HEC-DSS natives (Phase 0). Until XGoodFit's `Hec.Dss` project lands, both projects stay out of `XGoodFit.slnx`.
+
 ### Phase 7: BestFit App, in vertical slices (XL)
 Each slice includes its XAML and code-behind, its share of `RMC.BestFit.App.Tests` (465 total), parity screenshots in 3 themes, and the matching `examples/` walkthrough executed as a UAT script.
 
