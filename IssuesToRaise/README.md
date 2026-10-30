@@ -2,7 +2,7 @@
 
 XGoodFit ports USACE's RMC-BestFit from WPF to Avalonia. While porting it, and the WPF-Framework, Numerics and HEC-DSS code it depends on, we found problems in those upstream projects. Most affect upstream's own Windows application as well. Each file here is one issue, written for the upstream maintainers, who don't need to know XGoodFit. **Nothing has been posted anywhere.** Raising them is the project owner's decision.
 
-Each file has the same sections: target and version, type and severity, verification, summary, how to reproduce, why it's a bug rather than intended behaviour, where in the source (permalinks at the commits below), a suggested fix, and how XGoodFit handles it. Links to XGoodFit files are permalinks at [`fcb3902`](https://github.com/jonklaric/XGoodFit/tree/fcb3902c2937662ed5f1b3869e0ea019e88e3c63).
+Each file has the same sections: target and version, type and severity, verification, summary, how to reproduce, why it's a bug rather than intended behaviour, where in the source (permalinks at the commits below), a suggested fix, and how XGoodFit handles it. Links to XGoodFit files are permalinks at [`fcb3902`](https://github.com/jonklaric/XGoodFit/tree/fcb3902c2937662ed5f1b3869e0ea019e88e3c63), or at [`a7aced1`](https://github.com/jonklaric/XGoodFit/tree/a7aced180aba4493b1f8f7b676db89543ae9a0a7) for the issues found while porting RMC.BestFit.App.
 
 ## What was checked
 
@@ -14,6 +14,8 @@ Each file has the same sections: target and version, type and severity, verifica
 | [HydrologicEngineeringCenter/hec-dss-dotnet](https://github.com/HydrologicEngineeringCenter/hec-dss-dotnet) | 2.0.3 | [`f8f576f`](https://github.com/HydrologicEngineeringCenter/hec-dss-dotnet/tree/f8f576ff98b524a4a6b5a2f17735adf5f144b9fd) | yes (`main`) |
 | [HydrologicEngineeringCenter/hec-dss](https://github.com/HydrologicEngineeringCenter/hec-dss) | 7-JA-7 | [`1da5976`](https://github.com/HydrologicEngineeringCenter/hec-dss/tree/7-JA-7) | no: `main` is 11 commits ahead ([`f14554d`](https://github.com/HydrologicEngineeringCenter/hec-dss/tree/f14554de39a0bfe9c5c0b150e5fd66cfb78d289c), 2026-08-07). Every hec-dss issue here was checked against `main` too; leads already fixed there are listed under "Considered and excluded" |
 
+RMC-BestFit, WPF-Framework and Numerics were checked again on 2026-10-31, for the RMC.BestFit.App issues: `main` was unchanged.
+
 **Severity:** *high* means it changes or loses users' data or results, or corrupts memory. *medium* means a visible malfunction, or a wrong result in a narrower case. *low* means cosmetic, latent, a test or build problem, or cleanup.
 
 **Verified:** *Reproduced* means it was run against upstream's own code: a throwaway program, the published WPF-Framework 1.0.5 packages, RMC-BestFit 2.0.0's shipped binaries, or upstream code built from these commits. *Read* means verified by reading the source; where it was also seen in CI or in XGoodFit's port, the issue says so.
@@ -24,11 +26,21 @@ Each file has the same sections: target and version, type and severity, verifica
 
 | Issue | File | Type | Severity | Verified |
 |---|---|---|---|---|
+| Editing an Input Data row can change an identical earlier row instead, and lose the value typed | [RMC-BestFit-grid-row-edits-change-the-wrong-model-row.md](RMC-BestFit-grid-row-edits-change-the-wrong-model-row.md) | data loss | high | Reproduced (upstream 2.0.1 model) |
 | "B17C Example #3" opens empty, and saving it discards its stored results | [RMC-BestFit-b17c-example-3-loses-results-on-save.md](RMC-BestFit-b17c-example-3-loses-results-on-save.md) | data loss | medium | Reproduced (upstream 2.0.1 code) |
 | Editing XY ordinates during a background reprocess clears `IsEstimated` | [RMC-BestFit-reprocess-race-clears-isestimated.md](RMC-BestFit-reprocess-race-clears-isestimated.md) | bug, test reliability | medium | Reproduced (13/20 and 12/20 runs) |
 | The UI mixes the machine's culture and en-US | [RMC-BestFit-mixes-machine-culture-and-en-us.md](RMC-BestFit-mixes-machine-culture-and-en-us.md) | user interface | medium | Read; seen on en-AU |
+| The batch run window can be closed during a run, leaving the run going with no way to cancel it | [RMC-BestFit-batch-run-window-closes-during-run.md](RMC-BestFit-batch-run-window-closes-during-run.md) | bug | medium | Reproduced (WPF command routing); rest Read |
 | Two model tests depend on wall-clock timing | [RMC-BestFit-timing-dependent-model-tests.md](RMC-BestFit-timing-dependent-model-tests.md) | test reliability | low | Read; failed on CI, not locally |
+| Closed document views stay subscribed to their elements, so they're never released | [RMC-BestFit-views-not-released-after-close-or-replace.md](RMC-BestFit-views-not-released-after-close-or-replace.md) | bug (memory leak) | low | Read |
+| Grid column header styles are rebuilt on top of themselves | [RMC-BestFit-header-styles-based-on-themselves.md](RMC-BestFit-header-styles-based-on-themselves.md) | bug (resource growth) | low | Read |
+| The shell never sees the icon key of Time Series, Input Data and Fitting Analysis elements | [RMC-BestFit-element-icons-not-found-by-shell.md](RMC-BestFit-element-icons-not-found-by-shell.md) | user interface | low | Reproduced (C# rule); effect Read |
+| The prior distribution editor's title is "Select Distribution for :" for stationary distributions | [RMC-BestFit-prior-editor-title-empty-for-stationary-distributions.md](RMC-BestFit-prior-editor-title-empty-for-stationary-distributions.md) | user interface | low | Read |
+| The MCMC trace plot without warm-up still shows the last warm-up draw | [RMC-BestFit-trace-plot-includes-last-warm-up-draw.md](RMC-BestFit-trace-plot-includes-last-warm-up-draw.md) | user interface | low | Read |
+| The Input Data summary statistics separators are black, so they vanish in the Dark theme | [RMC-BestFit-summary-statistics-separators-black-in-dark.md](RMC-BestFit-summary-statistics-separators-black-in-dark.md) | user interface | low | Read |
+| New element names suggested from the element count can already be taken | [RMC-BestFit-default-names-can-clash.md](RMC-BestFit-default-names-can-clash.md) | user interface | low | Read |
 | `Resources/BestFitStyles.xaml` is never used | [RMC-BestFit-unused-bestfitstyles-dictionary.md](RMC-BestFit-unused-bestfitstyles-dictionary.md) | bug (cleanup) | low | Read |
+| Small fixes in RMC.BestFit.App: two latent null dereferences, an unthemed progress bar, a two-way visibility binding, an unused converter and stale documentation | [RMC-BestFit-cleanup-latent-and-trivial.md](RMC-BestFit-cleanup-latent-and-trivial.md) | bug (cleanup) | low | Read |
 
 ### USACE-RMC/WPF-Framework
 
@@ -99,7 +111,7 @@ The cleanup checklist covers: implicit NameDialog/MessageBoxWindow styles that n
 
 ## Pending
 
-None. The reports of every porting agent that finished by 2026-10-30 are covered, including FrameworkUI's and OxyPlotControls', which arrived while this was being written. Findings from later work, such as the RMC.BestFit.App port, can be added in the same format.
+None. The reports of every porting agent that finished by 2026-10-30 are covered, including FrameworkUI's and OxyPlotControls', which arrived while this was being written. The 16 leads from the RMC.BestFit.App port's Input Data and Fitting Analysis work were added on 2026-10-31. Findings from later work can be added in the same format.
 
 ## Considered and excluded
 
@@ -132,7 +144,12 @@ None. The reports of every porting agent that finished by 2026-10-30 are covered
 | `hec_dss_tsStoreRegular` drops quality for doubles, and leaks the float copy (`allocated[...]` without `= 1`) | hec-dss | Found while verifying; both fixed on `main` by #365. |
 | `hec_dss_tsRetrieve` copies quality without NULL or width checks | hec-dss | Fixed on `main` by #365 (the wrapper's own misuse is in the declarations issue). |
 | Numerics' `LiveServiceIntegration` tests | Numerics | Upstream's CI already excludes them. |
+| `BatchRunWindow`'s local `TextBlock` and `Image` styles have no `BasedOn` | RMC-BestFit | The Themes library defines no implicit style for those types, so nothing is lost. Only the progress bar's style drops a theme style; it's in the RMC.BestFit.App cleanup checklist. |
+| Trace control's unchecked `MarkovChains.Count()`; `QuantilePriorsControl`'s two-way `Visibility`; unguarded `Plot.Equals` in `GetPropertiesControl`; the batch window's unused converter; `DocumentClosed`'s summary | RMC-BestFit | Folded into the RMC.BestFit.App cleanup checklist: latent or trivial. |
+| `ParameterSetsControl` never unsubscribes; closing Input Data or Fitting Analysis doesn't clear `Element` | RMC-BestFit | Combined into one issue. The second lead is broader than reported: 11 of the 12 document views aren't cleared. |
+| Prior grids' header styles and the summary statistics header styles | RMC-BestFit | Combined into one issue, with the three other places that use the same pattern. |
+| `BatchRunWindow` blocks only the close command, not Alt+F4 | RMC-BestFit | Broader than reported: the close command isn't blocked either, because `MetroWindow`'s own binding runs first. Written up in the batch run window issue. |
 
 ## Reproductions
 
-The throwaway programs used for the "Reproduced" entries aren't committed. Each issue shows the essential code and its output. They were run on Windows 11 x64, .NET 10.0.14, against: upstream source files compiled unchanged (dates); the `RMC.Wpf.Framework.Controls`/`Models` 1.0.5 NuGet packages (the WPF controls, the terms window and WAL); RMC-BestFit 2.0.0's shipped `Hec.Dss.dll` and 7-IU-6 `hecdss.dll`; hec-dss 7-JA-7 built from source; and RMC-BestFit's model built from `bfce2dd` (the race). WPF windows were created off-screen or laid out without being shown.
+The throwaway programs used for the "Reproduced" entries aren't committed. Each issue shows the essential code and its output. They were run on Windows 11 x64, .NET 10.0.14, against: upstream source files compiled unchanged (dates); the `RMC.Wpf.Framework.Controls`/`Models` 1.0.5 NuGet packages (the WPF controls, the terms window and WAL); RMC-BestFit 2.0.0's shipped `Hec.Dss.dll` and 7-IU-6 `hecdss.dll`; hec-dss 7-JA-7 built from source; and RMC-BestFit's model built from `bfce2dd` (the race, and the grid row edits). WPF windows were created off-screen or laid out without being shown. For the element icons and the batch run window, small programs with the same type shapes as upstream's classes checked the C# rule for default interface members and WPF's command routing (.NET 10.0.14 and WindowsDesktop 10.0.14).
