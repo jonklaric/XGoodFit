@@ -77,6 +77,7 @@ compared with its upstream original.
 | A `MultiDataTrigger` | a nested style on two property selectors, the second condition bound through NumericControls' `DataTrigger.Binding`: `^[IsEnabled=True][(numcntrls|DataTrigger.Binding)=False]` (see `B17CAnalysisPropertiesControl.axaml`) |
 | An `[Obsolete]` property (`IncludeBounds="True"`) | its same-meaning replacement (`BoundsAreExclusive="False"`): Avalonia's compiler reports AVLN5001, WPF's doesn't |
 | `DataGrid MinRowHeight="24"` | ProDataGrid has none and sets each row's `MinHeight` itself, so a row theme's setter loses: put `MinHeight` in the cells' themes |
+| A grid's `RowHeaderStyle` | `<cntrls:CopyPasteDataGrid.Styles><Style Selector="DataGridRowHeader"><Setter Property="Theme" Value="{DynamicResource K}"/></Style>`: ProDataGrid has no RowHeaderTheme (see `CoincidentFrequencyControl.axaml`) |
 | A format with commas, `StringFormat={}{0:#,##0.####}` | quote it: `StringFormat='{}{0:#,##0.####}'` |
 | A `ToolTip` setter holding a `<ToolTip>` element (cells, column headers) | `<Setter Property="ToolTip.Tip"><Template>…</Template></Setter>`; in code `new Setter(ToolTip.TipProperty, new FuncTemplate<TextBlock>(…))`: one control can't be shared between cells |
 | `DisplayMemberPath` / `SelectedValuePath` | `DisplayMemberBinding="{Binding X}"` / `SelectedValueBinding="{Binding Y}"` |
@@ -194,6 +195,11 @@ Templates and themes:
 | A static brush field (`new SolidColorBrush(c)`, frozen in WPF) | an immutable brush (`ImmutableSolidColorBrush`, `Brushes.*`): a mutable one belongs to the thread that first touches the class |
 | `host.Content = element.Plot`, for every element-owned plot a view shows (also through the shared diagnostic controls' `SetPlot`) | `host.TakeContent(element.Plot)` (WpfCompat): a document opened again finds the closed view still holding the plot, and Avalonia's `Content` throws while it has a parent |
 | `System.Windows.Point` as plot items | Avalonia's `Point` (the same X and Y) |
+| A grid column's `Visibility` | `IsVisible`: a column isn't a visual, so WpfCompat's `Visibility` doesn't reach it |
+| A code-built `Style` with `new DataTrigger { Binding, Value }` | a `ControlTheme` with a setter of NumericControls' `DataTrigger.BindingProperty` and a nested `new Style(x => x.Nesting().PropertyEquals(DataTrigger.BindingProperty, value))` (see `CompositeAnalysisPropertiesControl.SetDataGridStyle`) |
+| `SetResourceReference(P, k)`, then `ClearValue(P)` | dispose the reference's binding first: `BindingOperations.GetBindingExpressionBase(o, P)?.Dispose()` |
+| `LiveSortingProperties.Add(p)`, where p is the sort property | drop it: WpfCompat's view sorts live by its sort descriptions' properties |
+| Grid rows found with `ItemContainerGenerator.ContainerFromIndex`, without scrolling | the realized `DataGridRow` with that `Index` among the visual descendants (`CopyPasteDataGrid.GetRow` scrolls) |
 
 - Dialogs wait, as in WPF (plan §5.3): `ShowDialog()` and `DialogResult` (WpfCompat's), WpfCompat's
   file and folder dialogs and clipboard, and `GenericControls.MessageBox.Show`. Keep upstream's order
@@ -324,6 +330,20 @@ Watch for others when porting:
   alive through the shared element.
 - **WpfCompat's `CollectionViewSource`** sorts by property paths (`"Alternative.Name"`), live and through
   weak events; a path that doesn't resolve keeps the collection's order, as in WPF.
+- **DataTable views in grids:** Avalonia's reflection binding can't choose among `DataRowView`'s or
+  `DataRow`'s overloaded indexers, so `[column]` paths show nothing, and ProDataGrid's own generated
+  columns for a `DataView` are affected too. Bind each column with
+  `CompiledBinding.Create<DataRowView, object>(row => row[name], …)` and set its `IsReadOnly` (left unset,
+  ProDataGrid's writability check on "Item" throws `AmbiguousMatchException`). The compiled binding gets
+  no change notifications, so refresh the grid after writing to rows, as CopyPasteDataGrid's paste does.
+- **A check box's change event comes before its binding writes back:** Avalonia's toggle button raises
+  `IsCheckedChanged` before a two-way binding writes the source; WPF writes first, then raises `Checked`.
+  GenericControls' `BooleanPropertyControl` takes the state into `IsSelected` first, so upstream's
+  handlers read the new value from the element. A plain `CheckBox`'s handlers still run before the
+  write-back.
+- **Undo can replace a model:** the Point Process, Mixture and other elements restore their model from an
+  XML snapshot, a new object, and announce it under the model's name (`PointProcess`,
+  `MixtureDistribution`). Re-read the element's model after an undo.
 - **Inherited properties change when a control joins or leaves the tree** (`FontFamily`, say): handlers
   that set a dirty flag or record undo must ignore changes that don't change what's saved (see
   OxyPlot.Wpf's `Series`).
@@ -401,6 +421,23 @@ Watch for others when porting:
   animation clock until a render tick with real time elapsed: sleep and tick before collecting.
 - **A model setter with side effects can record several undos** (`IsNonstationary` also sets
   `ParameterTimeIndex`): expect upstream's undo steps.
+- **Waiting for reprocessed results:** the shared diagnostic controls clear the wait cursor too, and an
+  earlier queued notification can clear it first. Wait for the view's own update (a table row, a series
+  title), not only for `Mouse.OverrideCursor`.
+- **Double-clicking the same spot again** within 500 ms continues the click count (headless input uses real
+  time), and a third click opens nothing: wait before double-clicking an explorer node again.
+- **Shell test classes and memory:** shell sessions add up (`BestFitShell.Close` leaves the project open, and
+  a closed session's memory stays reachable). Open each example once per class (see
+  `PointProcessMixtureTesting.SharedExample`), close the shell's project, clear the Messenger and collect
+  after each test, and declare the main-window captures first: their theme switches restyle whatever
+  earlier shell tests left alive.
+- **Factory-reset exports** lack the annotations users saved (Waimea's levee line), and the mixture
+  walkthrough's figures use logarithmic value axes where the saved plots are linear: compare series data.
+- **Standalone captures** have no value format set: set `UserSettings.DefaultValueDigits = 2`, and restore
+  it afterwards.
+- **The example tour** (`XGoodFit/ExampleTour*Tests.cs`, `scripts/run-app-tests.sh Release Tour`) opens
+  every element of every example through the main window and checks that looking changes nothing. It runs
+  in the machine's culture, so on en-AU it also meets the stored dates that don't parse there.
 - **Git Bash's `timeout` doesn't stop a test `.exe`** (hung runs kept going at several GB): stop it by its
   renamed image name.
 
