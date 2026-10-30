@@ -114,6 +114,7 @@
 
   <!-- Upstream test files: Input Data and Distribution Fitting Analysis. -->
   <ItemGroup>
+    <!-- None compile unchanged: GUI/InputDataControl*Tests.cs are ported copies (they read the .axaml ports, or use Avalonia's controls). -->
   </ItemGroup>
 
   <!-- Upstream test files: Time Series Data, with the shared AlternativeControl. -->
