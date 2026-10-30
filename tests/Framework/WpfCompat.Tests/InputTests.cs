@@ -48,6 +48,39 @@ public sealed class InputTests
     }
 
     [TestMethod]
+    public void MouseDoubleClick_FiresWhenAChildHandledThePress_ForTheLeftAndRightButtons()
+    {
+        HeadlessSession.Run(() =>
+        {
+            var inner = new Border { Width = 100, Height = 100, Background = Brushes.White };
+            var outer = new Border { Child = inner, Background = Brushes.Gray };
+            var window = new Window { Width = 200, Height = 200, Content = outer };
+            window.Show();
+
+            // The child handles every press, as a list or text box does in WPF.
+            inner.AddHandler(InputElement.PointerPressedEvent, (_, e) => e.Handled = true, Avalonia.Interactivity.RoutingStrategies.Bubble);
+            var doubleClicks = new List<MouseButton>();
+            outer.AddMouseDoubleClickHandler((_, e) => doubleClicks.Add(e.ChangedButton));
+
+            // Each button's double click at its own point: Avalonia counts clicks across buttons (WPF
+            // starts again when the button changes), and a press elsewhere starts the count again.
+            var buttons = new[] { (MouseButton.Left, new Point(60, 60)), (MouseButton.Middle, new Point(100, 100)), (MouseButton.Right, new Point(140, 140)) };
+            foreach ((MouseButton button, Point point) in buttons)
+            {
+                for (int click = 0; click < 2; click++)
+                {
+                    window.MouseDown(point, button);
+                    window.MouseUp(point, button);
+                }
+            }
+
+            CollectionAssert.AreEqual(new[] { MouseButton.Left, MouseButton.Right }, doubleClicks,
+                "as WPF's Control: handled presses too, and not the middle button");
+            window.Close();
+        });
+    }
+
+    [TestMethod]
     public void RemoveHandler_RemovesTheWrapperItAdded()
     {
         HeadlessSession.Run(() =>

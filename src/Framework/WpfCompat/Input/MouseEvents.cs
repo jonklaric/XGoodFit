@@ -28,8 +28,10 @@ public enum MouseButtonState
 /// <c>OriginalSource</c> (Avalonia's <c>Source</c>, the element the pointer is over).
 /// </para>
 /// <para>
-/// WPF's <c>MouseDoubleClick</c> is the second press of a double click (<c>ClickCount</c> 2), with any
-/// button. Each Remove method removes a handler its Add method added.
+/// WPF's <c>MouseDoubleClick</c> is the second press of a double click (<c>ClickCount</c> 2) with the
+/// left or right button. WPF's <c>Control</c> raises it from class handlers that see handled presses
+/// too, so it fires even when an element inside handled the press; so does this one. Each Remove
+/// method removes a handler its Add method added.
 /// </para>
 /// </remarks>
 public static class MouseEvents
@@ -37,7 +39,7 @@ public static class MouseEvents
     // The wrappers added for each handler, so the Remove methods can find them.
     private static readonly ConditionalWeakTable<Interactive, Dictionary<(Delegate, RoutedEvent, RoutingStrategies), Delegate>> Wrappers = new();
 
-    private static void Add<TArgs>(Interactive element, RoutedEvent<TArgs> routedEvent, RoutingStrategies routing, EventHandler<TArgs> handler, Func<TArgs, bool> filter)
+    private static void Add<TArgs>(Interactive element, RoutedEvent<TArgs> routedEvent, RoutingStrategies routing, EventHandler<TArgs> handler, Func<TArgs, bool> filter, bool handledEventsToo = false)
         where TArgs : RoutedEventArgs
     {
         EventHandler<TArgs> wrapper = (sender, e) =>
@@ -48,7 +50,7 @@ public static class MouseEvents
             }
         };
         Wrappers.GetOrCreateValue(element)[(handler, routedEvent, routing)] = wrapper;
-        element.AddHandler(routedEvent, wrapper, routing);
+        element.AddHandler(routedEvent, wrapper, routing, handledEventsToo);
     }
 
     private static void Remove<TArgs>(Interactive element, RoutedEvent<TArgs> routedEvent, RoutingStrategies routing, EventHandler<TArgs> handler)
@@ -63,6 +65,8 @@ public static class MouseEvents
     private static bool Pressed(PointerPressedEventArgs e, MouseButton button) => e.GetCurrentPoint(null).Properties.PointerUpdateKind.GetMouseButton() == button;
 
     private static bool Released(PointerReleasedEventArgs e, MouseButton button) => e.InitialPressMouseButton == button;
+
+    private static bool DoubleClicked(PointerPressedEventArgs e) => e.ClickCount == 2 && (Pressed(e, MouseButton.Left) || Pressed(e, MouseButton.Right));
 
     private const RoutingStrategies Preview = RoutingStrategies.Tunnel;
     private const RoutingStrategies Bubble = RoutingStrategies.Bubble;
@@ -127,10 +131,10 @@ public static class MouseEvents
         public void AddPreviewMouseUpHandler(EventHandler<PointerReleasedEventArgs> handler) => Add(element, InputElement.PointerReleasedEvent, Preview, handler, _ => true);
 
         /// <summary>WPF's <c>MouseDoubleClick</c>: the second press of a double click.</summary>
-        public void AddMouseDoubleClickHandler(EventHandler<PointerPressedEventArgs> handler) => Add(element, InputElement.PointerPressedEvent, Bubble, handler, e => e.ClickCount == 2);
+        public void AddMouseDoubleClickHandler(EventHandler<PointerPressedEventArgs> handler) => Add(element, InputElement.PointerPressedEvent, Bubble, handler, DoubleClicked, handledEventsToo: true);
 
         /// <summary>WPF's <c>PreviewMouseDoubleClick</c>: the second press of a double click.</summary>
-        public void AddPreviewMouseDoubleClickHandler(EventHandler<PointerPressedEventArgs> handler) => Add(element, InputElement.PointerPressedEvent, Preview, handler, e => e.ClickCount == 2);
+        public void AddPreviewMouseDoubleClickHandler(EventHandler<PointerPressedEventArgs> handler) => Add(element, InputElement.PointerPressedEvent, Preview, handler, DoubleClicked, handledEventsToo: true);
 
         /// <summary>WPF's <c>MouseMove</c>.</summary>
         public void AddMouseMoveHandler(EventHandler<PointerEventArgs> handler) => Add(element, InputElement.PointerMovedEvent, Bubble, handler, _ => true);

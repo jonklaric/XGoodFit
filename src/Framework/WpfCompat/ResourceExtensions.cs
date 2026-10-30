@@ -5,8 +5,11 @@ namespace WpfCompat;
 
 /// <summary>WPF's one-argument <c>TryFindResource</c> and <c>SetResourceReference</c>, which Avalonia lacks.</summary>
 /// <remarks>
-/// Avalonia's own <c>FindResource(key)</c> already searches as WPF's does (up the tree, then the
-/// application), but returns <c>AvaloniaProperty.UnsetValue</c> where WPF throws.
+/// Avalonia's own <c>FindResource(key)</c> searches up the tree, then the application, as WPF's does,
+/// but returns <c>AvaloniaProperty.UnsetValue</c> where WPF throws. One difference: it reaches the
+/// application's resources only once the element is in a tree (attached to a window), where WPF's
+/// always does, so look up resources of an element that isn't shown yet in
+/// <c>Application.Current</c>.
 /// </remarks>
 public static class ResourceExtensions
 {
