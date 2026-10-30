@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  XGoodFit addition: the file type of RMC-BestFit's projects, which are SQLite databases. It names the
+  type only: it makes no application the default for it (scripts/package.sh, packaging/README.md).
+-->
+<mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
+  <mime-type type="application/x-bestfit">
+    <comment>BestFit project</comment>
+    <sub-class-of type="application/vnd.sqlite3"/>
+    <icon name="@APP_ID@"/>
+    <glob pattern="*.bestfit"/>
+  </mime-type>
+</mime-info>

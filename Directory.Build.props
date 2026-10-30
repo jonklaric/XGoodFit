@@ -36,6 +36,13 @@
     <Company>XGoodFit contributors</Company>
     <Copyright>Copyright (c) 2026 Jon Klaric</Copyright>
     <Version>0.1.0-dev</Version>
+    <!-- The update feed: Velopack reads this repository's GitHub Releases (plan §9.3, decision D7). -->
+    <XGoodFitUpdateRepository>https://github.com/jonklaric/XGoodFit</XGoodFitUpdateRepository>
+    <!--
+      The application icon (.ico, up to 256 px), from which scripts/package.sh renders each OS's icons.
+      PLACEHOLDER: RMC-BestFit's own icon, until XGoodFit has one of its own.
+    -->
+    <XGoodFitIcon>$(UpstreamBestFitSrc)RMC.BestFit.App/Resources/BestFit_Icon.ico</XGoodFitIcon>
   </PropertyGroup>
 
 </Project>

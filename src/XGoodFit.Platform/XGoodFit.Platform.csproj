@@ -1,0 +1,43 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    XGoodFit addition: the application's platform integration (docs/migration-plan.md §9, Phase 8).
+    - Velopack's startup hook (PlatformStartup), and on Windows the extra "Open with" handler for
+      .bestfit files that the installer registers (WindowsFileAssociation).
+    - Updates from this repository's GitHub Releases through Velopack (decision D7): an implementation
+      of upstream SoftwareUpdate's IUpdateService, which the main window already uses, in place of
+      upstream's updater (VelopackUpdateService).
+    - The files the operating system asks the application to open, from the command line or, on
+      macOS, from Finder, as one event (FileOpenRequests).
+    It is XGoodFit's own code, not a port, and nothing in it is upstream's.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>XGoodFit.Platform</RootNamespace>
+    <AssemblyName>XGoodFit.Platform</AssemblyName>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" />
+    <PackageReference Include="Velopack" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../Framework/SoftwareUpdate/SoftwareUpdate.csproj" />
+  </ItemGroup>
+
+  <!-- The branding (Directory.Build.props, plan §1.1), for ProductInfo to read at run time. -->
+  <ItemGroup>
+    <AssemblyMetadata Include="XGoodFitProductName" Value="$(XGoodFitProductName)" />
+    <AssemblyMetadata Include="XGoodFitAppId" Value="$(XGoodFitAppId)" />
+    <AssemblyMetadata Include="XGoodFitUpdateRepository" Value="$(XGoodFitUpdateRepository)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="XGoodFit.Platform.Tests" />
+  </ItemGroup>
+
+</Project>
