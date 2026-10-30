@@ -1,5 +1,7 @@
 <Solution>
-  <Folder Name="/src/" />
+  <Folder Name="/src/">
+    <Project Path="src/Hec.Dss/Hec.Dss.csproj" />
+  </Folder>
   <Folder Name="/src/Framework/">
     <Project Path="src/Framework/ExpressionParserControls/ExpressionParserControls.csproj" />
     <Project Path="src/Framework/FrameworkInterfaces/FrameworkInterfaces.csproj" />

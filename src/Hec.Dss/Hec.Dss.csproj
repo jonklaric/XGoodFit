@@ -1,0 +1,54 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    HEC's Hec.Dss .NET wrapper (hec-dss-dotnet 2.0.3, upstream/hec-dss-dotnet/dotnet/Hec.Dss), with the
+    native hecdss library built from source for every platform (docs/migration-plan.md §9.2).
+
+    Every upstream C# file compiles unchanged except DssNative.cs: the ported copy here declares the
+    native functions as HEC-DSS 7-JA-7 exports them, and loads and checks the library (see that
+    file). Upstream's own project file isn't used, because its pre-build step downloads HEC's Windows
+    and Linux binaries with PowerShell and 7-Zip.
+
+    The natives come from native/build-hecdss.sh, which puts them in
+    artifacts/native/runtimes/<rid>/native. Every one found there ships as a runtimes/<rid>/native asset:
+    copied to the output of each project that references this one, and packed at the same path, so
+    DssNative finds the right one for the running process. Without them the wrapper builds, and DSS
+    calls throw DllNotFoundException.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>Hec.Dss</RootNamespace>
+    <AssemblyName>Hec.Dss</AssemblyName>
+    <UpstreamProjectDir>$(UpstreamRoot)hec-dss-dotnet/dotnet/Hec.Dss/</UpstreamProjectDir>
+    <!-- As upstream: no generated assembly attributes, so the assembly version is 0.0.0.0, as in RMC-BestFit's release. -->
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <HecDssNativeRoot Condition="'$(HecDssNativeRoot)' == ''">$(RepositoryRoot)artifacts/native/</HecDssNativeRoot>
+    <!--
+      CS0162 (unreachable code): upstream's DssWriter.Write(TimeSeriesProfile) throws
+      NotImplementedException before its body. That's upstream's code, which isn't edited.
+    -->
+    <NoWarn>$(NoWarn);CS0162</NoWarn>
+  </PropertyGroup>
+
+  <!-- Upstream's package metadata, for packing with the natives (plan §7, Phase 0). -->
+  <PropertyGroup>
+    <Authors>Karl Tarbet, Anton Rotter-Sieren, Neema Nejad, Chris Havens</Authors>
+    <Title>Hec.Dss</Title>
+    <Product>Hec.Dss</Product>
+    <Description>Hec.Dss is a .net API for HEC-DSS https://www.hec.usace.army.mil/software/hec-dss/documentation.aspx. XGoodFit's build: HEC-DSS 7-JA-7 natives for win-x64, linux-x64, osx-arm64 and osx-x64.</Description>
+    <PackageVersion>2.0.3-xgoodfit.7-JA-7</PackageVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="$(HecDssNativeRoot)runtimes/**/*"
+          Link="runtimes/%(RecursiveDir)%(Filename)%(Extension)"
+          CopyToOutputDirectory="PreserveNewest"
+          Pack="true"
+          PackagePath="runtimes/%(RecursiveDir)" />
+  </ItemGroup>
+
+  <Target Name="ReportMissingHecDssNatives" BeforeTargets="Build" Condition="!Exists('$(HecDssNativeRoot)runtimes')">
+    <Message Importance="high" Text="Hec.Dss: no HEC-DSS native libraries in $(HecDssNativeRoot)runtimes, so DSS files can't be read. Build them with native/build-hecdss.sh." />
+  </Target>
+
+</Project>
