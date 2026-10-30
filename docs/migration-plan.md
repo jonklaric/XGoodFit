@@ -254,7 +254,7 @@ The portable upstream projects compile **directly from `upstream/` via `ProjectR
 | Tests | `Avalonia.Headless` (+ `Verify.Avalonia` optional) | 12.1.4 | MSTest via a manual `HeadlessUnitTestSession` |
 | SQLite | `System.Data.SQLite` + `SourceGear.sqlite3` | 2.0.x / 3.50.x | Same as upstream; fallback `Microsoft.Data.Sqlite` |
 | DSS import | HEC `hec-dss` (C) + `Hec.Dss` wrapper (C#), from pinned source; zlib | 7-JA-7 / 2.0.3; 1.3.1 | Natives built per RID in CI (§9.2). The wrapper has no licence file and is treated as MIT for now (R17) |
-| Fonts | Selawik (OFL) · Cascadia Mono (OFL) | — | Fallbacks for Segoe UI and Consolas off Windows |
+| Fonts | Selawik · Cascadia Mono · Caladea · Carlito (all OFL) | 1.01 · 2407.24 · Google Fonts `6157dfa` | Substitutes for Segoe UI, Consolas, Cambria and Calibri off Windows (`Themes.ThemeFonts`) |
 | Packaging/updates | `Velopack` (D7) | 1.2.x | Setup/MSI, `.app`/`.pkg`, AppImage; GitHub Releases; deltas; signing and notarization |
 
 Rejected or avoided:
@@ -352,7 +352,7 @@ For 1.0, every OS gets the same VS2013 look, including the in-window menu bar (D
 1. **Palettes 1:1.** Port `LightColors`/`DarkColors`/`BlueColors.xaml` (~460 resources each) and `ColorKeys.cs` verbatim. Only the XML namespace changes.
 2. **Control templates.** Port each of the ~31 theme XAML files (Button … DataGrid, Calendar, Menu, TabControl, TreeView, ScrollBar, Expander, MetroWindowStyle) to `ControlTheme`s that reproduce the WPF visual tree: borders, padding, glyph paths, sizes. Then port the FrameworkUI-, OxyPlotControls- and App-level styles (`BestFitStyles.xaml`, `IconDictionary.xaml`).
 3. **Docking chrome.** Build a VS2013-style Dock theme (pane headers with the dotted grip, pin/close glyphs, document tab strip and overflow) in all 3 variants. *Done (2026-10-30): `FrameworkUI/Themes/VS2013/Dock`, XGoodFit's own theme from upstream's colours and key names; against upstream's screenshots, pane edges, captions and tabs match within a pixel and colours within JPEG noise.*
-4. **Typography.** WPF defaults are Segoe UI at 12 DIP. Use real Segoe UI/Consolas on Windows. Elsewhere, use embedded **Selawik** (Segoe UI metric fallback; check its shorter line height) and **Cascadia Mono**. Turn on subpixel antialiasing on Windows to match ClearType.
+4. **Typography.** WPF defaults are Segoe UI at 12 DIP. Use real Segoe UI/Consolas on Windows. Elsewhere, use embedded **Selawik** (Segoe UI metric fallback; check its shorter line height) and **Cascadia Mono**. Turn on subpixel antialiasing on Windows to match ClearType. *Done (2026-10-30):* `Themes.ThemeFonts.UseThemeFonts()` embeds Selawik, Cascadia Mono, and Caladea and Carlito (metric-compatible with Cambria and Calibri, which upstream names for its f(x) icon glyphs and one expander header). Outside Windows it maps each Windows font to its substitute and makes Selawik the default family; every application builder calls it (the App too). Before it, a named Windows font fell back to the platform's default, which differs per OS and is missing on GitHub's Linux runner.
 5. **Geometry.** Both frameworks use 96-DIP units, so sizes, margins and vector icons (~1,000 `Path` geometries) carry over unchanged.
 6. **Window chrome.**
    - Windows: custom caption matching `MetroWindow`.

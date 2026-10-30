@@ -187,7 +187,9 @@ XML. Code that uses it changes only where Avalonia's types differ:
 ## 5. Defaults that differ
 
 Already handled for every ported control (Themes' `ThemeService.Initialize`):
-- **Font:** Segoe UI 12, falling back to Selawik (`Defaults.axaml`).
+- **Font:** Segoe UI 12, falling back to Selawik (`Defaults.axaml`). Every application's builder, the
+  test sessions' and tools' included, also calls `.UseThemeFonts()` (`Themes.ThemeFonts`): outside
+  Windows, upstream's Segoe UI, Consolas, Cambria and Calibri then draw in their embedded substitutes.
 - **Shape stroke:** WPF shapes draw a 1-pixel stroke by default (`WpfDefaults`).
 - **Menu separators:** they get WPF's menu style (`Defaults.axaml`).
 - **System values:** WPF's colours and sizes, as resources (`Merged.axaml`).
