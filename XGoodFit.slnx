@@ -11,7 +11,9 @@
     <Project Path="src/Framework/Themes/Themes.csproj" />
     <Project Path="src/Framework/WpfCompat/WpfCompat.csproj" />
   </Folder>
-  <Folder Name="/tests/" />
+  <Folder Name="/tests/">
+    <Project Path="tests/Hec.Dss.Tests/Hec.Dss.Tests.csproj" />
+  </Folder>
   <Folder Name="/tests/Framework/">
     <Project Path="tests/Framework/ExpressionParserControls.Tests/ExpressionParserControls.Tests.csproj" />
     <Project Path="tests/Framework/FrameworkUI.Tests/FrameworkUI.Tests.csproj" />

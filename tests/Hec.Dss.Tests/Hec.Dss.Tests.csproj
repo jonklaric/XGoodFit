@@ -1,0 +1,71 @@
+<Project Sdk="MSTest.Sdk/3.6.4">
+
+  <!--
+    Tests for HEC's Hec.Dss wrapper (src/Hec.Dss) with the hecdss natives XGoodFit builds
+    (native/build-hecdss.sh):
+    - HEC's own wrapper tests (upstream/hec-dss-dotnet/dotnet/DotNetTests), compiled unchanged except
+      TestUtility.cs, which finds HEC's sample files in sample-data/dss-test-data;
+    - XGoodFit's tests in XGoodFit/: RMC-BestFit's example DSS file read as RMC-BestFit reads it and
+      compared with what its project saved, the native declarations against hecdss.h, the library
+      check, and (on Windows, given an RMC-BestFit release) a comparison with RMC-BestFit's own wrapper
+      and HEC's 7-IU-6 native.
+    They need the natives and the sample data (scripts/fetch-sample-data.sh dss-test-data RMC-BestFit).
+    Without them every test is reported as skipped (inconclusive), unless XGOODFIT_REQUIRE_HECDSS=1,
+    as in CI, makes that a failure.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <UpstreamProjectDir>$(UpstreamRoot)hec-dss-dotnet/dotnet/DotNetTests/</UpstreamProjectDir>
+    <UpstreamCompileMode>OptIn</UpstreamCompileMode>
+    <!--
+      MSTEST0003: upstream's TimeSeriesReadBehavior.ReadTs is a helper marked [TestMethod]; MSTest skips it
+      when it discovers the tests (UTA007). That's upstream's code, which isn't edited.
+    -->
+    <NoWarn>$(NoWarn);MSTEST0003</NoWarn>
+    <!--
+      Without the natives or the sample data every test is skipped, and a run with no test run exits
+      with code 8 ("zero tests ran"), which dotnet test reports as a failure. That's how a machine that
+      hasn't built the natives should see it, so dotnet test ignores it here.
+    -->
+    <TestingPlatformCommandLineArguments>$(TestingPlatformCommandLineArguments) --ignore-exit-code 8</TestingPlatformCommandLineArguments>
+  </PropertyGroup>
+
+  <!-- HEC's tests of what RMC-BestFit does with DSS files: open, catalogue, pathnames, read time series. -->
+  <ItemGroup>
+    <UpstreamCompileInclude Include="CoreTesting.cs" />
+    <UpstreamCompileInclude Include="CatalogTesting.cs" />
+    <UpstreamCompileInclude Include="PathTesting.cs" />
+    <UpstreamCompileInclude Include="DateTimeTesting.cs" />
+    <UpstreamCompileInclude Include="DSSIOUnitTest.cs" />
+    <UpstreamCompileInclude Include="TimeSeriesTest.cs" />
+    <UpstreamCompileInclude Include="TimeSeriesReadBehavior.cs" />
+    <UpstreamCompileInclude Include="TimeWindowBehavior.cs" />
+    <UpstreamCompileInclude Include="ConsecutiveValueCompressionTesting.cs" />
+    <UpstreamCompileInclude Include="LocationInfoTesting.cs" />
+  </ItemGroup>
+
+  <!--
+    HEC's tests of paired data and grids, which RMC-BestFit doesn't read: they're here because they call
+    hec_dss_pdRetrieve, hec_dss_pdStore and hec_dss_gridStore, whose declarations XGoodFit corrected.
+    Left out: BasicPinvokeTests.cs (prints ASCII codes, no DSS), LimitsTest.cs and SqueezeTesting.cs
+    (writing large records and squeezing files, which RMC-BestFit doesn't do), and Conversions.cs
+    (DSS 6 to 7 conversion, which 7-JA-7 no longer has).
+  -->
+  <ItemGroup>
+    <UpstreamCompileInclude Include="PairedDataTest.cs" />
+    <UpstreamCompileInclude Include="GridTesting.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../src/Hec.Dss/Hec.Dss.csproj" />
+    <!-- RMC-BestFit's SQLite stack (System.Data.SQLite), to read the example project's saved series. -->
+    <ProjectReference Include="$(UpstreamFrameworkSrc)DatabaseManager/DatabaseManager.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AssemblyMetadata Include="DssTestDataDir" Value="$(RepositoryRoot)sample-data/dss-test-data/" />
+    <AssemblyMetadata Include="BestFitExamplesDir" Value="$(RepositoryRoot)sample-data/RMC-BestFit/examples/" />
+    <AssemblyMetadata Include="HecDssHeader" Value="$(UpstreamRoot)hec-dss/heclib/hecdss/hecdss.h" />
+  </ItemGroup>
+
+</Project>
