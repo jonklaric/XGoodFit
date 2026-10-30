@@ -106,6 +106,9 @@
 
   <!-- Upstream test files: Shared analysis controls: GUI/Support/Controls. -->
   <ItemGroup>
+    <UpstreamCompileInclude Include="GUI/ParameterSetsControlMixtureTests.cs" />
+    <UpstreamCompileInclude Include="GUI/Support/BayesianStoredResults.cs" />
+    <UpstreamCompileInclude Include="GUI/Support/Controls/ParameterSetsExportTests.cs" />
   </ItemGroup>
 
   <!-- Upstream test files: Input Data and Distribution Fitting Analysis. -->

@@ -1,0 +1,31 @@
+<!--
+    XGoodFit port of upstream's GUI/Support/Controls/ParameterSetsControl.xaml: the table is DatabaseControls'
+    TableViewer (ported), and the warning's Visibility="Collapsed" is IsVisible="False".
+-->
+<UserControl x:Class="RMC_BestFit.ParameterSetsControl"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="using:RMC_BestFit"
+             xmlns:tblView="using:DatabaseControls"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800"
+             Loaded="UserControl_Loaded"
+             Background="{DynamicResource EnvironmentWindowBackground}"
+             Foreground="{DynamicResource EnvironmentWindowText}"
+             DataContext="{Binding RelativeSource={RelativeSource Self}}">
+    <Grid>
+        <tblView:TableViewer
+                    x:Name="ParameterSetTableViewer"
+                    RowSelectable="True"
+                    ColumnSelectable="True"
+                    CellSelectable="True"
+                    ShowRowHeaders="False"
+                    AutoFitColumns="True"/>
+        <TextBlock x:Name="InvalidMixtureDrawWarning"
+                   Text="The parameter sets cannot be displayed because a stored draw does not define valid mixture weights."
+                   TextWrapping="Wrap" Foreground="#FFE41400" FontSize="13"
+                   Margin="10,8,10,4" IsVisible="False"/>
+    </Grid>
+</UserControl>

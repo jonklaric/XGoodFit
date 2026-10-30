@@ -26,8 +26,9 @@ namespace WpfCompat.Controls;
 /// raise <see cref="Hyperlink.RequestNavigate"/>.</item>
 /// <item>A paragraph's automatic (NaN) margins are one line of its font, as WPF's are, and adjacent
 /// margins collapse.</item>
-/// <item>Text wraps to the visible width, as a flow document does; so the horizontal scroll bar,
-/// whose setting is kept, never shows.</item>
+/// <item>Text wraps to the visible width, as a flow document does, so the horizontal scroll bar never
+/// shows; unless the document has a <see cref="FlowDocument.PageWidth"/>, which lays the text out that
+/// wide and scrolls it sideways as the horizontal scroll bar setting says, as in WPF.</item>
 /// <item>Themes' RichTextBox theme gives it the ported colours; without a theme it has a plain look.</item>
 /// </list>
 /// </remarks>
@@ -90,6 +91,7 @@ public class RichTextBox : TemplatedControl
         DocumentProperty.Changed.AddClassHandler<RichTextBox>((box, _) => box.ShowDocument());
         IsDocumentEnabledProperty.Changed.AddClassHandler<RichTextBox>((box, _) => box.ShowDocument());
         SelectionBrushProperty.Changed.AddClassHandler<RichTextBox>((box, _) => box.ShowDocument());
+        HorizontalScrollBarVisibilityProperty.Changed.AddClassHandler<RichTextBox>((box, _) => box.ShowDocument());
     }
 
     /// <summary>Creates a rich text box with an empty document, as WPF's.</summary>
@@ -221,6 +223,15 @@ public class RichTextBox : TemplatedControl
             return;
         }
         _blocks.Margin = document.PagePadding;
+        // A page width lays the text out that wide, left-aligned, and scrolls it sideways where the box is
+        // narrower, as WPF's does; without one the text wraps to the visible width.
+        bool hasPageWidth = !double.IsNaN(document.PageWidth);
+        _blocks.Width = hasPageWidth ? Math.Max(0, document.PageWidth - document.PagePadding.Left - document.PagePadding.Right) : double.NaN;
+        _blocks.HorizontalAlignment = hasPageWidth ? HorizontalAlignment.Left : HorizontalAlignment.Stretch;
+        if (_scrollViewer != null)
+        {
+            _scrollViewer.HorizontalScrollBarVisibility = hasPageWidth ? HorizontalScrollBarVisibility : ScrollBarVisibility.Disabled;
+        }
         double fontSize = !double.IsNaN(document.FontSize) ? document.FontSize : FontSize;
         double previousBottom = 0;
         var paragraphs = document.Blocks.OfType<Paragraph>().ToList();

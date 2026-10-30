@@ -99,6 +99,26 @@ public sealed class RenderingTests
     }
 
     [TestMethod]
+    public void UseBitmapCache_StillDrawsWhatChangesAfterTheFirstFrame()
+    {
+        HeadlessSession.Run(() =>
+        {
+            // BestFit's Markov chain trace plot caches its bitmap, and gets its chains after it first shows.
+            var plot = new Plot { UseBitmapCache = true };
+            plot.Axes.Add(new LinearAxis { Position = OxyPlot.Axes.AxisPosition.Bottom });
+            plot.Axes.Add(new LinearAxis { Position = OxyPlot.Axes.AxisPosition.Left });
+            var (window, _) = Show(plot);
+            plot.Series.Add(new LineSeries { Color = Colors.Red, StrokeThickness = 3, ItemsSource = new[] { new DataPoint(0, 0), new DataPoint(1, 1) } });
+            plot.InvalidatePlot(true);
+            Dispatcher.UIThread.RunJobs();
+            var frame = window.CaptureRenderedFrame()!;
+            Assert.IsTrue(plot.UseBitmapCache, "the preference is kept");
+            Assert.IsTrue(CountPixels(frame, Colors.Red, 60) > 100, "the series added after the first frame is drawn");
+            window.Close();
+        });
+    }
+
+    [TestMethod]
     public void DisableShapeAntiAliasing_LeavesTextAntiAliased()
     {
         HeadlessSession.Run(() =>

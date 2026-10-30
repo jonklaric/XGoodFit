@@ -40,6 +40,12 @@ public sealed class FlowDocument
     /// <summary>The space around the document's text, as WPF's <c>PagePadding</c>.</summary>
     public Thickness PagePadding { get; set; } = new(5, 0, 5, 0);
 
+    /// <summary>
+    /// The page's width, padding included, or NaN (WPF's automatic) to wrap the text to the viewer's width.
+    /// A rich text box lays a wider page out at this width and scrolls it sideways, as WPF's does.
+    /// </summary>
+    public double PageWidth { get; set; } = double.NaN;
+
     /// <summary>The start of the document's content.</summary>
     public TextPointer ContentStart { get; }
 
