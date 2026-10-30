@@ -103,6 +103,25 @@ public sealed class ControlThemeTests
     }
 
     [TestMethod]
+    public void TextBox_WrapsItsText_WhenTextWrappingIsWrap_AsWpfDoes()
+    {
+        HeadlessSession.Run(() =>
+        {
+            const string text = "Daily mean discharge for Moose River at Victory, VT. Record begins 1947.";
+            var wrapping = new TextBox { Text = text, TextWrapping = Avalonia.Media.TextWrapping.Wrap, Width = 120 };
+            var single = new TextBox { Text = text, Width = 120 };
+            var window = Show(new StackPanel { Children = { wrapping, single } });
+
+            // Avalonia's text box disables horizontal scrolling while it wraps, which its template must follow:
+            // a scroll viewer that scrolls sideways measures the text unbounded, on one line.
+            Assert.AreEqual(ScrollBarVisibility.Disabled, TemplatePart<ScrollViewer>(wrapping, "PART_ScrollViewer").HorizontalScrollBarVisibility);
+            Assert.IsTrue(wrapping.Bounds.Height > 2 * single.Bounds.Height, $"the text wraps onto several lines ({wrapping.Bounds.Height} vs {single.Bounds.Height})");
+            Assert.AreEqual(ScrollBarVisibility.Hidden, TemplatePart<ScrollViewer>(single, "PART_ScrollViewer").HorizontalScrollBarVisibility, "WPF's default");
+            window.Close();
+        });
+    }
+
+    [TestMethod]
     public void DataGrid_HidesItsRowOfHeaders_WithTheColumnHeaders()
     {
         HeadlessSession.Run(() =>

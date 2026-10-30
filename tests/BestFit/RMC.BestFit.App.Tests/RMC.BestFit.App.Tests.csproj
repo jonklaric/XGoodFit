@@ -119,6 +119,7 @@
 
   <!-- Upstream test files: Time Series Data, with the shared AlternativeControl. -->
   <ItemGroup>
+    <UpstreamCompileInclude Include="GUI/TimeSeriesData/TimeSeries/DssPathSelectorRowTests.cs" />
   </ItemGroup>
 
   <!-- Upstream test files: Univariate Distribution Analysis: Univariate, Bulletin 17C, Point Process, Mixture, Composite. -->

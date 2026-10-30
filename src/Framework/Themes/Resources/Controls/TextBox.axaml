@@ -14,8 +14,10 @@
     - The context menu is created per text box (Template), with the commands WPF's
       ApplicationCommands provide and their usual names and shortcuts.
     - WPF's text box gives its ScrollViewer its own VerticalScrollBarVisibility (Hidden by default), so
-      the template binds the attached ScrollViewer property. The horizontal one stays Hidden: Avalonia's
-      text box sets that property itself.
+      the template binds the attached ScrollViewer property. The horizontal one is the text box's own
+      attached property too, which Avalonia's text box sets itself: Hidden, as WPF's default, but
+      Disabled while the text wraps (a scroll viewer that scrolls sideways would measure the text on
+      one line), and Auto when it accepts returns without wrapping.
     - Not ported: ScrollViewer.PanningMode and Stylus.IsFlicksEnabled (WPF touch and pen settings), and
       the inactive-selection trigger (IsInactiveSelectionHighlightEnabled, off by default in WPF).
     -->
@@ -49,7 +51,7 @@
                     <DataValidationErrors>
                         <ScrollViewer Name="PART_ScrollViewer"
                                       Focusable="False"
-                                      HorizontalScrollBarVisibility="Hidden"
+                                      HorizontalScrollBarVisibility="{TemplateBinding (ScrollViewer.HorizontalScrollBarVisibility)}"
                                       VerticalScrollBarVisibility="{TemplateBinding (ScrollViewer.VerticalScrollBarVisibility)}"
                                       Margin="{TemplateBinding Padding}">
                             <TextPresenter Name="PART_TextPresenter"
