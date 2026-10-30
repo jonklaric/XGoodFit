@@ -31,7 +31,8 @@
     <RootNamespace>RMC_BestFit</RootNamespace>
     <AssemblyName>$(XGoodFitProductName)</AssemblyName>
     <AssemblyTitle>$(XGoodFitProductName)</AssemblyTitle>
-    <Description>XGoodFit, a cross-platform community port of RMC-BestFit, the Bayesian estimation and fitting software the USACE Risk Management Center developed to enhance and expedite flood hazard assessments.</Description>
+    <!-- The About box's description (ShellPublicVariables' ApplicationAttributes.Description). -->
+    <Description>Bayesian estimation and fitting software for flood hazard assessments, on Windows, macOS and Linux. XGoodFit is a community port of RMC-BestFit, and reads and writes RMC-BestFit 2.0.1 projects.</Description>
     <ApplicationIcon>$(XGoodFitIcon)</ApplicationIcon>
     <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>disable</Nullable>

@@ -110,11 +110,7 @@ namespace RMC_BestFit
                         analyses.ContextMenu.Close();
                     }
 
-                    var about = new AboutWindow
-                    {
-                        SoftwareImage = Application.Current.FindResource("BestFit") as Avalonia.Media.IImage,
-                    };
-                    Save(about, folder, "about", theme, show: true);
+                    Save(MainProjectNode.CreateAboutWindow(), folder, "about", theme, show: true);
                 }
 
                 ReportHecDss();

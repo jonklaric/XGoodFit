@@ -457,8 +457,8 @@ namespace RMC_BestFit
             var aboutMenuItem = new MenuItem() { Header = "About " + ApplicationAttributes.Title, Icon = Application.Current.TryFindResource("AboutIcon") };
             aboutMenuItem.Click += (s, e) =>
             {
-                var window = new AboutWindow();
-                window.SoftwareImage = Application.Current.TryFindResource("BestFit") as IImage;
+                // XGoodFit port: the About box is branded (CreateAboutWindow).
+                var window = CreateAboutWindow();
                 if (Application.Current?.MainWindow != null)
                 {
                     window.Owner = Application.Current.MainWindow;
@@ -468,6 +468,30 @@ namespace RMC_BestFit
             };
             _helpMenuItems.Add(aboutMenuItem);
 
+        }
+
+        /// <summary>
+        /// XGoodFit addition: the About box, as upstream's About item made it (the application's name and
+        /// icon), with XGoodFit's branding (plan §1.1).
+        /// </summary>
+        /// <returns>The About window, not shown.</returns>
+        /// <remarks>
+        /// It shows XGoodFit's own version (the one its updates compare, without build metadata; projects
+        /// keep recording RMC-BestFit's 2.0.1, <see cref="App.ProductVersion"/>), and the credit and
+        /// disclaimer in place of the Risk Management Center's name, address and logo.
+        /// </remarks>
+        internal static AboutWindow CreateAboutWindow()
+        {
+            var window = new AboutWindow();
+            window.SoftwareImage = Application.Current.TryFindResource("BestFit") as IImage;
+            var version = App.CreateUpdateOptions().CurrentVersion;
+            window.SoftwareVersion = $"{version.Major}.{version.Minor}.{version.Patch}" + (version.IsPreRelease ? "-" + version.PreRelease : "");
+            window.OrganizationName = "Based on RMC-BestFit";
+            window.OrganizationDetails = "by the USACE Risk Management Center." + Environment.NewLine
+                + "Not affiliated with or endorsed by USACE." + Environment.NewLine
+                + XGoodFit.Platform.ProductInfo.UpdateRepository;
+            window.OrganizationImage = null;
+            return window;
         }
 
         /// <summary>

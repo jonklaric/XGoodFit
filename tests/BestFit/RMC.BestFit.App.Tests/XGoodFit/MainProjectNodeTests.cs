@@ -457,7 +457,8 @@ namespace RMC.BestFit.App.Tests.XGoodFit
                     Assert.IsTrue(linksEnabled, "the citation link can be clicked; the document stays read-only");
                     Assert.AreEqual("RMC-BestFit License and Citation", firstParagraph);
 
-                    // About: the application's own name and icon (BestFit, XGoodFitIcon).
+                    // About: the application's own name, icon (BestFit, XGoodFitIcon) and version, with the
+                    // credit and disclaimer (plan §1.1) where upstream names the Risk Management Center.
                     AboutWindow about = null;
                     string title = null;
                     using (BestFitShell.WhenOpened<AboutWindow>(opened =>
@@ -473,7 +474,11 @@ namespace RMC.BestFit.App.Tests.XGoodFit
                     Assert.AreSame(Application.Current.FindResource("BestFit"), about.SoftwareImage);
                     Assert.AreEqual(ApplicationAttributes.Title, about.SoftwareName);
                     Assert.AreEqual("About " + ApplicationAttributes.Title, title);
-                    Assert.AreEqual(RMC_BestFit.App.ProductVersion, about.SoftwareVersion);
+                    StringAssert.StartsWith(RMC_BestFit.App.CreateUpdateOptions().CurrentVersion.ToString(), about.SoftwareVersion);
+                    Assert.IsFalse(about.SoftwareVersion.Contains('+'), "no build metadata");
+                    Assert.AreEqual("Based on RMC-BestFit", about.OrganizationName);
+                    StringAssert.StartsWith(about.OrganizationDetails, "by the USACE Risk Management Center." + Environment.NewLine + "Not affiliated with or endorsed by USACE.");
+                    Assert.IsNull(about.OrganizationImage, "no USACE logo");
                 }
                 finally
                 {
