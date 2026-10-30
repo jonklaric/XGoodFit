@@ -40,6 +40,8 @@ public static class CommandManager
 
     static CommandManager()
     {
+        // Command routing starts with the first window's bindings; Keyboard.Modifiers starts with it.
+        Keyboard.Initialize();
         InputElement.KeyDownEvent.AddClassHandler<InputElement>(OnKeyDown);
         InputElement.KeyUpEvent.AddClassHandler<InputElement>((_, _) => InvalidateRequerySuggested(), handledEventsToo: true);
         InputElement.PointerReleasedEvent.AddClassHandler<InputElement>((_, _) => InvalidateRequerySuggested(), handledEventsToo: true);

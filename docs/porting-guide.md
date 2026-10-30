@@ -99,7 +99,9 @@ Templates and themes:
 | `PropertyChangedCallback` | `OnPropertyChanged` override, or `Property.Changed.AddClassHandler<T>(…)` in a static constructor (put it before the callback's doc comment) |
 | `CoerceValueCallback` | the `coerce:` parameter of `Register` |
 | `RoutedEvent` / `EventManager.RegisterRoutedEvent` | `RoutedEvent.Register<TOwner, TArgs>` |
-| `Mouse*` / `Preview*` events | `Pointer*` / `AddHandler(…, RoutingStrategies.Tunnel)`; double-click via `e.ClickCount` |
+| `PreviewMouseLeftButtonDown += H` and the other WPF mouse events | `this.AddPreviewMouseLeftButtonDownHandler(H)` (WpfCompat.Input's `MouseEvents`: WPF's button filter and routing). `H` takes Avalonia's pointer arguments, with WPF's `ChangedButton`, `LeftButton`, `RightButton` and `OriginalSource` as extension properties. Wheel deltas are notches (WPF: 120 per notch) |
+| `Keyboard.Modifiers`, `ModifierKeys` | WpfCompat.Input's (Command counts as Control on macOS) |
+| `x.SetResourceReference(P, key)` | unchanged, with `using WpfCompat;` |
 | `Dispatcher.Invoke` / `BeginInvoke` | `Dispatcher.UIThread.Invoke` / `Post` |
 | `VisualTreeHelper` | `GetVisualParent`, `GetVisualChildren`, `FindAncestorOfType<T>` (`Avalonia.VisualTree`) |
 | `x.Visibility = Visibility.Hidden` | unchanged, with `using WpfCompat;` (an extension property that agrees with `IsVisible`) |
