@@ -1,0 +1,58 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    The reference side of the file-compatibility suite (docs/migration-plan.md, Phase 6). It opens and
+    saves every example project with upstream's own WPF RMC.BestFit.UI (upstream/RMC-BestFit/src/
+    RMC.BestFit.UI, 2.0.1, built from the vendored source as it is), and writes descriptions of the saved
+    files: the golden data of tests/BestFit/RMC.BestFit.FileCompat.Tests, which do the same with the port.
+    The steps, the description and the comparison are the tests' own Shared/*.cs files, compiled here too.
+
+    Upstream's project builds as upstream's does, against the RMC.Wpf.Framework.* 1.0.5 packages from
+    nuget.org (upstream/RMC-BestFit/Directory.Packages.props). Two inputs come from XGoodFit:
+    - Hec.Dss: upstream references the wrapper's assembly by path ($(HecDssAssemblyPath)), because the
+      wrapper's own project downloads Windows binaries. This project builds XGoodFit's (src/Hec.Dss) first
+      and passes its path. Opening and saving projects never reads a DSS file.
+    - RMC.Numerics: from the vendored source, as for every XGoodFit build (Directory.Build.rsp). Building
+      with -p:UseLocalRmcNumerics=false uses upstream's NuGet package instead (see Golden/README.md).
+
+    Windows only (WPF), so it isn't in XGoodFit.slnx. How to run it: Golden/README.md in the tests.
+  -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <RootNamespace>BestFitFileCompat</RootNamespace>
+    <!--
+      Upstream's project is referenced with HecDssAssemblyPath set, which its own references (RMC.BestFit,
+      Numerics) inherit. Referencing those again transitively, without it, would build them a second time.
+      Their assemblies still come along with RMC.BestFit.UI's.
+    -->
+    <DisableTransitiveProjectReferences>true</DisableTransitiveProjectReferences>
+    <HecDssProject>$(RepositoryRoot)src/Hec.Dss/Hec.Dss.csproj</HecDssProject>
+    <HecDssAssemblyPath Condition="'$(UseArtifactsOutput)' == 'true'">$(ArtifactsPath)/bin/Hec.Dss/$(Configuration.ToLowerInvariant())/Hec.Dss.dll</HecDssAssemblyPath>
+    <HecDssAssemblyPath Condition="'$(UseArtifactsOutput)' != 'true'">$(RepositoryRoot)src/Hec.Dss/bin/$(Configuration)/net10.0/Hec.Dss.dll</HecDssAssemblyPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="../../tests/BestFit/RMC.BestFit.FileCompat.Tests/Shared/*.cs" LinkBase="Shared" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="$(UpstreamBestFitSrc)RMC.BestFit.UI/RMC.BestFit.UI.csproj"
+                      AdditionalProperties="HecDssAssemblyPath=$(HecDssAssemblyPath)" />
+    <!-- Only so that restoring this project restores Hec.Dss too; upstream's reference brings its assembly. -->
+    <ProjectReference Include="$(HecDssProject)" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <!-- Upstream's project needs Hec.Dss.dll when it compiles, so build it before the references. -->
+  <Target Name="BuildHecDssForUpstream" BeforeTargets="ResolveProjectReferences" Condition="'$(DesignTimeBuild)' != 'true'">
+    <MSBuild Projects="$(HecDssProject)" Targets="Build">
+      <Output TaskParameter="TargetOutputs" ItemName="_HecDssAssembly" />
+    </MSBuild>
+    <Error Condition="'@(_HecDssAssembly->'%(FullPath)')' != '$([System.IO.Path]::GetFullPath($(HecDssAssemblyPath)))'"
+           Text="Hec.Dss was built at @(_HecDssAssembly->'%(FullPath)'), but upstream's RMC.BestFit.UI looks for it at $(HecDssAssemblyPath)." />
+  </Target>
+
+</Project>
