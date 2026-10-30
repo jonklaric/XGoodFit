@@ -3,12 +3,16 @@
   <!--
     XGoodFit tool: shows the ported palettes and controls in each theme, with a theme switcher.
     With "capture <folder>" it renders the gallery in every theme to PNG files instead, headlessly.
+    It also stands in for RMC.BestFit.App in the packages (scripts/package.sh) until that's ported:
+    it runs Velopack's startup hook, takes files to open, and ships the HEC-DSS natives as the
+    application will.
   -->
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <ApplicationIcon>$(XGoodFitIcon)</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
@@ -22,6 +26,8 @@
     <ProjectReference Include="../../src/Framework/FrameworkUI/FrameworkUI.csproj" />
     <ProjectReference Include="../../src/Framework/GenericControls/GenericControls.csproj" />
     <ProjectReference Include="../../src/Framework/Themes/Themes.csproj" />
+    <ProjectReference Include="../../src/Hec.Dss/Hec.Dss.csproj" />
+    <ProjectReference Include="../../src/XGoodFit.Platform/XGoodFit.Platform.csproj" />
   </ItemGroup>
 
 </Project>

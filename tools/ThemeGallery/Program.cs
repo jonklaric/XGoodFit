@@ -12,16 +12,21 @@ using Avalonia.VisualTree;
 using GenericControls;
 using Themes;
 using WpfCompat;
+using XGoodFit.Platform;
 
 namespace ThemeGallery;
 
-// Usage: ThemeGallery                    show the gallery
+// Usage: ThemeGallery [file]            show the gallery (the title names a file it's asked to open)
 //        ThemeGallery capture <folder>   render it in every theme to <folder>/theme-gallery-<page>-<Theme>.png
 internal static class Program
 {
     [STAThread]
     public static int Main(string[] args)
     {
+        // As the application will: Velopack's startup hook comes first (scripts/package.sh packages the
+        // gallery). Outside a package there's none.
+        PlatformStartup.BuildVelopackApp(args)?.Run();
+
         if (args.Length == 2 && args[0] == "capture")
         {
             return Capture(args[1]);
@@ -123,7 +128,22 @@ internal static class Program
             Save(new FrameworkUI.TermsAndConditionsWindow(), folder, "terms", theme, show: true);
         }
         window.Close();
+        ReportHecDss();
         return 0;
+    }
+
+    // Whether the HEC-DSS native library loads, which shows that a package (scripts/check-package.sh) ships it.
+    private static void ReportHecDss()
+    {
+        try
+        {
+            Hec.Dss.DssGlobals.SetProgramName("ThemeGallery");
+            Console.WriteLine("HEC-DSS native library: loaded");
+        }
+        catch (DllNotFoundException e)
+        {
+            Console.WriteLine($"HEC-DSS native library: not available ({e.Message})");
+        }
     }
 
     private static void Save(Window window, string folder, string page, Theme theme, bool show = false)
@@ -171,7 +191,13 @@ internal sealed class App : Application
         ThemeService.Instance.Initialize(Theme.Light);
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            desktop.MainWindow = new GalleryWindow();
+            var window = new GalleryWindow();
+            desktop.MainWindow = window;
+
+            // Files to open: the command line on Windows and Linux, Finder on macOS. The gallery names
+            // the last one in its title, to show that opening a .bestfit file with it works.
+            FileOpenRequests.For(this).FilesOpened += (_, e) =>
+                window.Title = $"XGoodFit theme gallery - {Path.GetFileName(e.Paths[^1])}";
         }
         base.OnFrameworkInitializationCompleted();
     }

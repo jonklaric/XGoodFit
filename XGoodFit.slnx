@@ -1,6 +1,7 @@
 <Solution>
   <Folder Name="/src/">
     <Project Path="src/Hec.Dss/Hec.Dss.csproj" />
+    <Project Path="src/XGoodFit.Platform/XGoodFit.Platform.csproj" />
   </Folder>
   <Folder Name="/src/BestFit/">
     <Project Path="src/BestFit/RMC.BestFit.UI/RMC.BestFit.UI.csproj" />
@@ -19,6 +20,7 @@
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Hec.Dss.Tests/Hec.Dss.Tests.csproj" />
+    <Project Path="tests/XGoodFit.Platform.Tests/XGoodFit.Platform.Tests.csproj" />
   </Folder>
   <Folder Name="/tests/BestFit/">
     <Project Path="tests/BestFit/RMC.BestFit.UI.Tests/RMC.BestFit.UI.Tests.csproj" />
