@@ -1,0 +1,30 @@
+<!-- XGoodFit addition: a control with WpfCompat's two-way MultiBinding in WPF's element syntax, for MultiBindingTests. -->
+<UserControl x:Class="WpfCompat.Tests.MultiBindingHost" x:Name="Host"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:wpfd="using:WpfCompat.Data"
+             xmlns:local="using:WpfCompat.Tests">
+    <UserControl.Resources>
+        <local:JoinConverter x:Key="Join"/>
+    </UserControl.Resources>
+    <StackPanel>
+        <TextBox x:Name="TwoWayBox">
+            <TextBox.Text>
+                <wpfd:MultiBinding Converter="{StaticResource Join}" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay">
+                    <Binding ElementName="Host" Path="First" Mode="TwoWay"/>
+                    <Binding ElementName="Host" Path="Second" Mode="OneWay"/>
+                    <Binding ElementName="Host" Path="Third"/>
+                </wpfd:MultiBinding>
+            </TextBox.Text>
+        </TextBox>
+        <TextBox x:Name="OneWayBox">
+            <TextBox.Text>
+                <wpfd:MultiBinding Converter="{StaticResource Join}" Mode="OneWay">
+                    <Binding ElementName="Host" Path="First"/>
+                    <Binding ElementName="Host" Path="Second"/>
+                    <Binding ElementName="Host" Path="Third"/>
+                </wpfd:MultiBinding>
+            </TextBox.Text>
+        </TextBox>
+    </StackPanel>
+</UserControl>

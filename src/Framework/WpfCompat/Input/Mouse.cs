@@ -12,7 +12,7 @@ namespace WpfCompat.Input;
 /// boxes and splitters, keep theirs. The cursor changes at once, so it shows during long work on the
 /// user-interface thread, as in WPF.
 /// </remarks>
-public static class Mouse
+public static partial class Mouse
 {
     private static readonly List<IDisposable> Overrides = [];
     private static Cursor? _overrideCursor;
