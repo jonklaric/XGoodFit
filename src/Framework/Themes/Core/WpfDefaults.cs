@@ -1,6 +1,9 @@
 using System;
 using System.Globalization;
+using Avalonia.Controls;
+using Avalonia.Controls.Documents;
 using Avalonia.Controls.Shapes;
+using Avalonia.Media;
 using Avalonia.Data.Converters;
 
 namespace Themes
@@ -16,6 +19,15 @@ namespace Themes
     public static class WpfDefaults
     {
         private static bool _applied;
+
+        /// <summary>
+        /// WPF's default font, Segoe UI, falling back to the embedded Selawik: windows have it (Resources/Defaults.axaml)
+        /// and so do controls outside them. One instance, so that a control that leaves a window keeps an equal font.
+        /// </summary>
+        public static FontFamily SystemFontFamily { get; } = FontFamily.Parse("Segoe UI, avares://Themes/Assets/Fonts#Selawik");
+
+        /// <summary>WPF's default font size, in device-independent pixels.</summary>
+        public const double SystemFontSize = 12;
 
         /// <summary>
         /// Converts a shape's stroke brush to the stroke thickness WPF uses by default: 1 with a
@@ -43,6 +55,12 @@ namespace Themes
 
             Shape.StrokeThicknessProperty.OverrideDefaultValue<Avalonia.Controls.Shapes.Path>(1.0);
             Shape.StrokeThicknessProperty.OverrideDefaultValue<Polygon>(1.0);
+
+            // WPF's controls have the system font outside a window too, the font Resources/Defaults.axaml gives
+            // windows. Avalonia's fall back to its own default: removing a control from its window (closing a
+            // document) would change its font, and a plot series reports that as an edit of its element.
+            TextElement.FontFamilyProperty.OverrideDefaultValue<Control>(SystemFontFamily);
+            TextElement.FontSizeProperty.OverrideDefaultValue<Control>(SystemFontSize);
             _applied = true;
         }
     }
