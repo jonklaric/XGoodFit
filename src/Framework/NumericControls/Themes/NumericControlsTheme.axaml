@@ -45,6 +45,9 @@
         <ResourceInclude Source="avares://NumericControls/Resources/IconDictionary.axaml"/>
     </ResourceDictionary.MergedDictionaries>
 
-    <!-- XGoodFit port: the brushes, expander style, column header styles and cell styles aren't ported (see the notes above). -->
+    <!--
+    XGoodFit port: the brushes, expander style, column header styles and cell styles aren't ported (see
+    the notes above).
+    -->
 
 </ResourceDictionary>

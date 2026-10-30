@@ -62,8 +62,9 @@ namespace NumericControls.Distributions.Univariate
     /// Brush is IBrush and Style is ControlTheme. Avalonia can't name a grid column, so
     /// <see cref="DataStatsColumn"/> is the summary grid's third column, and a column's Visibility is its
     /// IsVisible. Avalonia's API is annotated for nullability, which this file enables: a few handlers take
-    /// an <c>object?</c> sender, and casts of nullable values take <c>!</c>. The seealso references to DistributionWithSelectorControl and DistributionSelectorPopup
-    /// are left out: they aren't ported (decision D10).
+    /// an <c>object?</c> sender, and casts of nullable values take <c>!</c>. The seealso references to
+    /// DistributionWithSelectorControl and DistributionSelectorPopup are left out: they aren't ported
+    /// (decision D10).
     /// </para>
     /// </remarks>
     /// <example>
