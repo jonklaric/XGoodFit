@@ -1749,9 +1749,38 @@ namespace GenericControls
             {
                 generatedBinding.ConverterCulture = FormattingCulture.Current;
             }
+            Avalonia.Data.Converters.IValueConverter generatedConverter = (e.Column as DataGridBoundColumn)?.Binding is ReflectionBinding generatedFormat ? generatedFormat.Converter : null;
             base.OnAutoGeneratingColumn(e);
+            // ProDataGrid's generated binding converts the value to text itself, so a StringFormat that a handler
+            // sets shows nothing (WPF's generated binding has no converter, and shows it: a date column's "g").
+            // Unless the handler set a converter of its own, the value goes to the format as it is, and the edited
+            // text comes back through ProDataGrid's converter.
+            if (!e.Cancel && e.Column is DataGridBoundColumn { Binding: ReflectionBinding { StringFormat: not null } formatted }
+                && formatted.Converter == generatedConverter)
+            {
+                formatted.Converter = new PassThroughConverter(generatedConverter);
+            }
             _generatedColumns[e.PropertyName] = e.Cancel ? null : e.Column;
             _autoGeneratingColumns++;
+        }
+
+        /// <summary>
+        /// Passes a generated column's value on unchanged, to its StringFormat, and its edited text back through the
+        /// generated binding's converter (see <see cref="OnAutoGeneratingColumn"/>).
+        /// </summary>
+        private sealed class PassThroughConverter : Avalonia.Data.Converters.IValueConverter
+        {
+            private readonly Avalonia.Data.Converters.IValueConverter _back;
+
+            internal PassThroughConverter(Avalonia.Data.Converters.IValueConverter back)
+            {
+                _back = back ?? Avalonia.Data.Converters.DefaultValueConverter.Instance;
+            }
+
+            public object Convert(object value, Type targetType, object parameter, CultureInfo culture) => value;
+
+            public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) =>
+                _back.ConvertBack(value, targetType, parameter, culture);
         }
 
         // Whether the items have the property, as WPF's type descriptor lists them (with a DataTable's columns):

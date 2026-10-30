@@ -1,6 +1,7 @@
 <!--
     XGoodFit port of upstream's GUI/InputData/InputDataControl.xaml:
-    - A string format with commas is quoted, as well as escaped with {}.
+    - A string format with commas is quoted, as well as escaped with {}. The columns' numbers format in
+      WPF's binding culture (WpfCompat's FormattingCulture), as the generated columns' do.
     - Styles are control themes (Theme, CellTheme, HeaderTheme); the text block style the wrapping columns
       use is a ControlTheme, set with GenericControls' DataGridColumnStyles.ElementStyle.
     - Avalonia can't name grid columns: comments mark upstream's names, and the code finds the columns it
@@ -25,6 +26,7 @@
              xmlns:oxy="http://oxyplot.org/wpf"
              xmlns:oxyCntrls="using:OxyPlotControls"
              xmlns:ncntrls="using:NumericControls.Distributions.Univariate"
+             xmlns:wpf="using:WpfCompat"
              xmlns:wpfc="using:WpfCompat.Controls"
              mc:Ignorable="d" 
              d:DesignHeight="600" 
@@ -157,7 +159,7 @@
                                             Width="0.33*" 
                                             MinWidth="10"
                                             MaxWidth="150"
-                                            Binding="{Binding Path=Index, StringFormat=F0}"
+                                            Binding="{Binding Path=Index, StringFormat=F0, ConverterCulture={x:Static wpf:FormattingCulture.Current}}"
                                             HeaderTheme="{DynamicResource Center_ColumnHeaderStyle}" 
                                             CellTheme="{DynamicResource Center_CellStyle}"/>
 
@@ -177,7 +179,7 @@
                                             MinWidth="10"
                                             MaxWidth="150"
                                             IsReadOnly="True"
-                                            Binding="{Binding Path=PlottingPosition, StringFormat=F6, Converter={StaticResource NAConverter}}"
+                                            Binding="{Binding Path=PlottingPosition, StringFormat=F6, Converter={StaticResource NAConverter}, ConverterCulture={x:Static wpf:FormattingCulture.Current}}"
                                             HeaderTheme="{DynamicResource Center_ColumnHeaderStyle}"
                                             CellTheme="{DynamicResource Right_ReadOnly_CellStyle}"/>
 
@@ -307,12 +309,12 @@
                             CellTheme="{DynamicResource Left_CellStyle}"/>
                         <!-- ExactDataColumn -->
                         <DataGridTextColumn Header="Exact Data Only" IsReadOnly="True"  MinWidth="50" Width="0.33*"
-                            Binding="{Binding Path=Value, StringFormat='{}{0:#,##0.####}', FallbackValue=N/A, TargetNullValue=N/A, Converter={StaticResource NAConverter}}" 
+                            Binding="{Binding Path=Value, StringFormat='{}{0:#,##0.####}', FallbackValue=N/A, TargetNullValue=N/A, Converter={StaticResource NAConverter}, ConverterCulture={x:Static wpf:FormattingCulture.Current}}" 
                             HeaderTheme="{DynamicResource Center_ColumnHeaderStyle}"
                             CellTheme="{DynamicResource Right_CellStyle}"/>
                         <!-- NonparametricColumn -->
                         <DataGridTextColumn Header="Nonparametric" IsReadOnly="True"  MinWidth="50" Width="0.33*" 
-                            Binding="{Binding Path=Value2, StringFormat='{}{0:#,##0.####}', FallbackValue=N/A, TargetNullValue=N/A, Converter={StaticResource NAConverter}}" 
+                            Binding="{Binding Path=Value2, StringFormat='{}{0:#,##0.####}', FallbackValue=N/A, TargetNullValue=N/A, Converter={StaticResource NAConverter}, ConverterCulture={x:Static wpf:FormattingCulture.Current}}" 
                             HeaderTheme="{DynamicResource Center_ColumnHeaderStyle}"
                             CellTheme="{DynamicResource Right_CellStyle}"/>
                     </cntrls:CopyPasteDataGrid.Columns>

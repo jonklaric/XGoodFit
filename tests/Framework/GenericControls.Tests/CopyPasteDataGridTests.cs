@@ -1,3 +1,4 @@
+using Avalonia.Data;
 using System.Collections.ObjectModel;
 using System.Data;
 using System.Globalization;
@@ -155,6 +156,36 @@ public sealed class CopyPasteDataGridTests
             {
                 CultureInfo.CurrentCulture = culture;
             }
+        });
+    }
+
+    [TestMethod]
+    public void AGeneratedColumnsStringFormat_SetWhileGenerating_IsShown_AndEditsConvertBack()
+    {
+        HeadlessSession.Run(() =>
+        {
+            // As RMC-BestFit's input data grids format their generated columns (a date's "g", an index's "F0"),
+            // without a converter of their own: ProDataGrid's generated converter made text that ignored the format.
+            var rows = Rows(3);
+            var (window, grid) = ShowGrid(rows, g => g.AutoGeneratingColumn += (_, e) =>
+            {
+                if (e.PropertyName != nameof(GridRow.Name))
+                    ((ReflectionBinding)((DataGridTextColumn)e.Column).Binding!).StringFormat = "F2";
+            });
+            Assert.AreEqual("10.50", ((TextBlock)Cell(grid, 0, 1).Content!).Text);
+            Assert.AreEqual("1.00", ((TextBlock)Cell(grid, 0, 2).Content!).Text);
+
+            grid.CurrentColumn = grid.Columns[1];
+            grid.SelectedItem = rows[0];
+            Assert.IsTrue(grid.BeginEdit());
+            Settle();
+            ((TextBox)Cell(grid, 0, 1).Content!).Text = "3.25";
+            Assert.IsTrue(grid.CommitEdit());
+            Settle();
+            Assert.AreEqual(3.25, rows[0].Value, "the edited text converts back to the number, as without a converter");
+            Assert.AreEqual("3.25", ((TextBlock)Cell(grid, 0, 1).Content!).Text);
+            CollectionAssert.AreEqual(new[] { 21.0, 31.5 }, rows.Skip(1).Select(r => r.Value).ToArray(), "showing writes nothing back");
+            window.Close();
         });
     }
 
