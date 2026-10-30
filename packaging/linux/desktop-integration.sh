@@ -16,6 +16,7 @@ app_id="@APP_ID@"
 action="${1:-}"
 exec_path="$here/bin/@EXECUTABLE@"
 if [ "${2:-}" = "--exec" ] && [ -n "${3:-}" ]; then exec_path="$3"; fi
+case "$exec_path" in /*) ;; *) exec_path="$(pwd)/$exec_path" ;; esac
 data="${XDG_DATA_HOME:-$HOME/.local/share}"
 
 refresh() {

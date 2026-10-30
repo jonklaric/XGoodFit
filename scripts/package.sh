@@ -14,8 +14,8 @@
 #                        packs its own runtimes; a Mac packs both of its.
 #   --app <project>      the application to package (default: APP_PROJECT below)
 #   --version <version>  the version, SemVer 2 (default: Version in Directory.Build.props)
-#   --delta-from <dir>   a release folder with the previous version's full package (as
-#                        `dotnet vpk download github` leaves it), to add a delta package
+#   --delta-from <dir>   a folder with the previous release's full package for each runtime, in
+#                        <dir>/<rid> (as `dotnet vpk download github` leaves it), for delta packages
 #   --release-notes <md> release notes (Markdown) for the packages
 #   --skip-natives       don't build the HEC-DSS natives: use the ones in artifacts/native
 # Output: artifacts/packages/<rid>/: Velopack's release files for channel <rid> (installers, packages,
@@ -279,11 +279,12 @@ for rid in $rids; do
     -o "$(native_path "$publish")"
   [ -f "$publish/runtimes/$rid/native/$library" ] || die "the published application has no HEC-DSS library: does it reference src/Hec.Dss?"
 
+  # vpk makes a delta package from the newest earlier full package in its output folder.
   if [ -n "$delta_from" ]; then
-    if ls "$delta_from"/*.nupkg >/dev/null 2>&1; then
-      cp "$delta_from"/*.nupkg "$out/"
+    if ls "$delta_from/$rid"/*.nupkg >/dev/null 2>&1; then
+      cp "$delta_from/$rid"/*.nupkg "$out/"
     else
-      echo "No earlier package in $delta_from: no delta package."
+      echo "No earlier package in $delta_from/$rid: no delta package."
     fi
   fi
 

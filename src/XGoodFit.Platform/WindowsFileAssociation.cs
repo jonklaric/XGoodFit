@@ -79,8 +79,10 @@ public static class WindowsFileAssociation
 
         classes.SetValue(Extension + @"\OpenWithProgids", ProgId, "");
 
-        // "Choose another app" knows applications by their executable's file name.
-        if (string.Equals(Path.GetFileName(launcherPath), LauncherFileName, StringComparison.OrdinalIgnoreCase))
+        // "Choose another app" knows applications by their executable's file name. (A Windows path's
+        // name, whatever OS the tests run on.)
+        string fileName = launcherPath[(launcherPath.LastIndexOfAny(['\\', '/']) + 1)..];
+        if (string.Equals(fileName, LauncherFileName, StringComparison.OrdinalIgnoreCase))
         {
             string application = @"Applications\" + LauncherFileName;
             classes.SetValue(application, "FriendlyAppName", ProductInfo.Name);
