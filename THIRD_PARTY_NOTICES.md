@@ -21,6 +21,7 @@ added as dependencies are adopted.
 | [Dock](https://github.com/wieslawsoltes/Dock) (Dock.Avalonia.AvalonDock and the packages it uses) | Docking in the main window, with AvalonDock's API and layout XML (NuGet) | MIT |
 | [ReactiveUI](https://github.com/reactiveui/ReactiveUI) | Used by Dock's AvalonDock adapter (NuGet) | MIT |
 | [ProDataGrid](https://github.com/wieslawsoltes/ProDataGrid) | The data grids (NuGet) | MIT |
+| [Avalonia.HtmlRenderer](https://github.com/AvaloniaUI/Avalonia.HtmlRenderer), which includes [HTML Renderer](https://github.com/ArthurHub/HTML-Renderer) | The field calculator's help pages (NuGet) | MIT (Copyright (c) 2014 Steven Kirk), and BSD-3-Clause for the HTML Renderer core it includes (Copyright (c) 2009 José Manuel Menéndez Poo, Copyright (c) 2013 Arthur Teplitzki) |
 | [SkiaSharp](https://github.com/mono/SkiaSharp) | Avalonia's renderer; also gives the glyph outlines of the plots' PDF and SVG exports (NuGet, through Avalonia.Skia) | MIT |
 | [Selawik](https://github.com/microsoft/Selawik) (Microsoft) | Substitute for Segoe UI where it isn't installed (macOS, Linux). Vendored in `upstream/Selawik` and embedded in the app | [OFL-1.1](upstream/Selawik/LICENSE.txt) |
 | [Cascadia Mono](https://github.com/microsoft/cascadia-code) (Microsoft) | Substitute for Consolas where it isn't installed (macOS, Linux). Vendored in `upstream/CascadiaCode` and embedded in the app | [OFL-1.1](upstream/CascadiaCode/LICENSE) |

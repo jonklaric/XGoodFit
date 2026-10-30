@@ -1,0 +1,93 @@
+<!--
+    XGoodFit port of upstream's Column Stats/AlphabeticColumnStats.xaml: the resource dictionary is merged
+    with a ResourceInclude, and the separator's Style is its Theme. The plot toolbar and properties
+    control wait for OxyPlotControls' port (see the comment at their place); until then the plot also
+    takes their two columns.
+-->
+<UserControl x:Class="DatabaseControls.AlphabeticColumnStats" x:Name="AlphabeticStats"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="using:DatabaseControls"
+             xmlns:cntrls="using:GenericControls"
+             xmlns:oxy="http://oxyplot.org/wpf"
+             xmlns:oxyCntrls="using:OxyPlotControls"
+             mc:Ignorable="d"
+             d:DesignHeight="450" d:DesignWidth="800">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceInclude Source="avares://DatabaseControls/Resources/TableViewerResources.axaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="200" MaxWidth="600" MinWidth="150"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+
+        <local:TableViewer
+            x:Name="StatsTable"
+            Editable="False"
+            Margin="0,0,15,0"
+            RowSelectable="False"
+            VerticalAlignment="Stretch"
+            HorizontalAlignment="Stretch"
+            ShowRowHeaders="False"
+            AutoFitColumns="True"/>
+
+        <GridSplitter
+            Grid.Column="1"
+            Width="10"
+            Margin="-5,0,0,0"
+            Background="Transparent"
+            VerticalAlignment="Stretch"
+            HorizontalAlignment="Left"/>
+
+        <Separator
+            Theme="{StaticResource VerticalSeparatorStyle}"
+            Grid.Column="1"
+            Margin="0,0,0,0"
+            HorizontalAlignment="Left"
+            VerticalAlignment="Stretch"
+            IsHitTestVisible="False"/>
+
+        <oxy:Plot
+            x:Name="StatsPlot"
+            Grid.Column="1"
+            Margin="45,0,45,0"
+            Background="Transparent"
+            IsLegendVisible="False"
+            PlotAreaBackground="White"
+            Title="{Binding ElementName=AlphabeticStats, Path=DataName}">
+
+            <oxy:Plot.Series>
+                <oxy:PieSeries Name="PieSeries" Title = "Unique Value Distribution"/>
+            </oxy:Plot.Series>
+        </oxy:Plot>
+
+        <!-- XGoodFit port: the plot toolbar and properties control wait for OxyPlotControls' port (OxyPlotToolbar, OxyPlotPropertiesControl). Upstream's elements, unchanged:
+        <oxyCntrls:OxyPlotToolbar
+            x:Name="PlotToolbar"
+            Grid.Column="2"
+            ToolBarOrientation="Vertical"
+            Background="Transparent"
+            PropertiesCalled="PlotToolbar_PropertiesCalled"
+            Plot="{Binding ElementName=StatsPlot, Mode=OneTime}"/>
+
+        <oxyCntrls:OxyPlotPropertiesControl
+            x:Name="PropertiesControl"
+            Plot="{Binding ElementName=StatsPlot, Mode=OneWay}"
+            ClosePropertiesCalled="PropertiesControl_ClosePropertiesCalled"
+            Visibility="Collapsed"
+            Width="300"
+            Grid.Column="3"
+            Margin="5,0,0,0"/>
+        -->
+
+    </Grid>
+</UserControl>

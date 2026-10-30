@@ -1,0 +1,40 @@
+<!--
+    XGoodFit port of upstream's Resources/TableViewerResources.xaml:
+    - Styles are ControlThemes (TargetType without x:Type).
+    - VerticalSeparatorStyle: WPF turns the horizontal separator with a 90° LayoutTransform, which
+      Avalonia controls don't have. As Themes' VerticalSeparatorStyle (Separator.axaml), the template
+      draws the same line upright: 1 pixel wide and as tall as the space, with the margin outside it.
+    - Themes' Separator dictionary is merged first: the BasedOn StaticResource can't reach the
+      application's resources from a dictionary loaded on its own.
+-->
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceInclude Source="avares://Themes/Resources/Controls/Separator.axaml"/>
+    </ResourceDictionary.MergedDictionaries>
+
+    <ControlTheme x:Key="DefaultCellStyle" TargetType="TextBlock">
+        <Setter Property="HorizontalAlignment" Value="Stretch"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+        <Setter Property="TextAlignment" Value="Left"/>
+        <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Foreground" Value="Black"/>
+        <Setter Property="IsHitTestVisible" Value="False"/>
+    </ControlTheme>
+
+    <ControlTheme x:Key="VerticalSeparatorStyle" TargetType="Separator" BasedOn="{StaticResource {x:Type Separator}}">
+        <Setter Property="Margin" Value="2,1,2,1" />
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border
+                    BorderBrush="{TemplateBinding BorderBrush}"
+                    BorderThickness="{TemplateBinding BorderThickness}"
+                    Background="{TemplateBinding Background}"
+                    Width="1"/>
+            </ControlTemplate>
+        </Setter>
+    </ControlTheme>
+
+</ResourceDictionary>

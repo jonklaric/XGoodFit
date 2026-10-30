@@ -6,6 +6,7 @@
     <Project Path="src/BestFit/RMC.BestFit.UI/RMC.BestFit.UI.csproj" />
   </Folder>
   <Folder Name="/src/Framework/">
+    <Project Path="src/Framework/DatabaseControls/DatabaseControls.csproj" />
     <Project Path="src/Framework/ExpressionParserControls/ExpressionParserControls.csproj" />
     <Project Path="src/Framework/FrameworkInterfaces/FrameworkInterfaces.csproj" />
     <Project Path="src/Framework/FrameworkUI/FrameworkUI.csproj" />
@@ -25,6 +26,7 @@
     <Project Path="tests/BestFit/RMC.BestFit.UI.Tests/RMC.BestFit.UI.Tests.csproj" />
   </Folder>
   <Folder Name="/tests/Framework/">
+    <Project Path="tests/Framework/DatabaseControls.Tests/DatabaseControls.Tests.csproj" />
     <Project Path="tests/Framework/ExpressionParserControls.Tests/ExpressionParserControls.Tests.csproj" />
     <Project Path="tests/Framework/FrameworkUI.Tests/FrameworkUI.Tests.csproj" />
     <Project Path="tests/Framework/GenericControls.Tests/GenericControls.Tests.csproj" />

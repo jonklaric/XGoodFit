@@ -1,0 +1,286 @@
+<!--
+    XGoodFit port of upstream's TableViewer.xaml:
+    - Styles are ControlThemes (Theme=...), ToolTip is ToolTip.Tip and ToolTipService.ShowOnDisabled is
+      ToolTip.ShowOnDisabled. The resource dictionaries are merged with ResourceIncludes. The ToolBar
+      style keys are Themes' string keys of the same names (ToolBar.axaml).
+    - Visibility bindings set WpfCompat's Visibility: the converter produces WpfCompat's Visibility.
+    - The Preview and mouse event handlers are added in the code-behind (WpfCompat's mouse events, and
+      AddHandler for PreviewKeyDown): Avalonia has pointer events and no Preview events. So is the grid's
+      SizeChanged handler, with WpfCompat's SizeChangedEvents, which raises it after the layout pass as
+      WPF does.
+    - Grid row and column definitions can't be named in Avalonia; the code-behind reaches the one it uses
+      (RowHeadersColumnDefinition) through its grid. ActualWidth is Bounds.Width.
+    - The column header row's height binding has the viewer as its source in the code-behind: a row
+      definition has no data context.
+    - The vertical scroll bar: WPF's ScrollBar disables itself when Maximum isn't above Minimum, and
+      upstream's IsEnabledChanged handler then collapses it. Avalonia's ScrollBar hides itself in that
+      case when its Visibility is Auto (Minimum is always 0 here). ViewportSize 0 is WPF's default
+      (Avalonia's is NaN, which would show the empty bar before a table loads).
+    - The grid lines are drawn aliased (RenderOptions.EdgeMode), as WPF's SnapsToDevicePixels drew them
+      on whole pixels.
+    - TableToolbarTray is internal, not public (x:FieldModifier): Avalonia's generated fields have no doc
+      comments, and no other assembly uses it.
+-->
+<UserControl x:Class="DatabaseControls.TableViewer"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="using:DatabaseControls"
+             xmlns:cntrls="using:GenericControls"
+             xmlns:wpf="using:WpfCompat"
+             mc:Ignorable="d"
+             UseLayoutRounding="True"
+             d:DesignHeight="400" d:DesignWidth="600"
+             x:Name="TableViewerControl"
+             Loaded="TableViewer_Loaded"
+             Unloaded="TableViewer_Unloaded">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceInclude Source="avares://DatabaseControls/Resources/TableViewerResources.axaml"/>
+                <ResourceInclude Source="avares://GenericControls/Resources/IconDictionary.axaml"/>
+                <ResourceInclude Source="avares://DatabaseControls/Resources/IconDictionary.axaml"/>
+            </ResourceDictionary.MergedDictionaries>
+            <cntrls:BooleanToVisibilityConverter x:Key="BooleanToVisibility" TrueValue="Visible" FalseValue="Collapsed"/>
+            <ControlTheme x:Key="ToolbarButton" TargetType="Button" BasedOn="{StaticResource ToolBar.ButtonStyleKey}">
+                <Setter Property="Cursor" Value="Hand"/>
+                <Setter Property="Height" Value="24"/>
+                <Setter Property="Width" Value="24"/>
+                <Setter Property="Padding" Value="2"/>
+                <Style Selector="^:disabled">
+                    <Setter Property="Opacity" Value="0.5"/>
+                </Style>
+            </ControlTheme>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <Grid DataContext="{Binding ElementName=TableViewerControl}" KeyDown="Grid_KeyDown">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!--Toolbar tray is made public to allow developer to add custom tools-->
+        <StackPanel x:Name="TableToolbarTray" Orientation="Horizontal" Grid.Row="0" Background="{DynamicResource EnvironmentWindowBackground}">
+
+            <!--Cell Select/Copy/Paste-->
+            <StackPanel
+                x:Name="ExportCopyToolbar"
+                Background="Transparent"
+                ToolTip.Tip="Export and Copy Tools"
+                ToolTip.ShowOnDisabled="True"
+                Orientation="Horizontal"
+                VerticalAlignment="Bottom"
+                HorizontalAlignment="Left"
+                IsEnabled="True">
+
+                <Button
+                    x:Name="SelectAllButton"
+                    ToolTip.Tip="Select all cells"
+                    ToolTip.ShowOnDisabled="True"
+                    Click="SelectAllButton_Click"
+                    Theme="{StaticResource ToolbarButton}">
+                    <ContentControl Content="{StaticResource SelectAllIcon}"/>
+                </Button>
+
+                <Button
+                    x:Name="CopyButton"
+                    ToolTip.Tip="Copy selected cells"
+                    ToolTip.ShowOnDisabled="True"
+                    Click="CopyButton_Click"
+                    Theme="{StaticResource ToolbarButton}"
+                    Content="{StaticResource CopyIcon}"/>
+
+                <Button
+                    x:Name="CopyWithHeadersButton"
+                    ToolTip.Tip="Copy selected cells with table headers"
+                    ToolTip.ShowOnDisabled="True"
+                    Click="CopyWithHeadersButton_Click"
+                    Theme="{StaticResource ToolbarButton}"
+                    Content="{StaticResource CopyWithHeadersIcon}"/>
+
+                <Button
+                    x:Name="PasteButton"
+                    ToolTip.Tip="Paste from the clipboard into the table"
+                    ToolTip.ShowOnDisabled="True"
+                    Click="PasteButton_Click"
+                    IsEnabled="False"
+                    Theme="{StaticResource ToolbarButton}"
+                    Content="{StaticResource PasteIcon}"/>
+
+                <Button
+                    x:Name="ExportTableButton"
+                    ToolTip.Tip="Export Table"
+                    ToolTip.ShowOnDisabled="True"
+                    Click="ExportTableButton_Click"
+                    Theme="{StaticResource ToolbarButton}"
+                    Content="{StaticResource ExportTableIcon}"/>
+
+            </StackPanel>
+
+            <Separator Theme="{StaticResource ToolBar.SeparatorStyleKey}" Height="16" VerticalAlignment="Center" wpf:WpfElement.Visibility="{Binding RowSelectable, Converter={StaticResource BooleanToVisibility}, TargetNullValue=Visible}"/>
+
+            <!--Attribution Row Select-->
+            <StackPanel
+                x:Name="SelectionToolbar"
+                Background="Transparent"
+                ToolTip.Tip="Selection Tools"
+                ToolTip.ShowOnDisabled="True"
+                Orientation="Horizontal"
+                VerticalAlignment="Bottom"
+                IsEnabled="False"
+                wpf:WpfElement.Visibility="{Binding RowSelectable, Converter={StaticResource BooleanToVisibility}, TargetNullValue=Visible}">
+
+                <Button
+                    x:Name="SelectByAttribute"
+                    ToolTip.Tip="Select Rows By Attribute"
+                    ToolTip.ShowOnDisabled="True"
+                    Click="SelectByAttribute_Click"
+                    Theme="{StaticResource ToolbarButton}"
+                    Content="{StaticResource SelectByAttributeIcon}"/>
+
+                <Button
+                    x:Name="ShowAll"
+                    ToolTip.Tip="Show All Rows"
+                    ToolTip.ShowOnDisabled="True"
+                    Click="ShowAll_Checked"
+                    IsEnabled="False"
+                    Theme="{StaticResource ToolbarButton}"
+                    Content="{StaticResource ShowAllIcon}"/>
+
+                <Button
+                    x:Name="ShowSelected"
+                    ToolTip.Tip="Show Selected Rows Only"
+                    ToolTip.ShowOnDisabled="True"
+                    Click="ShowSelected_Checked"
+                    IsEnabled="False"
+                    Theme="{StaticResource ToolbarButton}"
+                    Content="{StaticResource ShowSelectedIcon}"/>
+
+                <Button
+                    x:Name="DeSelectAll"
+                    ToolTip.Tip="Deselect All Rows"
+                    ToolTip.ShowOnDisabled="True"
+                    Click="DeSelectAll_Click"
+                    IsEnabled="False"
+                    Theme="{StaticResource ToolbarButton}"
+                    Content="{StaticResource ClearSelectionIcon}"/>
+
+            </StackPanel>
+
+            <Separator Theme="{StaticResource ToolBar.SeparatorStyleKey}" Height="16" VerticalAlignment="Center" wpf:WpfElement.Visibility="{Binding Editable, Converter={StaticResource BooleanToVisibility}, TargetNullValue=Visible}"/>
+
+            <!--Editing-->
+            <StackPanel
+                x:Name="EditorToolbar"
+                Background="Transparent"
+                IsEnabled="False"
+                ToolTip.Tip="Editor Toolbar"
+                ToolTip.ShowOnDisabled="True"
+                VerticalAlignment="Bottom"
+                Orientation="Horizontal"
+                wpf:WpfElement.Visibility="{Binding Editable, Converter={StaticResource BooleanToVisibility}, TargetNullValue=Visible}">
+
+                <Button
+                    x:Name="OpenFC"
+                    ToolTip.Tip="Open Field Calculator"
+                    ToolTip.ShowOnDisabled="True"
+                    Click="OpenFC_Click"
+                    wpf:WpfElement.Visibility="{Binding HasFieldCalculator, Converter={StaticResource BooleanToVisibility}, TargetNullValue=Visible}"
+                    Theme="{StaticResource ToolbarButton}"
+                    Content="{StaticResource CalculatorIcon}"/>
+
+                <Button
+                    x:Name="Undo"
+                    ToolTip.Tip="Undo"
+                    ToolTip.ShowOnDisabled="True"
+                    Click="Undo_Click"
+                    IsEnabled="False"
+                    wpf:WpfElement.Visibility="{Binding HasUndoRedoButtons, Converter={StaticResource BooleanToVisibility}, TargetNullValue=Visible}"
+                    Theme="{StaticResource ToolbarButton}"
+                    Content="{StaticResource UndoIcon}"/>
+
+                <Button
+                    x:Name="Redo"
+                    ToolTip.Tip="Redo"
+                    ToolTip.ShowOnDisabled="True"
+                    Click="Redo_Click"
+                    IsEnabled="False"
+                    wpf:WpfElement.Visibility="{Binding HasUndoRedoButtons, Converter={StaticResource BooleanToVisibility}, TargetNullValue=Visible}"
+                    Theme="{StaticResource ToolbarButton}"
+                    Content="{StaticResource RedoIcon}"/>
+
+                <Button
+                    x:Name="SaveButton"
+                    ToolTip.Tip="Save All Edits"
+                    ToolTip.ShowOnDisabled="True"
+                    Click="Save_Click"
+                    IsEnabled="False"
+                    wpf:WpfElement.Visibility="{Binding HasSaveButton, Converter={StaticResource BooleanToVisibility}, TargetNullValue=Visible}"
+                    Theme="{StaticResource ToolbarButton}"
+                    Content="{StaticResource SaveIcon}"/>
+
+            </StackPanel>
+
+        </StackPanel>
+
+        <Grid x:Name="TableControlGrid" Grid.Row="1" Grid.IsSharedSizeScope="True" Background="{DynamicResource EnvironmentWindowBackground}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" SharedSizeGroup="A"/>
+                <RowDefinition Height="1*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <Border x:Name="SelectAllBorder"
+                    Theme="{Binding ElementName=TableViewerControl, Path=ColumnHeaderBorderStyle}"
+                    BorderThickness="0,1,1,1"
+                    Margin="0"
+                    wpf:WpfElement.Visibility="{Binding ShowRowHeaders, Converter={StaticResource BooleanToVisibility}, TargetNullValue=Visible}"/>
+
+            <Grid
+                x:Name="RowHeadersGrid"
+                Grid.Row="1"
+                Grid.Column="0"
+                VerticalAlignment="Top"
+                HorizontalAlignment="Stretch"
+                wpf:WpfElement.Visibility="{Binding ShowRowHeaders, Converter={StaticResource BooleanToVisibility}, TargetNullValue=Visible}"/>
+
+            <ScrollViewer
+                x:Name="HorizontalScrollViewer"
+                HorizontalAlignment="Stretch"
+                VerticalScrollBarVisibility="Disabled"
+                HorizontalScrollBarVisibility="Auto"
+                Grid.Row="0"
+                Grid.RowSpan="3"
+                Grid.Column="1">
+                <Grid x:Name="HorizontalViewerGrid">
+                    <Grid.RowDefinitions>
+                        <RowDefinition SharedSizeGroup="A"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <Grid x:Name="ColumnHeadersGrid" HorizontalAlignment="Left" VerticalAlignment="Stretch" Grid.Row="0"/>
+                    <Grid x:Name="RowColorGrid" Grid.Row="1" HorizontalAlignment="Left" Width="{Binding ElementName=GridPanel, Path=Bounds.Width}" VerticalAlignment="Top" Background="Transparent" Focusable="False" IsHitTestVisible="False"/>
+                    <Grid x:Name="GridPanel"  Grid.Row="1" HorizontalAlignment="Left" Background="Transparent"
+                          VerticalAlignment="Top" Focusable="True"/>
+                    <Canvas x:Name="GridLinesCanvas" Grid.Row="1" IsHitTestVisible="False" HorizontalAlignment="Left" RenderOptions.EdgeMode="Aliased"/>
+                </Grid>
+            </ScrollViewer>
+
+            <ScrollBar
+                Grid.Row="1"
+                Grid.Column="2"
+                Margin="0,0,0,0"
+                x:Name="VerticalScrollbar"
+                VerticalAlignment="Stretch"
+                Minimum="0" Maximum="0" SmallChange="1" ValueChanged="VerticalScrollBar_ValueChanged"
+                ViewportSize="0" Visibility="Auto"/>
+        </Grid>
+    </Grid>
+</UserControl>

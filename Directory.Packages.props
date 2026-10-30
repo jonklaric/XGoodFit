@@ -25,6 +25,11 @@
     <PackageVersion Include="Dock.Avalonia.AvalonDock" Version="12.1.0.13" />
     <!-- The expression editor's syntax colouring (WPF's RichTextBox in upstream, plan §4.3). -->
     <PackageVersion Include="Avalonia.AvaloniaEdit" Version="12.0.0" />
+    <!--
+      The field calculator's help pages (WPF's WebBrowser in upstream, plan §2.3): a managed HTML 4 and
+      CSS 2 renderer that draws through Avalonia, so it needs no native browser engine on any OS.
+    -->
+    <PackageVersion Include="Avalonia.HtmlRenderer" Version="12.0.0" />
   </ItemGroup>
 
 </Project>

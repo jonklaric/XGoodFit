@@ -1,0 +1,202 @@
+<!--
+    XGoodFit port of upstream's FieldCalculator/FieldCalculator.xaml:
+    - The window's Style is its Theme. ToolTip is ToolTip.Tip and Visibility="Collapsed" is IsVisible="False"
+      (the code-behind shows them with WpfCompat's Visibility).
+    - The radio buttons' Checked handlers, the text box's TextChanged (as TextChanging) and the list's
+      MouseDoubleClick are added in the code-behind: Avalonia has none of those attributes.
+    - Grid columns can't be named in Avalonia; the code-behind reaches FunctionsColumn through its grid.
+    - The preview grid is GenericControls' CopyPasteDataGrid (ProDataGrid): RowStyle and CellStyle are
+      RowTheme and CellTheme, based on Themes' ports of WPF's default row and cell themes, which upstream's
+      styles kept underneath. AlternationCount with its AlternationIndex trigger is :nth-child(2n), and the
+      grid's AlternatingRowBackground goes with it (ProDataGrid has none). ColumnHeaderStyle is
+      ColumnHeaderTheme. RowHeaderStyle isn't ported: ProDataGrid has none, and the grid shows only column
+      headers. IsKeyboardFocusWithin on a cell is :focus or :focus-within, Selector.IsSelectionActive is
+      WpfSelector.IsSelectionActive. FocusVisualStyle isn't ported (the default cell theme has no focus
+      adorner). Where CopyPasteDataGrid's defaults differ from WPF's DataGrid, the grid sets WPF's (whole-row
+      selection, resizable columns); its context menus stay off (see the code-behind).
+-->
+<cntrls:MetroWindow x:Class="DatabaseControls.FieldCalculator"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:parser="using:ExpressionParserControls"
+    xmlns:cntrls="using:GenericControls"
+    xmlns:wpf="using:WpfCompat"
+    Title="Field Calculator" Height="550" Width="700" MinHeight="350" MinWidth="550" ResizeMode="CanResize"
+    WindowStartupLocation="CenterScreen"
+    Theme="{DynamicResource MetroWindowStyle}"
+    Background="{DynamicResource EnvironmentWindowBackground}"
+    Foreground="{DynamicResource EnvironmentWindowText}">
+    <Grid Margin="5">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Row 0: Field Selection -->
+        <Grid Grid.Row="0" Name="FieldSelectionGrid" Margin="0,0,0,5">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="170"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <RadioButton Content="Create New Column" HorizontalAlignment="Left" Margin="10, 0, 0,0" Grid.Column="0" Grid.Row="0" VerticalContentAlignment="Center" Name="CreateNewFieldRadioButton"/>
+            <TextBox Name="NewFieldName" Grid.Column="1" Grid.Row="0" Margin="0,0,0,0" Height="22" HorizontalAlignment="Stretch" VerticalAlignment="Center" IsEnabled="{Binding ElementName=CreateNewFieldRadioButton, Path=IsChecked}"/>
+            <RadioButton Content="Update Existing Column" HorizontalAlignment="Left" Margin="10,5,0,5" Grid.Row="1" Grid.Column="0" VerticalContentAlignment="Center" Name="UpdateExistingRadioButton" IsChecked="True"/>
+            <ComboBox Name="ExistingFieldsCombobox" Grid.Row="1" Grid.Column="1" Height="22" Margin="0,5,0,5" HorizontalAlignment="Stretch" VerticalAlignment="Center" IsEnabled="{Binding ElementName=UpdateExistingRadioButton, Path=IsChecked}" SelectionChanged="ExistingFieldsCombobox_SelectionChanged"/>
+        </Grid>
+
+        <!-- Row 1: Main Content — 3-column layout (Data Columns | Functions | Expression) -->
+        <Grid Grid.Row="1" Margin="0,0,0,5">
+            <Grid.ColumnDefinitions>
+                <!-- Data Columns (fixed width) -->
+                <ColumnDefinition Width="170" MinWidth="100"/>
+                <!-- Functions column (toggled, matches Data Columns width) -->
+                <ColumnDefinition Width="0"/>
+                <!-- Expression column (fills remaining space) -->
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <!-- Labels row -->
+                <RowDefinition Height="Auto"/>
+                <!-- Content area (fills) -->
+                <RowDefinition Height="*" MinHeight="150"/>
+                <!-- Insert buttons / toolbar row (aligned horizontally) -->
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- ============================================================ -->
+            <!-- DATA COLUMNS (Column 0) -->
+            <!-- ============================================================ -->
+
+            <TextBlock Text="Data Columns" Grid.Row="0" Grid.Column="0" Margin="0,0,5,3"/>
+
+            <ListBox Grid.Row="1" Grid.Column="0" Margin="0,0,5,0"
+                     VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
+                     x:Name="VariablesListBox"
+                     ToolTip.Tip="List of available data columns. Double click to insert into expression."
+                     SelectionChanged="VariablesListBox_SelectionChanged"/>
+
+            <Button Grid.Row="2" Grid.Column="0" Margin="0,3,5,0"
+                    Name="InsertVariableButton" IsEnabled="False"
+                    Height="24" HorizontalAlignment="Stretch"
+                    ToolTip.Tip="Insert a data column into the expression."
+                    Click="InsertVariableButton_Click">Insert</Button>
+
+            <!-- ============================================================ -->
+            <!-- FUNCTIONS (Column 1 — toggled by f(x) button in toolbar) -->
+            <!-- ============================================================ -->
+
+            <TextBlock x:Name="FunctionsLabel" Text="Functions" Grid.Row="0" Grid.Column="1"
+                       Margin="0,0,5,3" IsVisible="False"/>
+
+            <parser:AvailableFunctions x:Name="FunctionsPanel" Grid.Row="1" Grid.Column="1"
+                                       CompactMode="True" Margin="0,0,5,0"
+                                       IsVisible="False"/>
+
+            <Button x:Name="InsertFunctionButton" Grid.Row="2" Grid.Column="1"
+                    Margin="0,3,5,0" Height="24" HorizontalAlignment="Stretch"
+                    IsEnabled="False" Click="InsertFunctionButton_Click"
+                    IsVisible="False">Insert</Button>
+
+            <!-- ============================================================ -->
+            <!-- EXPRESSION (Column 2) — CalculatorControl spans content + toolbar rows -->
+            <!-- ============================================================ -->
+
+            <TextBlock Text="Expression" Grid.Row="0" Grid.Column="2" Margin="0,0,0,3"/>
+
+            <parser:CalculatorControl Grid.Row="1" Grid.Column="2" Grid.RowSpan="2"
+                                      Name="ExpressionCalculator"
+                                      ExpressionChanged="ExpressionCalculator_ExpressionChanged"/>
+        </Grid>
+
+        <!-- Row 2: Result Preview Expander (HEAD-style, shows first N rows) -->
+        <Expander x:Name="PreviewExpander" Grid.Row="2" Margin="0,3,0,3"
+                  Theme="{DynamicResource PropertyExpanderStyle}"
+                  IsExpanded="True" IsVisible="False">
+            <Grid>
+                <TextBlock x:Name="resultMessageText" TextWrapping="Wrap" Margin="0,3,0,0"
+                           Foreground="{DynamicResource EnvironmentWindowText}" IsVisible="False"/>
+                <cntrls:CopyPasteDataGrid x:Name="PreviewGrid" AutoGenerateColumns="False" IsReadOnly="True"
+                          SelectionUnit="FullRow" CanUserResizeColumns="True"
+                          HeadersVisibility="Column" CanUserAddRows="False" CanUserDeleteRows="False"
+                          CanUserReorderColumns="False" CanUserSortColumns="False"
+                          CanUserResizeRows="False"
+                          MaxHeight="120" VerticalScrollBarVisibility="Auto"
+                          Background="{DynamicResource EnvironmentWindowBackground}"
+                          BorderBrush="{DynamicResource DataGrid.Static.Border}"
+                          BorderThickness="1"
+                          Foreground="{DynamicResource DataGrid.Static.Foreground}"
+                          RowBackground="{DynamicResource DataGrid.Row.Background}"
+                          HorizontalGridLinesBrush="{DynamicResource DataGrid.GridLines}"
+                          VerticalGridLinesBrush="{DynamicResource DataGrid.GridLines}"
+                          GridLinesVisibility="All"
+                          RowHeight="22"
+                          ColumnHeaderTheme="{DynamicResource ColumnHeaderStyle}"
+                          IsVisible="False">
+                    <cntrls:CopyPasteDataGrid.RowTheme>
+                        <ControlTheme TargetType="DataGridRow" BasedOn="{StaticResource DataGridRowDefaultTheme}">
+                            <Setter Property="Background" Value="{DynamicResource DataGrid.Row.Background}"/>
+                            <Setter Property="Foreground" Value="{DynamicResource DataGrid.Row.Foreground}"/>
+                            <Style Selector="^:nth-child(2n)">
+                                <Setter Property="Background" Value="{DynamicResource DataGrid.Row.Alternating.Background}"/>
+                            </Style>
+                            <Style Selector="^:pointerover">
+                                <Setter Property="Background" Value="{DynamicResource DataGrid.Row.MouseOver.Background}"/>
+                            </Style>
+                            <Style Selector="^:selected">
+                                <Setter Property="Background" Value="{DynamicResource DataGrid.Row.Selection.Background}"/>
+                                <Setter Property="Foreground" Value="{DynamicResource DataGrid.Row.Selection.Foreground}"/>
+                            </Style>
+                            <Style Selector="^:selected[(wpf|WpfSelector.IsSelectionActive)=False]">
+                                <Setter Property="Background" Value="{DynamicResource DataGrid.Row.Selection.Inactive.Background}"/>
+                                <Setter Property="Foreground" Value="{DynamicResource DataGrid.Row.Selection.Inactive.Foreground}"/>
+                            </Style>
+                        </ControlTheme>
+                    </cntrls:CopyPasteDataGrid.RowTheme>
+                    <cntrls:CopyPasteDataGrid.CellTheme>
+                        <ControlTheme TargetType="DataGridCell" BasedOn="{StaticResource DataGridCellDefaultTheme}">
+                            <Setter Property="Foreground" Value="{Binding Foreground, RelativeSource={RelativeSource AncestorType=DataGridRow}}"/>
+                            <Setter Property="BorderThickness" Value="0"/>
+                            <Setter Property="VerticalContentAlignment" Value="Center"/>
+                            <Style Selector="^:selected">
+                                <Setter Property="Background" Value="{DynamicResource DataGrid.Row.Selection.Background}"/>
+                                <Setter Property="Foreground" Value="{DynamicResource DataGrid.Row.Selection.Foreground}"/>
+                            </Style>
+                            <Style Selector="^:selected[(wpf|WpfSelector.IsSelectionActive)=False]">
+                                <Setter Property="Background" Value="{DynamicResource DataGrid.Row.Selection.Inactive.Background}"/>
+                                <Setter Property="Foreground" Value="{DynamicResource DataGrid.Row.Selection.Inactive.Foreground}"/>
+                            </Style>
+                            <Style Selector="^:focus, ^:focus-within">
+                                <Setter Property="BorderBrush" Value="{DynamicResource DataGrid.Cell.Focus.Border}"/>
+                                <Setter Property="BorderThickness" Value="1"/>
+                            </Style>
+                        </ControlTheme>
+                    </cntrls:CopyPasteDataGrid.CellTheme>
+                </cntrls:CopyPasteDataGrid>
+            </Grid>
+        </Expander>
+
+        <!-- Row 3: Footer — Checkbox left, Execute right -->
+        <Grid Grid.Row="3">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <CheckBox
+                Content="Apply to selected records only"
+                HorizontalAlignment="Left"
+                Name="UseSelectedRange"
+                IsEnabled="False"
+                VerticalAlignment="Center"
+                Grid.Column="0"/>
+            <Button Content="Execute" Grid.Column="1" Name="ExecuteButton" IsEnabled="False" IsDefault="True" Width="75" Height="24" Click="ExecuteButton_Click"/>
+        </Grid>
+    </Grid>
+</cntrls:MetroWindow>

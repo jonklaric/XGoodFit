@@ -1,0 +1,44 @@
+<!--
+    XGoodFit port of upstream's FindAndReplace.xaml:
+    - The window sets the Background and Foreground of upstream's implicit FindAndReplace style
+      (DatabaseControlsTheme): WPF finds a window's implicit style by its own type, Avalonia by Window's.
+      As in WPF, the window has the platform's own title bar: it sets no MetroWindowStyle.
+    - The text box's TextChanged handler is added in the code-behind, as TextChanging: Avalonia raises
+      TextChanged after rendering, WPF as the text changes.
+-->
+<cntrls:MetroWindow x:Class="DatabaseControls.FindAndReplace"
+        xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="using:DatabaseControls"
+        xmlns:cntrls="using:GenericControls"
+        Title="Find" SizeToContent="WidthAndHeight" ResizeMode="NoResize"
+        Background="{DynamicResource EnvironmentWindowBackground}"
+        Foreground="{DynamicResource EnvironmentWindowText}">
+    <Grid Margin="5">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="1*"/>
+            <RowDefinition Height="26"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Name="FindTextPanel" Orientation="Vertical" Grid.Row="0">
+            <Label Content="Find:" HorizontalAlignment="Left" Name="FindLabel" />
+            <TextBox Height="23" HorizontalAlignment="Left" Name="FindText" Width="254"/>
+        </StackPanel>
+
+        <GroupBox Header="Options" Grid.Row="1" Name="FindOptions" Margin="0,0,0,5" Width="254">
+            <StackPanel Orientation="Vertical">
+                <CheckBox Content="Match Case" Height="16" Name="MatchCaseCheckbox" Margin="0,3,0,0" />
+                <CheckBox Content="Match Entire Text" Height="16" Name="MatchWordCheckbox" />
+            </StackPanel>
+        </GroupBox>
+        <Grid Grid.Row="2" Margin="5,0,0,0" HorizontalAlignment="Right">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <Button Content="Find Previous" Grid.Column="0" Height="23" HorizontalAlignment="Right" Name="FindPreviousButton" VerticalAlignment="Center" Width="87" Margin="0,0,5,0" Click="FindPreviousButton_Click"/>
+            <Button Content="Find Next" Grid.Column="1" Height="23" HorizontalAlignment="Right" Name="FindNextButton" VerticalAlignment="Center" Width="75" Click="FindNextButton_Click"/>
+        </Grid>
+    </Grid>
+</cntrls:MetroWindow>
