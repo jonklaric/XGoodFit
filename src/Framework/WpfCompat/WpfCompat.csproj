@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    XGoodFit's WPF compatibility layer (docs/migration-plan.md §4.4): small shims for WPF APIs that
+    the ported code uses often and Avalonia lacks, so ported code-behind stays close to upstream.
+    Namespaces mirror WPF's: WpfCompat for System.Windows, WpfCompat.Input for System.Windows.Input.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>WpfCompat</RootNamespace>
+    <AssemblyName>WpfCompat</AssemblyName>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" />
+  </ItemGroup>
+
+</Project>

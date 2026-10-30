@@ -481,7 +481,7 @@ Sizes are relative, for one developer with AI-assisted porting: S ≈ ≤2 wk, M
 | `Themes.Tests` (headless, MSTest): every palette key matches upstream in all 3 themes; theme switching updates open windows; WPF's default font | ✅ 10/10 on Windows |
 | WPF-equivalent defaults: every window gets Segoe UI at 12 DIP, falling back to the embedded Selawik where Segoe UI isn't installed. Selawik 1.01 is vendored from its release download (`upstream-assets.lock`, SHA-256-checked) | ✅ `ThemeService.Initialize` adds the styles (`Resources/Defaults.axaml`) |
 | Theme gallery (`tools/ThemeGallery`): all 322 palette keys as live swatches next to standard controls, with a theme switcher. `ThemeGallery capture <folder>` renders it in each theme headlessly | ✅ Phase 1 exit: the demo window switches Light/Blue/Dark |
-| `WpfCompat` shims | Next, as Phase 2–3 code needs them |
+| `WpfCompat` shims | Started (`src/Framework/WpfCompat`, 8 tests). WPF's routed commands: `RoutedCommand`, `CommandBinding` and every element's `CommandBindings`, `ApplicationCommands` with WPF's key gestures (Cmd on macOS), and `SystemCommands`; also `ResizeMode`. The `{wpf:Command …}` markup extension routes a button's command from the button and a menu item's from the focused element, as WPF does. The rest follow as Phase 2–3 code needs them |
 
 ### Phase 2: Walking-skeleton shell (`FrameworkUI`) (L)
 - `MainWindow` with menus, a toolbar with undo/redo history drop-downs, key bindings, recent files, auto-backup and file compaction.
