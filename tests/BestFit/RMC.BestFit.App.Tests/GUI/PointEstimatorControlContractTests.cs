@@ -60,7 +60,7 @@ public class PointEstimatorControlContractTests
     [DataRow("Composite")]
     [DataRow("B17C")]
     [DataRow("Bivariate")]
-    // [DataRow("RatingCurve")]
+    [DataRow("RatingCurve")]
     public void Selector_UpdatesDisplayedPointEstimateAndPreservesUncertainty(string family)
     {
         WpfTestHost.EnsureResources();

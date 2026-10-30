@@ -160,10 +160,13 @@
 
   <!-- Upstream test files: Rating Curve Analysis. -->
   <ItemGroup>
+    <!-- None compile unchanged: GUI/PointEstimatorControlContractTests.cs (a ported copy, above) runs its RatingCurve row. -->
   </ItemGroup>
 
   <!-- Upstream test files: Time Series Analysis. -->
   <ItemGroup>
+    <UpstreamCompileInclude Include="GUI/PropertiesControls/TimeSeriesAnalysisTrainingStepsTests.cs" />
+    <!-- GUI/TimeSeriesPointEstimatorControlTests.cs is a ported copy (Avalonia's controls). -->
   </ItemGroup>
 
 </Project>
