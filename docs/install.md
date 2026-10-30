@@ -5,8 +5,8 @@ release has packages for Windows, macOS (Apple silicon and Intel) and Linux; ins
 themselves from the same page. The packages include everything XGoodFit needs, including .NET.
 
 > [!NOTE]
-> Until the RMC-BestFit application itself is ported, the packages contain XGoodFit's theme gallery,
-> which stands in for it. They install, update and open `.bestfit` files as the application will.
+> XGoodFit is still being ported: the packages contain the application, but most of its analysis
+> views aren't ported yet, and show a note saying so.
 
 `.bestfit` files are shared with RMC-BestFit. XGoodFit adds itself as another application that can
 open them; where RMC-BestFit is installed, it stays the one that opens them on a double-click.

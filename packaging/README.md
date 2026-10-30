@@ -6,9 +6,8 @@ Phase 8). `scripts/package.sh` builds the packages and `scripts/check-package.sh
 `.github/workflows/package.yml` does both on each OS and drafts releases. For installing them, see
 [docs/install.md](../docs/install.md).
 
-Until `RMC.BestFit.App` is ported, the packages hold `tools/ThemeGallery` instead: it stands in for
-the application, so the whole pipeline (startup hook, natives, signing, file types, updates) is
-exercised now. Switching is one line in `scripts/package.sh` (`APP_PROJECT`); see
+The packages hold XGoodFit, the port of RMC-BestFit's desktop application
+(`src/BestFit/RMC.BestFit.App`), which `APP_PROJECT` in `scripts/package.sh` names; see
 [The application](#the-application).
 
 ## What each runtime gets
@@ -55,18 +54,24 @@ options: another version, release notes, delta packages, and skipping the native
 
 `check-package.sh` unpacks each package and checks its contents (the HEC-DSS library; Info.plist and
 the signature on macOS; the desktop entry, MIME type and icons on Linux), then runs the packaged
-application headlessly (the stand-in's `capture` mode) with its home and temporary folders in
+application headlessly (its `capture` mode) with its home and temporary folders in
 `artifacts/package-check`, so it neither opens a window nor touches the user's folders.
 
 ## The application
 
-`APP_PROJECT` in `scripts/package.sh` names the project to package. For `RMC.BestFit.App` it needs:
+`APP_PROJECT` in `scripts/package.sh` names the project to package,
+`src/BestFit/RMC.BestFit.App/RMC.BestFit.App.csproj`. What the packages rely on:
 
-1. `PlatformStartup.BuildVelopackApp(args)?.Run();` as the first line of `Main` (XGoodFit.Platform).
+1. `PlatformStartup.BuildVelopackApp(args)?.Run();` is the first line of `Main` (XGoodFit.Platform).
    `vpk` refuses a Windows application whose own code doesn't call `VelopackApp…Run()`.
-2. A reference to `src/Hec.Dss` (through `RMC.BestFit.UI`), which ships the HEC-DSS natives.
-3. A headless mode that `check-package.sh`'s `run_headless` can run (the gallery's is
-   `capture <folder>`, printing `HEC-DSS native library: loaded`).
+2. The application references `src/Hec.Dss` (through `RMC.BestFit.UI`), which ships the HEC-DSS
+   natives.
+3. Its headless mode, which `check-package.sh`'s `run_headless` runs: `XGoodFit capture <folder>
+   [project]` renders the main window, its Project and Help menus, the project explorer's context
+   menu on the analyses and the About window in each theme to `<folder>/xgoodfit-<view>-<theme>.png`,
+   then prints `HEC-DSS native library: loaded` (or why it isn't). The shell's settings, layout,
+   recent files and log go to a temporary folder; given a project, it opens a copy of it. It's also
+   a quick way to look at a project in every theme.
 
 The executable's name is the project's `AssemblyName`; Windows also gets a launcher named after the
 product (`XGoodFit.exe`), which shortcuts and the file association use.
