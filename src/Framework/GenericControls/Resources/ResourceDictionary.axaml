@@ -1,7 +1,8 @@
 <!--
     XGoodFit port of upstream's Resources/ResourceDictionary.xaml:
     - The styles are ControlThemes, which controls take as their Theme.
-    - The dot leader line's X1, Y1, X2 and Y2 are Avalonia's StartPoint and EndPoint.
+    - The dot leader line is WpfCompat's Line, which stretches as WPF's does: Avalonia's Uniform
+      stretch scales a horizontal line to nothing.
     - The plus-minus toggle's triggers are nested styles. Its disabled path has no data (upstream's
       empty string).
     - x:Array is WpfCompat's ArrayExtension: Avalonia's XAML has no x:Array.
@@ -9,7 +10,8 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:sys="using:System"
-                    xmlns:wpfm="using:WpfCompat.Markup">
+                    xmlns:wpfm="using:WpfCompat.Markup"
+                    xmlns:wpfs="using:WpfCompat.Shapes">
 
     <!--
     ╔═══════════════════════════════════════════════════════════════════════════════╗
@@ -39,10 +41,12 @@
     <!-- ═══════════════════════════════════════════════════════════════════════════ -->
 
     <!-- Dotted leader line style connecting property labels to values -->
-    <ControlTheme TargetType="Line" x:Key="DotLeaderLineStyle">
+    <ControlTheme TargetType="wpfs:Line" x:Key="DotLeaderLineStyle">
         <Setter Property="Grid.Column" Value="1"/>
-        <Setter Property="StartPoint" Value="0,0"/>
-        <Setter Property="EndPoint" Value="1,0"/>
+        <Setter Property="X1" Value="0"/>
+        <Setter Property="Y1" Value="0"/>
+        <Setter Property="X2" Value="1"/>
+        <Setter Property="Y2" Value="0"/>
         <Setter Property="Stroke" Value="{DynamicResource Button.Static.Border}"/>
         <Setter Property="StrokeThickness" Value="1"/>
         <Setter Property="VerticalAlignment" Value="Bottom"/>

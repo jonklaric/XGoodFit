@@ -1,0 +1,56 @@
+<!--
+    XGoodFit port of upstream's Properties Controls/PointPropertyControl.xaml:
+    - The resource dictionary is included as an Avalonia resource; the title and dot leader styles
+      are ControlThemes, applied as dynamic resources. The dot leader is WpfCompat's Line, which
+      stretches as WPF's does, and Visibility bindings are WpfCompat's.
+-->
+<UserControl x:Class="GenericControls.PointPropertyControl" x:Name="PointProperty"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="using:GenericControls"
+             xmlns:wpf="using:WpfCompat"
+             xmlns:wpfs="using:WpfCompat.Shapes"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceInclude Source="avares://GenericControls/Resources/ResourceDictionary.axaml"/>
+                <ResourceDictionary>
+                    <local:BooleanToVisibilityConverter x:Key="BoolToVisConverter" TrueValue="Visible" FalseValue="Collapsed"/>
+                </ResourceDictionary>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <Grid Height="22" Background="Transparent">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width=".001*"/>
+            <ColumnDefinition Width="{Binding ElementName=PointProperty, Path=PropertyWidth, FallbackValue=10*}" 
+                              MaxWidth="{Binding ElementName=PointProperty, Path=MaxPropertyWidth, FallbackValue=200}"
+                              MinWidth="{Binding ElementName=PointProperty, Path=MinPropertyWidth, FallbackValue=10}"/>
+        </Grid.ColumnDefinitions>
+
+        <TextBlock Grid.Column="0" Theme="{DynamicResource TitleTextStyle}"
+                   Text="{Binding ElementName=PointProperty, Path=Title}" />
+
+        <wpfs:Line Theme="{DynamicResource DotLeaderLineStyle}"
+              wpf:WpfElement.Visibility="{Binding ShowLeaderLine, ElementName=PointProperty, Converter={StaticResource BoolToVisConverter}}"/>
+
+        <Grid Grid.Column="2" HorizontalAlignment="Stretch" VerticalAlignment="Bottom">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <TextBlock Grid.Column="0" Text="x " VerticalAlignment="Bottom" Foreground="{DynamicResource EnvironmentWindowText}"/>
+            <local:NumericTextBox x:Name="DataPointX" Grid.Column="1" Height="22" IsWholeNumber="False" CanBeBlank="True" CanBeNegative="True" TextChanged="DataPointX_TextChanged" IsReadOnly="{Binding ElementName=PointProperty, Path=IsReadOnly}"/>
+            <TextBlock Grid.Column="2" Text=", y " VerticalAlignment="Bottom" Foreground="{DynamicResource EnvironmentWindowText}"/>
+            <local:NumericTextBox x:Name="DataPointY" Grid.Column="3" Height="22" IsWholeNumber="False" CanBeBlank="True" CanBeNegative="True" TextChanged="DataPointY_TextChanged" IsReadOnly="{Binding ElementName=PointProperty, Path=IsReadOnly}"/>
+        </Grid>
+    </Grid>
+</UserControl>

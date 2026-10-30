@@ -6,10 +6,16 @@
     is ported one at a time, so the project opts in to upstream files (Directory.Build.targets): only
     its ported copies and the upstream files listed in UpstreamCompileInclude compile.
 
-    Ported so far: the Metro windows, MessageBox and its window, NameDialog and NameTextBox, the
-    converters and utilities (Utilities/, BooleanToVisibilityConverter, ColorToByteConverter),
-    FolderBrowser, the icon and resource dictionaries, and the theme's control styles. Not ported:
-    Utilities/ValidationRules.cs, which nothing BestFit uses needs.
+    Ported so far: the Metro windows, MessageBox and its window, NameDialog; the general controls
+    (NameTextBox, the numeric text boxes, up-down and slider, the colour picker and its popup,
+    ResizableTextBoxControl, SeparatorWithHeader); the property controls and PropertyAttributes; the
+    date and time controls; InsertionAdorner; the converters and utilities (Utilities/,
+    BooleanToVisibilityConverter, ColorToByteConverter); FolderBrowser; the icon and resource
+    dictionaries; and the theme's control styles. Still to come: the DataGrid folder and
+    StringListPropertyControl, which uses CopyPasteDataGrid. Not ported, as nothing BestFit uses needs
+    them: Utilities/ValidationRules.cs, GridLengthControl, ThicknessControl, Point3DPropertyControl,
+    CalendarWeekRulePropertyControl, DirectorySelectorControl, FolderSelectorControl, DragAdorner and
+    File Management/RecentFileList.cs.
   -->
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>

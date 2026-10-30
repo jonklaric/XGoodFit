@@ -1,0 +1,549 @@
+using System.ComponentModel;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Data;
+using Avalonia.Input;
+using Avalonia.Interactivity;
+using WpfCompat;
+
+namespace GenericControls
+{
+    /// <summary>
+    /// A property control for editing numeric values with validation and formatting options.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    ///     <b> Authors: </b>
+    /// <list type="bullet">
+    /// <item><description>
+    ///     Woodrow Fields, USACE Risk Management Center, woodrow.l.fields@usace.army.mil
+    /// </description></item>
+    /// <item><description>
+    ///     Haden Smith, USACE Risk Management Center, cole.h.smith@usace.army.mil
+    /// </description></item>
+    /// </list>
+    /// </para>
+    /// <para>
+    /// XGoodFit port: the properties are Avalonia styled properties, and their change callbacks class
+    /// handlers. Avalonia has no Preview events, so the key and text-input handlers tunnel. The tool tip
+    /// is WpfCompat's.
+    /// </para>
+    /// </remarks>
+    public partial class NumericPropertyControl :UserControl, INotifyPropertyChanged
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="NumericPropertyControl"/> class.
+        /// </summary>
+        public NumericPropertyControl()
+        {
+            InitializeComponent();
+
+            // XGoodFit port: Avalonia has no Preview events; these are tunnelling handlers.
+            this.NumericTBox.AddHandler(TextInputEvent, TextBox_PreviewTextInput, RoutingStrategies.Tunnel);
+            this.NumericTBox.AddHandler(KeyDownEvent, TextBox_PreviewKeyDown, RoutingStrategies.Tunnel);
+            this.NumericTBox.AddHandler(KeyUpEvent, TextBox_PreviewKeyUp, RoutingStrategies.Tunnel);
+        }
+
+        #region Members
+
+        /// <summary>
+        /// Dependency property for the number.
+        /// </summary>
+        public static readonly StyledProperty<double> NumberProperty = AvaloniaProperty.Register<NumericPropertyControl, double>(nameof(Number), 0d);
+
+        /// <summary>
+        /// Gets and sets the number.
+        /// </summary>
+        public double Number
+        {
+            get
+            {
+                return (double)this.GetValue(NumberProperty);
+            }
+            set
+            {
+                this.SetValue(NumberProperty, value);
+            }
+        }
+
+        static NumericPropertyControl()
+        {
+            // XGoodFit port: the property-changed callbacks of upstream's metadata.
+            NumberProperty.Changed.AddClassHandler<NumericPropertyControl>(NumberChangedCallback);
+            MaxValueProperty.Changed.AddClassHandler<NumericPropertyControl>(MinMaxChangedCallback);
+            MinValueProperty.Changed.AddClassHandler<NumericPropertyControl>(MinMaxChangedCallback);
+        }
+
+        /// <summary>
+        /// Property Changed Callback for the Number property.
+        /// </summary>
+        /// <param name="d">The dependency object.</param>
+        /// <param name="e">The event arguments.</param>
+        private static void NumberChangedCallback(AvaloniaObject d, AvaloniaPropertyChangedEventArgs e)
+        {
+            if (d == null)
+                return;
+            if (d.GetType() != typeof(NumericPropertyControl))
+                return;
+            NumericPropertyControl thisControl = (NumericPropertyControl)d;
+            if (e.NewValue == null)
+                return;
+            double newNumber;
+            if (NumberFormatHelper.TryParseDouble(e.NewValue.ToString(), out newNumber) == false)
+            {
+                if (e.NewValue.GetType() != typeof(double))
+                {
+                    thisControl.ValueIsValid = false;
+                    thisControl.ToolTip = $"Number is not valid.";
+                    return;
+                }
+                newNumber = (double)e.NewValue;
+            }
+            if (thisControl.CanHaveNaN == false && double.IsNaN(newNumber))
+            {
+                thisControl.ValueIsValid = false;
+                thisControl.ToolTip = $"NaN is not a number.";
+                return;
+            }
+
+            if (thisControl.BoundsAreExclusive)
+            {
+                if (thisControl.Number <= thisControl.MinValue || thisControl.Number >= thisControl.MaxValue)
+                {
+                    thisControl.ValueIsValid = false;
+                    thisControl.ToolTip = $"Number must be greater than '{NumberFormatHelper.FormatDouble(thisControl.MinValue)}' and less than '{NumberFormatHelper.FormatDouble(thisControl.MaxValue)}'.";
+                    return;
+                }
+            }
+            else if (thisControl.Number < thisControl.MinValue || thisControl.Number > thisControl.MaxValue)
+            {
+                thisControl.ValueIsValid = false;
+                thisControl.ToolTip = $"Number must be greater than or equal to '{NumberFormatHelper.FormatDouble(thisControl.MinValue)}' and less than or equal to '{NumberFormatHelper.FormatDouble(thisControl.MaxValue)}'.";
+                return;
+            }
+
+            thisControl.ValueIsValid = true;
+            thisControl.ToolTip = null;
+        }
+
+        /// <summary>
+        /// Dependency property for the can have negative property.
+        /// </summary>
+        public static readonly StyledProperty<bool> CanHaveNegativeProperty = AvaloniaProperty.Register<NumericPropertyControl, bool>(nameof(CanHaveNegative), true);
+
+        /// <summary>
+        /// Determines if the number can be negative.
+        /// </summary>
+        public bool CanHaveNegative
+        {
+            get
+            {
+                return (bool)this.GetValue(CanHaveNegativeProperty);
+            }
+            set
+            {
+                this.SetValue(CanHaveNegativeProperty, value);
+            }
+        }
+
+        /// <summary>
+        /// Dependency property for the BoundsAreExclusive property.
+        /// </summary>
+        public static readonly StyledProperty<bool> BoundsAreExclusiveProperty = AvaloniaProperty.Register<NumericPropertyControl, bool>(nameof(BoundsAreExclusive), false);
+
+        /// <summary>
+        /// Gets/sets whether the bounds (MinValue and MaxValue) are exclusive.
+        /// When true, values equal to the bounds are considered invalid (value must be strictly between min and max).
+        /// When false (default), values equal to the bounds are valid.
+        /// </summary>
+        public bool BoundsAreExclusive
+        {
+            get
+            {
+                return (bool)this.GetValue(BoundsAreExclusiveProperty);
+            }
+            set
+            {
+                this.SetValue(BoundsAreExclusiveProperty, value);
+            }
+        }
+
+        /// <summary>
+        /// Gets/sets whether bounds are exclusive. Use <see cref="BoundsAreExclusive"/> instead.
+        /// </summary>
+        [Obsolete("Use BoundsAreExclusive instead. This property will be removed in a future version.")]
+        public bool IncludeBounds
+        {
+            get { return !BoundsAreExclusive; }
+            set { BoundsAreExclusive = !value; }
+        }
+
+        /// <summary>
+        /// Dependency property for the can have NaN property.
+        /// </summary>
+        public static readonly StyledProperty<bool> CanHaveNaNProperty = AvaloniaProperty.Register<NumericPropertyControl, bool>(nameof(CanHaveNaN), true);
+
+        /// <summary>
+        /// Determines if the number can be NaN (Not a Number).
+        /// </summary>
+        public bool CanHaveNaN
+        {
+            get
+            {
+                return (bool)this.GetValue(CanHaveNaNProperty);
+            }
+            set
+            {
+                this.SetValue(CanHaveNaNProperty, value);
+            }
+        }
+
+        /// <summary>
+        /// Dependency property for the is text box enabled property.
+        /// </summary>
+        public static readonly StyledProperty<bool> IsTextBoxEnabledProperty = AvaloniaProperty.Register<NumericPropertyControl, bool>(nameof(IsTextBoxEnabled), true);
+
+        /// <summary>
+        /// Gets and sets whether the text box is enabled.
+        /// </summary>
+        public bool IsTextBoxEnabled
+        {
+            get
+            {
+                return (bool)this.GetValue(IsTextBoxEnabledProperty);
+            }
+            set
+            {
+                this.SetValue(IsTextBoxEnabledProperty, value);
+            }
+        }
+
+        private bool _valueIsValid = true;
+
+        /// <summary>
+        /// Determines if the value is valid.
+        /// </summary>
+        public bool ValueIsValid
+        {
+            get
+            {
+                return _valueIsValid;
+            }
+            private set
+            {
+                if (_valueIsValid != value)
+                {
+                    _valueIsValid = value;
+                    RaisePropertyChanged(nameof(ValueIsValid));
+                }
+            }
+        }
+
+        /// <summary>
+        /// Dependency property for the is whole number property.
+        /// </summary>
+        public static readonly StyledProperty<bool> IsWholeNumberProperty = AvaloniaProperty.Register<NumericPropertyControl, bool>(nameof(IsWholeNumber), false);
+
+        /// <summary>
+        /// Gets and sets whether the number must be a whole number.
+        /// </summary>
+        public bool IsWholeNumber
+        {
+            get
+            {
+                return (bool)this.GetValue(IsWholeNumberProperty);
+            }
+            set
+            {
+                this.SetValue(IsWholeNumberProperty, value);
+            }
+        }
+
+        /// <summary>
+        /// Dependency property for the max value property.
+        /// </summary>
+        public static readonly StyledProperty<double> MaxValueProperty = AvaloniaProperty.Register<NumericPropertyControl, double>(nameof(MaxValue), double.MaxValue);
+
+        /// <summary>
+        /// Property Changed Callback for the MinValue/MaxValue properties.
+        /// </summary>
+        /// <param name="d">The dependency object.</param>
+        /// <param name="e">The event arguments.</param>
+        private static void MinMaxChangedCallback(AvaloniaObject d, AvaloniaPropertyChangedEventArgs e)
+        {
+            if (d == null)
+                return;
+            if (d.GetType() != typeof(NumericPropertyControl))
+                return;
+            NumericPropertyControl thisControl = (NumericPropertyControl)d;
+
+            if (thisControl.CanHaveNaN == false && double.IsNaN(thisControl.Number))
+            {
+                thisControl.ValueIsValid = false;
+                thisControl.ToolTip = $"NaN is not a number.";
+                return;
+            }
+
+            if (thisControl.BoundsAreExclusive)
+            {
+                if (thisControl.Number <= thisControl.MinValue || thisControl.Number >= thisControl.MaxValue)
+                {
+                    thisControl.ValueIsValid = false;
+                    thisControl.ToolTip = $"Number must be greater than '{NumberFormatHelper.FormatDouble(thisControl.MinValue)}' and less than '{NumberFormatHelper.FormatDouble(thisControl.MaxValue)}'.";
+                    return;
+                }
+            }
+            else if (thisControl.Number < thisControl.MinValue || thisControl.Number > thisControl.MaxValue)
+            {
+                thisControl.ValueIsValid = false;
+                thisControl.ToolTip = $"Number must be greater than or equal to '{NumberFormatHelper.FormatDouble(thisControl.MinValue)}' and less than or equal to '{NumberFormatHelper.FormatDouble(thisControl.MaxValue)}'.";
+                return;
+            }
+
+            thisControl.ValueIsValid = true;
+            thisControl.ToolTip = null;
+        }
+
+        /// <summary>
+        /// Gets and sets the maximum value allowed.
+        /// </summary>
+        public double MaxValue
+        {
+            get
+            {
+                return (double)this.GetValue(MaxValueProperty);
+            }
+            set
+            {
+                this.SetValue(MaxValueProperty, value);
+            }
+        }
+
+        /// <summary>
+        /// Dependency property for the min value property.
+        /// </summary>
+        public static readonly StyledProperty<double> MinValueProperty = AvaloniaProperty.Register<NumericPropertyControl, double>(nameof(MinValue), double.MinValue);
+
+        /// <summary>
+        /// Gets and sets the minimum value allowed.
+        /// </summary>
+        public double MinValue
+        {
+            get
+            {
+                return (double)this.GetValue(MinValueProperty);
+            }
+            set
+            {
+                this.SetValue(MinValueProperty, value);
+            }
+        }
+
+        /// <summary>
+        /// Dependency property for the title property.
+        /// </summary>
+        public static readonly StyledProperty<string> TitleProperty = AvaloniaProperty.Register<NumericPropertyControl, string>(nameof(Title), "Title");
+
+        /// <summary>
+        /// Gets and sets the title of the property.
+        /// </summary>
+        public string Title
+        {
+            get
+            {
+                return (string)this.GetValue(TitleProperty);
+            }
+            set
+            {
+                this.SetValue(TitleProperty, value);
+            }
+        }
+
+        #region Control Width
+
+        /// <summary>
+        /// Dependency property for the max property width.
+        /// </summary>
+        public static readonly StyledProperty<double> MaxPropertyWidthProperty = AvaloniaProperty.Register<NumericPropertyControl, double>(nameof(MaxPropertyWidth), PropertyDefaults.DefaultMaxPropertyWidth);
+
+        /// <summary>
+        /// Gets and sets the maximum property width.
+        /// </summary>
+        public double MaxPropertyWidth
+        {
+            get
+            {
+                return (double)this.GetValue(MaxPropertyWidthProperty);
+            }
+            set
+            {
+                this.SetValue(MaxPropertyWidthProperty, value);
+            }
+        }
+
+        /// <summary>
+        /// Dependency property for the min property width.
+        /// </summary>
+        public static readonly StyledProperty<double> MinPropertyWidthProperty = AvaloniaProperty.Register<NumericPropertyControl, double>(nameof(MinPropertyWidth), PropertyDefaults.DefaultMinPropertyWidth);
+
+        /// <summary>
+        /// Gets and sets the minimum property width.
+        /// </summary>
+        public double MinPropertyWidth
+        {
+            get
+            {
+                return (double)this.GetValue(MinPropertyWidthProperty);
+            }
+            set
+            {
+                this.SetValue(MinPropertyWidthProperty, value);
+            }
+        }
+
+        /// <summary>
+        /// Dependency property for the property width.
+        /// </summary>
+        public static readonly StyledProperty<GridLength> PropertyWidthProperty = AvaloniaProperty.Register<NumericPropertyControl, GridLength>(nameof(PropertyWidth), PropertyDefaults.DefaultPropertyWidth);
+
+        /// <summary>
+        /// Gets and sets the property width.
+        /// </summary>
+        public GridLength PropertyWidth
+        {
+            get
+            {
+                return (GridLength)this.GetValue(PropertyWidthProperty);
+            }
+            set
+            {
+                this.SetValue(PropertyWidthProperty, value);
+            }
+        }
+
+        /// <summary>
+        /// Dependency property for the show leader line property.
+        /// </summary>
+        public static readonly StyledProperty<bool> ShowLeaderLineProperty = AvaloniaProperty.Register<NumericPropertyControl, bool>(nameof(ShowLeaderLine), true);
+
+        /// <summary>
+        /// Gets and sets whether to show the leader line.
+        /// </summary>
+        public bool ShowLeaderLine
+        {
+            get
+            {
+                return (bool)this.GetValue(ShowLeaderLineProperty);
+            }
+            set
+            {
+                this.SetValue(ShowLeaderLineProperty, value);
+            }
+        }
+
+        private double _actualWidth = 0d;
+
+        /// <summary>
+        /// Gets and sets the actual property width.
+        /// </summary>
+        public double ActualPropertyWidth
+        {
+            get
+            {
+                return _actualWidth;
+            }
+            private set
+            {
+                if (_actualWidth != value)
+                {
+                    _actualWidth = value;
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ActualPropertyWidth)));
+                }
+            }
+        }
+
+        #endregion
+
+        /// <summary>
+        /// The property changed event.
+        /// </summary>
+        /// <remarks>XGoodFit port: <c>new</c> hides Avalonia's own PropertyChanged event; this class's
+        /// <see cref="INotifyPropertyChanged"/> implementation raises this one.</remarks>
+        public new event PropertyChangedEventHandler PropertyChanged;
+
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// Raise the property changed event.
+        /// </summary>
+        /// <param name="propertyName">The name of the property to change.</param>
+        private void RaisePropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        /// <summary>
+        /// Update the actual property width with the control size changes.
+        /// </summary>
+        /// <param name="sender">The event sender.</param>
+        /// <param name="e">The event arguments.</param>
+        private void ControlSizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            // XGoodFit port: WPF's FrameworkElement and ActualWidth are Avalonia's Control and Bounds.Width.
+            Control el = sender as Control;
+            ActualPropertyWidth = el.Bounds.Width;
+        }
+
+        /// <summary>
+        /// Textbox preview text input.
+        /// </summary>
+        /// <param name="sender">The event sender.</param>
+        /// <param name="e">The event arguments.</param>
+        private void TextBox_PreviewTextInput(object sender, TextInputEventArgs e)
+        {
+            TextBox tBox = (TextBox)sender;
+            // XGoodFit port: WPF's SelectionStart is where the selection starts; Avalonia's is where it was
+            // started, which can be its end.
+            e.Handled = !NumberFormatHelper.IsValidNumericInput(
+                e.Text,
+                tBox.Text,
+                Math.Min(tBox.SelectionStart, tBox.SelectionEnd),
+                tBox.SelectedText,
+                CanHaveNegative,
+                !IsWholeNumber,
+                false);
+        }
+
+        /// <summary>
+        /// Textbox preview key down.
+        /// </summary>
+        /// <param name="sender">The event sender.</param>
+        /// <param name="e">The event arguments.</param>
+        private void TextBox_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Space)
+                e.Handled = true;
+        }
+
+        /// <summary>
+        /// Textbox preview key up.
+        /// </summary>
+        /// <param name="sender">The event sender.</param>
+        /// <param name="e">The event arguments.</param>
+        private void TextBox_PreviewKeyUp(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                TextBox tBox = (TextBox)sender;
+                var binding = BindingOperations.GetBindingExpressionBase(tBox, TextBox.TextProperty);
+                if (binding is not null)
+                    binding.UpdateSource();
+            }
+        }
+
+        #endregion
+
+    }
+}

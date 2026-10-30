@@ -1,0 +1,71 @@
+<!--
+    XGoodFit port of upstream's Properties Controls/NumericPropertyControl.xaml:
+    - The resource dictionary is included as an Avalonia resource; the title and dot leader styles
+      are ControlThemes, applied as dynamic resources. The dot leader is WpfCompat's Line, which
+      stretches as WPF's does, and Visibility bindings are WpfCompat's.
+    - The error border's DataTriggers are an "invalid" class bound to ValueIsValid, as in NameTextBox.
+    - PreviewTextInput, PreviewKeyDown and PreviewKeyUp are tunnelling handlers added in the code-behind.
+-->
+<UserControl x:Class="GenericControls.NumericPropertyControl" x:Name="NumericProperty"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="using:GenericControls"
+             xmlns:wpf="using:WpfCompat"
+             xmlns:wpfs="using:WpfCompat.Shapes"
+             xmlns:glob="using:System.Globalization"
+             mc:Ignorable="d"
+             d:DesignHeight="450" d:DesignWidth="800">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceInclude Source="avares://GenericControls/Resources/ResourceDictionary.axaml"/>
+                <ResourceDictionary>
+                    <local:BooleanToVisibilityConverter x:Key="BoolToVisConverter" TrueValue="Visible" FalseValue="Collapsed"/>
+                </ResourceDictionary>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <Grid Height="22" Background="Transparent">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width=".001*"/>
+            <ColumnDefinition Width="{Binding ElementName=NumericProperty, Path=PropertyWidth, FallbackValue=10*}" 
+                              MaxWidth="{Binding ElementName=NumericProperty, Path=MaxPropertyWidth, FallbackValue=200}"
+                              MinWidth="{Binding ElementName=NumericProperty, Path=MinPropertyWidth, FallbackValue=10}"/>
+        </Grid.ColumnDefinitions>
+
+        <TextBlock Grid.Column="0" Theme="{DynamicResource TitleTextStyle}"
+                   Text="{Binding ElementName=NumericProperty, Path=Title}"/>
+
+        <wpfs:Line Theme="{DynamicResource DotLeaderLineStyle}"
+              wpf:WpfElement.Visibility="{Binding ShowLeaderLine, ElementName=NumericProperty, Converter={StaticResource BoolToVisConverter}}"/>
+
+        <!--StringFormat={}{0:#.#####} StringFormat='G'-->
+        <TextBox Grid.Column="2"   
+                 x:Name="NumericTBox"
+                 Height="22"
+                 IsEnabled="{Binding IsTextBoxEnabled, ElementName=NumericProperty, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" 
+                 Text="{Binding Number, ElementName=NumericProperty, UpdateSourceTrigger=LostFocus, Mode=TwoWay, StringFormat='G', ConverterCulture={x:Static glob:CultureInfo.CurrentCulture}}"
+                 SizeChanged="ControlSizeChanged"
+                 HorizontalAlignment="Stretch" 
+                 VerticalAlignment="Bottom" 
+                 VerticalContentAlignment="Center">
+        </TextBox>
+
+        <Border Grid.Column="2" 
+                HorizontalAlignment="Stretch" 
+                Height="{Binding ElementName=NumericTBox, Path=Bounds.Height}" 
+                Width="{Binding ElementName=NumericTBox, Path=Bounds.Width}"
+                IsHitTestVisible="False" 
+                BorderThickness="1"
+                Classes.invalid="{Binding ElementName=NumericProperty, Path=!ValueIsValid}">
+            <Border.Styles>
+                <Style Selector="Border.invalid">
+                    <Setter Property="BorderBrush" Value="{DynamicResource DataGrid.Cell.Error.Border}"/>
+                </Style>
+            </Border.Styles>
+        </Border>
+    </Grid>
+</UserControl>

@@ -51,6 +51,8 @@
     SystemParameters. They are fixed at their values on Windows at 96 DPI with the default settings,
     so every OS looks the same.
     -->
+    <SolidColorBrush x:Key="SystemColors.ControlBrush" Color="#FFF0F0F0"/>
+    <SolidColorBrush x:Key="SystemColors.ControlDarkBrush" Color="#FFA0A0A0"/>
     <SolidColorBrush x:Key="SystemColors.ControlTextBrush" Color="#FF000000"/>
     <SolidColorBrush x:Key="SystemColors.GrayTextBrush" Color="#FF6D6D6D"/>
     <x:Double x:Key="SystemParameters.VerticalScrollBarWidth">17</x:Double>

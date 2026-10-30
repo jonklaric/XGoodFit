@@ -8,6 +8,7 @@ using Avalonia.Media.Imaging;
 using Avalonia.Styling;
 using Avalonia.Themes.Simple;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 using GenericControls;
 using Themes;
 using WpfCompat;
@@ -78,6 +79,21 @@ internal static class Program
 
             window.Pages.SelectedItem = window.PalettePage;
             Save(window, folder, "palette", theme);
+
+            window.Pages.SelectedItem = window.InputsPage;
+            Save(window, folder, "generic-inputs", theme);
+            window.Pages.SelectedItem = window.DateTimeColorPage;
+            Save(window, folder, "generic-date-time-color", theme);
+            ToggleButton colorPopup = window.DateTimeColor.ColorPopup.GetVisualDescendants().OfType<ToggleButton>().First();
+            colorPopup.IsChecked = true;
+            Save(window, folder, "generic-color-popup", theme);
+            colorPopup.IsChecked = false;
+            ToggleButton calendarButton = window.DateTimeColor.DateTime12.GetVisualDescendants().OfType<RadioButton>().First();
+            calendarButton.IsChecked = true;
+            Save(window, folder, "generic-date-time-popup", theme);
+            calendarButton.IsChecked = false;
+            window.Pages.SelectedItem = window.PropertyEditorsPage;
+            Save(window, folder, "generic-property-editors", theme);
 
             var messageBox = new MessageBoxWindow();
             messageBox.Configure("Save changes to the project before closing?", "XGoodFit", MessageBoxButton.YesNoCancel,

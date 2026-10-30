@@ -1,0 +1,72 @@
+<!--
+    XGoodFit port of upstream's Properties Controls/LineWidthSelectorControl.xaml:
+    - The resource dictionary is included as an Avalonia resource; the title and dot leader styles
+      are ControlThemes, applied as dynamic resources. The dot leader is WpfCompat's Line, which
+      stretches as WPF's does, and Visibility bindings are WpfCompat's.
+    - The item container style is a style for the combo box's items. SnapsToDevicePixels isn't
+      ported. The width's text uses WPF's binding culture (WpfCompat's FormattingCulture, en-US).
+-->
+<UserControl x:Class="GenericControls.LineWidthSelectorControl" x:Name="LineWidthSelector"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="using:GenericControls"
+             xmlns:wpf="using:WpfCompat"
+             xmlns:wpfs="using:WpfCompat.Shapes"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceInclude Source="avares://GenericControls/Resources/ResourceDictionary.axaml"/>
+                <ResourceDictionary>
+                    <local:BooleanToVisibilityConverter x:Key="BoolToVisConverter" TrueValue="Visible" FalseValue="Collapsed"/>
+                </ResourceDictionary>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <Grid Height="22" Background="Transparent">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width=".001*"/>
+            <ColumnDefinition Width="{Binding ElementName=LineWidthSelector, Path=PropertyWidth, FallbackValue=10*}" 
+                              MaxWidth="{Binding ElementName=LineWidthSelector, Path=MaxPropertyWidth, FallbackValue=200}"
+                              MinWidth="{Binding ElementName=LineWidthSelector, Path=MinPropertyWidth, FallbackValue=10}"/>
+        </Grid.ColumnDefinitions>
+
+        <TextBlock Grid.Column="0" Theme="{DynamicResource TitleTextStyle}"
+                   Text="{Binding ElementName=LineWidthSelector, Path=Title}" />
+        
+        <wpfs:Line Theme="{DynamicResource DotLeaderLineStyle}"
+              wpf:WpfElement.Visibility="{Binding ShowLeaderLine, ElementName=LineWidthSelector, Converter={StaticResource BoolToVisConverter}}"/>
+        
+        <ComboBox Grid.Column="2" HorizontalAlignment="Stretch" VerticalAlignment="Bottom"
+                  HorizontalContentAlignment="Stretch" VerticalContentAlignment="Center"
+                  ItemsSource="{Binding ElementName=LineWidthSelector, Path=WidthOptions}"
+                  IsTextSearchEnabled="False"
+                  SelectedValue="{Binding Path=SelectedWidth, ElementName=LineWidthSelector, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                  SizeChanged="ControlSizeChanged">
+            <ComboBox.Styles>
+                <Style Selector="ComboBoxItem">
+                    <Setter Property="VerticalContentAlignment" Value="Center"/>
+                </Style>
+            </ComboBox.Styles>
+            <ComboBox.ItemTemplate>
+                <DataTemplate>
+                    <Grid VerticalAlignment="Center" Height="20" UseLayoutRounding="True">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="34"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <Rectangle Grid.Column="0" Width="30" Height="{Binding}" VerticalAlignment="Center" HorizontalAlignment="Left" Fill="{DynamicResource EnvironmentWindowText}"/>
+                        <TextBlock Grid.Column="1" VerticalAlignment="Center" Foreground="{DynamicResource ComboBox.DropDown.Foreground}">
+                            <Run Text="{Binding Mode=OneWay, ConverterCulture={x:Static wpf:FormattingCulture.Current}}"/><Run Text=" px"/>
+                        </TextBlock>
+                    </Grid>
+                </DataTemplate>
+            </ComboBox.ItemTemplate>
+        </ComboBox>
+    
+    </Grid>
+</UserControl>

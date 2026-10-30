@@ -1,0 +1,37 @@
+<!--
+    XGoodFit port of upstream's General Controls/NumericTextBox2.xaml:
+    - The border's DataTriggers are an "invalid" class bound to ValueIsValid, as in NameTextBox. As
+      upstream's, the binding never sees ValueIsValid change: the control doesn't implement
+      INotifyPropertyChanged, so only the tool tip shows an invalid value.
+    - PreviewKeyDown, PreviewTextInput and PreviewKeyUp are tunnelling handlers added in the code-behind.
+-->
+<UserControl x:Class="GenericControls.NumericTextBox2" x:Name="NumericText"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="using:GenericControls"
+             xmlns:glob="using:System.Globalization"
+             mc:Ignorable="d"
+             d:DesignHeight="450" d:DesignWidth="800">
+    <Grid>
+
+        <TextBox
+            x:Name="NumericTBox"
+            VerticalAlignment="Stretch"
+            HorizontalAlignment="Stretch"
+            VerticalContentAlignment="Center"
+            Text="{Binding Value, ElementName=NumericText, UpdateSourceTrigger=LostFocus, Mode=TwoWay, StringFormat='G', ConverterCulture={x:Static glob:CultureInfo.CurrentCulture}}">
+        </TextBox>
+
+        <Border HorizontalAlignment="Stretch" Height="{Binding ElementName=NumericTBox, Path=Bounds.Height}" IsHitTestVisible="False" BorderThickness="1"
+                Classes.invalid="{Binding ElementName=NumericText, Path=!ValueIsValid}">
+            <Border.Styles>
+                <Style Selector="Border.invalid">
+                    <Setter Property="BorderBrush" Value="{DynamicResource DataGrid.Cell.Error.Border}"/>
+                </Style>
+            </Border.Styles>
+        </Border>
+
+    </Grid>
+</UserControl>

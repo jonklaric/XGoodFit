@@ -1,0 +1,48 @@
+<!--
+    XGoodFit port of upstream's General Controls/NumericTextBox.xaml:
+    - The text box's DataTriggers are classes bound to the control's state, with a style for each in the
+      same order, so the later ones still win (the tool tip is cleared while the value is valid).
+    - The border's DataTriggers are an "invalid" class bound to ValueIsValid, as in NameTextBox.
+    - The text binding updates the control's Text when the text box loses focus, WPF's default for a
+      text box (Avalonia's is on every change).
+    - PreviewKeyDown and PreviewTextInput are tunnelling handlers, and TextChanged is TextChanging, all
+      added in the code-behind: Avalonia raises TextChanged later, WPF as the text changes.
+-->
+<UserControl x:Class="GenericControls.NumericTextBox" x:Name="NumericTextBoxControl"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+    <Grid>
+        <TextBox x:Name="NumericTBox" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" VerticalContentAlignment="Center" Text="{Binding ElementName=NumericTextBoxControl, Path=Text, UpdateSourceTrigger=LostFocus}" IsReadOnly="{Binding ElementName=NumericTextBoxControl, Path=IsReadOnly}"
+                 Classes.aboveMax="{Binding ElementName=NumericTextBoxControl, Path=AboveMaxValue}"
+                 Classes.belowMin="{Binding ElementName=NumericTextBoxControl, Path=BelowMinValue}"
+                 Classes.invalidText="{Binding ElementName=NumericTextBoxControl, Path=InvalidText}"
+                 Classes.valid="{Binding ElementName=NumericTextBoxControl, Path=ValueIsValid}">
+            <TextBox.Styles>
+                <Style Selector="TextBox.aboveMax">
+                    <Setter Property="ToolTip.Tip" Value="Value is above maximum allowed value"/>
+                </Style>
+                <Style Selector="TextBox.belowMin">
+                    <Setter Property="ToolTip.Tip" Value="Value is below minimum allowed value"/>
+                </Style>
+                <Style Selector="TextBox.invalidText">
+                    <Setter Property="ToolTip.Tip" Value="Text entered is not a number"/>
+                </Style>
+                <Style Selector="TextBox.valid">
+                    <Setter Property="ToolTip.Tip" Value="{x:Null}"/>
+                </Style>
+            </TextBox.Styles>
+        </TextBox>
+        <Border HorizontalAlignment="Stretch" Height="{Binding ElementName=NumericTBox, Path=Bounds.Height}" IsHitTestVisible="False" BorderThickness="1"
+                Classes.invalid="{Binding ElementName=NumericTextBoxControl, Path=!ValueIsValid}">
+            <Border.Styles>
+                <Style Selector="Border.invalid">
+                    <Setter Property="BorderBrush" Value="{DynamicResource DataGrid.Cell.Error.Border}"/>
+                </Style>
+            </Border.Styles>
+        </Border>
+    </Grid>
+</UserControl>

@@ -13,6 +13,9 @@
       confirm it.
     - The context menu is created per text box (Template), with the commands WPF's
       ApplicationCommands provide and their usual names and shortcuts.
+    - WPF's text box gives its ScrollViewer its own VerticalScrollBarVisibility (Hidden by default), so
+      the template binds the attached ScrollViewer property. The horizontal one stays Hidden: Avalonia's
+      text box sets that property itself.
     - Not ported: ScrollViewer.PanningMode and Stylus.IsFlicksEnabled (WPF touch and pen settings), and
       the inactive-selection trigger (IsInactiveSelectionHighlightEnabled, off by default in WPF).
     -->
@@ -26,6 +29,7 @@
         <Setter Property="Padding" Value="2,0"/>
         <Setter Property="KeyboardNavigation.TabNavigation" Value="None"/>
         <Setter Property="HorizontalContentAlignment" Value="Left"/>
+        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Hidden"/>
         <Setter Property="FocusAdorner" Value="{x:Null}"/>
         <Setter Property="DragDrop.AllowDrop" Value="True"/>
         <Setter Property="ContextMenu">
@@ -46,7 +50,7 @@
                         <ScrollViewer Name="PART_ScrollViewer"
                                       Focusable="False"
                                       HorizontalScrollBarVisibility="Hidden"
-                                      VerticalScrollBarVisibility="Hidden"
+                                      VerticalScrollBarVisibility="{TemplateBinding (ScrollViewer.VerticalScrollBarVisibility)}"
                                       Margin="{TemplateBinding Padding}">
                             <TextPresenter Name="PART_TextPresenter"
                                            HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"

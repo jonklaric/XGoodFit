@@ -1,0 +1,102 @@
+<!--
+    The date, time and colour controls, laid out as upstream's GenericControls.Demo "Date, Time and
+    Color" tab (its generic-date-time-color screenshot).
+-->
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:cntrls="using:GenericControls"
+             x:Class="ThemeGallery.GenericDateTimeColorPage">
+    <UserControl.Styles>
+        <StyleInclude Source="avares://ThemeGallery/GenericPageStyles.axaml"/>
+    </UserControl.Styles>
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="15">
+        <StackPanel>
+            <TextBlock Text="Date and Time Controls" Classes="section"/>
+            <TextBlock Classes="description"
+                       Text="Controls for displaying and selecting dates and times with various format options."/>
+
+            <Grid Margin="0,0,0,20" ColumnDefinitions="Auto,*">
+                <Border Grid.Column="0" BorderBrush="{DynamicResource Button.Static.Border}"
+                        BorderThickness="1" Padding="20" Margin="0,0,20,0" CornerRadius="4">
+                    <StackPanel>
+                        <TextBlock Text="ClockControl" HorizontalAlignment="Center" Margin="0,0,0,10"
+                                   FontWeight="SemiBold" Foreground="{DynamicResource EnvironmentWindowText}"/>
+                        <cntrls:ClockControl x:Name="Clock" HorizontalAlignment="Center"
+                                             HasSeconds="True" Is24Hour="False"
+                                             Time="{Binding DateTimeProperty, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                             Width="200" Height="200"/>
+                    </StackPanel>
+                </Border>
+
+                <StackPanel Grid.Column="1">
+                    <Grid RowDefinitions="Auto,Auto">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="180"/>
+                            <ColumnDefinition Width="*" MaxWidth="300"/>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="DateAndTimeTextBox (12h):"
+                                   HorizontalAlignment="Right" VerticalAlignment="Center" Margin="5"
+                                   Foreground="{DynamicResource EnvironmentWindowText}"/>
+                        <cntrls:DateAndTimeTextBoxControl x:Name="DateTime12" Grid.Row="0" Grid.Column="1"
+                                                          Is24Hour="False"
+                                                          SelectedDateTime="{Binding DateTimeProperty, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                          Height="22"/>
+
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="DateAndTimeTextBox (24h):"
+                                   HorizontalAlignment="Right" VerticalAlignment="Center" Margin="5"
+                                   Foreground="{DynamicResource EnvironmentWindowText}"/>
+                        <cntrls:DateAndTimeTextBoxControl Grid.Row="1" Grid.Column="1"
+                                                          Is24Hour="True"
+                                                          SelectedDateTime="{Binding DateTimeProperty, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                          Height="22"/>
+                    </Grid>
+                </StackPanel>
+            </Grid>
+
+            <cntrls:SeparatorWithHeader Header="Color Selection Controls" Margin="0,20,0,15"/>
+
+            <Grid Margin="0,0,0,20" ColumnDefinitions="Auto,*">
+                <Border Grid.Column="0" BorderBrush="{DynamicResource Button.Static.Border}"
+                        BorderThickness="1" Padding="10" Margin="0,0,20,0" CornerRadius="4"
+                        Background="{DynamicResource EnvironmentWindowBackground}">
+                    <StackPanel>
+                        <TextBlock Text="ColorPicker (Full)" HorizontalAlignment="Center" Margin="0,0,0,10"
+                                   FontWeight="SemiBold" Foreground="{DynamicResource EnvironmentWindowText}"/>
+                        <cntrls:ColorPicker Width="140" Height="220"
+                                            Color="{Binding ColorProperty, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                    </StackPanel>
+                </Border>
+
+                <StackPanel Grid.Column="1">
+                    <Grid RowDefinitions="Auto,Auto">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="150"/>
+                            <ColumnDefinition Width="*" MaxWidth="200"/>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="ColorPickerPopup:"
+                                   HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,5,10,5"
+                                   Foreground="{DynamicResource EnvironmentWindowText}"/>
+                        <cntrls:ColorPickerPopup x:Name="ColorPopup" Grid.Row="0" Grid.Column="1"
+                                                 Width="60" Height="28" HorizontalAlignment="Left"
+                                                 Color="{Binding ColorProperty, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                 Margin="0,5"/>
+
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Selected Color Preview:"
+                                   HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,5,10,5"
+                                   Foreground="{DynamicResource EnvironmentWindowText}"/>
+                        <Rectangle Grid.Row="1" Grid.Column="1"
+                                   Width="60" Height="28" HorizontalAlignment="Left"
+                                   Fill="{Binding ColorProperty, Mode=OneWay}"
+                                   Stroke="{DynamicResource Button.Static.Border}" StrokeThickness="1"
+                                   Margin="0,5"/>
+                    </Grid>
+
+                    <TextBlock Text="The ColorPicker and ColorPickerPopup share the same bound color."
+                               Classes="description" Margin="0,15,0,0"/>
+                </StackPanel>
+            </Grid>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>
