@@ -371,6 +371,10 @@ Watch for others when porting:
   worktree's test executable has the same name. Run tests from a renamed copy of the test executable
   (`cp RMC.BestFit.App.Tests.exe mine-apptests.exe`), which still loads the right assemblies. Close
   windows and projects between tests: a full App run should stay within a few GB.
+- **CI runs the App tests with `scripts/run-app-tests.sh`:** each of XGoodFit's test classes
+  (`XGoodFit/*Tests.cs` and `*Captures.cs`, a class per file of the same name) in its own process, then
+  upstream's tests together; `dotnet test` leaves the project out with `-p:XGoodFitAppTestsInScript=true`.
+  Run a class as CI does with `bash scripts/run-app-tests.sh Release <Class>`.
 - **View tests** merge Themes' `Defaults.axaml` and `Controls/Merged.axaml` as ThemeService does, and
   use the examples' en-US culture.
 - **MSTest runs `[TestCleanup]` on its own thread** for `[TestMethod]` tests (which use
