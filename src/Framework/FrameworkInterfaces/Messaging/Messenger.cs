@@ -74,15 +74,19 @@ namespace FrameworkInterfaces.Messaging
         private bool _warningBeep;
         private bool _messageBeep;
         private bool _eventBeep;
-        private static readonly SolidColorBrush _defaultErrorColor = CreateFrozenBrush(Color.FromRgb(228, 20, 0));
-        private static readonly SolidColorBrush _defaultWarningColor = CreateFrozenBrush(Color.FromRgb(229, 160, 0));
-        private static readonly SolidColorBrush _defaultMessageColor = CreateFrozenBrush(Color.FromRgb(26, 161, 226));
-        private static readonly SolidColorBrush _defaultEventColor = CreateFrozenBrush(Color.FromRgb(0, 206, 209));
+        // XGoodFit port: the default colours, whose brushes are made when a colour is first read or set
+        // (by the shell, on the UI thread), not when the messenger is: an Avalonia brush belongs to the
+        // thread that makes it, where WPF's frozen brushes belonged to none, and messages may be added
+        // from any thread first.
+        private static readonly Color _defaultErrorColor = Color.FromRgb(228, 20, 0);
+        private static readonly Color _defaultWarningColor = Color.FromRgb(229, 160, 0);
+        private static readonly Color _defaultMessageColor = Color.FromRgb(26, 161, 226);
+        private static readonly Color _defaultEventColor = Color.FromRgb(0, 206, 209);
 
-        private SolidColorBrush _errorColor = _defaultErrorColor;
-        private SolidColorBrush _warningColor = _defaultWarningColor;
-        private SolidColorBrush _messageColor = _defaultMessageColor;
-        private SolidColorBrush _eventColor = _defaultEventColor;
+        private SolidColorBrush? _errorColor;
+        private SolidColorBrush? _warningColor;
+        private SolidColorBrush? _messageColor;
+        private SolidColorBrush? _eventColor;
 
         #endregion
 
@@ -95,8 +99,8 @@ namespace FrameworkInterfaces.Messaging
         /// <returns>A frozen solid-color brush.</returns>
         private static SolidColorBrush CreateFrozenBrush(Color color)
         {
-            // XGoodFit port: Avalonia brushes can't be frozen. These brushes are created, set and
-            // read on the UI thread (MainWindow and the message list), as in the WPF app.
+            // XGoodFit port: Avalonia brushes can't be frozen, and belong to the thread that makes them,
+            // so the default brushes are made on first use (see the default colours).
             var brush = new SolidColorBrush(color);
             return brush;
         }
@@ -312,10 +316,11 @@ namespace FrameworkInterfaces.Messaging
         /// <value>A <see cref="SolidColorBrush"/> for error message display. Default is #E41400.</value>
         public SolidColorBrush ErrorColor
         {
-            get { return _errorColor; }
+            get { return _errorColor ??= CreateFrozenBrush(_defaultErrorColor); }
             set
             {
                 if (value == null) return;
+                _errorColor ??= CreateFrozenBrush(_defaultErrorColor);
                 if (_errorColor == null || _errorColor.Color != value.Color || _errorColor.Opacity != value.Opacity)
                 {
                     _errorColor = value;
@@ -330,10 +335,11 @@ namespace FrameworkInterfaces.Messaging
         /// <value>A <see cref="SolidColorBrush"/> for warning message display. Default is golden amber (#E5A000).</value>
         public SolidColorBrush WarningColor
         {
-            get { return _warningColor; }
+            get { return _warningColor ??= CreateFrozenBrush(_defaultWarningColor); }
             set
             {
                 if (value == null) return;
+                _warningColor ??= CreateFrozenBrush(_defaultWarningColor);
                 if (_warningColor == null || _warningColor.Color != value.Color || _warningColor.Opacity != value.Opacity)
                 {
                     _warningColor = value;
@@ -348,10 +354,11 @@ namespace FrameworkInterfaces.Messaging
         /// <value>A <see cref="SolidColorBrush"/> for message display. Default is sky blue (#1AA1E2).</value>
         public SolidColorBrush MessageColor
         {
-            get { return _messageColor; }
+            get { return _messageColor ??= CreateFrozenBrush(_defaultMessageColor); }
             set
             {
                 if (value == null) return;
+                _messageColor ??= CreateFrozenBrush(_defaultMessageColor);
                 if (_messageColor == null || _messageColor.Color != value.Color || _messageColor.Opacity != value.Opacity)
                 {
                     _messageColor = value;
@@ -366,10 +373,11 @@ namespace FrameworkInterfaces.Messaging
         /// <value>A <see cref="SolidColorBrush"/> for event message display. Default is dark turquoise (#00CED1).</value>
         public SolidColorBrush EventColor
         {
-            get { return _eventColor; }
+            get { return _eventColor ??= CreateFrozenBrush(_defaultEventColor); }
             set
             {
                 if (value == null) return;
+                _eventColor ??= CreateFrozenBrush(_defaultEventColor);
                 if (_eventColor == null || _eventColor.Color != value.Color || _eventColor.Opacity != value.Opacity)
                 {
                     _eventColor = value;
