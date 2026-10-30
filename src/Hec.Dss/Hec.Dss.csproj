@@ -44,7 +44,7 @@
           Link="runtimes/%(RecursiveDir)%(Filename)%(Extension)"
           CopyToOutputDirectory="PreserveNewest"
           Pack="true"
-          PackagePath="runtimes/%(RecursiveDir)" />
+          PackagePath="runtimes/%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
 
   <Target Name="ReportMissingHecDssNatives" BeforeTargets="Build" Condition="!Exists('$(HecDssNativeRoot)runtimes')">
