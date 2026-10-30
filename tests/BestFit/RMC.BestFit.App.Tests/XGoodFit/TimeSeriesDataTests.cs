@@ -685,6 +685,28 @@ namespace RMC.BestFit.App.Tests.XGoodFit
             Assert.AreEqual((false, false, element.PACFPlot), clicks.Last());
         }
 
+        [STATestMethod]
+        public void ADocumentOpenedAgain_TakesThePlotsFromTheClosedOne()
+        {
+            UseAppResources(ThemeColor.Light);
+            var element = Element<TimeSeriesElement>(OpenProject(Manual), "Airline Passengers");
+
+            // The shell closes a document by taking it out of its window, and upstream's MainProjectNode leaves
+            // the closed view holding the element.
+            var (first, window) = Host(element);
+            ((Border)window.Content).Child = null;
+            Settle();
+            window.Close();
+            _windows.Remove(window);
+
+            var (second, _) = Host(element);
+            Assert.AreSame(element.TimeSeriesPlot, second.TimeSeriesPlotHost.Content);
+            Assert.AreSame(element.SeasonalityPlot, second.SeasonalityPlotHost.Content);
+            Assert.AreSame(element.ACFPlot, second.ACFPlotHost.Content);
+            Assert.AreSame(element.PACFPlot, second.PACFPlotHost.Content);
+            Assert.IsNull(first.TimeSeriesPlotHost.Content, "the plot moved");
+        }
+
         // Helpers.
 
         private BestFitProject OpenProject(string relative)

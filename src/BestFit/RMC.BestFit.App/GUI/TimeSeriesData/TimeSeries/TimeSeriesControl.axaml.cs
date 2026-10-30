@@ -2,7 +2,8 @@
 // Avalonia styled property with upstream's callback; the XAML's PreviewMouseDown handler and the label's
 // MouseLeftButtonUp handler are added in the constructor (WpfCompat's mouse events), and Avalonia's GetVisualAt
 // is WPF's hit test. Colours, brushes and alignments are Avalonia's; the colour converter, the wait cursor, the
-// message box enums, Visibility and the USGS text's TextRange are WpfCompat's.
+// message box enums, Visibility and the USGS text's TextRange are WpfCompat's. The plot hosts take the element's
+// plots with WpfCompat's TakeContent (WPF's Content).
 using Numerics;
 using Numerics.Data;
 using Numerics.Data.Statistics;
@@ -131,10 +132,12 @@ namespace RMC_BestFit
             using (newElement.SuspendPlotBridges())
             {
                 // Attach Element's plots to ContentControl hosts.
-                thisControl.TimeSeriesPlotHost.Content = newElement.TimeSeriesPlot;
-                thisControl.SeasonalityPlotHost.Content = newElement.SeasonalityPlot;
-                thisControl.ACFPlotHost.Content = newElement.ACFPlot;
-                thisControl.PACFPlotHost.Content = newElement.PACFPlot;
+                // XGoodFit port: TakeContent (WpfCompat's) is WPF's Content: it moves a plot that an earlier view
+                // of the element still shows (its document opened again), where Avalonia's Content throws.
+                thisControl.TimeSeriesPlotHost.TakeContent(newElement.TimeSeriesPlot);
+                thisControl.SeasonalityPlotHost.TakeContent(newElement.SeasonalityPlot);
+                thisControl.ACFPlotHost.TakeContent(newElement.ACFPlot);
+                thisControl.PACFPlotHost.TakeContent(newElement.PACFPlot);
 
                 // Wire toolbars
                 thisControl.PlotToolbar.Plot = newElement.TimeSeriesPlot;

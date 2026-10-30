@@ -461,6 +461,13 @@ namespace RMC.BestFit.App.Tests.XGoodFit
                 Select(view.CopulaResultsTabItem);
                 CloseDocument(window);
 
+                // The document opened again while the closed view still holds the plot, as upstream's
+                // MainProjectNode leaves it: the new view takes the plot.
+                var again = new BivariateAnalysisControl { Element = element };
+                window = Show(again, 1300, 850);
+                Assert.AreSame(element.CopulaPlot, again.CopulaPlotHost.Content, name);
+                CloseDocument(window);
+
                 // The properties panel, on each of its tabs.
                 var properties = new BivariateAnalysisPropertiesControl { Element = element };
                 window = Show(properties, 420, 1100);
