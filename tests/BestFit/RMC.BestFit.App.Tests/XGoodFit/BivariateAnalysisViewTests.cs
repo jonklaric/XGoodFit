@@ -88,8 +88,8 @@ namespace RMC.BestFit.App.Tests.XGoodFit
                 Assert.AreEqual(style.GetProperty("MarkerSize").GetDouble(), scatter.MarkerSize);
                 AssertPoints(series.GetProperty("points"), Points(scatter), scatter.Name);
             }
-            Assert.AreEqual(BivariateAnalysisControl.CreateObservedCopulaTrackerFormat(false), Scatter(plot, "ExactData").TrackerFormatString);
-            Assert.AreEqual(BivariateAnalysisControl.CreateCopulaScatterTrackerFormat(false), Scatter(plot, "CopulaData").TrackerFormatString);
+            AssertTrackerFormat(BivariateAnalysisControl.CreateObservedCopulaTrackerFormat(false), Scatter(plot, "ExactData"));
+            AssertTrackerFormat(BivariateAnalysisControl.CreateCopulaScatterTrackerFormat(false), Scatter(plot, "CopulaData"));
 
             // Probability axes: the simulated points' marginal probabilities and the observations' plotting
             // positions, as the walkthrough's figure of the desktop's coordinates.
@@ -99,7 +99,7 @@ namespace RMC.BestFit.App.Tests.XGoodFit
             AssertFigureAxes(figure, plot, "N2");
             AssertPoints(figure.GetProperty("series")[0], Points(Scatter(plot, "CopulaData")), "simulated");
             AssertPoints(figure.GetProperty("series")[1], Points(Scatter(plot, "ExactData")), "observed");
-            Assert.AreEqual(BivariateAnalysisControl.CreateObservedCopulaTrackerFormat(true), Scatter(plot, "ExactData").TrackerFormatString);
+            AssertTrackerFormat(BivariateAnalysisControl.CreateObservedCopulaTrackerFormat(true), Scatter(plot, "ExactData"));
 
             // Density and probability contours of the Normal copula fit, over the desktop's 100 x 100 grid.
             var normal = Element<BivariateAnalysis>(project, "Normal Copula");
@@ -114,7 +114,7 @@ namespace RMC.BestFit.App.Tests.XGoodFit
             Assert.AreEqual("Contours", contours.Title);
             Assert.AreEqual("G3", contours.LabelFormatString);
             Assert.AreEqual(Color.FromArgb(200, 255, 255, 255), contours.LabelBackground, "the plot area's white, as the label background");
-            Assert.AreEqual(BivariateAnalysisControl.CreateContourTrackerFormat(false), contours.TrackerFormatString);
+            AssertTrackerFormat(BivariateAnalysisControl.CreateContourTrackerFormat(false), contours);
         }
 
         [STATestMethod]
@@ -519,6 +519,11 @@ namespace RMC.BestFit.App.Tests.XGoodFit
             ((TabControl)view.CopulaResultsTabItem.Parent).Items.Cast<TabItem>().ElementAt(index);
 
         private static ComboBox MarginalBox(ContentPropertyControl property) => (ComboBox)((Border)property.InnerContent).Child;
+
+        // Upstream builds the formats with Environment.NewLine, and a series keeps a saved format that differs only
+        // in its line breaks (OxyPlot.Wpf's Series), so off Windows a series read from a project keeps its CRLFs.
+        private static void AssertTrackerFormat(string expected, Wpf.Series series) =>
+            Assert.AreEqual(expected.Replace("\r\n", "\n"), series.TrackerFormatString?.Replace("\r\n", "\n"), series.Name);
 
         private static Wpf.ScatterPointSeries Scatter(Wpf.Plot plot, string name) =>
             plot.Series.OfType<Wpf.ScatterPointSeries>().Single(s => s.Name == name);
