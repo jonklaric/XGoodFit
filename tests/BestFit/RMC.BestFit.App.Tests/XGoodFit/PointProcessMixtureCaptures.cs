@@ -27,12 +27,23 @@ namespace RMC.BestFit.App.Tests.XGoodFit
     {
         private static readonly ThemeColor[] Themes = { ThemeColor.Light, ThemeColor.Dark, ThemeColor.Blue };
 
-        /// <summary>Removes the application's resources and sets the Light theme back.</summary>
+        private string _valueFormat;
+
+        /// <summary>Shows values in the application's default format, two decimal places, as the main window does.</summary>
+        [TestInitialize]
+        public void UseDefaultValueFormat()
+        {
+            _valueFormat = UserSettings.ValueStringFormat;
+            UserSettings.DefaultValueDigits = 2;
+        }
+
+        /// <summary>Removes the application's resources, and sets the Light theme and the value format back.</summary>
         [TestCleanup]
         public void Cleanup()
         {
             ThemeManager.SetTheme(ThemeColor.Light);
             ReleaseAppResources();
+            UserSettings.ValueStringFormat = _valueFormat;
         }
 
         [STATestMethod]
