@@ -102,6 +102,7 @@
 
   <!-- Upstream test files: Bootstrap: MainProjectNode, GUI/Support and the batch run window. -->
   <ItemGroup>
+    <UpstreamCompileInclude Include="GUI/Support/BatchRunStatusToIconConverterTests.cs" />
   </ItemGroup>
 
   <!-- Upstream test files: Shared analysis controls: GUI/Support/Controls. -->

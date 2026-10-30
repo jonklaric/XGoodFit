@@ -12,7 +12,11 @@ namespace RMC_BestFit
     internal static class Program
     {
         /// <summary>Starts the application.</summary>
-        /// <param name="args">The command line: a project to open, as upstream's.</param>
+        /// <param name="args">
+        /// The command line: a project to open, as upstream's. Or <c>capture &lt;folder&gt; [project]</c>,
+        /// which renders the application headlessly to PNG files instead (<see cref="Capture"/>), for
+        /// <c>scripts/check-package.sh</c>.
+        /// </param>
         /// <returns>The exit code.</returns>
         [STAThread]
         public static int Main(string[] args)
@@ -20,6 +24,11 @@ namespace RMC_BestFit
             // Velopack's startup hook comes first: it handles the installer's and updater's runs of the
             // application, which exit at once (packaging/README.md). Outside a package there's none.
             PlatformStartup.BuildVelopackApp(args)?.Run();
+
+            if ((args.Length == 2 || args.Length == 3) && args[0] == "capture")
+            {
+                return Capture.Run(args[1], args.Length == 3 ? args[2] : null);
+            }
 
             BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
             return 0;

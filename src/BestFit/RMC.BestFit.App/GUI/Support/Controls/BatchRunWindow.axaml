@@ -1,0 +1,191 @@
+<!--
+    XGoodFit port of upstream's GUI/Support/Controls/BatchRunWindow.xaml:
+    - The window's Style is its Theme, and its Icon, an image resource in WPF, is WpfCompat's
+      WindowIconSource.Icon. The unused BooleanToVisibilityConverter resource isn't ported (Avalonia has
+      none).
+    - The grid is GenericControls' CopyPasteDataGrid as a plain WPF DataGrid, as in FrameworkUI's
+      dialogs: the implicit DataGrid theme (DataGridStyle), and the WPF defaults CopyPasteDataGrid
+      changes set back, with DataGridStyle's row height; its context menus are suppressed in the
+      code-behind. RowStyle is RowTheme, based on the ported WPF default row; the columns' HeaderStyle is
+      HeaderTheme and ElementStyle is DataGridColumnStyles.ElementStyle.
+    - The DataTriggers on Status become a "running" class, bound to Status equalling Running, with
+      styles in the elements' Styles: the progress bar and its text are hidden (WpfCompat's Visibility)
+      unless running, and the status icon spins while running (a style animation of its RotateTransform,
+      which stops, back at 0 degrees, when the class goes, as the StopStoryboard does). Upstream's local
+      Styles replaced the implicit ProgressBar and TextBlock styles, so WPF drew that progress bar with its
+      system template and the theme's brushes; the port keeps the theme's template.
+    - The Hidden cancel button is WpfCompat's Visibility; RenderTransformOrigin is relative (50%,50%);
+      RenderOptions.BitmapScalingMode is BitmapInterpolationMode.
+-->
+<cntrls:MetroWindow x:Class="RMC_BestFit.BatchRunWindow"
+        xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="using:RMC_BestFit"
+        xmlns:cntrls="using:GenericControls"
+        xmlns:wpf="using:WpfCompat"
+        mc:Ignorable="d"
+        Title="Batch Run"
+        wpf:WindowIconSource.Icon="{DynamicResource BatchRunIcon}"
+        KeyDown="BatchRun_KeyDown"
+        ResizeMode="NoResize"
+        ShowInTaskbar="True"
+        WindowStartupLocation="CenterScreen"
+        SizeToContent="WidthAndHeight"
+        Theme="{DynamicResource MetroWindowStyle}"
+        Background="{DynamicResource EnvironmentWindowBackground}"
+        Foreground="{DynamicResource EnvironmentWindowText}"
+        DataContext="{Binding RelativeSource={RelativeSource Self}}">
+    <cntrls:MetroWindow.Resources>
+        <ResourceDictionary>
+            <local:BatchRunStatusToIconConverter x:Key="StatusToIconConverter"/>
+        </ResourceDictionary>
+    </cntrls:MetroWindow.Resources>
+    <Grid x:Name="MainGrid">
+
+        <!--Add Rows-->
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!--Add Columns-->
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!--Data Grid-->
+        <cntrls:CopyPasteDataGrid x:Name="MyDataGrid" Grid.Column="0" Margin="6" Height="300" Width="550" AutoGenerateColumns="False" IsReadOnly="True" Background="{DynamicResource EnvironmentWindowBackground}" BorderBrush="{DynamicResource SeparatorBorder}" BorderThickness="1"
+                  GridLinesVisibility="None" HeadersVisibility="Column" SelectionChanged="MyDataGrid_SelectionChanged"
+                  Theme="{DynamicResource DataGridStyle}"
+                  SelectionUnit="FullRow" CanUserResizeColumns="True" CanUserSortColumns="True" CanUserReorderColumns="True"
+                  RowHeight="22" ShowSortContextMenu="False">
+            <cntrls:CopyPasteDataGrid.RowTheme>
+                <ControlTheme TargetType="DataGridRow" BasedOn="{StaticResource DataGridRowDefaultTheme}">
+                    <Setter Property="Background" Value="Transparent"/>
+                    <Setter Property="Foreground" Value="{DynamicResource EnvironmentWindowText}"/>
+                </ControlTheme>
+            </cntrls:CopyPasteDataGrid.RowTheme>
+            <cntrls:CopyPasteDataGrid.Columns>
+                <!-- Element type icon -->
+                <DataGridTemplateColumn HeaderTheme="{DynamicResource Center_ColumnHeaderStyle_Modal}" Width="SizeToCells" CanUserSort="False" CanUserReorder="False" CanUserResize="False">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Image Source="{Binding ElementImage}" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <!-- Analysis name -->
+                <DataGridTextColumn HeaderTheme="{DynamicResource Left_ColumnHeaderStyle_Modal}" MinWidth="150" Width="*" Header="Name" Binding="{Binding DisplayName}" CanUserSort="True" CanUserReorder="False"/>
+                <!-- Per-row progress bar with text overlay (visible only when running) -->
+                <DataGridTemplateColumn HeaderTheme="{DynamicResource Center_ColumnHeaderStyle_Modal}" Header="Progress" Width="120" CanUserSort="False" CanUserReorder="False" CanUserResize="False">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Grid>
+                                <ProgressBar Minimum="0" Maximum="100" Value="{Binding Progress, Mode=OneWay}" IsIndeterminate="{Binding IsProgressIndeterminate, Mode=OneWay}" Height="16" Margin="2"
+                                             Background="{DynamicResource ProgressBar.Static.Background}" Foreground="{DynamicResource ProgressBar.Static.Foreground}" BorderBrush="{DynamicResource ProgressBar.Static.Border}"
+                                             Classes.running="{Binding Status, Converter={x:Static ObjectConverters.Equal}, ConverterParameter={x:Static local:BatchRunStatus.Running}}">
+                                    <ProgressBar.Styles>
+                                        <Style Selector="ProgressBar:not(.running)">
+                                            <Setter Property="wpf:WpfElement.Visibility" Value="Hidden"/>
+                                        </Style>
+                                    </ProgressBar.Styles>
+                                </ProgressBar>
+                                <TextBlock Text="{Binding ProgressText}" FontSize="10"
+                                           VerticalAlignment="Center" HorizontalAlignment="Center" Margin="2"
+                                           Classes.running="{Binding Status, Converter={x:Static ObjectConverters.Equal}, ConverterParameter={x:Static local:BatchRunStatus.Running}}">
+                                    <TextBlock.Styles>
+                                        <Style Selector="TextBlock">
+                                            <Setter Property="Foreground" Value="{DynamicResource EnvironmentWindowText}"/>
+                                        </Style>
+                                        <Style Selector="TextBlock:not(.running)">
+                                            <Setter Property="wpf:WpfElement.Visibility" Value="Hidden"/>
+                                        </Style>
+                                    </TextBlock.Styles>
+                                </TextBlock>
+                            </Grid>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <!-- Duration column -->
+                <DataGridTextColumn HeaderTheme="{DynamicResource Center_ColumnHeaderStyle_Modal}" Header="Duration" Width="75" Binding="{Binding DurationText}" SortMemberPath="Duration" CanUserSort="True" CanUserReorder="False" CanUserResize="False">
+                    <cntrls:DataGridColumnStyles.ElementStyle>
+                        <ControlTheme TargetType="TextBlock">
+                            <Setter Property="HorizontalAlignment" Value="Center"/>
+                            <Setter Property="VerticalAlignment" Value="Center"/>
+                            <Setter Property="Foreground" Value="{DynamicResource EnvironmentWindowText}"/>
+                        </ControlTheme>
+                    </cntrls:DataGridColumnStyles.ElementStyle>
+                </DataGridTextColumn>
+                <!-- Status icon column -->
+                <DataGridTemplateColumn HeaderTheme="{DynamicResource Center_ColumnHeaderStyle_Modal}" Header="Status" Width="50" SortMemberPath="Status" CanUserSort="True" CanUserReorder="False" CanUserResize="False">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Image Width="16" Height="16" Source="{Binding Status, Converter={StaticResource StatusToIconConverter}}"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center" RenderOptions.BitmapInterpolationMode="HighQuality"
+                                   RenderTransformOrigin="50%,50%"
+                                   Classes.running="{Binding Status, Converter={x:Static ObjectConverters.Equal}, ConverterParameter={x:Static local:BatchRunStatus.Running}}">
+                                <Image.Styles>
+                                    <!-- Rotate animation when running -->
+                                    <Style Selector="Image.running">
+                                        <Style.Animations>
+                                            <Animation Duration="0:0:1.5" IterationCount="INFINITE">
+                                                <KeyFrame Cue="0%">
+                                                    <Setter Property="RotateTransform.Angle" Value="0"/>
+                                                </KeyFrame>
+                                                <KeyFrame Cue="100%">
+                                                    <Setter Property="RotateTransform.Angle" Value="360"/>
+                                                </KeyFrame>
+                                            </Animation>
+                                        </Style.Animations>
+                                    </Style>
+                                </Image.Styles>
+                                <Image.RenderTransform>
+                                    <RotateTransform/>
+                                </Image.RenderTransform>
+                            </Image>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+            </cntrls:CopyPasteDataGrid.Columns>
+        </cntrls:CopyPasteDataGrid>
+
+        <!--Document Buttons-->
+        <Grid x:Name="DocumentButtonGrid" Grid.Row="0" Grid.Column="1">
+            <!--Add Rows-->
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <Button Name="SelectButton" Height="24" Width="110" IsEnabled="True" Click="SelectButton_Click" Content="Select All" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Grid.Row="0" Margin="0,6,6,6" Cursor="Hand"/>
+            <Button Name="DeselectButton"  Height="24" Width="110" IsEnabled="False"  Click="DeselectButton_Click" Content="Deselect All" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Grid.Row="1" Margin="0,0,6,6" Cursor="Hand"/>
+            <Button Name="SimulateButton" Height="24" Width="110" IsEnabled="False" Click="SimulateButton_Click" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Grid.Row="2" Margin="0,0,6,6" Cursor="Hand" >
+                <StackPanel Orientation="Horizontal">
+                    <ContentControl Content="{DynamicResource RunIcon}" Margin="0,0,4,0"/>
+                    <TextBlock Text="Estimate" />
+                </StackPanel>
+            </Button>
+            <Button Name="CancelButton" Height="24" Width="110" Click="CancelButton_Click" wpf:WpfElement.Visibility="Hidden" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Grid.Row="2" Margin="0,0,6,6" Cursor="Hand" >
+                <StackPanel Orientation="Horizontal">
+                    <ContentControl Content="{DynamicResource StopIcon}" Margin="0,0,4,0"/>
+                    <TextBlock Text="Cancel" />
+                </StackPanel>
+            </Button>
+            <CheckBox x:Name="ParallelCheckBox" Grid.Row="3" Content="Run in Parallel" IsChecked="True" Margin="4,0,6,0"
+                      Foreground="{DynamicResource EnvironmentWindowText}" Cursor="Hand"/>
+        </Grid>
+
+        <!-- Summary status bar -->
+        <TextBlock x:Name="SummaryTextBlock" Grid.Row="1" Grid.ColumnSpan="2"
+                   Text="Select analyses and click Estimate to begin."
+                   Foreground="{DynamicResource EnvironmentWindowText}"
+                   TextTrimming="CharacterEllipsis"
+                   Height="22" Padding="6,3" Margin="6,0,6,6"/>
+
+    </Grid>
+</cntrls:MetroWindow>

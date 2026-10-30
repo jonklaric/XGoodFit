@@ -66,4 +66,32 @@ public sealed class RichTextBoxTests
             window.Close();
         });
     }
+
+    [TestMethod]
+    public void Hyperlink_DoesNotNavigate_WhileDisabled()
+    {
+        HeadlessSession.Run(() =>
+        {
+            var link = new Hyperlink(new Documents.Run("Zenodo")) { NavigateUri = new Uri("https://zenodo.org/"), IsEnabled = false };
+            int navigations = 0;
+            link.RequestNavigate += (_, e) => navigations++;
+            var box = new RichTextBox { Width = 300, Height = 100, Document = new FlowDocument(new Documents.Paragraph(link)), IsDocumentEnabled = true };
+            var window = new Window { Width = 300, Height = 100, Content = box };
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+            window.UpdateLayout();
+            AvaloniaHeadlessPlatform.ForceRenderTimerTick();
+            var linkText = box.GetVisualDescendants().OfType<TextBlock>().Single(t => t is not SelectableTextBlock);
+            var center = linkText.TranslatePoint(new Avalonia.Point(linkText.Bounds.Width / 2, linkText.Bounds.Height / 2), window)!.Value;
+            window.MouseDown(center, MouseButton.Left);
+            window.MouseUp(center, MouseButton.Left);
+            Assert.AreEqual(0, navigations, "a disabled link doesn't navigate, as WPF's");
+
+            link.IsEnabled = true;
+            window.MouseDown(center, MouseButton.Left);
+            window.MouseUp(center, MouseButton.Left);
+            Assert.AreEqual(1, navigations, "once enabled again it does");
+            window.Close();
+        });
+    }
 }

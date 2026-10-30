@@ -138,6 +138,8 @@
   -->
   <!-- Upstream files that compile unchanged: Bootstrap: MainProjectNode, GUI/Support and the batch run window. -->
   <ItemGroup>
+    <UpstreamCompileInclude Include="GUI/Support/BatchRunCoordinator.cs" />
+    <UpstreamCompileInclude Include="GUI/Support/BatchRunStatusIconKeys.cs" />
   </ItemGroup>
 
   <!-- Upstream files that compile unchanged: Shared analysis controls: GUI/Support/Controls. -->
