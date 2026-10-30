@@ -108,9 +108,36 @@ namespace OxyPlot.Wpf
         /// <summary>
         /// Identifies the <see cref="TrackerFormatString"/> dependency property.
         /// </summary>
+        /// <remarks>
+        /// XGoodFit port: a format with bare line feeds that otherwise equals the current format, whose
+        /// line ends are CR LF, keeps the current format (<see cref="CoerceTrackerFormatString"/>).
+        /// </remarks>
         public static readonly StyledProperty<string> TrackerFormatStringProperty = AvaloniaProperty.Register<Series, string>(
             nameof(TrackerFormatString),
-            null);
+            null,
+            coerce: CoerceTrackerFormatString);
+
+        /// <summary>
+        /// XGoodFit addition: keeps the current tracker format when the new one differs only in having
+        /// bare line feeds where the current one has CR LF.
+        /// </summary>
+        /// <param name="series">The series.</param>
+        /// <param name="value">The format being set.</param>
+        /// <returns>The format to keep.</returns>
+        /// <remarks>
+        /// RMC-BestFit builds its tracker formats with <see cref="Environment.NewLine"/>: CR LF on Windows,
+        /// where its projects are saved, but LF on macOS and Linux. So showing a saved plot there would
+        /// replace each format with its LF twin, a change that marks the project unsaved and would save
+        /// LF line ends. A format being read from a file, or one that changes more than its line ends,
+        /// is set as it is.
+        /// </remarks>
+        private static string CoerceTrackerFormatString(AvaloniaObject series, string value)
+        {
+            if (value == null || value.Contains('\r')) return value;
+            string current = series.GetValue(TrackerFormatStringProperty);
+            if (current == null || !current.Contains('\r')) return value;
+            return string.Equals(current.Replace("\r\n", "\n"), value, StringComparison.Ordinal) ? current : value;
+        }
 
         /// <summary>
         /// Identifies the <see cref="TrackerKey"/> dependency property.

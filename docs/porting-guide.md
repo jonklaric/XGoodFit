@@ -298,6 +298,11 @@ Watch for others when porting:
   value doesn't clear the resource binding (see `ParameterPriorsControl.HeaderThemeOf`).
 - **`ElementName` inside a DataTemplate** can find names in the enclosing XAML: Avalonia's template name
   scope falls back to the control's.
+- **`Environment.NewLine` is CR LF only on Windows.** RMC-BestFit builds its plots' tracker formats
+  with it, and its projects were saved on Windows, so on macOS and Linux a view setting its format
+  would change the saved plot and mark the project unsaved. OxyPlot.Wpf's `Series` keeps a saved CR LF
+  format when the new one differs only in bare line feeds (`CoerceTrackerFormatString`). Any other
+  string that's saved and built with `Environment.NewLine` needs the same care.
 - **Headless clicks in the shell:** move the pointer before pressing, as a mouse does. MainWindow notes
   the pane under the pointer on mouse moves, and an explorer click relies on it to keep its selection
   when it activates the node's document (see `BestFitShell.Click`).

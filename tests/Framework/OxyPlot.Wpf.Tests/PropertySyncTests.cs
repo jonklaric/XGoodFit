@@ -13,6 +13,35 @@ namespace OxyPlot.Wpf.Tests;
 public sealed class PropertySyncTests
 {
     [TestMethod]
+    public void TrackerFormat_DifferingOnlyInBareLineFeeds_KeepsTheSavedCrLfFormat()
+    {
+        HeadlessSession.Run(() =>
+        {
+            // RMC-BestFit's views build tracker formats with Environment.NewLine: CR LF on Windows, where
+            // the projects were saved, LF on macOS and Linux.
+            var plot = TestPlots.FrequencyPlot();
+            var series = plot.Series[0];
+            series.TrackerFormatString = "{0}\r\n{1}: {2:0.00}";
+            var changed = new List<string>();
+            ((INotifyPropertyChanged)plot).PropertyChanged += (_, e) => changed.Add(e.PropertyName!);
+
+            series.TrackerFormatString = "{0}\n{1}: {2:0.00}";
+            Assert.AreEqual("{0}\r\n{1}: {2:0.00}", series.TrackerFormatString, "the saved format stays");
+            CollectionAssert.AreEqual(Array.Empty<string>(), changed, "nothing changes, so the project isn't marked unsaved");
+
+            series.TrackerFormatString = "{0}\n{1}: {2:0.000}";
+            Assert.AreEqual("{0}\n{1}: {2:0.000}", series.TrackerFormatString, "a different format is set");
+
+            // A format read from a file is set as it is, whichever line ends either has.
+            series.TrackerFormatString = "{0}\r\n{1}: {2:0.000}";
+            Assert.AreEqual("{0}\r\n{1}: {2:0.000}", series.TrackerFormatString);
+            series.TrackerFormatString = null!;
+            series.TrackerFormatString = "{0}\n{1}";
+            Assert.AreEqual("{0}\n{1}", series.TrackerFormatString);
+        });
+    }
+
+    [TestMethod]
     public void PlotProperties_UpdateTheModel_AndAreRelayed()
     {
         HeadlessSession.Run(() =>
