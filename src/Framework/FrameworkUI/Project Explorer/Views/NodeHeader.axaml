@@ -1,0 +1,75 @@
+<!--
+    XGoodFit port of upstream's Project Explorer/Views/NodeHeader.xaml:
+    - Bindings to WPF Visibility through GenericControls' BooleanToVisibilityConverter set WpfCompat's
+      Visibility (wpf:WpfElement.Visibility), as the porting guide says.
+    - The image's two DataTriggers on IsExpanded become an "expanded" class bound to IsExpanded, with
+      a style for each state that binds Source to ExpandedImage or StaticImage.
+    - The tool tip: WPF shows the ToolTip element, collapsed while ShowToolTip is false. Avalonia's tip
+      is the content alone, so ShowToolTip turns the grid's tool tip service on and off.
+    - RenameTextBox_TextChanged handles NameTextBox's own TextChanged event, which it raises as the text
+      changes, as WPF's text box does.
+    - UseLayoutRounding is Avalonia's default, so it isn't set.
+-->
+<UserControl x:Class="FrameworkUI.ProjectExplorer.NodeHeader"
+             x:Name="NodeHeaderControl"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="using:FrameworkUI"
+             xmlns:cntrls="using:GenericControls"
+             xmlns:wpf="using:WpfCompat"
+             mc:Ignorable="d"
+             d:DesignHeight="450" d:DesignWidth="800"
+             DataContext="{Binding RelativeSource={RelativeSource Self}}">
+    <UserControl.Resources>
+        <cntrls:BooleanToVisibilityConverter x:Key="BoolToVisConverter" TrueValue="Visible" FalseValue="Collapsed"/>
+        <cntrls:BooleanToVisibilityConverter x:Key="ReverseBoolToVisConverter" TrueValue="Collapsed" FalseValue="Visible"/>
+    </UserControl.Resources>
+    <Grid x:Name="MainGrid" VerticalAlignment="Center"
+          ToolTip.ServiceEnabled="{Binding Path=ShowToolTip}">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <CheckBox x:Name="HeaderCheckBox" Grid.Column="0" Width="16" Height="16" Margin="1" VerticalAlignment="Center"
+                  wpf:WpfElement.Visibility="{Binding IsCheckBox, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource BoolToVisConverter}}"
+                  IsChecked="{Binding Path=IsChecked, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"/>
+
+        <Image x:Name="HeaderImage" Grid.Column="1" Width="16" Height="16" Margin="1" Stretch="Fill" VerticalAlignment="Center"
+               wpf:WpfElement.Visibility="{Binding Path=ImageVisibility}"
+               Classes.expanded="{Binding Path=IsExpanded}">
+            <Image.Styles>
+                <Style Selector="Image#HeaderImage">
+                    <Setter Property="Source" Value="{Binding Path=StaticImage}"/>
+                </Style>
+                <Style Selector="Image#HeaderImage.expanded">
+                    <Setter Property="Source" Value="{Binding Path=ExpandedImage}"/>
+                </Style>
+            </Image.Styles>
+        </Image>
+
+        <TextBlock x:Name="HeaderTextBlock" Grid.Column="2" Margin="2,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Center"
+                   wpf:WpfElement.Visibility="{Binding Path=ShowRenameTextBox, Converter={StaticResource ReverseBoolToVisConverter}}"
+                   FontWeight="{Binding Path=HeaderFontWeight}"
+                   FontSize="{Binding Path=HeaderFontSize}"
+                   Foreground="{DynamicResource EnvironmentWindowText}"
+                   Text="{Binding Path=HeaderText}">
+        </TextBlock>
+
+        <cntrls:NameTextBox x:Name="RenameTextBox" Grid.Column="2" HorizontalAlignment="Left" Margin="2,0,0,0" VerticalAlignment="Stretch" CharacterLimit="50" CanBeBlank="False" Focusable="True"
+                            wpf:WpfElement.Visibility="{Binding Path=ShowRenameTextBox, Converter={StaticResource BoolToVisConverter}}"
+                            TextChanged="RenameTextBox_TextChanged" Text="{Binding Path=RenameText, Mode=TwoWay}"/>
+
+        <TextBlock x:Name="AsteriskBlock" Grid.Column="3" FontWeight="{Binding Path=HeaderFontWeight}" FontSize="{Binding Path=HeaderFontSize}" Foreground="{DynamicResource EnvironmentWindowText}" Text="*" HorizontalAlignment="Left" VerticalAlignment="Center" wpf:WpfElement.Visibility="{Binding Path=ShowAsterisk, Converter={StaticResource BoolToVisConverter}, UpdateSourceTrigger=PropertyChanged}"/>
+        <ToolTip.Tip>
+            <StackPanel>
+                <TextBlock FontWeight="Bold" FontSize="12" Margin="0,0,0,5" Text="{Binding Path=HeaderText}"/>
+                <TextBlock FontWeight="Normal" FontSize="11" Text="{Binding Path=HeaderDescription}" TextWrapping="WrapWithOverflow" />
+            </StackPanel>
+        </ToolTip.Tip>
+    </Grid>
+</UserControl>

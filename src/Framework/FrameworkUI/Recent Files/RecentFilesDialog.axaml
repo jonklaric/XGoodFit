@@ -1,0 +1,114 @@
+<!--
+    XGoodFit port of upstream's Recent Files/RecentFilesDialog.xaml:
+    - The window's Style is its Theme, and its Icon, an image resource in WPF, is WpfCompat's
+      WindowIconSource.Icon. Upstream's RecentProjects resource exists nowhere, so the icon stays unset
+      here too until RecentFiles sets it.
+    - The grid is GenericControls' CopyPasteDataGrid as a plain WPF DataGrid (see the message window's
+      notes): the implicit DataGrid theme, and the WPF defaults CopyPasteDataGrid changes set back,
+      with DataGridStyle's row height. Its context menus are suppressed in the code-behind.
+    - RowStyle is RowTheme, based on the ported WPF default row; the tool tip setters create their
+      text block for each row or cell (Template), as an Avalonia control can't be shared.
+    - Column header styles are HeaderTheme; ElementStyle is DataGridColumnStyles.ElementStyle.
+    - The icon column's binding to the dialog finds it as an ancestor: Avalonia's element names don't
+      reach into the grid's cell templates.
+    - RenderOptions.BitmapScalingMode is BitmapInterpolationMode.
+-->
+<cntrls:MetroWindow x:Class="FrameworkUI.RecentFilesDialog" x:Name="RFDialog"
+        xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="using:FrameworkUI"
+        xmlns:cntrls="using:GenericControls"
+        xmlns:wpf="using:WpfCompat"
+        mc:Ignorable="d"
+        Title="Recent Files"
+        wpf:WindowIconSource.Icon="{DynamicResource RecentProjects}"
+        ResizeMode="NoResize"
+        ShowInTaskbar="True"
+        WindowStartupLocation="CenterScreen"
+        SizeToContent="WidthAndHeight"
+        Theme="{DynamicResource MetroWindowStyle}"
+        Background="{DynamicResource EnvironmentWindowBackground}"
+        Foreground="{DynamicResource EnvironmentWindowText}"
+        DataContext="{Binding RelativeSource={RelativeSource Self}}">
+    <Grid x:Name="MainGrid">
+
+        <!--Add Rows-->
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!--Data Grid-->
+        <cntrls:CopyPasteDataGrid x:Name="MyDataGrid" Margin="6" Height="250" Width="400"
+                  Theme="{DynamicResource DataGridStyle}"
+                  AutoGenerateColumns="False"
+                  IsReadOnly="True"
+                  Background="{DynamicResource DataGrid.Static.Background}"
+                  BorderBrush="{DynamicResource SeparatorBorder}"
+                  BorderThickness="1"
+                  GridLinesVisibility="None"
+                  HeadersVisibility="Column"
+                  ItemsSource="{Binding Files.Collection}"
+                  SelectionMode="Single"
+                  SelectionUnit="FullRow"
+                  SelectionChanged="MyDataGrid_SelectionChanged"
+                  CanUserResizeColumns="True" CanUserSortColumns="True" CanUserReorderColumns="True"
+                  RowHeight="22" ShowSortContextMenu="False">
+            <cntrls:CopyPasteDataGrid.RowTheme>
+                <ControlTheme TargetType="DataGridRow" BasedOn="{StaticResource DataGridRowDefaultTheme}">
+                    <Setter Property="Background" Value="Transparent"/>
+                    <Setter Property="Foreground" Value="{DynamicResource EnvironmentWindowText}"/>
+                    <Setter Property="ToolTip.Tip">
+                        <Template>
+                            <TextBlock Text="{Binding FilePath}" TextWrapping="Wrap"/>
+                        </Template>
+                    </Setter>
+                </ControlTheme>
+            </cntrls:CopyPasteDataGrid.RowTheme>
+            <cntrls:CopyPasteDataGrid.Columns>
+                <DataGridTemplateColumn HeaderTheme="{DynamicResource Center_ColumnHeaderStyle_Modal}" Width="18" CanUserSort="False" CanUserReorder="False" CanUserResize="False">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Image Source="{Binding FileImage, RelativeSource={RelativeSource AncestorType=local:RecentFilesDialog}}" Width="16" Height="16" RenderOptions.EdgeMode="Aliased" RenderOptions.BitmapInterpolationMode="HighQuality" VerticalAlignment="Center"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTextColumn HeaderTheme="{DynamicResource Left_ColumnHeaderStyle_Modal}" MinWidth="100" MaxWidth="200" Header="Project" Binding="{Binding Name}" CanUserSort="True" CanUserReorder="False">
+                    <cntrls:DataGridColumnStyles.ElementStyle>
+                        <ControlTheme TargetType="TextBlock">
+                            <Setter Property="HorizontalAlignment" Value="Left" />
+                            <Setter Property="VerticalAlignment" Value="Center" />
+                            <Setter Property="TextAlignment" Value="Left" />
+                        </ControlTheme>
+                    </cntrls:DataGridColumnStyles.ElementStyle>
+                </DataGridTextColumn>
+                <DataGridTextColumn HeaderTheme="{DynamicResource Left_ColumnHeaderStyle_Modal}" MinWidth="100" Width="*" Header="Location" Binding="{Binding DisplayLocation}" CanUserSort="True" CanUserReorder="False">
+                    <cntrls:DataGridColumnStyles.ElementStyle>
+                        <ControlTheme TargetType="TextBlock">
+                            <Setter Property="HorizontalAlignment" Value="Left" />
+                            <Setter Property="VerticalAlignment" Value="Center" />
+                            <Setter Property="TextAlignment" Value="Left" />
+                            <Setter Property="ToolTip.Tip">
+                                <Template>
+                                    <TextBlock Text="{Binding FilePath}" TextWrapping="WrapWithOverflow"/>
+                                </Template>
+                            </Setter>
+                        </ControlTheme>
+                    </cntrls:DataGridColumnStyles.ElementStyle>
+                </DataGridTextColumn>
+            </cntrls:CopyPasteDataGrid.Columns>
+        </cntrls:CopyPasteDataGrid>
+
+        <!--Buttons-->
+        <Grid Grid.Row="1" HorizontalAlignment="Right">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <Button Name="OpenButton" Click="OpenButton_Click" Content="Open" Grid.Column="0" Width="75" Height="24" Cursor="Hand" Margin="6,0,0,6" IsEnabled="False"/>
+            <Button Name="ClearListButton" Click="ClearListButton_Click" Content="Clear List" Grid.Column="1" Width="75" Height="24" Cursor="Hand" Margin="6,0,6,6"/>
+        </Grid>
+    </Grid>
+</cntrls:MetroWindow>

@@ -1,0 +1,179 @@
+<!-- Ported from upstream/WPF-Framework/src/FrameworkUI/Themes/VS2013/Controls/MessageWindow.xaml. Conversion rules: Themes' Button.axaml. -->
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:FrameworkUI"
+    xmlns:mw="using:FrameworkUI.MessageWindow"
+    xmlns:themes="using:Themes">
+
+    <!--
+    XGoodFit port notes:
+    - The styles are ControlThemes. The button styles are based on the implicit Button theme, as
+      upstream's on the implicit Button style; Avalonia's based-on themes keep the base's template
+      triggers too, which the same-named part here overrides with the later style.
+    - The button styles' base, the implicit Button theme, is merged from Themes' Button.axaml: a
+      dictionary loaded on its own can't find the application's resources for BasedOn.
+    - The column header styles are themes for ProDataGrid's DataGridColumnHeader. Upstream's set no
+      template, so WPF drew them with its own header template (Aero2), whose border draws as a plain
+      border once a background is set. MessageWindowDataGridHeaderDefaultTheme (an XGoodFit addition)
+      is that template, without the grippers: ProDataGrid resizes columns from the header's edges.
+    - MessageWindowStyle sets the message window's style properties, which take themes
+      (MessageWindowControl). The separator style is Themes' VerticalSeparatorStyle.
+    - IsKeyboardFocusWithin is :focus-within; FocusVisualStyle {x:Null} is FocusAdorner {x:Null}.
+    -->
+
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceInclude Source="avares://Themes/Resources/Controls/Button.axaml"/>
+    </ResourceDictionary.MergedDictionaries>
+
+    <!--Message Window Button Style-->
+    <ControlTheme x:Key="MessageWindowButtonStyle" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+        <Setter Property="Background" Value="{DynamicResource StackPanelBackground}" />
+        <Setter Property="Foreground" Value="{DynamicResource EnvironmentToolWindowText}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource StackPanelBackground}" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="FocusAdorner" Value="{x:Null}" />
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border Name="Border" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}">
+                    <ContentPresenter Name="PART_ContentPresenter"
+                                      Content="{TemplateBinding Content}"
+                                      ContentTemplate="{TemplateBinding ContentTemplate}"
+                                      HorizontalAlignment="Center" VerticalAlignment="Center" RecognizesAccessKey="True" />
+                </Border>
+            </ControlTemplate>
+        </Setter>
+
+        <!-- ControlTemplate.Triggers -->
+        <Style Selector="^:pointerover /template/ Border#Border">
+            <Setter Property="BorderBrush" Value="{DynamicResource Button.MouseOver.Border}" />
+        </Style>
+        <Style Selector="^:focus-within /template/ Border#Border">
+            <Setter Property="BorderBrush" Value="{DynamicResource Button.MouseOver.Border}" />
+        </Style>
+
+        <!-- Style.Triggers -->
+        <Style Selector="^:pointerover">
+            <Setter Property="Background" Value="{DynamicResource Button.MouseOver.Background}" />
+        </Style>
+        <Style Selector="^:focus-within">
+            <Setter Property="Background" Value="{DynamicResource Button.MouseOver.Background}" />
+        </Style>
+        <Style Selector="^:disabled">
+            <Setter Property="Foreground" Value="{DynamicResource EnvironmentToolWindowDisabledText}" />
+            <Setter Property="Opacity" Value="0.5" />
+        </Style>
+    </ControlTheme>
+
+    <!--Message Window Pressed Button Style-->
+    <ControlTheme x:Key="MessageWindowPressedButtonStyle" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+        <Setter Property="Background" Value="{DynamicResource StackPanelBackground}" />
+        <Setter Property="Foreground" Value="{DynamicResource EnvironmentToolWindowText}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource MessageWindow.Button.Pressed.Border}" />
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="FocusAdorner" Value="{x:Null}" />
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border Name="Border" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}">
+                    <ContentPresenter Name="PART_ContentPresenter"
+                                      Content="{TemplateBinding Content}"
+                                      ContentTemplate="{TemplateBinding ContentTemplate}"
+                                      HorizontalAlignment="Center" VerticalAlignment="Center" RecognizesAccessKey="True" />
+                </Border>
+            </ControlTemplate>
+        </Setter>
+
+        <!-- ControlTemplate.Triggers -->
+        <Style Selector="^:pointerover /template/ Border#Border">
+            <Setter Property="BorderBrush" Value="{DynamicResource MessageWindow.Button.Pressed.Border}" />
+        </Style>
+        <Style Selector="^:focus-within /template/ Border#Border">
+            <Setter Property="BorderBrush" Value="{DynamicResource MessageWindow.Button.Pressed.Border}" />
+        </Style>
+
+        <!-- Style.Triggers -->
+        <Style Selector="^:pointerover">
+            <Setter Property="Background" Value="{DynamicResource Button.MouseOver.Background}" />
+        </Style>
+        <Style Selector="^:focus-within">
+            <Setter Property="Background" Value="{DynamicResource Button.MouseOver.Background}" />
+        </Style>
+        <Style Selector="^:disabled">
+            <Setter Property="Foreground" Value="{DynamicResource EnvironmentToolWindowDisabledText}" />
+            <Setter Property="Opacity" Value="0.5" />
+        </Style>
+    </ControlTheme>
+
+    <!--
+    XGoodFit addition: WPF's own DataGridColumnHeader style (Aero2), under the message window's header
+    styles. Its header border draws as a plain border when the header has a background.
+    -->
+    <ControlTheme x:Key="MessageWindowDataGridHeaderDefaultTheme" TargetType="DataGridColumnHeader">
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Grid>
+                    <Border Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            Padding="{TemplateBinding Padding}">
+                        <ContentPresenter Name="PART_ContentPresenter"
+                                          Content="{TemplateBinding Content}"
+                                          ContentTemplate="{TemplateBinding (themes:ColumnHeaderContent.EffectiveTemplate)}"
+                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                          HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                          RecognizesAccessKey="True"/>
+                    </Border>
+                </Grid>
+            </ControlTemplate>
+        </Setter>
+    </ControlTheme>
+
+    <!--Message Window Center Column Header Style-->
+    <ControlTheme x:Key="MessageWindowDataGridCenterHeaderStyle" TargetType="DataGridColumnHeader" BasedOn="{StaticResource MessageWindowDataGridHeaderDefaultTheme}">
+        <Setter Property="Height" Value="24"/>
+        <Setter Property="Background" Value="{DynamicResource MessageWindow.Background}" />
+        <Setter Property="Foreground" Value="{DynamicResource MessageWindow.Foreground}"/>
+        <Setter Property="HorizontalAlignment" Value="Stretch"/>
+        <Setter Property="HorizontalContentAlignment" Value="Center"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource MessageWindow.Gridlines}"/>
+        <Setter Property="BorderThickness" Value="0,0,1,1"/>
+        <Style Selector="^:pointerover">
+            <Setter Property="Background" Value="{DynamicResource MessageWindow.HeaderHoveredBackground}" />
+        </Style>
+        <Style Selector="^:focus-within">
+            <Setter Property="Background" Value="{DynamicResource MessageWindow.HeaderHoveredBackground}" />
+        </Style>
+    </ControlTheme>
+
+    <!--Message Window Left Column Header Style-->
+    <ControlTheme x:Key="MessageWindowDataGridLeftHeaderStyle" TargetType="DataGridColumnHeader" BasedOn="{StaticResource MessageWindowDataGridHeaderDefaultTheme}">
+        <Setter Property="Height" Value="24"/>
+        <Setter Property="Background" Value="{DynamicResource MessageWindow.Background}"/>
+        <Setter Property="Foreground" Value="{DynamicResource MessageWindow.Foreground}"/>
+        <Setter Property="HorizontalAlignment" Value="Stretch"/>
+        <Setter Property="HorizontalContentAlignment" Value="Left"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource MessageWindow.Gridlines}"/>
+        <Setter Property="BorderThickness" Value="0,0,1,1"/>
+        <Style Selector="^:pointerover">
+            <Setter Property="Background" Value="{DynamicResource MessageWindow.HeaderHoveredBackground}" />
+        </Style>
+        <Style Selector="^:focus-within">
+            <Setter Property="Background" Value="{DynamicResource MessageWindow.HeaderHoveredBackground}" />
+        </Style>
+    </ControlTheme>
+
+    <!--Message Window Style-->
+    <ControlTheme x:Key="MessageWindowStyle" TargetType="mw:MessageWindowControl">
+        <Setter Property="StackPanelBackgroundColor" Value="{DynamicResource StackPanelBackground}" />
+        <Setter Property="StackPanelButtonStyle" Value="{DynamicResource MessageWindowButtonStyle}"/>
+        <Setter Property="StackPanelPressedButtonStyle" Value="{DynamicResource MessageWindowPressedButtonStyle}"/>
+        <Setter Property="StackPanelSeparatorStyle" Value="{DynamicResource VerticalSeparatorStyle}"/>
+        <Setter Property="BackgroundColor" Value="{DynamicResource MessageWindow.Background}" />
+        <Setter Property="CenterColumnHeaderStyle" Value="{DynamicResource MessageWindowDataGridCenterHeaderStyle}"/>
+        <Setter Property="LeftColumnHeaderStyle" Value="{DynamicResource MessageWindowDataGridLeftHeaderStyle}"/>
+    </ControlTheme>
+
+    <ControlTheme x:Key="{x:Type mw:MessageWindowControl}" TargetType="mw:MessageWindowControl" BasedOn="{StaticResource MessageWindowStyle}"/>
+
+</ResourceDictionary>

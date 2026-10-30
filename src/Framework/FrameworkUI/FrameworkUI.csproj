@@ -40,6 +40,7 @@
 
   <ItemGroup>
     <!-- Upstream files that compile unchanged. -->
+    <UpstreamCompileInclude Include="Project Explorer/View Models/ElementNodeGroup.cs" />
     <UpstreamCompileInclude Include="Themes/ThemeColor.cs" />
     <UpstreamCompileInclude Include="Utilities/ApplicationAttributes.cs" />
   </ItemGroup>
@@ -53,6 +54,11 @@
   <ItemGroup>
     <!-- Element and project icons: WPF's ImageSource is Avalonia's IImage, keeping upstream's name. -->
     <Using Include="Avalonia.Media.IImage" Alias="ImageSource" />
+    <!--
+      Documents and properties panels: WPF's UIElement is Avalonia's Control, keeping upstream's name in
+      FrameworkUIController's abstract members (which applications override) and in MainWindow.
+    -->
+    <Using Include="Avalonia.Controls.Control" Alias="UIElement" />
   </ItemGroup>
 
 </Project>

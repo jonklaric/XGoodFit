@@ -1,0 +1,401 @@
+<!--
+    XGoodFit port of upstream's Main Window/MainWindow.xaml:
+    - The window's Style is its Theme. AllowDrop is Avalonia's DragDrop.AllowDrop; the drag events,
+      Closing and Closed are handled in the code-behind, as are the command bindings (WpfCompat's routed
+      commands) and the key bindings (Avalonia's KeyBindings with the platform's command key: Ctrl, or
+      Cmd on macOS).
+    - Command="New" and the like are WpfCompat's {wpfi:Command}, and InputGestureText is InputGesture,
+      Cmd-based on macOS ({OnPlatform}).
+    - The window's resources: the icon dictionary, as upstream. MainWindowStyle.xaml isn't merged: all
+      its styles are keyed and only that file uses their keys, so none applies here (Themes' Merged
+      notes). The CollectionViewSources and CompositeCollections of the Project, Tools and Help menus
+      have no Avalonia counterpart: the menus hold upstream's fixed items, and the code-behind inserts
+      the project's items (ProjectMenuItems, ToolsMenuItems, HelpMenuItems) where the
+      CollectionContainers were.
+    - The toolbar's ToolBar style keys are Themes' string keys of the same names; the undo and redo
+      popups are light-dismissed (StaysOpen="False") below their buttons; their list boxes' item
+      container style is an item container theme, and Extended selection is Multiple. The list boxes'
+      PreviewMouseMove, MouseLeave and PreviewMouseLeftButtonUp handlers, and the Undo All and Redo All
+      texts' MouseLeftButtonUp (the texts are named for it), are added in the code-behind.
+    - The docking manager is Dock's AvalonDock adapter, which takes the xceed XML namespace. The layout's
+      elements aren't named: the adapter's layout root, anchorables and document panes have no Name
+      property for x:Name, and its anchorable panes' Name is written into the layout XML that projects
+      store, which WPF's x:Name doesn't set. The code-behind finds the three named anchorables.
+    - Not ported: the menu's FocusManager.IsFocusScope="False" (Avalonia's menus aren't focus scopes),
+      and AllowsTransparency (Avalonia's popups are transparent where they draw nothing).
+-->
+<cntrls:MetroWindow x:Class="FrameworkUI.MainWindow"
+        xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="using:FrameworkUI"
+        xmlns:cntrls="using:GenericControls"
+        xmlns:wpfi="using:WpfCompat.Input"
+        xmlns:xcad="http://schemas.xceed.com/wpf/xaml/avalondock"
+        mc:Ignorable="d"
+        Height="700"
+        Width="1300"
+        ResizeMode="CanResize"
+        ShowInTaskbar="True"
+        WindowState="Maximized"
+        DragDrop.AllowDrop="True"
+        Theme="{DynamicResource MetroWindowStyle}"
+        DataContext="{Binding RelativeSource={RelativeSource Self}}" >
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceInclude Source="avares://FrameworkUI/Icons/IconDictionary.axaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Window.Resources>
+    <DockPanel x:Name="MainDockPanel">
+        <!--Menu Strip-->
+        <Menu x:Name="MainMenu" DockPanel.Dock="Top" DragDrop.AllowDrop="True">
+            <!--File Menu-->
+            <MenuItem Header="File">
+                <!--New Project-->
+                <MenuItem Header="New Project..." Command="{wpfi:Command New}" InputGesture="{OnPlatform Ctrl+Shift+N, macOS='Cmd+Shift+N'}">
+                    <MenuItem.Icon>
+                        <Image Source="{DynamicResource NewProjectImage}" Stretch="UniformToFill"/>
+                    </MenuItem.Icon>
+                </MenuItem>
+                <!--Open Project-->
+                <MenuItem Header="Open Project..." Command="{wpfi:Command Open}" InputGesture="{OnPlatform Ctrl+Shift+O, macOS='Cmd+Shift+O'}">
+                    <MenuItem.Icon>
+                        <Image Source="{DynamicResource OpenProjectImage}" Stretch="UniformToFill"/>
+                    </MenuItem.Icon>
+                </MenuItem>
+                <Separator/>
+                <!--Save-->
+                <MenuItem Header="Save Project" Command="{wpfi:Command Save}" InputGesture="{OnPlatform Ctrl+S, macOS='Cmd+S'}">
+                    <MenuItem.Icon>
+                        <Image Source="{DynamicResource SaveImage}" Stretch="UniformToFill"/>
+                    </MenuItem.Icon>
+                </MenuItem>
+                <!--Save As-->
+                <MenuItem Header="Save Project As..." Command="{wpfi:Command SaveAs}" InputGesture="{OnPlatform Ctrl+Shift+S, macOS='Cmd+Shift+S'}">
+                    <MenuItem.Icon>
+                        <Image Source="{DynamicResource SaveAsImage}" Stretch="UniformToFill"/>
+                    </MenuItem.Icon>
+                </MenuItem>
+                <!--Recent Files-->
+                <local:RecentFiles x:Name="RecentFiles"/>
+                <!--Exit-->
+                <MenuItem Header="Exit" Command="{wpfi:Command Close}" InputGesture="Alt+F4">
+                    <MenuItem.Icon>
+                        <Image Source="{DynamicResource ShutDownImage}" Stretch="UniformToFill"/>
+                    </MenuItem.Icon>
+                </MenuItem>
+            </MenuItem>
+            <!--Edit Menu-->
+            <MenuItem Header="Edit" x:Name="EditMenu">
+                <!--Undo-->
+                <MenuItem Header="Undo" Command="{wpfi:Command Undo}" InputGesture="{OnPlatform Ctrl+Z, macOS='Cmd+Z'}">
+                    <MenuItem.Icon>
+                        <Image Source="{DynamicResource UndoIcon}" Width="16" Height="16"/>
+                    </MenuItem.Icon>
+                </MenuItem>
+                <!--Redo-->
+                <MenuItem Header="Redo" Command="{wpfi:Command Redo}" InputGesture="{OnPlatform Ctrl+Y, macOS='Cmd+Y'}">
+                    <MenuItem.Icon>
+                        <Image Source="{DynamicResource RedoIcon}" Width="16" Height="16"/>
+                    </MenuItem.Icon>
+                </MenuItem>
+            </MenuItem>
+            <!--View Menu-->
+            <MenuItem Header="View">
+                <!--Project Explorer-->
+                <MenuItem Header="Project Explorer" Click="ProjectExplorer_Click">
+                    <MenuItem.Icon>
+                        <Image Source="{DynamicResource ProjectExplorerImage}" Width="16" Height="16"/>
+                    </MenuItem.Icon>
+                </MenuItem>
+                <!--Map Explorer-->
+                <!--<MenuItem Header="Map Explorer" Click="MapExplorer_Click" Visibility="Collapsed">
+                    <MenuItem.Icon>
+                        <Image Source="{DynamicResource ProjectExplorerImage}" Width="16" Height="16"/>
+                    </MenuItem.Icon>
+                </MenuItem>-->
+                <!--Message Window-->
+                <MenuItem Header="Message Window" Click="MessageWindow_Click">
+                    <MenuItem.Icon>
+                        <Image Source="{DynamicResource MessageWindowImage}" Width="16" Height="16"/>
+                    </MenuItem.Icon>
+                </MenuItem>
+                <!--Properties Window-->
+                <MenuItem Header="Properties Window" Click="PropertiesWindow_Click">
+                    <MenuItem.Icon>
+                        <Image Source="{DynamicResource PropertiesWindowImage}" Width="16" Height="16"/>
+                    </MenuItem.Icon>
+                </MenuItem>
+                <!--All Windows-->
+                <MenuItem Header="All Windows" Click="AllWindows_Click">
+                    <MenuItem.Icon>
+                        <Image Source="{DynamicResource AllWindowsImage}" Width="16" Height="16"/>
+                    </MenuItem.Icon>
+                </MenuItem>
+                <!--Default Layout-->
+                <MenuItem Header="Restore Default Layout" Click="DefaultLayout_Click"/>
+            </MenuItem>
+            <!--Project Menu-->
+            <MenuItem Header="Project" x:Name="ProjectMenu" SubmenuOpened="ProjectMenuOpened">
+                <!-- XGoodFit port: the project's menu items (ProjectMenuItems) go before the separator. -->
+                <Separator x:Name="ProjectMenuSeparator"/>
+                <!--Project Properties-->
+                <MenuItem Header="Project Properties..." Click="ProjectProperties_Click">
+                    <MenuItem.Icon>
+                        <Image Source="{DynamicResource ProjectPropertiesImage}" Width="16" Height="16"/>
+                    </MenuItem.Icon>
+                </MenuItem>
+            </MenuItem>
+            <!--Tools Menu-->
+            <MenuItem Header="Tools" x:Name="ToolsMenu">
+                <!--Compress Project File-->
+                <MenuItem x:Name="CompactMenuItem" Header="Compact &amp; Optimize Project File..." Click="CompactProjectFile_Click">
+                    <MenuItem.Icon>
+                        <Image Source="{DynamicResource CompactProject}" Stretch="UniformToFill" RenderOptions.EdgeMode="Aliased" RenderOptions.BitmapInterpolationMode="HighQuality"/>
+                    </MenuItem.Icon>
+                </MenuItem>
+                <!--Zip Project File-->
+                <MenuItem x:Name="ZipMenuItem" Header="Zip Project File..." Click="ZipProjectFile_Click">
+                    <MenuItem.Icon>
+                        <Image Source="{DynamicResource ZipFileImage}" Width="16" Height="16"/>
+                    </MenuItem.Icon>
+                </MenuItem>
+                <!--Restore Project from Backup-->
+                <MenuItem x:Name="RestoreMenuItem" Header="Restore from Backup..." Click="RestoreFromBackup_Click">
+                    <MenuItem.Icon>
+                        <Image Source="{DynamicResource RestoreProjectImage}" Width="16" Height="16"/>
+                    </MenuItem.Icon>
+                </MenuItem>
+                <!--Check for Updates-->
+                <MenuItem x:Name="CheckForUpdatesMenuItem" Header="Check for Updates..." Click="CheckForUpdates_Click" IsVisible="False">
+                    <MenuItem.Icon>
+                        <Image Source="{DynamicResource UpdateImage}" Width="16" Height="16"/>
+                    </MenuItem.Icon>
+                </MenuItem>
+                <!-- XGoodFit port: the project's tools menu items (ToolsMenuItems) go before the separator. -->
+                <Separator x:Name="ToolsMenuSeparator"/>
+                <!--Options-->
+                <MenuItem x:Name="OptionsMenuItem" Header="Options..." Click="Options_Click">
+                    <MenuItem.Icon>
+                        <Image Source="{DynamicResource OptionsImage}" Width="16" Height="16"/>
+                    </MenuItem.Icon>
+                </MenuItem>
+            </MenuItem>
+
+            <!--Add custom menu items here-->
+
+            <!--Window Menu-->
+            <MenuItem Header="Window" x:Name="WindowMenuItem">
+                <MenuItem Header="Close All" Click="CloseAllDocuments_Click">
+                    <MenuItem.Icon>
+                        <Image Source="{DynamicResource CloseAllWindowsImage}" Stretch="UniformToFill"/>
+                    </MenuItem.Icon>
+                </MenuItem>
+                <local:OpenWindows x:Name="OpenWindows"/>
+                <MenuItem Header="Windows..." Click="Windows_Click"/>
+            </MenuItem>
+            <!--Help Menu-->
+            <!-- XGoodFit port: the project's help menu items (HelpMenuItems). -->
+            <MenuItem Header="Help" x:Name="HelpMenu"/>
+        </Menu>
+        <!--Tool Bar Stack Panel-->
+        <StackPanel x:Name="MainStackPanel" DockPanel.Dock="Top" Orientation="Horizontal" DragDrop.AllowDrop="True" Theme="{DynamicResource StackPanelStyle}">
+            <!--This text block is used as a dummy margin to make the tool bar look good-->
+            <TextBlock Width="6"/>
+            <!--New Project-->
+            <Button x:Name="NewProjectbutton" ToolTip.Tip="Create New Project..." Theme="{DynamicResource ToolBar.ButtonStyleKey}" Height="24" Width="24" Cursor="Hand" Command="{wpfi:Command New}">
+                <Viewbox Margin="1">
+                    <Image Source="{DynamicResource NewProjectImage}" Stretch="UniformToFill"/>
+                </Viewbox>
+            </Button>
+            <!--Open Project-->
+            <Button x:Name="OpenProjectbutton" ToolTip.Tip="Open Existing Project..." Theme="{DynamicResource ToolBar.ButtonStyleKey}" Height="24" Width="24" Cursor="Hand" Command="{wpfi:Command Open}">
+                <Viewbox Margin="1">
+                    <Image Source="{DynamicResource OpenProjectImage}" Stretch="UniformToFill"/>
+                </Viewbox>
+            </Button>
+            <!--Save Project-->
+            <Button x:Name="SaveProjectbutton" ToolTip.Tip="Save Project..." Theme="{DynamicResource ToolBar.ButtonStyleKey}"  Height="24" Width="24" Cursor="Hand" Command="{wpfi:Command Save}">
+                <Viewbox Margin="1">
+                    <Image Source="{DynamicResource SaveImage}" Stretch="UniformToFill" />
+                </Viewbox>
+            </Button>
+            <!--Undo/Redo Separator and Buttons with Dropdowns-->
+            <StackPanel x:Name="UndoRedoPanel" Orientation="Horizontal">
+                <Separator Theme="{DynamicResource ToolBar.SeparatorStyleKey}" Margin="4,2,4,2"/>
+                <!--Undo Split Button-->
+                <StackPanel Orientation="Horizontal">
+                    <Button x:Name="UndoButton" ToolTip.Tip="Undo (Ctrl+Z)" Theme="{DynamicResource ToolBar.ButtonStyleKey}" Height="24" Width="24" Cursor="Hand" Command="{wpfi:Command Undo}">
+                        <Image x:Name="UndoButtonImage" Source="{DynamicResource UndoIcon}" Width="16" Height="16"/>
+                    </Button>
+                    <Button x:Name="UndoDropdownButton" Theme="{DynamicResource ToolBar.ButtonStyleKey}" Height="24" Width="12" Cursor="Hand" Click="UndoDropdownButton_Click" IsEnabled="False">
+                        <Path x:Name="UndoDropdownArrow" Data="M 0,0 L 3,3 L 6,0 Z" Fill="{DynamicResource ToolbarIconDisabledForeground}" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                    </Button>
+                    <Popup x:Name="UndoPopup" IsLightDismissEnabled="True" Placement="BottomEdgeAlignedLeft" PlacementTarget="{Binding ElementName=UndoButton}">
+                        <Border Background="{DynamicResource MenuPopupDefaultBackground}" BorderBrush="{DynamicResource MenuPopupDefaultBorder}" BorderThickness="1" MaxHeight="350">
+                            <StackPanel>
+                                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" MaxHeight="280">
+                                    <ListBox x:Name="UndoListBox" SelectionMode="Multiple"
+                                             Background="Transparent" BorderThickness="0" MinWidth="200"
+                                             Foreground="{DynamicResource MenuPopupDefaultText}">
+                                        <ListBox.ItemContainerTheme>
+                                            <ControlTheme TargetType="ListBoxItem">
+                                                <Setter Property="Padding" Value="8,4"/>
+                                                <Setter Property="Cursor" Value="Hand"/>
+                                                <Setter Property="Background" Value="Transparent"/>
+                                                <Setter Property="Foreground" Value="{DynamicResource MenuPopupDefaultText}"/>
+                                                <Setter Property="Template">
+                                                    <ControlTemplate>
+                                                        <Border x:Name="Bd" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}">
+                                                            <ContentPresenter Name="PART_ContentPresenter"
+                                                                              Content="{TemplateBinding Content}"
+                                                                              ContentTemplate="{TemplateBinding ContentTemplate}"/>
+                                                        </Border>
+                                                    </ControlTemplate>
+                                                </Setter>
+                                                <Style Selector="^:selected">
+                                                    <Setter Property="Foreground" Value="{DynamicResource ComboBoxItem.ItemsviewSelected.Foreground}"/>
+                                                    <Style Selector="^ /template/ Border#Bd">
+                                                        <Setter Property="Background" Value="{DynamicResource ComboBoxItem.ItemsviewSelected.Background}"/>
+                                                    </Style>
+                                                </Style>
+                                            </ControlTheme>
+                                        </ListBox.ItemContainerTheme>
+                                        <ListBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding Description}"/>
+                                            </DataTemplate>
+                                        </ListBox.ItemTemplate>
+                                    </ListBox>
+                                </ScrollViewer>
+                                <!--Footer with action count and Undo All-->
+                                <Border BorderBrush="{DynamicResource MenuPopupDefaultBorder}" BorderThickness="0,1,0,0" Padding="8,6">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock x:Name="UndoCountLabel" Grid.Column="0"
+                                                   Text="Undo 1 Action"
+                                                   Foreground="{DynamicResource MenuPopupDefaultText}"
+                                                   VerticalAlignment="Center"/>
+                                        <TextBlock x:Name="UndoAllText" Grid.Column="1"
+                                                   Text="Undo All"
+                                                   Foreground="{DynamicResource AccentBrush}"
+                                                   Cursor="Hand"
+                                                   VerticalAlignment="Center"
+                                                   TextDecorations="Underline"/>
+                                    </Grid>
+                                </Border>
+                            </StackPanel>
+                        </Border>
+                    </Popup>
+                </StackPanel>
+                <!--Redo Split Button-->
+                <StackPanel Orientation="Horizontal">
+                    <Button x:Name="RedoButton" ToolTip.Tip="Redo (Ctrl+Y)" Theme="{DynamicResource ToolBar.ButtonStyleKey}" Height="24" Width="24" Cursor="Hand" Command="{wpfi:Command Redo}">
+                        <Image x:Name="RedoButtonImage" Source="{DynamicResource RedoIcon}" Width="16" Height="16"/>
+                    </Button>
+                    <Button x:Name="RedoDropdownButton" Theme="{DynamicResource ToolBar.ButtonStyleKey}" Height="24" Width="12" Cursor="Hand" Click="RedoDropdownButton_Click" IsEnabled="False">
+                        <Path x:Name="RedoDropdownArrow" Data="M 0,0 L 3,3 L 6,0 Z" Fill="{DynamicResource ToolbarIconDisabledForeground}" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                    </Button>
+                    <Popup x:Name="RedoPopup" IsLightDismissEnabled="True" Placement="BottomEdgeAlignedLeft" PlacementTarget="{Binding ElementName=RedoButton}">
+                        <Border Background="{DynamicResource MenuPopupDefaultBackground}" BorderBrush="{DynamicResource MenuPopupDefaultBorder}" BorderThickness="1" MaxHeight="350">
+                            <StackPanel>
+                                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" MaxHeight="280">
+                                    <ListBox x:Name="RedoListBox" SelectionMode="Multiple"
+                                             Background="Transparent" BorderThickness="0" MinWidth="200"
+                                             Foreground="{DynamicResource MenuPopupDefaultText}">
+                                        <ListBox.ItemContainerTheme>
+                                            <ControlTheme TargetType="ListBoxItem">
+                                                <Setter Property="Padding" Value="8,4"/>
+                                                <Setter Property="Cursor" Value="Hand"/>
+                                                <Setter Property="Background" Value="Transparent"/>
+                                                <Setter Property="Foreground" Value="{DynamicResource MenuPopupDefaultText}"/>
+                                                <Setter Property="Template">
+                                                    <ControlTemplate>
+                                                        <Border x:Name="Bd" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}">
+                                                            <ContentPresenter Name="PART_ContentPresenter"
+                                                                              Content="{TemplateBinding Content}"
+                                                                              ContentTemplate="{TemplateBinding ContentTemplate}"/>
+                                                        </Border>
+                                                    </ControlTemplate>
+                                                </Setter>
+                                                <Style Selector="^:selected">
+                                                    <Setter Property="Foreground" Value="{DynamicResource ComboBoxItem.ItemsviewSelected.Foreground}"/>
+                                                    <Style Selector="^ /template/ Border#Bd">
+                                                        <Setter Property="Background" Value="{DynamicResource ComboBoxItem.ItemsviewSelected.Background}"/>
+                                                    </Style>
+                                                </Style>
+                                            </ControlTheme>
+                                        </ListBox.ItemContainerTheme>
+                                        <ListBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding Description}"/>
+                                            </DataTemplate>
+                                        </ListBox.ItemTemplate>
+                                    </ListBox>
+                                </ScrollViewer>
+                                <!--Footer with action count and Redo All-->
+                                <Border BorderBrush="{DynamicResource MenuPopupDefaultBorder}" BorderThickness="0,1,0,0" Padding="8,6">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock x:Name="RedoCountLabel" Grid.Column="0"
+                                                   Text="Redo 1 Action"
+                                                   Foreground="{DynamicResource MenuPopupDefaultText}"
+                                                   VerticalAlignment="Center"/>
+                                        <TextBlock x:Name="RedoAllText" Grid.Column="1"
+                                                   Text="Redo All"
+                                                   Foreground="{DynamicResource AccentBrush}"
+                                                   Cursor="Hand"
+                                                   VerticalAlignment="Center"
+                                                   TextDecorations="Underline"/>
+                                    </Grid>
+                                </Border>
+                            </StackPanel>
+                        </Border>
+                    </Popup>
+                </StackPanel>
+            </StackPanel>
+        </StackPanel>
+        <!--AvalonDock-->
+        <Grid x:Name="MainGrid">
+            <xcad:DockingManager x:Name="MainDock" AllowMixedOrientation="True" BorderBrush="Transparent" BorderThickness="0" Margin="2" DragDrop.AllowDrop="True">
+                <xcad:DockingManager.DocumentHeaderTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal">
+                            <Image Source="{Binding IconSource}" Margin="0,0,4,0"/>
+                            <TextBlock Text="{Binding Title}" />
+                        </StackPanel>
+                    </DataTemplate>
+                </xcad:DockingManager.DocumentHeaderTemplate>
+                <xcad:LayoutRoot>
+                    <xcad:LayoutPanel Orientation="Horizontal">
+                        <xcad:LayoutAnchorablePane DockWidth="250">
+                            <xcad:LayoutAnchorable CanDockAsTabbedDocument="False" AutoHideWidth="250" AutoHideHeight="250"/>
+                        </xcad:LayoutAnchorablePane>
+                        <xcad:LayoutPanel Orientation="Vertical">
+                            <xcad:LayoutPanel Orientation="Horizontal">
+                                <xcad:LayoutDocumentPaneGroup Orientation="Horizontal" DockWidth="25*">
+                                    <xcad:LayoutDocumentPane/>
+                                </xcad:LayoutDocumentPaneGroup >
+                            </xcad:LayoutPanel>
+                            <xcad:LayoutAnchorablePane DockHeight="200">
+                                <xcad:LayoutAnchorable CanDockAsTabbedDocument="False" AutoHideWidth="200" AutoHideHeight="200"/>
+                            </xcad:LayoutAnchorablePane>
+                        </xcad:LayoutPanel>
+                        <xcad:LayoutAnchorablePane DockWidth="250">
+                            <xcad:LayoutAnchorable CanDockAsTabbedDocument="False" AutoHideWidth="250" AutoHideHeight="250"/>
+                        </xcad:LayoutAnchorablePane>
+                    </xcad:LayoutPanel>
+                </xcad:LayoutRoot>
+            </xcad:DockingManager>
+        </Grid>
+    </DockPanel>
+</cntrls:MetroWindow>

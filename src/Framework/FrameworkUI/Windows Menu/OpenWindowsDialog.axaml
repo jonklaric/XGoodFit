@@ -1,0 +1,103 @@
+<!--
+    XGoodFit port of upstream's Windows Menu/OpenWindowsDialog.xaml:
+    - The window's Style is its Theme.
+    - The grid is GenericControls' CopyPasteDataGrid as a plain WPF DataGrid (see the message window's
+      notes): the implicit DataGrid theme, and the WPF defaults CopyPasteDataGrid changes set back,
+      with DataGridStyle's row height. Its context menus are suppressed in the code-behind. RowStyle is
+      RowTheme, based on the ported WPF default row; column header styles are HeaderTheme;
+      ElementStyle is DataGridColumnStyles.ElementStyle.
+    - RenderOptions.BitmapScalingMode is BitmapInterpolationMode. The buttons' content alignment is
+      Avalonia's ContentControl alignment.
+-->
+<cntrls:MetroWindow x:Class="FrameworkUI.OpenWindowsDialog"
+        xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:cntrls="using:GenericControls"
+        mc:Ignorable="d"
+        Title="Windows"
+        ResizeMode="NoResize"
+        ShowInTaskbar="True"
+        WindowStartupLocation="CenterScreen"
+        SizeToContent="WidthAndHeight"
+        Theme="{DynamicResource MetroWindowStyle}"
+        Background="{DynamicResource EnvironmentWindowBackground}"
+        Foreground="{DynamicResource EnvironmentWindowText}"
+        DataContext="{Binding RelativeSource={RelativeSource Self}}">
+    <Grid x:Name="MainGrid">
+
+        <!--Add Rows-->
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!--Add Columns-->
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!--Data Grid-->
+        <cntrls:CopyPasteDataGrid x:Name="MyDataGrid" Grid.Column="0" Margin="6" Height="250" Width="400"
+                  Theme="{DynamicResource DataGridStyle}"
+                  AutoGenerateColumns="False"
+                  IsReadOnly="True"
+                  Background="{DynamicResource DataGrid.Static.Background}"
+                  BorderBrush="{DynamicResource SeparatorBorder}"
+                  BorderThickness="1"
+                  GridLinesVisibility="None"
+                  HeadersVisibility="Column"
+                  SelectionChanged="MyDataGrid_SelectionChanged"
+                  SelectionUnit="FullRow" CanUserResizeColumns="True" CanUserSortColumns="True" CanUserReorderColumns="True"
+                  RowHeight="22" ShowSortContextMenu="False">
+            <cntrls:CopyPasteDataGrid.RowTheme>
+                <ControlTheme TargetType="DataGridRow" BasedOn="{StaticResource DataGridRowDefaultTheme}">
+                    <Setter Property="Background" Value="Transparent"/>
+                    <Setter Property="Foreground" Value="{DynamicResource EnvironmentWindowText}"/>
+                </ControlTheme>
+            </cntrls:CopyPasteDataGrid.RowTheme>
+            <cntrls:CopyPasteDataGrid.Columns>
+                <DataGridTemplateColumn HeaderTheme="{DynamicResource Center_ColumnHeaderStyle_Modal}" Width="SizeToCells" CanUserSort="False" CanUserReorder="False" CanUserResize="False">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Image Source="{Binding ImageSource}" Width="16" Height="16" RenderOptions.EdgeMode="Aliased" RenderOptions.BitmapInterpolationMode="HighQuality" VerticalAlignment="Center"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTextColumn HeaderTheme="{DynamicResource Left_ColumnHeaderStyle_Modal}" MinWidth="100" MaxWidth="200" Header="File Type" Binding="{Binding Element.ParentCollection.Name}" CanUserSort="True" CanUserReorder="False" >
+                    <cntrls:DataGridColumnStyles.ElementStyle>
+                        <ControlTheme TargetType="TextBlock">
+                            <Setter Property="HorizontalAlignment" Value="Left" />
+                            <Setter Property="VerticalAlignment" Value="Center" />
+                            <Setter Property="TextAlignment" Value="Left" />
+                        </ControlTheme>
+                    </cntrls:DataGridColumnStyles.ElementStyle>
+                </DataGridTextColumn>
+                <DataGridTextColumn HeaderTheme="{DynamicResource Left_ColumnHeaderStyle_Modal}" MinWidth="100" Width="*" Header="Name" Binding="{Binding Element.DisplayName}" CanUserSort="True" CanUserReorder="False">
+                    <cntrls:DataGridColumnStyles.ElementStyle>
+                        <ControlTheme TargetType="TextBlock">
+                            <Setter Property="HorizontalAlignment" Value="Left" />
+                            <Setter Property="VerticalAlignment" Value="Center" />
+                            <Setter Property="TextAlignment" Value="Left" />
+                        </ControlTheme>
+                    </cntrls:DataGridColumnStyles.ElementStyle>
+                </DataGridTextColumn>
+            </cntrls:CopyPasteDataGrid.Columns>
+        </cntrls:CopyPasteDataGrid>
+
+        <!--Document Buttons-->
+        <Grid x:Name="DocuemntButtonGrid" Grid.Row="0" Grid.Column="1">
+            <!--Add Rows-->
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <Button Name="ActivateButton" Height="24" Width="110" IsEnabled="False" Click="ActivateButton_Click" Content="Activate" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Grid.Row="0" Margin="0,6,6,6" Cursor="Hand"/>
+            <Button Name="SaveButton"  Height="24" Width="110" IsEnabled="False"  Click="SaveButton_Click" Content="Save" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Grid.Row="1" Margin="0,0,6,6" Cursor="Hand"/>
+            <Button Name="CloseWindowsButton"  Height="24" Width="110" IsEnabled="False" Click="CloseWindowsButton_Click" Content="Close Window(s)" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Grid.Row="2" Margin="0,0,6,6" Cursor="Hand"/>
+        </Grid>
+    </Grid>
+</cntrls:MetroWindow>

@@ -1,0 +1,162 @@
+<!--
+    XGoodFit port of upstream's Message Window/Views/MessageWindowControl.xaml:
+    - The buttons' and separators' Style bindings bind Theme to the window's theme properties.
+    - The grid is GenericControls' CopyPasteDataGrid on ProDataGrid (porting guide §4), as a plain WPF
+      DataGrid: it takes the implicit DataGrid theme, DataGridStyle, as upstream's grid took the implicit
+      DataGrid style, and the WPF defaults that CopyPasteDataGrid changes are set back (column
+      resizing, whole-row selection, no sort menu); its context menus are suppressed in the
+      code-behind. RowStyle and CellStyle are RowTheme and CellTheme, based on the ported WPF defaults
+      (DataGridRowDefaultTheme, DataGridCellDefaultTheme) that WPF applied under them. The cell's
+      content presenter is PART_ContentPresenter, as ProDataGrid's cells need.
+    - Avalonia's grid columns can't be named: the code-behind reaches them by index.
+    - The time column's ElementStyle is GenericControls' DataGridColumnStyles.ElementStyle.
+    - Not ported: EnableRowVirtualization="False" (ProDataGrid always virtualizes rows).
+-->
+<UserControl x:Class="FrameworkUI.MessageWindow.MessageWindowControl" x:Name="MWControl"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="using:FrameworkUI.MessageWindow"
+             xmlns:converters="using:FrameworkUI.MessageWindow.Converters"
+             xmlns:cntrls="using:GenericControls"
+             mc:Ignorable="d"
+             d:DesignHeight="450" d:DesignWidth="800">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceInclude Source="avares://FrameworkUI/Icons/IconDictionary.axaml"/>
+            </ResourceDictionary.MergedDictionaries>
+            <converters:MessageTypeToImageConverter x:Key="MessageTypeToImageConverter"
+                                                      ErrorImageSource="{StaticResource ErrorImage}"
+                                                      WarningImageSource="{StaticResource WarningImage}"
+                                                      MessageImageSource="{StaticResource InformationImage}"
+                                                      EventImageSource="{StaticResource EventImage}"/>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <DockPanel x:Name="MyDockPanel" Background="{Binding ElementName=MWControl, Path=StackPanelBackgroundColor}">
+        <!--Tool Bar Stack Panel-->
+        <StackPanel x:Name="MyStackPanel" Margin="2" DockPanel.Dock="Top" Orientation="Horizontal" Background="{Binding ElementName=MWControl, Path=StackPanelBackgroundColor}">
+            <Button x:Name="ErrorsButton" ToolTip.Tip="Errors" Cursor="Hand" Click="ErrorsButton_Click" Theme="{Binding ElementName=MWControl, Path=StackPanelPressedButtonStyle}">
+                <StackPanel Orientation="Horizontal" Margin="0,0,4,0">
+                    <Image Margin="1" Source="{StaticResource ErrorImage}" Stretch="UniformToFill" Width="16" Height="16"/>
+                    <TextBlock x:Name="ErrorsButtonText" VerticalAlignment="Center" Text="Errors"/>
+                </StackPanel>
+            </Button>
+            <Separator Theme="{Binding ElementName=MWControl, Path=StackPanelSeparatorStyle}"/>
+            <Button x:Name="WarningsButton" ToolTip.Tip="Warnings" Cursor="Hand" Click="WarningsButton_Click" Theme="{Binding ElementName=MWControl, Path=StackPanelPressedButtonStyle}">
+                <StackPanel Orientation="Horizontal" Margin="0,0,4,0">
+                    <Image Margin="1" Source="{StaticResource WarningImage}" Stretch="UniformToFill" Width="16" Height="16"/>
+                    <TextBlock x:Name="WarningsButtonText" VerticalAlignment="Center" Text="Warnings"/>
+                </StackPanel>
+            </Button>
+            <Separator Theme="{Binding ElementName=MWControl, Path=StackPanelSeparatorStyle}"/>
+            <Button x:Name="MessagesButton" ToolTip.Tip="Messages" Cursor="Hand" Click="MessagesButton_Click" Theme="{Binding ElementName=MWControl, Path=StackPanelButtonStyle}">
+                <StackPanel Orientation="Horizontal" Margin="0,0,4,0">
+                    <Image Margin="1" Source="{StaticResource InformationImage}" Stretch="UniformToFill" Width="16" Height="16"/>
+                    <TextBlock x:Name="MessageButtonText" VerticalAlignment="Center" Text="Messages"/>
+                </StackPanel>
+            </Button>
+            <Separator Theme="{Binding ElementName=MWControl, Path=StackPanelSeparatorStyle}"/>
+            <Button x:Name="EventsButton" ToolTip.Tip="Events" Cursor="Hand" Click="EventsButton_Click" Theme="{Binding ElementName=MWControl, Path=StackPanelButtonStyle}">
+                <StackPanel Orientation="Horizontal" Margin="0,0,4,0">
+                    <Image Margin="1" Source="{StaticResource EventImage}" Stretch="UniformToFill" Width="16" Height="16"/>
+                    <TextBlock x:Name="EventsButtonText" VerticalAlignment="Center" Text="Events"/>
+                </StackPanel>
+            </Button>
+            <Separator Theme="{Binding ElementName=MWControl, Path=StackPanelSeparatorStyle}"/>
+            <Button x:Name="ClearFiltersButton" ToolTip.Tip="Clear All Filters" Height="24" Width="24" Cursor="Hand" IsEnabled="False" Click="ClearFiltersButton_Click" Theme="{Binding ElementName=MWControl, Path=StackPanelButtonStyle}">
+                <Image Margin="3" Source="{StaticResource ClearFilterImage}" Stretch="UniformToFill"/>
+            </Button>
+            <Separator Theme="{Binding ElementName=MWControl, Path=StackPanelSeparatorStyle}"/>
+            <Button x:Name="ExportToTextFileButton" ToolTip.Tip="Export to Text File" Theme="{Binding ElementName=MWControl, Path=StackPanelButtonStyle}"
+                    Height="24" Width="24" Cursor="Hand" Click="ExportToTextFileButton_Click" >
+                <Image Margin="3" Source="{StaticResource ExportFileImage}" Stretch="UniformToFill"/>
+            </Button>
+        </StackPanel>
+        <!--Data Grid-->
+        <cntrls:CopyPasteDataGrid x:Name="MyDataGrid" Theme="{DynamicResource DataGridStyle}" AutoGenerateColumns="False" IsReadOnly="True" Background="{Binding ElementName=MWControl, Path=BackgroundColor}" BorderThickness="0"
+                  GridLinesVisibility="None" HeadersVisibility="Column"  CanUserSortColumns="False" CanUserReorderColumns="False"
+                  RowHeight="NaN"
+                  HorizontalScrollBarVisibility="Disabled"
+                  CanUserResizeColumns="True" SelectionUnit="FullRow" ShowSortContextMenu="False">
+            <cntrls:CopyPasteDataGrid.RowTheme>
+                <ControlTheme TargetType="DataGridRow" BasedOn="{StaticResource DataGridRowDefaultTheme}">
+                    <Setter Property="MinHeight" Value="22"/>
+                    <Setter Property="Background" Value="Transparent"/>
+                    <Setter Property="Foreground" Value="{Binding ForegroundColor}"/>
+                </ControlTheme>
+            </cntrls:CopyPasteDataGrid.RowTheme>
+            <cntrls:CopyPasteDataGrid.CellTheme>
+                <ControlTheme TargetType="DataGridCell" BasedOn="{StaticResource DataGridCellDefaultTheme}">
+                    <Setter Property="Padding" Value="0"/>
+                    <Setter Property="Template">
+                        <ControlTemplate>
+                            <Border Padding="{TemplateBinding Padding}" Background="{TemplateBinding Background}">
+                                <ContentPresenter Name="PART_ContentPresenter"
+                                                  Content="{TemplateBinding Content}"
+                                                  ContentTemplate="{TemplateBinding ContentTemplate}"
+                                                  VerticalAlignment="Center"/>
+                            </Border>
+                        </ControlTemplate>
+                    </Setter>
+                </ControlTheme>
+            </cntrls:CopyPasteDataGrid.CellTheme>
+            <cntrls:CopyPasteDataGrid.Columns>
+                <!--Icon-->
+                <DataGridTemplateColumn Width="SizeToCells" CanUserSort="False" CanUserReorder="False" CanUserResize="False">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Image Source="{Binding Message.Type, Converter={StaticResource MessageTypeToImageConverter}}" Margin="2"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <!--Time Stamp-->
+                <DataGridTextColumn Width="60" MinWidth="60" Header=" Time " Binding="{Binding Message.TimeStamp}" CanUserSort="False" CanUserReorder="False" CanUserResize="False">
+                    <cntrls:DataGridColumnStyles.ElementStyle>
+                        <ControlTheme TargetType="TextBlock">
+                            <Setter Property="HorizontalAlignment" Value="Center" />
+                            <Setter Property="VerticalAlignment" Value="Center" />
+                        </ControlTheme>
+                    </cntrls:DataGridColumnStyles.ElementStyle>
+                </DataGridTextColumn>
+                <!--Description-->
+                <DataGridTemplateColumn Width="0.4*" Header=" Description " >
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Margin="2" Text="{Binding Message.Description}" Foreground="{Binding ForegroundColor}" TextWrapping="Wrap" TextAlignment="Left" >
+                                <ToolTip.Tip>
+                                    <TextBlock Text="Double-click the message to open the source file and resolve any issues." TextWrapping="Wrap"/>
+                                </ToolTip.Tip>
+                            </TextBlock>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <!--File Type-->
+                <DataGridTemplateColumn Width="0.1*" MinWidth="60" Header=" Source " CanUserSort="False" CanUserReorder="False">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Margin="2" Text="{Binding Message.SourceCollectionName}" Foreground="{Binding ForegroundColor}" TextAlignment="Left" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <!--Name-->
+                <DataGridTemplateColumn Width="0.1*" MinWidth="60" Header=" Name " CanUserSort="False" CanUserReorder="False">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Margin="2" Text="{Binding Message.SourceName}" Foreground="{Binding ForegroundColor}" TextAlignment="Left" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <!--Parameter-->
+                <DataGridTemplateColumn Width="0.1*" MinWidth="60" Header=" Parameter " CanUserSort="False" CanUserReorder="False">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Margin="2" Text="{Binding Message.ParameterName}" Foreground="{Binding ForegroundColor}" TextAlignment="Left" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+            </cntrls:CopyPasteDataGrid.Columns>
+        </cntrls:CopyPasteDataGrid>
+    </DockPanel>
+</UserControl>

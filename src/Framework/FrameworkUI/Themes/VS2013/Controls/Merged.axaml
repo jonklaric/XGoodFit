@@ -1,8 +1,8 @@
 <!--
     XGoodFit port of upstream's Themes/VS2013/Controls/Merged.xaml.
-    - MainWindowStyle.xaml isn't merged: nothing uses its styles (the main window takes Themes'
-      MetroWindowStyle), so it isn't ported.
-    - MessageWindow.xaml and ProjectExplorer.xaml are merged here as they're ported.
+    - MainWindowStyle.xaml isn't merged or ported: all its styles are keyed, and only that file uses
+      their keys (the main window takes Themes' MetroWindowStyle, whose button styles have keys of their
+      own), so none of them applies to the shell. The main window's resources don't merge it either.
 -->
 <ResourceDictionary xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -18,6 +18,10 @@
 
         <!-- Icon resources - must be loaded before styles that reference them -->
         <ResourceInclude Source="avares://FrameworkUI/Icons/IconDictionary.axaml"/>
+
+        <!-- FrameworkUI-specific styles -->
+        <ResourceInclude Source="avares://FrameworkUI/Themes/VS2013/Controls/MessageWindow.axaml"/>
+        <ResourceInclude Source="avares://FrameworkUI/Themes/VS2013/Controls/ProjectExplorer.axaml"/>
 
     </ResourceDictionary.MergedDictionaries>
 
