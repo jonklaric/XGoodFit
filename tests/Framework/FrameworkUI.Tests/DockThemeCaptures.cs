@@ -18,7 +18,11 @@ namespace FrameworkUI.Tests;
 
 /// <summary>
 /// Renders the shell's docking chrome in every theme to <c>artifacts/screenshots</c>, to compare with
-/// upstream's gallery screenshots (<c>upstream/WPF-Framework/docs/assets/gallery/frameworkui-shell-*.png</c>).
+/// upstream's gallery screenshots (<c>upstream/WPF-Framework/docs/assets/gallery/frameworkui-shell-*.png</c>):
+/// <c>dock-shell-*.png</c> has the screenshots' layout and pane sizes with the Project Explorer active,
+/// <c>dock-shell-*-document-active.png</c> the same with the document active, as the Dark and Blue
+/// screenshots have it. The other files show states the screenshots don't. Run them alone with
+/// <c>FrameworkUI.Tests --filter "TestCategory=Capture"</c>.
 /// </summary>
 [TestClass]
 public sealed class DockThemeCaptures
@@ -94,6 +98,7 @@ public sealed class DockThemeCaptures
         """;
 
     [TestMethod]
+    [TestCategory("Capture")]
     public void CaptureShell_InEveryTheme()
     {
         HeadlessSession.Run(() =>
@@ -119,6 +124,7 @@ public sealed class DockThemeCaptures
     }
 
     [TestMethod]
+    [TestCategory("Capture")]
     public void CaptureStates_InEveryTheme()
     {
         HeadlessSession.Run(() =>

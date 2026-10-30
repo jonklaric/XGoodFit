@@ -131,8 +131,8 @@
         Notes:
         - The template puts the grip in a column of its own before the buttons, where it would only be
           as wide as its minimum, while upstream's fills the space between the title and the buttons. So
-          the grip moves into the title's column, under the title, whose panel takes the caption's colour
-          to hide it.
+          the grip moves into the title's column (a style with a condition, since the template sets the
+          column itself), under the title, whose panel takes the caption's colour to hide it.
         - Upstream's caption row is 15 pixels high, the buttons' height, with the title a pixel higher
           than a 16-pixel text box would put it: DockToolChromeTitleMargin gives the title that offset.
         - The caption draws no background behind the pane's content, so that the tool tabs below the
