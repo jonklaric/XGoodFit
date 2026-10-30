@@ -1,0 +1,120 @@
+<!--
+    The property editors, laid out as upstream's GenericControls.Demo "Property Editors" tab (its
+    generic-property-editors screenshot, at its width, without the live preview panel). The Point3D and calendar
+    week rule editors aren't ported.
+-->
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:cntrls="using:GenericControls"
+             x:Class="ThemeGallery.GenericPropertyEditorsPage">
+    <UserControl.Styles>
+        <StyleInclude Source="avares://ThemeGallery/GenericPageStyles.axaml"/>
+    </UserControl.Styles>
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="15">
+        <DockPanel Width="698" HorizontalAlignment="Left">
+            <TextBlock DockPanel.Dock="Top" Text="Property Editor Controls" Classes="section"/>
+            <TextBlock DockPanel.Dock="Top" Classes="description"
+                       Text="These controls are designed for building property panels with consistent layout and data binding."/>
+
+            <cntrls:SeparatorWithHeader DockPanel.Dock="Top" Header="Text Properties" Margin="0,5,0,10"/>
+
+            <cntrls:TextPropertyControl DockPanel.Dock="Top" Margin="0,2" PropertyWidth="500"
+                                        Title="Text Property"
+                                        Text="{Binding TextProperty, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+
+            <cntrls:NameTextPropertyControl DockPanel.Dock="Top" Margin="0,2" PropertyWidth="500"
+                                            Title="Name Property" ShowLeaderLine="True"
+                                            Text="{Binding NameProperty, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+
+            <cntrls:ResizeableTextPropertyControl DockPanel.Dock="Top" Margin="0,2" PropertyWidth="500"
+                                                  Title="Description" ShowLeaderLine="True"
+                                                  Text="{Binding DescriptionProperty, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+
+            <cntrls:SeparatorWithHeader DockPanel.Dock="Top" Header="Numeric Properties" Margin="0,15,0,10"/>
+
+            <cntrls:NumericPropertyControl DockPanel.Dock="Top" Margin="0,2" PropertyWidth="500"
+                                           Title="Numeric Value" ShowLeaderLine="True"
+                                           MinValue="-100" MaxValue="100" CanHaveNegative="True"
+                                           Number="{Binding NumericProperty, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+
+            <cntrls:NumericSliderPropertyControl DockPanel.Dock="Top" Margin="0,2" PropertyWidth="500"
+                                                 Title="Opacity" ShowLeaderLine="True"
+                                                 MinValue="0" MaxValue="1" Increment="0.05"
+                                                 Number="{Binding OpacityProperty, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+
+            <cntrls:NumericPropertySelectorControl DockPanel.Dock="Top" Margin="0,2" PropertyWidth="500"
+                                                   Title="Line Width" ShowLeaderLine="True"
+                                                   NumericOptions="{Binding LineWidthOptions}"
+                                                   SelectedNumber="{Binding LineWidthProperty, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+
+            <cntrls:NumericAutoPropertyControl DockPanel.Dock="Top" Margin="0,2" PropertyWidth="500"
+                                               Title="Auto Value" ShowLeaderLine="True"
+                                               DefaultNumber="NaN" CanHaveNegative="True"
+                                               Number="{Binding NumericAutoProperty, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+
+            <cntrls:SeparatorWithHeader DockPanel.Dock="Top" Header="Selection Properties" Margin="0,15,0,10"/>
+
+            <cntrls:BooleanPropertyControl DockPanel.Dock="Top" Margin="0,2"
+                                           Title="Enable Feature" ShowLeaderLine="True"
+                                           IsSelected="{Binding BooleanProperty, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+
+            <cntrls:FontSelectorControl DockPanel.Dock="Top" Margin="0,2" PropertyWidth="500"
+                                        Title="Font Family" ShowLeaderLine="True"
+                                        FontFamilyString="{Binding FontProperty, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+
+            <cntrls:FontWeightSelectorControl DockPanel.Dock="Top" Margin="0,2" PropertyWidth="500"
+                                              Title="Font Weight" ShowLeaderLine="True"
+                                              SelectedFontWeight="{Binding FontWeightProperty, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+
+            <cntrls:ColorPropertyControl DockPanel.Dock="Top" Margin="0,2"
+                                         Title="Color" ShowLeaderLine="True"
+                                         SelectedColor="{Binding ColorProperty, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+
+            <cntrls:LineStyleSelectorControl DockPanel.Dock="Top" Margin="0,2" PropertyWidth="500"
+                                             Title="Line Style" ShowLeaderLine="True"
+                                             SelectedDashArray="{Binding LineStyleProperty, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+
+            <cntrls:LineWidthSelectorControl DockPanel.Dock="Top" Margin="0,2" PropertyWidth="500"
+                                             Title="Stroke Width" ShowLeaderLine="True"
+                                             WidthOptions="{Binding LineWidthOptions}"
+                                             SelectedWidth="{Binding LineWidthProperty, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+
+            <cntrls:SeparatorWithHeader DockPanel.Dock="Top" Header="Alignment Properties" Margin="0,15,0,10"/>
+
+            <cntrls:HorizontalAlignmentControl DockPanel.Dock="Top" Margin="0,2" PropertyWidth="500"
+                                               Title="Horizontal Alignment" ShowLeaderLine="True"
+                                               Alignment="{Binding HorizontalAlignmentProperty, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+
+            <cntrls:VerticalAlignmentControl DockPanel.Dock="Top" Margin="0,2" PropertyWidth="500"
+                                             Title="Vertical Alignment" ShowLeaderLine="True"
+                                             Alignment="{Binding VerticalAlignmentProperty, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+
+            <cntrls:SeparatorWithHeader DockPanel.Dock="Top" Header="Geometry Properties" Margin="0,15,0,10"/>
+
+            <cntrls:PointPropertyControl DockPanel.Dock="Top" Margin="0,2"
+                                         Title="Point (X, Y)"
+                                         DataPoint="{Binding PointProperty, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+
+            <cntrls:SeparatorWithHeader DockPanel.Dock="Top" Header="Date/Time Properties" Margin="0,15,0,10"/>
+
+            <cntrls:DateTimePropertyControl DockPanel.Dock="Top" Margin="0,2" PropertyWidth="500"
+                                            Title="Date/Time" ShowLeaderLine="True"
+                                            SelectedDateTime="{Binding DateTimeProperty, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+
+            <cntrls:SeparatorWithHeader DockPanel.Dock="Top" Header="Custom Content" Margin="0,15,0,10"/>
+
+            <cntrls:ContentPropertyControl DockPanel.Dock="Top" Margin="0,2" PropertyWidth="500"
+                                           Title="Custom Slider" ShowLeaderLine="True">
+                <cntrls:ContentPropertyControl.InnerContent>
+                    <Slider Minimum="0" Maximum="100" Value="50"/>
+                </cntrls:ContentPropertyControl.InnerContent>
+            </cntrls:ContentPropertyControl>
+
+            <cntrls:FileSelectorControl DockPanel.Dock="Top" Margin="0,2" PropertyWidth="500"
+                                        Title="File" ShowLeaderLine="True"
+                                        Text="{Binding FilePathProperty, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+
+            <Border DockPanel.Dock="Top" Height="20"/>
+        </DockPanel>
+    </ScrollViewer>
+</UserControl>

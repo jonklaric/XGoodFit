@@ -1,6 +1,7 @@
 <gc:MetroWindow xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:gc="using:GenericControls"
+        xmlns:local="using:ThemeGallery"
         x:Class="ThemeGallery.GalleryWindow"
         Title="XGoodFit theme gallery"
         Width="1280" Height="960"
@@ -268,6 +269,11 @@
                     </WrapPanel>
                 </ScrollViewer>
             </TabItem>
+
+            <!-- GenericControls, laid out as upstream's GenericControls.Demo shows them. -->
+            <TabItem x:Name="InputsPage" Header="Generic inputs"><local:GenericInputPage/></TabItem>
+            <TabItem x:Name="DateTimeColorPage" Header="Date, time and colour"><local:GenericDateTimeColorPage x:Name="DateTimeColor"/></TabItem>
+            <TabItem x:Name="PropertyEditorsPage" Header="Property editors"><local:GenericPropertyEditorsPage/></TabItem>
 
             <!-- Every palette key, as a live swatch. -->
             <TabItem x:Name="PalettePage" Header="Palette">
