@@ -5,6 +5,7 @@
     <Project Path="src/Framework/FrameworkInterfaces/FrameworkInterfaces.csproj" />
     <Project Path="src/Framework/FrameworkUI/FrameworkUI.csproj" />
     <Project Path="src/Framework/GenericControls/GenericControls.csproj" />
+    <Project Path="src/Framework/NumericControls/NumericControls.csproj" />
     <Project Path="src/Framework/OxyPlot/OxyPlot.Wpf/OxyPlot.Wpf.csproj" />
     <Project Path="src/Framework/OxyPlot/OxyPlot.Wpf.Shared/OxyPlot.Wpf.Shared.csproj" />
     <Project Path="src/Framework/OxyPlotControls/OxyPlotControls.csproj" />
@@ -17,6 +18,7 @@
     <Project Path="tests/Framework/ExpressionParserControls.Tests/ExpressionParserControls.Tests.csproj" />
     <Project Path="tests/Framework/FrameworkUI.Tests/FrameworkUI.Tests.csproj" />
     <Project Path="tests/Framework/GenericControls.Tests/GenericControls.Tests.csproj" />
+    <Project Path="tests/Framework/NumericControls.Tests/NumericControls.Tests.csproj" />
     <Project Path="tests/Framework/OxyPlot.Wpf.Tests/OxyPlot.Wpf.Tests.csproj" />
     <Project Path="tests/Framework/OxyPlotControls.Tests/OxyPlotControls.Tests.csproj" />
     <Project Path="tests/Framework/Themes.Tests/Themes.Tests.csproj" />

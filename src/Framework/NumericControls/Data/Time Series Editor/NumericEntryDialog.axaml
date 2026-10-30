@@ -1,0 +1,63 @@
+<!--
+    XGoodFit port of upstream's Data/Time Series Editor/NumericEntryDialog.xaml: the window's Style is its
+    Theme, and ContentRendered is Opened (in the code-behind). Avalonia has no FocusManager.FocusedElement:
+    the value box takes the focus when the window opens, as Window_ContentRendered selects its text.
+-->
+<cntrls:MetroDialogWindow x:Class="NumericControls.NumericEntryDialog"
+        xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="using:NumericControls"
+        xmlns:cntrls="using:GenericControls"
+        mc:Ignorable="d"
+        Title="Number Dialog"
+        Width="210"
+        ShowInTaskbar="True"
+        WindowStartupLocation="CenterScreen"
+        SizeToContent="Height"
+        Theme="{DynamicResource MetroDialogStyle}">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Label for the numeric input -->
+        <TextBlock Margin="6,6,0,6"
+                   Name="NameLabel"
+                   Text="Name"
+                   TextAlignment="Right"
+                   HorizontalAlignment="Stretch"
+                   VerticalAlignment="Center"
+                   Foreground="{DynamicResource EnvironmentWindowText}" />
+
+        <!-- Numeric input field -->
+        <cntrls:NumericTextBox2 x:Name="ValueTextBox"
+                                DockPanel.Dock="Top"
+                                Width="60"
+                                Height="24"
+                                Grid.Column="1"
+                                Margin="4"
+                                HorizontalAlignment="Right"
+                                ToolTip.Tip="Operand for the math function."
+                                CanHaveNegative="True"/>
+
+        <!-- Apply button to accept the value -->
+        <Button Name="OKButton"
+                IsDefault="True"
+                Click="OKButton_Click"
+                Content="Apply"
+                Margin="2,6,6,6"
+                Cursor="Hand"
+                Grid.Row="0"
+                Grid.Column="2"
+                Height="24"
+                Width="75"
+                HorizontalAlignment="Right"/>
+    </Grid>
+</cntrls:MetroDialogWindow>

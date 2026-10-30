@@ -1,0 +1,68 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Avalonia port of upstream/WPF-Framework/src/NumericControls: editors for probability ordinates, time
+    series and uncertain ordered data, and the univariate distribution selector. Nearly every file is WPF
+    code, so the project opts in to upstream files (Directory.Build.targets): only its ported copies and
+    the upstream files listed in UpstreamCompileInclude compile.
+
+    Ported, as RMC-BestFit uses them (decision D10): ProbabilityOrdinatesControl, TimeSeriesTable (with
+    MathEditorControl and NumericEntryDialog), UncertainOrderedTableEditor and
+    DistributionSelectorControl, the row items and types they use, the icon dictionary and the theme.
+
+    Not ported, as nothing BestFit uses needs them:
+    - OrderedDataSelectorControl, OrderedDataTableEditor and OrdinateRowItem (BestFit's ordinate grids
+      have their own RMC_BestFit.OrdinateRowItem).
+    - UncertainOrderedDataSelectorControl, UncertainOrderedDataTableEditor, UncertainTableEditor and
+      DistributionDataItem.
+    - Selector, DistributionSelectorPopup, DistributionWithSelectorControl and the data grid popups
+      (UnivariateXPControl, XYDataGridControl, XYZDataGridControl, UnivariateDistributionValidatingRow):
+      BestFit shows DistributionSelectorControl in popups of its own.
+    - BivariateEmpiricalControl and BivariateEmpirical, BinDefinitionControl and
+      StratificationOptionsRowItem.
+    - Properties/Resources.Designer.cs and its .resx: an empty resource class that nothing uses.
+    OrderedDataSelectorControl, UncertainOrderedDataSelectorControl and BivariateEmpiricalControl also
+    embed OxyPlotControls' toolbar, and the first two its properties control.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>NumericControls</RootNamespace>
+    <AssemblyName>NumericControls</AssemblyName>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <UpstreamProjectDir>$(UpstreamFrameworkSrc)NumericControls/</UpstreamProjectDir>
+    <UpstreamCompileMode>OptIn</UpstreamCompileMode>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="NumericControls.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Upstream files that compile unchanged. -->
+    <UpstreamCompileInclude Include="Data/Probability Ordinates/ProbabilityOrdinateRowItem.cs" />
+    <UpstreamCompileInclude Include="Data/Time Series Editor/TimeSeriesRowItem.cs" />
+    <UpstreamCompileInclude Include="Data/Uncertain Curve Editor/DistributionRowItem.cs" />
+    <UpstreamCompileInclude Include="Distributions/Univariate/Distribution Selector/Parameter.cs" />
+    <UpstreamCompileInclude Include="Distributions/Univariate/Distribution Selector/SummaryStatistic.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" />
+    <PackageReference Include="ProDataGrid" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- RMC.Numerics from source, the project RMC-BestFit builds against (Directory.Build.rsp). -->
+    <ProjectReference Include="$(UpstreamRoot)Numerics/Numerics/Numerics.csproj" />
+    <ProjectReference Include="$(UpstreamFrameworkSrc)OxyPlot/OxyPlot/OxyPlot.csproj" />
+    <ProjectReference Include="../GenericControls/GenericControls.csproj" />
+    <ProjectReference Include="../OxyPlot/OxyPlot.Wpf/OxyPlot.Wpf.csproj" />
+    <ProjectReference Include="../OxyPlot/OxyPlot.Wpf.Shared/OxyPlot.Wpf.Shared.csproj" />
+    <ProjectReference Include="../OxyPlotControls/OxyPlotControls.csproj" />
+    <ProjectReference Include="../Themes/Themes.csproj" />
+    <ProjectReference Include="../WpfCompat/WpfCompat.csproj" />
+  </ItemGroup>
+
+</Project>
