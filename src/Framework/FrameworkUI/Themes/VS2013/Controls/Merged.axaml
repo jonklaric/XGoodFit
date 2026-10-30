@@ -1,0 +1,24 @@
+<!--
+    XGoodFit port of upstream's Themes/VS2013/Controls/Merged.xaml.
+    - MainWindowStyle.xaml isn't merged: nothing uses its styles (the main window takes Themes'
+      MetroWindowStyle), so it isn't ported.
+    - MessageWindow.xaml and ProjectExplorer.xaml are merged here as they're ported.
+-->
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:FrameworkUI">
+
+    <!--
+    FrameworkUI-specific control styles.
+    Common control styles (Button, CheckBox, ComboBox, etc.) are provided by the Themes library.
+    This file only includes styles that are unique to FrameworkUI.
+    -->
+
+    <ResourceDictionary.MergedDictionaries>
+
+        <!-- Icon resources - must be loaded before styles that reference them -->
+        <ResourceInclude Source="avares://FrameworkUI/Icons/IconDictionary.axaml"/>
+
+    </ResourceDictionary.MergedDictionaries>
+
+</ResourceDictionary>

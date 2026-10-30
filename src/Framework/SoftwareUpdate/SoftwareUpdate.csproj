@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    upstream/WPF-Framework/src/SoftwareUpdate for every platform: its update service, version and
+    release types are plain .NET, so every upstream file compiles unchanged. FrameworkUI's main window
+    uses its IUpdateService. Installing updates through Velopack (decision D7) comes with packaging.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>SoftwareUpdate</RootNamespace>
+    <AssemblyName>SoftwareUpdate</AssemblyName>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <UpstreamProjectDir>$(UpstreamFrameworkSrc)SoftwareUpdate/</UpstreamProjectDir>
+  </PropertyGroup>
+
+</Project>

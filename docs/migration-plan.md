@@ -245,7 +245,7 @@ The portable upstream projects compile **directly from `upstream/` via `ProjectR
 | Need | Package | Version | Notes |
 |---|---|---|---|
 | UI framework | `Avalonia`, `Avalonia.Desktop`, `Avalonia.Themes.Simple` | 12.1.4 | Base templates for anything we don't restyle |
-| Docking | `Dock.Avalonia` (wieslawsoltes) | 12.1.0.x | Tabs, tool panes, auto-hide, floating, layout save/restore; ships an AvalonDock-style adapter (partial) |
+| Docking | `Dock.Avalonia.AvalonDock` (wieslawsoltes) | 12.1.0.13 | AvalonDock's API (namespace `AvalonDock`) and layout XML over Dock's controls: tabs, tool panes, auto-hide, floating, drag-and-drop docking |
 | Data grid | `ProDataGrid` (wieslawsoltes) | 12.1.0.x | Cell, `CellOrRowHeader` … selection; `SelectedCells`; `CanUserAddRows`; TSV copy **and paste** |
 | Charts | OxyPlot.Avalonia (vendored source) | 2.2.0 | Declarative `Plot` with Avalonia-element series and axes; built against the fork's core |
 | Code editor | `Avalonia.AvaloniaEdit` | 12.0.0 | Expression editor with syntax colouring |
@@ -267,7 +267,7 @@ Rejected or avoided:
 | WPF (today) | Avalonia (port) |
 |---|---|
 | `MetroWindow` / `MetroDialogWindow` (custom chrome) | `Window` subclass. Windows/macOS: extended client area + drawn caption buttons. Linux X11: native decorations (X11 ignores client-area extension) |
-| AvalonDock + VS2013 theme, `XmlLayoutSerializer` | Dock.Avalonia + custom VS2013 Light/Dark/Blue dock theme; layout in Dock's serializer (user setting only; resets to default on first run) |
+| AvalonDock + VS2013 theme, `XmlLayoutSerializer` | `Dock.Avalonia.AvalonDock` with the same layout classes and `XmlLayoutSerializer`, plus a VS2013 Light/Dark/Blue dock theme. Projects store AvalonDock layout XML (`AvalonDockLayout`), so it must stay readable both ways: a sample project's layout loads and saves byte for byte |
 | `Themes` (swap colour dictionaries + `DynamicResource`) | Same keys in 3 palettes; `ThemeVariant` Light/Dark + custom `new ThemeVariant("Blue", ThemeVariant.Light)`; `ThemeService.SetTheme` API preserved |
 | WPF `ControlTemplate` + `Trigger`s | `ControlTheme` + nested `^:pointerover` / `:pressed` / `:checked` / `:disabled` selectors |
 | `DataTrigger` / `MultiDataTrigger` | Bound style classes (`Classes.x="{Binding}"`), converters, or `DataTriggerBehavior` |
@@ -494,6 +494,11 @@ Sizes are relative, for one developer with AI-assisted porting: S ≈ ≤2 wk, M
 - Port `FrameworkUI.Demo` as the living smoke test.
 
 **Exit:** the demo app runs on 3 OSes × 3 themes, with shell parity within tolerance.
+
+**Progress (2026-10-30):**
+- Docking uses `Dock.Avalonia.AvalonDock`, which keeps AvalonDock's API and its layout XML. A prototype loaded the layout stored in a sample project (pixel and star pane sizes, a pane group, documents) and saved it back byte for byte, apart from the encoding declaration of the string writer used.
+- `FrameworkUI` has started (opt-in overlay): its VS2013 palettes and icons, `ThemeManager`, user settings, utilities and the default dock layout. Settings live in the per-user application data folder on every OS (`WpfCompat.AppPaths`): upstream preferred a folder next to the executable, which Velopack replaces on update and which macOS bundles and AppImages make read-only.
+- `SoftwareUpdate` compiles from upstream unchanged; installing through Velopack comes with packaging.
 
 ### Phase 3: Control library (`Themes` templates + `GenericControls`) (XL)
 - Restyle every standard control; add the new `ToolBar`, `StatusBar` and `GroupBox` look-alikes.

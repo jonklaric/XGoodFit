@@ -1,0 +1,58 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Avalonia port of upstream/WPF-Framework/src/FrameworkUI: the application shell (main window with
+    docking, project explorer, message window, properties host, recent files, options, user settings,
+    auto-backup and theme bridging). Its upstream files are nearly all WPF code, so the project opts in
+    to upstream files (Directory.Build.targets) and gains them one port at a time.
+
+    Docking is Dock.Avalonia.AvalonDock: AvalonDock's API (namespace AvalonDock rather than
+    Xceed.Wpf.AvalonDock) over Dock's Avalonia controls. It reads and writes AvalonDock's layout XML,
+    which projects store, unchanged.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>FrameworkUI</RootNamespace>
+    <AssemblyName>FrameworkUI</AssemblyName>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <UpstreamProjectDir>$(UpstreamFrameworkSrc)FrameworkUI/</UpstreamProjectDir>
+    <UpstreamCompileMode>OptIn</UpstreamCompileMode>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="FrameworkUI.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" />
+    <PackageReference Include="Dock.Avalonia.AvalonDock" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../FrameworkInterfaces/FrameworkInterfaces.csproj" />
+    <ProjectReference Include="../GenericControls/GenericControls.csproj" />
+    <ProjectReference Include="../SoftwareUpdate/SoftwareUpdate.csproj" />
+    <ProjectReference Include="../Themes/Themes.csproj" />
+    <ProjectReference Include="../WpfCompat/WpfCompat.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Upstream files that compile unchanged. -->
+    <UpstreamCompileInclude Include="Themes/ThemeColor.cs" />
+    <UpstreamCompileInclude Include="Utilities/ApplicationAttributes.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- The default dock layout (Properties.Resources.AvalonDock) and the shell's images. -->
+    <EmbeddedResource Include="$(UpstreamProjectDir)Resources/AvalonDock.xml" Link="Resources/AvalonDock.xml" LogicalName="FrameworkUI.Resources.AvalonDock.xml" />
+    <AvaloniaResource Include="$(UpstreamProjectDir)Resources/*.png" Link="Resources/%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Element and project icons: WPF's ImageSource is Avalonia's IImage, keeping upstream's name. -->
+    <Using Include="Avalonia.Media.IImage" Alias="ImageSource" />
+  </ItemGroup>
+
+</Project>

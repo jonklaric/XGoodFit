@@ -18,6 +18,11 @@
     <PackageVersion Include="Avalonia.Themes.Simple" Version="$(AvaloniaVersion)" />
     <!-- WPF's DataGrid: cell selection, SelectedCells, CanUserAddRows, copy and paste (plan §4.2). -->
     <PackageVersion Include="ProDataGrid" Version="12.1.0.6" />
+    <!--
+      FrameworkUI's docking: AvalonDock's API and layout XML over Dock's Avalonia controls (MIT).
+      Projects store AvalonDock layout XML, which it reads and writes unchanged (plan §4.3).
+    -->
+    <PackageVersion Include="Dock.Avalonia.AvalonDock" Version="12.1.0.13" />
   </ItemGroup>
 
 </Project>

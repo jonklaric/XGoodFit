@@ -17,4 +17,7 @@ added as dependencies are adopted.
 | [zlib](https://github.com/madler/zlib) | Compression inside the HEC-DSS library. Vendored in `upstream/zlib` | [zlib](upstream/zlib/LICENSE) |
 | [System.Data.SQLite](https://system.data.sqlite.org) and [SourceGear.sqlite3](https://github.com/ericsink/SQLitePCL.raw) | Reading and writing `.bestfit` project files (NuGet) | Public domain |
 | [Avalonia](https://github.com/AvaloniaUI/Avalonia) | The cross-platform UI framework (NuGet) | MIT |
+| [Dock](https://github.com/wieslawsoltes/Dock) (Dock.Avalonia.AvalonDock and the packages it uses) | Docking in the main window, with AvalonDock's API and layout XML (NuGet) | MIT |
+| [ReactiveUI](https://github.com/reactiveui/ReactiveUI) | Used by Dock's AvalonDock adapter (NuGet) | MIT |
+| [ProDataGrid](https://github.com/wieslawsoltes/ProDataGrid) | The data grids (NuGet) | MIT |
 | [Selawik](https://github.com/microsoft/Selawik) (Microsoft) | Substitute for Segoe UI where it isn't installed (macOS, Linux). Vendored in `upstream/Selawik` and embedded in the app | [OFL-1.1](upstream/Selawik/LICENSE.txt) |
