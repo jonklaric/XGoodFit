@@ -47,6 +47,14 @@ namespace RMC.BestFit.App.Tests.XGoodFit
         private static readonly List<ResourceInclude> _dictionaries = [];
         private static readonly List<IStyle> _captureStyles = [];
 
+        // App.axaml's two bitmaps, loaded once.
+        private static Bitmap _bestFitIcon;
+        private static Bitmap _usaceLogo;
+
+        // The blank projects Open made (CreateNewDummyProject saves one in the system's temporary folder, as the
+        // application does at startup), which Close deletes.
+        private static readonly List<string> _blankProjects = [];
+
         /// <summary>The temporary folder the shell's files and the project copies go in for the current test.</summary>
         public static string Folder { get; private set; } = string.Empty;
 
@@ -92,8 +100,8 @@ namespace RMC.BestFit.App.Tests.XGoodFit
                 resources.MergedDictionaries.Insert(i, dictionary);
                 _dictionaries.Add(dictionary);
             }
-            resources["BestFit"] = LoadBitmap("avares://XGoodFit/Resources/BestFit_Icon.ico");
-            resources["USACE"] = LoadBitmap("avares://XGoodFit/Resources/USACE.png");
+            resources["BestFit"] = _bestFitIcon ??= LoadBitmap("avares://XGoodFit/Resources/BestFit_Icon.ico");
+            resources["USACE"] = _usaceLogo ??= LoadBitmap("avares://XGoodFit/Resources/USACE.png");
 
             Folder = Path.Combine(AppContext.BaseDirectory, "BestFitShell", Guid.NewGuid().ToString("N"));
             Directory.CreateDirectory(Folder);
@@ -130,6 +138,7 @@ namespace RMC.BestFit.App.Tests.XGoodFit
             ShellPublicVariables.SoftwareExtension = ".bestfit";
             var project = BestFitProject.GetInstance();
             project.CreateNewDummyProject();
+            _blankProjects.Add(project.FullFileName);
 
             var window = new MainWindow { WindowState = WindowState.Normal, Width = width, Height = height };
             window.ProjectMenuItems = [];
@@ -157,8 +166,25 @@ namespace RMC.BestFit.App.Tests.XGoodFit
         }
 
         /// <summary>
+        /// Opens a copy of <paramref name="example"/> in <paramref name="window"/> with <see cref="MainWindow.OpenProject"/>,
+        /// as File &gt; Open does, and lets the previous project's documents go (see <see cref="ViewTesting.Collect"/>):
+        /// for tests that open several examples in one window, whose saved layouts reopen their documents.
+        /// </summary>
+        /// <returns>The copy's path.</returns>
+        public static string OpenExample(MainWindow window, string example)
+        {
+            string copy = Path.Combine(Folder, Path.GetFileName(example));
+            File.Copy(example, copy, overwrite: true);
+            window.OpenProject(copy);
+            Frame();
+            ViewTesting.Collect();
+            return copy;
+        }
+
+        /// <summary>
         /// Closes <paramref name="window"/> without the question about unsaved changes (the project copy is
-        /// saved first), lets go of the application's resources and deletes the temporary folder.
+        /// saved first), lets go of it (see <see cref="Release"/>), lets go of the application's resources and
+        /// deletes the temporary folder.
         /// </summary>
         public static void Close(MainWindow window)
         {
@@ -177,9 +203,17 @@ namespace RMC.BestFit.App.Tests.XGoodFit
                     }
                     if (window.IsVisible)
                     {
+                        // Avalonia's tooltip service keeps the last control the pointer was over that has a tooltip
+                        // (an explorer node's header), and with it the window, until the pointer moves elsewhere.
+                        window.MouseMove(new Point(-1, -1));
                         window.Close();
                     }
                     Frame();
+                    Release(window);
+                    // As ViewTesting.Show's windows: a closed window still in memory re-resolves its resources on
+                    // every change of the application's (ViewTesting.ReleaseContentOnClose).
+                    window.Content = null;
+                    ViewTesting.Collect();
                 }
             }
             finally
@@ -200,6 +234,11 @@ namespace RMC.BestFit.App.Tests.XGoodFit
                 try
                 {
                     Directory.Delete(Folder, recursive: true);
+                    foreach (string blank in _blankProjects)
+                    {
+                        File.Delete(blank);
+                    }
+                    _blankProjects.Clear();
                 }
                 catch (IOException)
                 {
@@ -207,6 +246,75 @@ namespace RMC.BestFit.App.Tests.XGoodFit
                 catch (UnauthorizedAccessException)
                 {
                 }
+            }
+        }
+
+        /// <summary>
+        /// Lets go of a closed main window, which the application never needs to do (it makes one window). The
+        /// application's project is a singleton whose element collections outlive the window; the explorer's
+        /// collection nodes subscribe to them, and the window to its nodes. Left so, every test's window stayed
+        /// alive, with its documents, views and plots, and went on reacting to later tests' projects: it opened
+        /// a document for each element they added. So the window lets go of its explorer node, the node's
+        /// collection nodes let go of the project's collections (as ProjectNode.Load does before it loads
+        /// again), and the Messenger forgets the closed project's messages, as MainWindow.OpenProject has it do.
+        /// The window's menus let go of the node's items too: a window that keeps MainWindow's own menu item
+        /// collections (one App.CreateMainWindow makes) shares them with every main window. <see cref="Close"/>
+        /// calls it.
+        /// </summary>
+        public static void Release(MainWindow window)
+        {
+            FrameworkUIController node = window.ProjectNode;
+            window.ProjectNode = null;
+            if (node != null)
+            {
+                Detach(node.ChildNodes);
+            }
+            window.ProjectMenuItems.Clear();
+            window.ToolsMenuItems.Clear();
+            window.HelpMenuItems.Clear();
+            DetachControls(BestFitProject.GetInstance());
+            FrameworkInterfaces.Messaging.Messenger.GetInstance().Clear();
+            Frame();
+        }
+
+        /// <summary>
+        /// Has the controls still listening to the application's project's element collections stop. Upstream's
+        /// properties panels (Input Data's, Bivariate's) stop listening only on Unloaded, which a panel the shell
+        /// replaced before it loaded never gets (MainWindow.OpenProperties can do that), so the project, a singleton,
+        /// kept them and whatever they showed, test after test (an IssuesToRaise lead). Nothing of the application
+        /// listens there once its window is gone: the project itself listens to other events of its collections.
+        /// </summary>
+        private static void DetachControls(BestFitProject project)
+        {
+            foreach (FrameworkInterfaces.IElementCollection collection in project.ElementCollections ?? [])
+            {
+                foreach (string name in new[] { "ElementAdded", "ElementRemoved" })
+                {
+                    FieldInfo field = typeof(FrameworkInterfaces.ElementCollectionBase).GetField(name, BindingFlags.Instance | BindingFlags.NonPublic);
+                    Assert.IsNotNull(field, "FrameworkInterfaces' ElementCollectionBase keeps its " + name + " handlers in a field of that name");
+                    if (collection is not FrameworkInterfaces.ElementCollectionBase || field.GetValue(collection) is not Delegate handlers)
+                    {
+                        continue;
+                    }
+                    Delegate kept = null;
+                    foreach (Delegate handler in handlers.GetInvocationList())
+                    {
+                        if (handler.Target is not AvaloniaObject)
+                        {
+                            kept = Delegate.Combine(kept, handler);
+                        }
+                    }
+                    field.SetValue(collection, kept);
+                }
+            }
+        }
+
+        private static void Detach(IEnumerable<FrameworkUI.ProjectExplorer.Node> nodes)
+        {
+            foreach (var collection in nodes.OfType<FrameworkUI.ProjectExplorer.ElementNodeCollection>().ToList())
+            {
+                Detach(collection.ChildNodes);
+                collection.ElementCollection = null;
             }
         }
 

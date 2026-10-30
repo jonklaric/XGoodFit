@@ -155,6 +155,18 @@ namespace FrameworkUI.ProjectExplorer
             var previousCandidate = TryCreateLayoutCandidate(Project.ProjectExplorerLayoutPrevious, "previous");
             var chosenCandidate = ChooseLayoutCandidate(currentCandidate, previousCandidate);
 
+            // XGoodFit port: the candidate not chosen lets go of the project's element collections, which its
+            // collection nodes subscribed to as they were built. Upstream left them subscribed: each load of a project
+            // with both layouts kept a tree of nodes alive, still adding nodes for added elements, for as long as the
+            // project lived (the application's lifetime, where the project is a singleton, as RMC-BestFit's is).
+            foreach (var candidate in new[] { currentCandidate, previousCandidate })
+            {
+                if (candidate != null && !ReferenceEquals(candidate, chosenCandidate))
+                {
+                    ReleaseCollectionNodes(candidate.Nodes);
+                }
+            }
+
             if (chosenCandidate != null)
             {
                 foreach (var node in chosenCandidate.Nodes)
@@ -708,6 +720,21 @@ namespace FrameworkUI.ProjectExplorer
         /// <param name="GroupCount">Number of group nodes in the candidate layout.</param>
         /// <param name="IsStandardFlatLayout">Whether the candidate matches the standard flat layout.</param>
         private sealed record LayoutCandidate(string Source, IList<Node> Nodes, int GroupCount, bool IsStandardFlatLayout);
+
+        /// <summary>
+        /// XGoodFit port: has the element collection nodes among <paramref name="nodes"/>, and those under them, let go
+        /// of their element collections (as <see cref="ClearChildNodesForRetry"/> has the shown ones do).
+        /// </summary>
+        /// <param name="nodes">The nodes of a layout that isn't shown.</param>
+        private static void ReleaseCollectionNodes(IList<Node> nodes)
+        {
+            foreach (var node in nodes)
+            {
+                if (node is not ElementNodeCollection collection) continue;
+                ReleaseCollectionNodes(new List<Node>(collection.ChildNodes));
+                collection.ElementCollection = null;
+            }
+        }
 
         /// <summary>
         /// When the Project Node header is left clicked, raise OnClick event.

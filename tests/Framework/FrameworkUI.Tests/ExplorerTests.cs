@@ -50,6 +50,31 @@ public sealed class ExplorerTests
         ("Fitting Analysis", ["Fit A"]));
 
     [TestMethod]
+    public void Load_WithBothLayouts_LeavesOnlyTheShownNodesListeningToTheProject()
+    {
+        HeadlessSession.Run(() =>
+        {
+            // A project saved with both explorer layouts, the current one and the previous (its backup): Load builds a
+            // tree from each and shows one. The other tree's collection nodes stayed subscribed to the project's
+            // collections (upstream), alive and adding nodes for new elements, for as long as the project lived.
+            var project = SampleProject();
+            var root = new TestProjectNode(project);
+            root.Load();
+            string layout = root.SaveToXElement().ToString();
+            project.ProjectExplorerLayout = layout;
+            project.ProjectExplorerLayoutPrevious = layout;
+
+            root.Load();
+
+            foreach (TestElementCollection collection in project.ElementCollections!.Cast<TestElementCollection>())
+            {
+                Assert.AreEqual(1, collection.ElementAddedListeners, collection.Name + ": only the shown collection node listens");
+            }
+            Assert.AreEqual(3, root.ChildNodes.Count, "one tree is shown");
+        });
+    }
+
+    [TestMethod]
     public void Nodes_AreBuiltFromTheProject()
     {
         HeadlessSession.Run(() =>

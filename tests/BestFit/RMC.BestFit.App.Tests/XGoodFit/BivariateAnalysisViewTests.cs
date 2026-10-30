@@ -53,12 +53,17 @@ namespace RMC.BestFit.App.Tests.XGoodFit
         private readonly List<Window> _windows = new List<Window>();
         private readonly List<BestFitProject> _projects = new List<BestFitProject>();
 
-        /// <summary>Closes the windows and projects a test opened, and removes the application's resources.</summary>
+        /// <summary>
+        /// Closes the windows and projects a test opened, and lets go of them (MSTest keeps the test class's instance), and
+        /// removes the application's resources.
+        /// </summary>
         [TestCleanup]
         public void Cleanup()
         {
             foreach (var window in _windows) window.Close();
+            _windows.Clear();
             foreach (var project in _projects) Close(project);
+            _projects.Clear();
             ReleaseAppResources();
         }
 

@@ -29,9 +29,10 @@ namespace RMC.BestFit.App.Tests.XGoodFit
             ShellPublicVariables.MessageLogFilePath = ShellPublicVariables.MessageLogFolderPath + "MessageLog.txt";
             UserSettings.CreateAutoRecoverBackup = false;
             WpfTestHost.EnsureResources();
+            FrameworkUI.MainWindow window = null;
             try
             {
-                FrameworkUI.MainWindow window = RMC_BestFit.App.CreateMainWindow();
+                window = RMC_BestFit.App.CreateMainWindow();
                 window.Show();
                 WpfTestHost.DrainDispatcher();
 
@@ -45,6 +46,12 @@ namespace RMC.BestFit.App.Tests.XGoodFit
             }
             finally
             {
+                // The window's explorer stays subscribed to the application's project otherwise (see BestFitShell.Release).
+                if (window != null)
+                {
+                    if (window.IsVisible) window.Close();
+                    BestFitShell.Release(window);
+                }
                 WpfTestHost.ReleaseResources();
             }
         }

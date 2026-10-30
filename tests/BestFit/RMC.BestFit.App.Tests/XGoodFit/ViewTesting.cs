@@ -128,9 +128,35 @@ namespace RMC.BestFit.App.Tests.XGoodFit
         internal static Window Show(Control content, double width = 1200, double height = 800)
         {
             var window = new Window { Width = width, Height = height, Content = content };
+            ReleaseContentOnClose(window);
             window.Show();
             Settle();
             return window;
+        }
+
+        /// <summary>
+        /// Takes a window's content out once the window is closed. A closed window that is still in memory goes on
+        /// receiving the application's resource changes (Avalonia's TopLevel listens to them weakly), so without this the
+        /// next resource change, a test's cleanup removing its dictionaries say, re-resolved every resource of the
+        /// closed views, at about a second a test.
+        /// </summary>
+        /// <param name="window">The window.</param>
+        internal static void ReleaseContentOnClose(Window window) => window.Closed += (_, _) => window.Content = null;
+
+        /// <summary>
+        /// Lets the views a test closed go, and collects them, so that a run of every test stays small. The helpers call
+        /// it where they close a test's projects and windows (OpenedProject's disposal, SharedControlsTesting's
+        /// ReleaseAppResources, BestFitShell's Close and OpenExample). A control closed right after a state change
+        /// stays with the animation clock until a render tick with real time elapsed, and the garbage collector's own
+        /// full collections come late, after the views of several examples have piled up.
+        /// </summary>
+        internal static void Collect()
+        {
+            Dispatcher.UIThread.RunJobs();
+            Thread.Sleep(50);
+            AvaloniaHeadlessPlatform.ForceRenderTimerTick();
+            Dispatcher.UIThread.RunJobs();
+            GC.Collect();
         }
 
         /// <summary>Runs the dispatcher's queued work and renders a frame, twice, so posted work and layout settle.</summary>
@@ -183,10 +209,16 @@ namespace RMC.BestFit.App.Tests.XGoodFit
             /// <returns>The element.</returns>
             internal T Element<T>(string name) where T : IElement => Elements<T>().Single(e => e.Name == name);
 
-            /// <inheritdoc/>
+            /// <summary>
+            /// Closes the project, has the Messenger forget its messages (which keep their sources, the elements, and
+            /// so the project and the views on it), as the application does when it opens the next project
+            /// (MainWindow.OpenProject), and deletes the copy.
+            /// </summary>
             public void Dispose()
             {
                 Project.Close();
+                FrameworkInterfaces.Messaging.Messenger.GetInstance().Clear();
+                Collect();
                 SQLiteConnection.ClearAllPools();
                 for (int attempt = 0; attempt < 20 && Directory.Exists(_folder); attempt++)
                 {

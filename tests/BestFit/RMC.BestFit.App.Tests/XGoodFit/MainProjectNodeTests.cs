@@ -76,10 +76,8 @@ namespace RMC.BestFit.App.Tests.XGoodFit
                     foreach (string example in examples)
                     {
                         string name = Path.GetFileName(example);
-                        string copy = Path.Combine(BestFitShell.Folder, name);
-                        File.Copy(example, copy, overwrite: true);
-                        window.OpenProject(copy);
-                        BestFitShell.Frame();
+                        // Each example's saved layout reopens its documents: the previous example's go first.
+                        string copy = BestFitShell.OpenExample(window, example);
 
                         Assert.AreEqual(copy, project.FullFileName, name);
                         Assert.AreSame(project, node.Project, name);

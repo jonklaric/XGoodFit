@@ -49,6 +49,7 @@ namespace RMC.BestFit.App.Tests.XGoodFit
         public void Cleanup()
         {
             foreach (var window in _windows) window.Close();
+            _windows.Clear();
             foreach (var project in _projects) CloseProject(project);
             _projects.Clear();
             UseAppResources(ThemeColor.Light);

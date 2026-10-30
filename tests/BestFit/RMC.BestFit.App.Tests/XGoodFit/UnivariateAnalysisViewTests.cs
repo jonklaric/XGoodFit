@@ -65,11 +65,12 @@ namespace RMC.BestFit.App.Tests.XGoodFit
         public void Cleanup()
         {
             foreach (var window in _windows) window.Close();
+            _windows.Clear();
             foreach (var project in _projects) Close(project);
+            _projects.Clear();
+            // The closed projects' views and plots go before the next test opens another (ReleaseAppResources collects
+            // them), and the lists let go of them: MSTest keeps the test class's instance.
             ReleaseAppResources();
-            // The closed projects' views and plots go before the next test opens another.
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
         }
 
         /// <summary>
