@@ -32,10 +32,7 @@ public sealed class Captures
             string folder = ScreenshotFolder();
             foreach (Theme theme in Enum.GetValues<Theme>())
             {
-                ThemeService.Instance.SetTheme(theme);
-                var demo = new DatabaseControls.Demo.MainWindow();
-                demo.Show();
-                Settle();
+                var demo = ShowDemo(theme);
                 demo.LoadCsvFile(SampleCsv);
                 Settle();
                 Save(demo, Path.Combine(folder, $"database-demo-{theme}.png"));
@@ -55,10 +52,7 @@ public sealed class Captures
             string folder = ScreenshotFolder();
             foreach (Theme theme in Enum.GetValues<Theme>())
             {
-                ThemeService.Instance.SetTheme(theme);
-                var demo = new DatabaseControls.Demo.MainWindow();
-                demo.Show();
-                Settle();
+                var demo = ShowDemo(theme);
                 // The gallery sample with its Value column as numbers (the CSV reader reads text), so the
                 // calculator and the statistics show numbers as with a database table.
                 demo.TestViewer.DataView = new DatabaseManager.InMemoryReader(TypedGallerySample()).GetTableManager("synthetic-gallery-sample");
@@ -124,6 +118,17 @@ public sealed class Captures
             }
             ThemeService.Instance.SetTheme(Theme.Light);
         });
+    }
+
+    // The demo in a theme, picked with its own radio buttons, so they show the theme too.
+    private static DatabaseControls.Demo.MainWindow ShowDemo(Theme theme)
+    {
+        ThemeService.Instance.SetTheme(theme);
+        var demo = new DatabaseControls.Demo.MainWindow();
+        demo.Show();
+        (theme switch { Theme.Blue => demo.BlueThemeRadio, Theme.Dark => demo.DarkThemeRadio, _ => demo.LightThemeRadio }).IsChecked = true;
+        Settle();
+        return demo;
     }
 
     // upstream's gallery sample, typed: Value is a double.
