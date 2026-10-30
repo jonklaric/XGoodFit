@@ -77,6 +77,7 @@ compared with its upstream original.
 | A format with commas, `StringFormat={}{0:#,##0.####}` | quote it: `StringFormat='{}{0:#,##0.####}'` |
 | A `ToolTip` setter holding a `<ToolTip>` element (cells, column headers) | `<Setter Property="ToolTip.Tip"><Template>…</Template></Setter>`; in code `new Setter(ToolTip.TipProperty, new FuncTemplate<TextBlock>(…))`: one control can't be shared between cells |
 | `DisplayMemberPath` / `SelectedValuePath` | `DisplayMemberBinding="{Binding X}"` / `SelectedValueBinding="{Binding Y}"` |
+| `ListView` without a `GridView` | `ListBox` with `Theme="{DynamicResource ListViewStyle}"` |
 | `Visibility="Hidden"` | `Opacity="0"` with `IsHitTestVisible="False"` (keeps its space) |
 | `Visibility="{Binding …, Converter=…}"` | `wpf:WpfElement.Visibility="{Binding …}"` (`xmlns:wpf="using:WpfCompat"`): the converters produce WpfCompat's `Visibility`. Never bind one to `IsVisible`, which reads Visible (0) as false |
 | `{Binding IsEnabled, …}` (reading it) | `IsEffectivelyEnabled`: WPF's `IsEnabled` includes the parents', Avalonia's doesn't |
@@ -187,6 +188,7 @@ Templates and themes:
 | A `CollectionViewSource` with `SortDescriptions` as a combo box's items | `WpfCompat.Data.CollectionViewSource` (its `View` is a `ListCollectionView`), set with `combo.SetItemsSourceKeepingSelection(view)`: a plain set lets a two-way `SelectedValue` write null back. The helper takes the selector's data context away while the items change; don't hold the value at animation priority instead, which pins it |
 | `column.Binding.StringFormat = …` in code | cast to `ReflectionBinding`; GenericControls' display copy then applies the format |
 | `Application.Current.MainWindow = w` without a desktop lifetime (tests) | WpfCompat keeps it, as WPF's property does |
+| A static brush field (`new SolidColorBrush(c)`, frozen in WPF) | an immutable brush (`ImmutableSolidColorBrush`, `Brushes.*`): a mutable one belongs to the thread that first touches the class |
 | `host.Content = element.Plot`, for a plot several documents show | `host.TakeContent(element.Plot)` (WpfCompat): Avalonia throws while the plot still has a parent |
 
 - Dialogs wait, as in WPF (plan §5.3): `ShowDialog()` and `DialogResult` (WpfCompat's), WpfCompat's
@@ -313,6 +315,11 @@ Watch for others when porting:
   would change the saved plot and mark the project unsaved. OxyPlot.Wpf's `Series` keeps a saved CR LF
   format when the new one differs only in bare line feeds (`CoerceTrackerFormatString`). Any other
   string that's saved and built with `Environment.NewLine` needs the same care.
+- **Resource elements handed out by code** (`new ContentControl { Content = TryFindResource(k) }`) need
+  `x:Shared="False"`, or the first parent's whole tree (a document, its element, its project) stays
+  alive through the shared element.
+- **WpfCompat's `CollectionViewSource`** sorts by property paths (`"Alternative.Name"`), live and through
+  weak events; a path that doesn't resolve keeps the collection's order, as in WPF.
 - **Inherited properties change when a control joins or leaves the tree** (`FontFamily`, say): handlers
   that set a dirty flag or record undo must ignore changes that don't change what's saved (see
   OxyPlot.Wpf's `Series`).
@@ -368,6 +375,16 @@ Watch for others when porting:
 - **In the main window,** moving the headless pointer over a plot toolbar re-lays the document out, so a
   press can land on another button: raise `Click` on shell buttons, test pointer clicks on a view hosted
   directly, and guard dialogs with `BestFitShell.WhenOpened`.
+- **Memory:** tests that open example projects must close them, and the windows showing them, in
+  `finally`. A view costs about 1 KB per observation, so keep the largest records out of default runs
+  (`[TestCategory("Large")]`). FrameworkInterfaces' Messenger forgets a source once it has no messages
+  (upstream kept it, and with it the element and its project).
+- **The headless UI thread is a thread-pool thread,** so `Task.Run(…).GetAwaiter().GetResult()` on it runs
+  inline: use `new Thread`. Click async handlers in `[STATestMethod]`s with
+  `AvaloniaSynchronizationContext.InstallIfNeeded()`. In tests, set a combo box's `SelectedItem`, not its
+  `SelectedValue` (which raises SelectionChanged before the two-way binding writes back).
+- **The examples' native screenshots are factory-reset plot exports:** compare their data (`.json.gz`),
+  not their styling.
 - **Git Bash's `timeout` doesn't stop a test `.exe`** (hung runs kept going at several GB): stop it by its
   renamed image name.
 
