@@ -791,7 +791,12 @@
         </Rectangle>
     </Viewbox>
 
-    <Viewbox x:Key="CopyIcon" Width="16" Height="16">
+    <!--
+        XGoodFit port: x:Shared="False". GenericControls' CopyPasteDataGrid puts this resource (which overrides
+        GenericControls' own CopyIcon) in each grid's context menu, and an Avalonia element has one parent: a shared
+        one kept the first grid's menu, and with it that grid's whole document, alive.
+    -->
+    <Viewbox x:Key="CopyIcon" Width="16" Height="16" x:Shared="False">
         <Rectangle Width="16" Height="16">
             <Rectangle.Fill>
                 <DrawingBrush>
