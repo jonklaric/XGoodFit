@@ -17,6 +17,8 @@
 
   <ItemGroup>
     <PackageReference Include="Avalonia" />
+    <!-- The DataGrid theme (Resources/Controls/DataGrid.axaml) styles ProDataGrid's grid (plan §4.2). -->
+    <PackageReference Include="ProDataGrid" />
   </ItemGroup>
 
   <ItemGroup>

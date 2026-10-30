@@ -27,6 +27,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- The validation data grid's row items and rules compile as upstream wrote them. -->
+    <UpstreamCompileInclude Include="DataGrid/ValidationDataGridObjects/DataGridRowItem.cs" />
+    <UpstreamCompileInclude Include="DataGrid/ValidationDataGridObjects/PropertyRule.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Avalonia" />
     <PackageReference Include="ProDataGrid" />
   </ItemGroup>

@@ -7,14 +7,18 @@
     - StackPanelButtonStyleBase and VerticalSeparatorStyle aren't ported. Themes defines both keys and
       is merged after this dictionary (by ThemeManager.SetTheme, as in upstream's App), so its
       definitions are the ones the app uses.
-    - Each control's theme is added here as the control is ported. Still to come: DataGridToolbar,
-      SeparatorWithHeader, NumericTextBox, NumericTextBox2, NumericUpDown, NumericSlider,
-      ThicknessControl, GridLengthControl, ColorPicker, ColorPickerPopup, ClockControl, the date and
-      time controls, ResizableTextBoxControl, the property controls and the DataGrid styles.
+    - Each control's theme is added here as the control is ported. Still to come: SeparatorWithHeader,
+      NumericTextBox, NumericTextBox2, NumericUpDown, NumericSlider, ThicknessControl,
+      GridLengthControl, ColorPicker, ColorPickerPopup, ClockControl, the date and time controls,
+      ResizableTextBoxControl and the property controls.
+    - Themes' DataGrid.axaml and TextBox.axaml are merged too: the DataGrid styles are based on the
+      themes there, and a StaticResource can't reach another file's keys (see the DataGrid notes).
 -->
 <ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:local="using:GenericControls">
+                    xmlns:local="using:GenericControls"
+                    xmlns:wpf="using:WpfCompat"
+                    xmlns:themes="using:Themes">
 
     <!--
     ╔═══════════════════════════════════════════════════════════════════════════════╗
@@ -50,6 +54,8 @@
     <!-- Merge Icon Dictionary for centralized vector icons -->
     <ResourceDictionary.MergedDictionaries>
         <ResourceInclude Source="avares://GenericControls/Resources/IconDictionary.axaml"/>
+        <ResourceInclude Source="avares://Themes/Resources/Controls/TextBox.axaml"/>
+        <ResourceInclude Source="avares://Themes/Resources/Controls/DataGrid.axaml"/>
     </ResourceDictionary.MergedDictionaries>
 
     <!-- ═══════════════════════════════════════════════════════════════════════════ -->
@@ -79,6 +85,21 @@
         <Setter Property="Margin" Value="0,0,3,0"/>
         <Setter Property="Foreground" Value="{DynamicResource EnvironmentWindowText}"/>
     </ControlTheme>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+    <!-- DATAGRID TOOLBAR                                                             -->
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+
+    <!-- Toolbar Button Style Base and Vertical Separator Style for Toolbar: not ported (see the notes above). -->
+
+    <ControlTheme x:Key="DataGridToolbarStyle" TargetType="local:DataGridToolbar">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BackgroundColor" Value="Transparent"/>
+        <Setter Property="StackPanelButtonStyle" Value="{DynamicResource StackPanelButtonStyleBase}"/>
+        <Setter Property="StackPanelSeparatorStyle" Value="{DynamicResource VerticalSeparatorStyle}"/>
+    </ControlTheme>
+
+    <ControlTheme x:Key="{x:Type local:DataGridToolbar}" TargetType="local:DataGridToolbar" BasedOn="{StaticResource DataGridToolbarStyle}"/>
 
     <!-- ═══════════════════════════════════════════════════════════════════════════ -->
     <!-- NAME TEXTBOX                                                                 -->
@@ -120,5 +141,464 @@
     <ControlTheme x:Key="PropertyControlBaseStyle" TargetType="UserControl">
         <Setter Property="Foreground" Value="{DynamicResource EnvironmentWindowText}"/>
     </ControlTheme>
+
+    <!--
+    XGoodFit port notes for the DataGrid styles (Themes' DataGrid.axaml has the general ones):
+    - The grids are ProDataGrid's, re-based (CopyPasteDataGrid, ValidationDataGrid). Upstream's grid and
+      row styles set no templates; WPF's own theme gave them. They are based on Themes' ports of those
+      defaults (DataGridDefaultTheme, DataGridRowDefaultTheme), merged above for that reason.
+    - RowStyle and CellStyle are RowTheme and CellTheme. The grids' ColumnHeaderStyle and RowHeaderStyle
+      setters aren't ported: in WPF a style's setter loses to the implicit DataGridColumnHeader and
+      DataGridRowHeader styles below, so those are what the grids show, here too.
+    - AlternationCount 2 with the AlternationIndex 1 trigger is :nth-child(2n). ProDataGrid has no
+      AlternatingRowBackground; the row styles give the alternating rows their background, as in WPF.
+    - The editing TextBox style that upstream puts in the cell template's resources never reaches an
+      editor (WPF and ProDataGrid give each column's editor its own style), so it isn't ported.
+      DataGridEditingTextBoxStyle, which columns set, is.
+    - Column header styles set ColumnHeaderContent.Template where upstream sets ContentTemplate, which
+      ProDataGrid binds to the column's HeaderTemplate (see Themes' DataGrid.axaml).
+    - Thumbs aren't in the header templates: ProDataGrid resizes columns from the header's edges, and
+      its rows don't resize. The gripper styles are kept for code that uses the keys.
+    - IsKeyboardFocusWithin on a cell is :focus and :focus-within, Selector.IsSelectionActive is
+      WpfSelector.IsSelectionActive, and IsMouseOver is :pointerover (see Themes' DataGrid.axaml).
+    -->
+
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+    <!-- DATAGRID CELL STYLES (Backward Compatible)                                   -->
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+
+    <!-- Selectable DataGrid Cell Style shared by grid-level and manual column styles -->
+    <ControlTheme x:Key="SelectableDataGridCellStyle" TargetType="DataGridCell">
+        <Setter Property="Foreground" Value="{Binding Foreground, RelativeSource={RelativeSource AncestorType=DataGridRow}}"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="FocusAdorner" Value="{x:Null}"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
+        <!-- Custom template to prevent default WPF template from using SystemColors for inactive selection -->
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Grid ColumnDefinitions="*,Auto" RowDefinitions="*,Auto">
+                    <Border Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}">
+                        <ContentPresenter Name="PART_ContentPresenter"
+                                          Content="{TemplateBinding Content}"
+                                          ContentTemplate="{TemplateBinding ContentTemplate}"/>
+                    </Border>
+                    <Rectangle Name="RightGridLine" Grid.Column="1" Grid.RowSpan="2" Width="1" VerticalAlignment="Stretch"
+                               Fill="{Binding VerticalGridLinesBrush, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                               IsVisible="{Binding GridLinesVisibility, RelativeSource={RelativeSource AncestorType=DataGrid}, Converter={x:Static themes:DataGridGridLines.ShowsVertical}}"/>
+                    <Rectangle Grid.Row="1" Height="1"
+                               IsVisible="{Binding GridLinesVisibility, RelativeSource={RelativeSource AncestorType=DataGrid}, Converter={x:Static themes:DataGridGridLines.ShowsHorizontal}}"/>
+                </Grid>
+            </ControlTemplate>
+        </Setter>
+        <!-- Cell selection highlighting for extended selection mode -->
+        <Style Selector="^:selected">
+            <Setter Property="Background" Value="{DynamicResource DataGrid.Row.Selection.Background}"/>
+            <Setter Property="Foreground" Value="{DynamicResource DataGrid.Row.Selection.Foreground}"/>
+        </Style>
+        <!-- Inactive selection (when DataGrid loses focus) -->
+        <Style Selector="^:selected[(wpf|WpfSelector.IsSelectionActive)=False]">
+            <Setter Property="Background" Value="{DynamicResource DataGrid.Row.Selection.Inactive.Background}"/>
+            <Setter Property="Foreground" Value="{DynamicResource DataGrid.Row.Selection.Inactive.Foreground}"/>
+        </Style>
+        <!-- Focus border for keyboard navigation -->
+        <Style Selector="^:focus, ^:focus-within">
+            <Setter Property="BorderBrush" Value="{DynamicResource DataGrid.Cell.Focus.Border}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+        </Style>
+    </ControlTheme>
+
+    <!-- Left-aligned Cell Style -->
+    <ControlTheme x:Key="Left_CellStyle" TargetType="DataGridCell" BasedOn="{StaticResource SelectableDataGridCellStyle}">
+        <Setter Property="TextBlock.TextAlignment" Value="Left"/>
+    </ControlTheme>
+
+    <!-- Center-aligned Cell Style -->
+    <ControlTheme x:Key="Center_CellStyle" TargetType="DataGridCell" BasedOn="{StaticResource SelectableDataGridCellStyle}">
+        <Setter Property="TextBlock.TextAlignment" Value="Center"/>
+    </ControlTheme>
+
+    <!-- Center-aligned Read-Only Cell Style -->
+    <ControlTheme x:Key="Center_ReadOnly_CellStyle" TargetType="DataGridCell" BasedOn="{StaticResource SelectableDataGridCellStyle}">
+        <Setter Property="TextBlock.TextAlignment" Value="Center"/>
+        <Setter Property="Foreground" Value="{DynamicResource EnvironmentToolWindowDisabledText}"/>
+    </ControlTheme>
+
+    <!-- Right-aligned Cell Style -->
+    <ControlTheme x:Key="Right_CellStyle" TargetType="DataGridCell" BasedOn="{StaticResource SelectableDataGridCellStyle}">
+        <Setter Property="TextBlock.TextAlignment" Value="Right"/>
+    </ControlTheme>
+
+    <!-- Right-aligned Read-Only Cell Style -->
+    <ControlTheme x:Key="Right_ReadOnly_CellStyle" TargetType="DataGridCell" BasedOn="{StaticResource SelectableDataGridCellStyle}">
+        <Setter Property="TextBlock.TextAlignment" Value="Right"/>
+        <Setter Property="Foreground" Value="{DynamicResource EnvironmentToolWindowDisabledText}"/>
+    </ControlTheme>
+
+    <!-- Disabled Cell Style -->
+    <!-- XGoodFit port: a style without a template kept WPF's own cell template; here it's based on that theme. -->
+    <ControlTheme x:Key="Disabled_CellStyle" TargetType="DataGridCell" BasedOn="{StaticResource DataGridCellDefaultTheme}">
+        <Setter Property="TextBlock.TextAlignment" Value="Center"/>
+        <Setter Property="IsEnabled" Value="False"/>
+    </ControlTheme>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+    <!-- DATAGRID COLUMN AND ROW HEADER STYLES                                        -->
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+
+    <!-- Column Header Gripper Style for resizing columns -->
+    <ControlTheme x:Key="ColumnHeaderGripperStyle" TargetType="Thumb">
+        <Setter Property="Width" Value="2"/>
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Cursor" Value="SizeWestEast"/>
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border Background="Transparent" Padding="{TemplateBinding Padding}"/>
+            </ControlTemplate>
+        </Setter>
+    </ControlTheme>
+
+    <!-- Row Header Gripper Style for resizing rows -->
+    <ControlTheme x:Key="RowHeaderGripperStyle" TargetType="Thumb">
+        <Setter Property="Height" Value="2"/>
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Cursor" Value="SizeNorthSouth"/>
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border Background="Transparent" Padding="{TemplateBinding Padding}"/>
+            </ControlTemplate>
+        </Setter>
+    </ControlTheme>
+
+    <!-- Theme-aware Column Header Style with gradient background and hover effects -->
+    <ControlTheme x:Key="ColumnHeaderStyle" TargetType="DataGridColumnHeader">
+        <Setter Property="themes:ColumnHeaderContent.Template">
+            <DataTemplate>
+                <TextBlock TextWrapping="Wrap"
+                           TextAlignment="{Binding HorizontalContentAlignment, RelativeSource={RelativeSource AncestorType=DataGridColumnHeader}, Converter={x:Static local:HorizontalAlignmentToTextAlignmentConverter.Instance}}"
+                           VerticalAlignment="Center"
+                           FontWeight="Bold"
+                           HorizontalAlignment="Stretch"
+                           Text="{Binding}"/>
+            </DataTemplate>
+        </Setter>
+        <Setter Property="MinHeight" Value="24"/>
+        <Setter Property="Height" Value="NaN"/>
+        <Setter Property="Foreground" Value="{DynamicResource DataGrid.Header.Foreground}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource DataGrid.Header.Border}"/>
+        <Setter Property="BorderThickness" Value="0,0,1,1"/>
+        <Setter Property="HorizontalAlignment" Value="Stretch"/>
+        <Setter Property="HorizontalContentAlignment" Value="Center"/>
+        <Setter Property="VerticalAlignment" Value="Stretch"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
+        <Setter Property="Padding" Value="6,3,6,3"/>
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Grid>
+                    <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}">
+                        <Grid Name="HeaderGrid" Margin="1,0,0,0" ColumnDefinitions="*,Auto">
+                            <Grid.Background>
+                                <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                                    <GradientStop Offset="0.25" Color="{DynamicResource DataGrid.Header.Background}"/>
+                                    <GradientStop Offset="1" Color="{DynamicResource DataGrid.Header.GradientEnd}"/>
+                                </LinearGradientBrush>
+                            </Grid.Background>
+                            <ContentPresenter Name="PART_ContentPresenter" Margin="{TemplateBinding Padding}" Grid.Column="0"
+                                              Content="{TemplateBinding Content}"
+                                              HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                              ContentTemplate="{TemplateBinding (themes:ColumnHeaderContent.EffectiveTemplate)}"/>
+                            <Path x:Name="SortArrow" IsVisible="False" Data="M0,0 L1,0 0.5,1 z" Stretch="Fill"
+                                  Grid.Column="1" Width="8" Height="6" Fill="{DynamicResource DataGrid.Header.Foreground}" Margin="0,0,8,0"
+                                  VerticalAlignment="Center" RenderTransformOrigin="50%,40%"/>
+                        </Grid>
+                    </Border>
+                </Grid>
+            </ControlTemplate>
+        </Setter>
+        <!-- XGoodFit port: ProDataGrid's filler header, which the grid's own filler header replaces (Themes' DataGridDefaultTheme). -->
+        <Style Selector="^[IsEnabled=False]">
+            <Setter Property="Opacity" Value="0"/>
+        </Style>
+        <Style Selector="^:sortascending /template/ Path#SortArrow">
+            <Setter Property="IsVisible" Value="True"/>
+            <Setter Property="RenderTransform" Value="rotate(180deg)"/>
+        </Style>
+        <Style Selector="^:sortdescending /template/ Path#SortArrow">
+            <Setter Property="IsVisible" Value="True"/>
+        </Style>
+        <Style Selector="^:pointerover /template/ Grid#HeaderGrid">
+            <Setter Property="Background" Value="{DynamicResource DataGrid.Header.MouseOver.Background}"/>
+            <Setter Property="Margin" Value="0"/>
+        </Style>
+        <Style Selector="^:focus-within /template/ Grid#HeaderGrid">
+            <Setter Property="Background" Value="{DynamicResource DataGrid.Header.MouseOver.Background}"/>
+            <Setter Property="Margin" Value="0"/>
+        </Style>
+    </ControlTheme>
+
+    <!-- Default style for DataGridColumnHeader -->
+    <ControlTheme x:Key="{x:Type DataGridColumnHeader}" TargetType="DataGridColumnHeader" BasedOn="{StaticResource ColumnHeaderStyle}"/>
+
+    <!-- Left-aligned Column Header Style -->
+    <ControlTheme x:Key="LeftAlignedColumnHeaderStyle" TargetType="DataGridColumnHeader" BasedOn="{StaticResource ColumnHeaderStyle}">
+        <Setter Property="HorizontalContentAlignment" Value="Left"/>
+    </ControlTheme>
+
+    <!-- Right-aligned Column Header Style -->
+    <ControlTheme x:Key="RightAlignedColumnHeaderStyle" TargetType="DataGridColumnHeader" BasedOn="{StaticResource ColumnHeaderStyle}">
+        <Setter Property="HorizontalContentAlignment" Value="Right"/>
+    </ControlTheme>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+    <!-- BACKWARD COMPATIBLE COLUMN HEADER STYLES (Bold)                              -->
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+
+    <!-- Left-aligned Column Header Style (Bold) -->
+    <ControlTheme x:Key="Left_ColumnHeaderStyle" TargetType="DataGridColumnHeader" BasedOn="{StaticResource ColumnHeaderStyle}">
+        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+        <Setter Property="themes:ColumnHeaderContent.Template">
+            <DataTemplate>
+                <TextBlock TextWrapping="Wrap" TextAlignment="Left" VerticalAlignment="Center"
+                           FontWeight="Bold" HorizontalAlignment="Stretch" Text="{Binding}"/>
+            </DataTemplate>
+        </Setter>
+    </ControlTheme>
+
+    <!-- Center-aligned Column Header Style (Bold) -->
+    <ControlTheme x:Key="Center_ColumnHeaderStyle" TargetType="DataGridColumnHeader" BasedOn="{StaticResource ColumnHeaderStyle}">
+        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+        <Setter Property="themes:ColumnHeaderContent.Template">
+            <DataTemplate>
+                <TextBlock TextWrapping="Wrap" TextAlignment="Center" VerticalAlignment="Center"
+                           FontWeight="Bold" HorizontalAlignment="Stretch" Text="{Binding}"/>
+            </DataTemplate>
+        </Setter>
+    </ControlTheme>
+
+    <!-- Right-aligned Column Header Style (Bold) -->
+    <ControlTheme x:Key="Right_ColumnHeaderStyle" TargetType="DataGridColumnHeader" BasedOn="{StaticResource ColumnHeaderStyle}">
+        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+        <Setter Property="themes:ColumnHeaderContent.Template">
+            <DataTemplate>
+                <TextBlock TextWrapping="Wrap" TextAlignment="Right" VerticalAlignment="Center"
+                           FontWeight="Bold" HorizontalAlignment="Stretch" Text="{Binding}"/>
+            </DataTemplate>
+        </Setter>
+    </ControlTheme>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+    <!-- MODAL COLUMN HEADER STYLES (Normal Weight)                                   -->
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+
+    <!-- Left-aligned Modal Column Header Style (Normal Weight) -->
+    <ControlTheme x:Key="Left_ColumnHeaderStyle_Modal" TargetType="DataGridColumnHeader" BasedOn="{StaticResource ColumnHeaderStyle}">
+        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+        <Setter Property="themes:ColumnHeaderContent.Template">
+            <DataTemplate>
+                <TextBlock TextWrapping="Wrap" TextAlignment="Left" VerticalAlignment="Center"
+                           FontWeight="Normal" HorizontalAlignment="Stretch" Text="{Binding}"/>
+            </DataTemplate>
+        </Setter>
+    </ControlTheme>
+
+    <!-- Center-aligned Modal Column Header Style (Normal Weight) -->
+    <ControlTheme x:Key="Center_ColumnHeaderStyle_Modal" TargetType="DataGridColumnHeader" BasedOn="{StaticResource ColumnHeaderStyle}">
+        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+        <Setter Property="themes:ColumnHeaderContent.Template">
+            <DataTemplate>
+                <TextBlock TextWrapping="Wrap" TextAlignment="Center" VerticalAlignment="Center"
+                           FontWeight="Normal" HorizontalAlignment="Stretch" Text="{Binding}"/>
+            </DataTemplate>
+        </Setter>
+    </ControlTheme>
+
+    <!-- Right-aligned Modal Column Header Style (Normal Weight) -->
+    <ControlTheme x:Key="Right_ColumnHeaderStyle_Modal" TargetType="DataGridColumnHeader" BasedOn="{StaticResource ColumnHeaderStyle}">
+        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+        <Setter Property="themes:ColumnHeaderContent.Template">
+            <DataTemplate>
+                <TextBlock TextWrapping="Wrap" TextAlignment="Right" VerticalAlignment="Center"
+                           FontWeight="Normal" HorizontalAlignment="Stretch" Text="{Binding}"/>
+            </DataTemplate>
+        </Setter>
+    </ControlTheme>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+    <!-- ROW HEADER STYLES                                                            -->
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+
+    <!-- Theme-aware Row Header Style - matches default WPF DataGrid row header width -->
+    <ControlTheme x:Key="RowHeaderStyle" TargetType="DataGridRowHeader">
+        <Setter Property="ContentTemplate">
+            <DataTemplate>
+                <TextBlock TextWrapping="Wrap"
+                           TextAlignment="Center"
+                           VerticalAlignment="Center"
+                           FontWeight="Bold"
+                           HorizontalAlignment="Stretch"
+                           Text="{Binding}"/>
+            </DataTemplate>
+        </Setter>
+        <Setter Property="Foreground" Value="{DynamicResource DataGrid.Header.Foreground}"/>
+        <Setter Property="Background" Value="{DynamicResource DataGrid.Row.Background}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource DataGrid.Header.Border}"/>
+        <Setter Property="BorderThickness" Value="0,0,1,0"/>
+        <Setter Property="HorizontalAlignment" Value="Stretch"/>
+        <Setter Property="HorizontalContentAlignment" Value="Center"/>
+        <Setter Property="VerticalAlignment" Value="Stretch"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
+        <Setter Property="Padding" Value="2,0,2,0"/>
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Grid>
+                    <Border Name="HeaderBorder"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            Background="{TemplateBinding Background}">
+                        <Grid Name="HeaderGrid" Margin="1,0,0,0">
+                            <Grid.Background>
+                                <SolidColorBrush Color="{DynamicResource DataGrid.RowHeader.Background}"/>
+                            </Grid.Background>
+                            <ContentPresenter Margin="{TemplateBinding Padding}"
+                                              Content="{TemplateBinding Content}"
+                                              ContentTemplate="{TemplateBinding ContentTemplate}"
+                                              HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                        </Grid>
+                    </Border>
+                </Grid>
+            </ControlTemplate>
+        </Setter>
+        <Style Selector="^:pointerover /template/ Grid#HeaderGrid">
+            <Setter Property="Background" Value="{DynamicResource DataGrid.Header.MouseOver.Background}"/>
+            <Setter Property="Margin" Value="0"/>
+        </Style>
+        <Style Selector="^:focus-within /template/ Grid#HeaderGrid">
+            <Setter Property="Background" Value="{DynamicResource DataGrid.Header.MouseOver.Background}"/>
+            <Setter Property="Margin" Value="0"/>
+        </Style>
+    </ControlTheme>
+
+    <!-- Default style for DataGridRowHeader -->
+    <ControlTheme x:Key="{x:Type DataGridRowHeader}" TargetType="DataGridRowHeader" BasedOn="{StaticResource RowHeaderStyle}"/>
+
+    <!-- Right-aligned Row Header Style -->
+    <ControlTheme x:Key="Right_RowHeaderStyle" TargetType="DataGridRowHeader" BasedOn="{StaticResource RowHeaderStyle}">
+        <Setter Property="ContentTemplate">
+            <DataTemplate>
+                <TextBlock TextWrapping="Wrap" TextAlignment="Right" VerticalAlignment="Center"
+                           FontWeight="Bold" HorizontalAlignment="Stretch" Text="{Binding}"/>
+            </DataTemplate>
+        </Setter>
+    </ControlTheme>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+    <!-- COPY PASTE DATAGRID                                                          -->
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+
+    <!-- DataGrid Row Style for CopyPasteDataGrid -->
+    <ControlTheme x:Key="CopyPasteDataGridRowStyle" TargetType="DataGridRow" BasedOn="{StaticResource DataGridRowDefaultTheme}">
+        <Setter Property="Background" Value="{DynamicResource DataGrid.Row.Background}"/>
+        <Setter Property="Foreground" Value="{DynamicResource DataGrid.Row.Foreground}"/>
+        <Style Selector="^:nth-child(2n)">
+            <Setter Property="Background" Value="{DynamicResource DataGrid.Row.Alternating.Background}"/>
+        </Style>
+        <Style Selector="^:pointerover">
+            <Setter Property="Background" Value="{DynamicResource DataGrid.Row.MouseOver.Background}"/>
+        </Style>
+        <Style Selector="^:selected">
+            <Setter Property="Background" Value="{DynamicResource DataGrid.Row.Selection.Background}"/>
+            <Setter Property="Foreground" Value="{DynamicResource DataGrid.Row.Selection.Foreground}"/>
+        </Style>
+        <Style Selector="^:selected[(wpf|WpfSelector.IsSelectionActive)=False]">
+            <Setter Property="Background" Value="{DynamicResource DataGrid.Row.Selection.Inactive.Background}"/>
+            <Setter Property="Foreground" Value="{DynamicResource DataGrid.Row.Selection.Inactive.Foreground}"/>
+        </Style>
+    </ControlTheme>
+
+    <!-- DataGrid Cell Style for CopyPasteDataGrid -->
+    <ControlTheme x:Key="CopyPasteDataGridCellStyle" TargetType="DataGridCell" BasedOn="{StaticResource SelectableDataGridCellStyle}"/>
+
+    <ControlTheme x:Key="CopyPasteDataGridStyle" TargetType="local:CopyPasteDataGrid" BasedOn="{StaticResource DataGridDefaultTheme}">
+        <Setter Property="Background" Value="{DynamicResource EnvironmentWindowBackground}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource DataGrid.Static.Border}"/>
+        <Setter Property="Foreground" Value="{DynamicResource DataGrid.Static.Foreground}"/>
+        <Setter Property="RowBackground" Value="{DynamicResource DataGrid.Row.Background}"/>
+        <Setter Property="HorizontalGridLinesBrush" Value="{DynamicResource DataGrid.GridLines}"/>
+        <Setter Property="VerticalGridLinesBrush" Value="{DynamicResource DataGrid.GridLines}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="RowHeight" Value="22"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
+        <Setter Property="GridLinesVisibility" Value="All"/>
+        <Setter Property="RowTheme" Value="{StaticResource CopyPasteDataGridRowStyle}"/>
+        <Setter Property="CellTheme" Value="{StaticResource CopyPasteDataGridCellStyle}"/>
+    </ControlTheme>
+
+    <ControlTheme x:Key="{x:Type local:CopyPasteDataGrid}" TargetType="local:CopyPasteDataGrid" BasedOn="{StaticResource CopyPasteDataGridStyle}"/>
+
+    <!-- Editing TextBox style for DataGridTextColumn cells. Uses DynamicResource
+         for all color properties so they resolve at runtime after ThemeService has
+         loaded the active color dictionary. BasedOn with StaticResource would resolve
+         at XAML parse time (before theme loading) and fall back to the WPF system
+         default white background. -->
+    <!-- XGoodFit port: a ControlTheme needs a template, so the style is based on the ported TextBox theme. -->
+    <ControlTheme x:Key="DataGridEditingTextBoxStyle" TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
+        <Setter Property="Background" Value="{DynamicResource TextBox.Static.Background}"/>
+        <Setter Property="Foreground" Value="{DynamicResource EnvironmentToolWindowText}"/>
+        <Setter Property="CaretBrush" Value="{DynamicResource TextBox.Caret}"/>
+        <Setter Property="SelectionBrush" Value="{DynamicResource TextBox.Selection.Background}"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Padding" Value="0"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
+    </ControlTheme>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+    <!-- VALIDATION DATAGRID                                                          -->
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+
+    <!-- DataGrid Row Style for ValidationDataGrid -->
+    <ControlTheme x:Key="ValidationDataGridRowStyle" TargetType="DataGridRow" BasedOn="{StaticResource DataGridRowDefaultTheme}">
+        <Setter Property="Background" Value="{DynamicResource DataGrid.Row.Background}"/>
+        <Setter Property="Foreground" Value="{DynamicResource DataGrid.Row.Foreground}"/>
+        <Style Selector="^:nth-child(2n)">
+            <Setter Property="Background" Value="{DynamicResource DataGrid.Row.Alternating.Background}"/>
+        </Style>
+        <Style Selector="^:pointerover">
+            <Setter Property="Background" Value="{DynamicResource DataGrid.Row.MouseOver.Background}"/>
+        </Style>
+        <Style Selector="^:selected">
+            <Setter Property="Background" Value="{DynamicResource DataGrid.Row.Selection.Background}"/>
+            <Setter Property="Foreground" Value="{DynamicResource DataGrid.Row.Selection.Foreground}"/>
+        </Style>
+        <Style Selector="^:selected[(wpf|WpfSelector.IsSelectionActive)=False]">
+            <Setter Property="Background" Value="{DynamicResource DataGrid.Row.Selection.Inactive.Background}"/>
+            <Setter Property="Foreground" Value="{DynamicResource DataGrid.Row.Selection.Inactive.Foreground}"/>
+        </Style>
+    </ControlTheme>
+
+    <!-- DataGrid Cell Style for ValidationDataGrid (includes error handling) -->
+    <ControlTheme x:Key="ValidationDataGridCellStyle" TargetType="DataGridCell" BasedOn="{StaticResource SelectableDataGridCellStyle}"/>
+
+    <ControlTheme x:Key="ValidationDataGridStyle" TargetType="local:ValidationDataGrid" BasedOn="{StaticResource DataGridDefaultTheme}">
+        <Setter Property="Background" Value="{DynamicResource EnvironmentWindowBackground}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource DataGrid.Static.Border}"/>
+        <Setter Property="Foreground" Value="{DynamicResource DataGrid.Static.Foreground}"/>
+        <Setter Property="RowBackground" Value="{DynamicResource DataGrid.Row.Background}"/>
+        <Setter Property="HorizontalGridLinesBrush" Value="{DynamicResource DataGrid.GridLines}"/>
+        <Setter Property="VerticalGridLinesBrush" Value="{DynamicResource DataGrid.GridLines}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="RowHeight" Value="22"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
+        <Setter Property="GridLinesVisibility" Value="All"/>
+        <Setter Property="RowTheme" Value="{StaticResource ValidationDataGridRowStyle}"/>
+        <Setter Property="CellTheme" Value="{StaticResource ValidationDataGridCellStyle}"/>
+        <!-- Theme-aware error colors -->
+        <Setter Property="ErrorCellBorderBrush" Value="{DynamicResource DataGrid.Cell.Error.Border}"/>
+        <Setter Property="ErrorCellBackgroundBrush" Value="{DynamicResource DataGrid.Cell.Error.Background}"/>
+    </ControlTheme>
+
+    <ControlTheme x:Key="{x:Type local:ValidationDataGrid}" TargetType="local:ValidationDataGrid" BasedOn="{StaticResource ValidationDataGridStyle}"/>
 
 </ResourceDictionary>

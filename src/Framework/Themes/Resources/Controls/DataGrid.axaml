@@ -1,0 +1,544 @@
+<!-- Ported from upstream/WPF-Framework/src/Themes/Resources/Controls/DataGrid.xaml. Conversion rules: Button.axaml. -->
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:wpf="using:WpfCompat"
+                    xmlns:themes="using:Themes">
+
+    <!--
+    DataGrid Control Templates
+
+    Provides comprehensive styling for DataGrid controls including:
+    - Cell styles (left, center, right aligned)
+    - Column header styles with sorting indicators
+    - Row header styles
+    - Grid-wide styling
+
+    All colors use DynamicResource bindings for runtime theme switching.
+    -->
+
+    <!--
+    XGoodFit port notes (GenericControls' theme ports its DataGrid styles on the same terms):
+    - The grid is ProDataGrid's DataGrid (migration plan §4.3). Its rows, cells and column headers
+      take ControlThemes through RowTheme, CellTheme and ColumnHeaderTheme (WPF's RowStyle, CellStyle
+      and ColumnHeaderStyle), and each column's HeaderTheme and CellTheme.
+    - WPF's styles here set no templates for the grid and its rows: those came from WPF's own theme
+      (Aero2). A ControlTheme is the whole theme, so the WPF defaults are ported first, as
+      DataGridDefaultTheme and DataGridRowDefaultTheme (with the cell's, DataGridCellDefaultTheme),
+      and upstream's styles are based on them. The templates keep WPF's layout and ProDataGrid's part
+      names: ProDataGrid finds its parts by name.
+    - WPF draws the grid lines when it renders: each cell its right edge, and the cells presenter the
+      bottom of the row, across the whole row, on the bottom pixel the cells leave for it. ProDataGrid
+      draws them with template parts whose brush it sets once, which misses a theme change while the
+      grid is out of view. So the templates draw their own lines (RightGridLine, BottomGridLine) bound
+      to the grid's brushes and GridLinesVisibility (DataGridGridLines), placed as WPF draws them: the
+      row's line lies over its cells' last pixel, which the cells leave while the grid shows horizontal
+      lines, so a row's height includes its line, and every column has its right line. The trailing
+      space after the last column is the rows' background (UseLightweightFiller), as WPF has no filler
+      cells.
+    - The text columns' elements: WPF's DataGridTextColumn gives its TextBlock a 2-pixel margin at each
+      side and its editing TextBox no border or padding (DefaultElementStyle and
+      DefaultEditingElementStyle). ProDataGrid looks those styles up by key: DataGridCellTextBlockTheme,
+      DataGridCellTextBoxTheme and DataGridCellCheckBoxTheme are defined here with WPF's values. The
+      editing TextBox is based on the ported TextBox theme rather than WPF's system one, so it has the
+      theme's colors in every theme, as upstream intends with DataGridEditingTextBoxStyle; WPF's own
+      check box column likewise shows the ported CheckBox.
+    - Triggers become pseudo-classes: a cell's IsSelected is :selected (its row's, when whole rows are
+      selected), IsMouseOver is :pointerover, AlternationIndex 1 is :nth-child(2n). WPF's
+      IsKeyboardFocusWithin on a cell becomes :focus (the current cell of a focused grid: ProDataGrid
+      focuses the grid, not the cell) and :focus-within (the cell's editor has the focus).
+    - Selector.IsSelectionActive, the inactive-selection condition, is WpfCompat's attached
+      WpfSelector.IsSelectionActive, which the grid sets from its IsKeyboardFocusWithin and its rows and
+      cells inherit, as in WPF.
+    - The column header grippers (PART_LeftHeaderGripper, PART_RightHeaderGripper) aren't in the
+      template: ProDataGrid resizes columns from the header's edges itself, and a Thumb there would
+      take its pointer events. ColumnHeaderGripperStyle is kept for code that uses the key.
+    - ProDataGrid binds a column header's ContentTemplate to its column's HeaderTemplate, null or not,
+      which hides the ContentTemplate a header style sets. The header styles set
+      ColumnHeaderContent.Template instead, and the header template shows ColumnHeaderContent's
+      EffectiveTemplate: the column's template if it has one, else the style's, as WPF does.
+    - The select-all button (WPF's DataGridSelectAllButtonStyle, a ComponentResourceKey) is ProDataGrid's
+      top-left corner header, a DataGridColumnHeader; it selects every cell when pressed, as WPF's
+      SelectAll command does. Its key is a string.
+    - Not ported: SnapsToDevicePixels and FocusVisualStyle (Avalonia's FocusAdorner is cleared instead),
+      ScrollViewer.CanContentScroll, PanningMode and Stylus settings (WPF scrolling, touch and pen).
+    -->
+
+    <!--
+    XGoodFit port: WPF's own DataGridCell style (Aero2), the theme of a cell no style sets. WPF's
+    TextBlock.TextAlignment and IsKeyboardFocusWithin are Avalonia's TextBlock.TextAlignment and
+    :focus or :focus-within; the high-contrast triggers aren't ported.
+    -->
+    <ControlTheme x:Key="DataGridCellDefaultTheme" TargetType="DataGridCell">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderBrush" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="FocusAdorner" Value="{x:Null}"/>
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Grid ColumnDefinitions="*,Auto" RowDefinitions="*,Auto">
+                    <Border Name="Bd"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}">
+                        <ContentPresenter Name="PART_ContentPresenter"
+                                          Content="{TemplateBinding Content}"
+                                          ContentTemplate="{TemplateBinding ContentTemplate}"/>
+                    </Border>
+                    <Rectangle Name="RightGridLine" Grid.Column="1" Grid.RowSpan="2" Width="1" VerticalAlignment="Stretch"
+                               Fill="{Binding VerticalGridLinesBrush, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                               IsVisible="{Binding GridLinesVisibility, RelativeSource={RelativeSource AncestorType=DataGrid}, Converter={x:Static themes:DataGridGridLines.ShowsVertical}}"/>
+                    <Rectangle Grid.Row="1" Height="1"
+                               IsVisible="{Binding GridLinesVisibility, RelativeSource={RelativeSource AncestorType=DataGrid}, Converter={x:Static themes:DataGridGridLines.ShowsHorizontal}}"/>
+                </Grid>
+            </ControlTemplate>
+        </Setter>
+        <Style Selector="^:selected">
+            <Setter Property="Background" Value="{DynamicResource SystemColors.HighlightBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource SystemColors.HighlightTextBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource SystemColors.HighlightBrush}"/>
+        </Style>
+        <Style Selector="^:focus, ^:focus-within">
+            <Setter Property="BorderBrush" Value="{DynamicResource SystemColors.ControlTextBrush}"/>
+        </Style>
+        <Style Selector="^:selected[(wpf|WpfSelector.IsSelectionActive)=False]">
+            <Setter Property="Background" Value="{DynamicResource SystemColors.InactiveSelectionHighlightBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource SystemColors.InactiveSelectionHighlightBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource SystemColors.InactiveSelectionHighlightTextBrush}"/>
+        </Style>
+        <Style Selector="^:disabled">
+            <Setter Property="Foreground" Value="{DynamicResource SystemColors.GrayTextBrush}"/>
+        </Style>
+    </ControlTheme>
+
+    <ControlTheme x:Key="{x:Type DataGridCell}" TargetType="DataGridCell" BasedOn="{StaticResource DataGridCellDefaultTheme}"/>
+
+    <!-- Selectable DataGrid Cell Style shared by grid-level and manual column styles -->
+    <ControlTheme x:Key="SelectableDataGridCellStyle" TargetType="DataGridCell">
+        <Setter Property="Foreground" Value="{Binding Foreground, RelativeSource={RelativeSource AncestorType=DataGridRow}}"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="FocusAdorner" Value="{x:Null}"/>
+        <!-- Custom template to prevent default WPF template from using SystemColors for inactive selection -->
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Grid ColumnDefinitions="*,Auto" RowDefinitions="*,Auto">
+                    <Border Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}">
+                        <ContentPresenter Name="PART_ContentPresenter"
+                                          Content="{TemplateBinding Content}"
+                                          ContentTemplate="{TemplateBinding ContentTemplate}"/>
+                    </Border>
+                    <Rectangle Name="RightGridLine" Grid.Column="1" Grid.RowSpan="2" Width="1" VerticalAlignment="Stretch"
+                               Fill="{Binding VerticalGridLinesBrush, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                               IsVisible="{Binding GridLinesVisibility, RelativeSource={RelativeSource AncestorType=DataGrid}, Converter={x:Static themes:DataGridGridLines.ShowsVertical}}"/>
+                    <Rectangle Grid.Row="1" Height="1"
+                               IsVisible="{Binding GridLinesVisibility, RelativeSource={RelativeSource AncestorType=DataGrid}, Converter={x:Static themes:DataGridGridLines.ShowsHorizontal}}"/>
+                </Grid>
+            </ControlTemplate>
+        </Setter>
+        <!-- Cell selection highlighting for extended selection mode -->
+        <Style Selector="^:selected">
+            <Setter Property="Background" Value="{DynamicResource DataGrid.Row.Selection.Background}"/>
+            <Setter Property="Foreground" Value="{DynamicResource DataGrid.Row.Selection.Foreground}"/>
+        </Style>
+        <!-- Inactive selection (when DataGrid loses focus) -->
+        <Style Selector="^:selected[(wpf|WpfSelector.IsSelectionActive)=False]">
+            <Setter Property="Background" Value="{DynamicResource DataGrid.Row.Selection.Inactive.Background}"/>
+            <Setter Property="Foreground" Value="{DynamicResource DataGrid.Row.Selection.Inactive.Foreground}"/>
+        </Style>
+        <!-- Focus border for keyboard navigation -->
+        <Style Selector="^:focus, ^:focus-within">
+            <Setter Property="BorderBrush" Value="{DynamicResource DataGrid.Cell.Focus.Border}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+        </Style>
+    </ControlTheme>
+
+    <!-- Cell Alignment Styles -->
+    <ControlTheme x:Key="Left_CellStyle" TargetType="DataGridCell" BasedOn="{StaticResource SelectableDataGridCellStyle}">
+        <Setter Property="TextBlock.TextAlignment" Value="Left"/>
+    </ControlTheme>
+
+    <ControlTheme x:Key="Center_CellStyle" TargetType="DataGridCell" BasedOn="{StaticResource SelectableDataGridCellStyle}">
+        <Setter Property="TextBlock.TextAlignment" Value="Center"/>
+    </ControlTheme>
+
+    <ControlTheme x:Key="Center_ReadOnly_CellStyle" TargetType="DataGridCell" BasedOn="{StaticResource SelectableDataGridCellStyle}">
+        <Setter Property="TextBlock.TextAlignment" Value="Center"/>
+        <Setter Property="Foreground" Value="{DynamicResource EnvironmentToolWindowDisabledText}"/>
+    </ControlTheme>
+
+    <ControlTheme x:Key="Right_CellStyle" TargetType="DataGridCell" BasedOn="{StaticResource SelectableDataGridCellStyle}">
+        <Setter Property="TextBlock.TextAlignment" Value="Right"/>
+    </ControlTheme>
+
+    <ControlTheme x:Key="Right_ReadOnly_CellStyle" TargetType="DataGridCell" BasedOn="{StaticResource SelectableDataGridCellStyle}">
+        <Setter Property="TextBlock.TextAlignment" Value="Right"/>
+        <Setter Property="Foreground" Value="{DynamicResource EnvironmentToolWindowDisabledText}"/>
+    </ControlTheme>
+
+    <!-- XGoodFit port: a style without a template kept WPF's own cell template; here it's based on that theme. -->
+    <ControlTheme x:Key="Disabled_CellStyle" TargetType="DataGridCell" BasedOn="{StaticResource DataGridCellDefaultTheme}">
+        <Setter Property="TextBlock.TextAlignment" Value="Center"/>
+        <Setter Property="IsEnabled" Value="False"/>
+    </ControlTheme>
+
+    <!-- Column Header Gripper Style -->
+    <ControlTheme x:Key="ColumnHeaderGripperStyle" TargetType="Thumb">
+        <Setter Property="Width" Value="2"/>
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Cursor" Value="SizeWestEast"/>
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border Background="Transparent" Padding="{TemplateBinding Padding}"/>
+            </ControlTemplate>
+        </Setter>
+    </ControlTheme>
+
+    <!--
+    Base Column Header Style
+    XGoodFit port: the sort arrow shows for ProDataGrid's :sortascending and :sortdescending, which
+    follow the column's SortDirection as WPF's triggers do. WPF's IsKeyboardFocusWithin is
+    :focus-within. A Control's content alignment defaults to Left and Top in WPF; the header sets both.
+    -->
+    <ControlTheme x:Key="ColumnHeaderStyle" TargetType="DataGridColumnHeader">
+        <Setter Property="MinHeight" Value="24"/>
+        <Setter Property="Height" Value="NaN"/>
+        <Setter Property="Foreground" Value="{DynamicResource DataGrid.Header.Foreground}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource DataGrid.Header.Border}"/>
+        <Setter Property="BorderThickness" Value="0,0,1,1"/>
+        <Setter Property="HorizontalAlignment" Value="Stretch"/>
+        <Setter Property="HorizontalContentAlignment" Value="Center"/>
+        <Setter Property="VerticalAlignment" Value="Stretch"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Grid>
+                    <Border BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            Background="{TemplateBinding Background}">
+                        <Grid Name="HeaderGrid" Margin="1,0,0,0" ColumnDefinitions="*,Auto">
+                            <Grid.Background>
+                                <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                                    <GradientStop Offset="0.25" Color="{DynamicResource DataGrid.Header.Background}"/>
+                                    <GradientStop Offset="1" Color="{DynamicResource DataGrid.Header.GradientEnd}"/>
+                                </LinearGradientBrush>
+                            </Grid.Background>
+                            <ContentPresenter Name="PART_ContentPresenter" Margin="6,3,6,3" Grid.Column="0"
+                                              Content="{TemplateBinding Content}"
+                                              ContentTemplate="{TemplateBinding (themes:ColumnHeaderContent.EffectiveTemplate)}"/>
+                            <Path x:Name="SortArrow" IsVisible="False"
+                                  Data="M0,0 L1,0 0.5,1 z" Stretch="Fill"
+                                  Grid.Column="1" Width="8" Height="6"
+                                  Fill="{DynamicResource DataGrid.Header.Foreground}" Margin="0,0,8,0"
+                                  VerticalAlignment="Center" RenderTransformOrigin="50%,40%"/>
+                        </Grid>
+                    </Border>
+                </Grid>
+            </ControlTemplate>
+        </Setter>
+        <!-- XGoodFit port: ProDataGrid's filler header, which the grid's own filler header replaces (DataGridDefaultTheme). -->
+        <Style Selector="^[IsEnabled=False]">
+            <Setter Property="Opacity" Value="0"/>
+        </Style>
+        <Style Selector="^:sortascending /template/ Path#SortArrow">
+            <Setter Property="IsVisible" Value="True"/>
+            <Setter Property="RenderTransform" Value="rotate(180deg)"/>
+        </Style>
+        <Style Selector="^:sortdescending /template/ Path#SortArrow">
+            <Setter Property="IsVisible" Value="True"/>
+        </Style>
+        <Style Selector="^:pointerover /template/ Grid#HeaderGrid">
+            <Setter Property="Background" Value="{DynamicResource DataGrid.Header.MouseOver.Background}"/>
+            <Setter Property="Margin" Value="0"/>
+        </Style>
+        <Style Selector="^:focus-within /template/ Grid#HeaderGrid">
+            <Setter Property="Background" Value="{DynamicResource DataGrid.Header.MouseOver.Background}"/>
+            <Setter Property="Margin" Value="0"/>
+        </Style>
+    </ControlTheme>
+
+    <!-- Left-Aligned Column Header Style -->
+    <ControlTheme x:Key="Left_ColumnHeaderStyle" TargetType="DataGridColumnHeader"
+                  BasedOn="{StaticResource ColumnHeaderStyle}">
+        <Setter Property="themes:ColumnHeaderContent.Template">
+            <DataTemplate>
+                <TextBlock TextWrapping="Wrap" TextAlignment="Left" VerticalAlignment="Center"
+                           FontWeight="Bold" HorizontalAlignment="Stretch" Text="{Binding}"/>
+            </DataTemplate>
+        </Setter>
+    </ControlTheme>
+
+    <!-- Center-Aligned Column Header Style -->
+    <ControlTheme x:Key="Center_ColumnHeaderStyle" TargetType="DataGridColumnHeader"
+                  BasedOn="{StaticResource ColumnHeaderStyle}">
+        <Setter Property="themes:ColumnHeaderContent.Template">
+            <DataTemplate>
+                <TextBlock TextWrapping="Wrap" TextAlignment="Center" VerticalAlignment="Center"
+                           FontWeight="Bold" HorizontalAlignment="Stretch" Text="{Binding}"/>
+            </DataTemplate>
+        </Setter>
+    </ControlTheme>
+
+    <!-- Right-Aligned Column Header Style -->
+    <ControlTheme x:Key="Right_ColumnHeaderStyle" TargetType="DataGridColumnHeader"
+                  BasedOn="{StaticResource ColumnHeaderStyle}">
+        <Setter Property="themes:ColumnHeaderContent.Template">
+            <DataTemplate>
+                <TextBlock TextWrapping="Wrap" TextAlignment="Right" VerticalAlignment="Center"
+                           FontWeight="Bold" HorizontalAlignment="Stretch" Text="{Binding}"/>
+            </DataTemplate>
+        </Setter>
+    </ControlTheme>
+
+    <!--
+    Row Header Style
+    XGoodFit port: IsRowSelected is ProDataGrid's :selected on the row header.
+    -->
+    <ControlTheme x:Key="RowHeaderStyle" TargetType="DataGridRowHeader">
+        <Setter Property="MinWidth" Value="20"/>
+        <Setter Property="Width" Value="NaN"/>
+        <Setter Property="Foreground" Value="{DynamicResource DataGrid.Header.Foreground}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource DataGrid.Header.Border}"/>
+        <Setter Property="BorderThickness" Value="0,0,1,1"/>
+        <Setter Property="HorizontalAlignment" Value="Stretch"/>
+        <Setter Property="HorizontalContentAlignment" Value="Center"/>
+        <Setter Property="VerticalAlignment" Value="Stretch"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Grid>
+                    <Border BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            Background="{TemplateBinding Background}">
+                        <Grid Name="HeaderGrid">
+                            <Grid.Background>
+                                <SolidColorBrush Color="{DynamicResource DataGrid.RowHeader.Background}"/>
+                            </Grid.Background>
+                            <ContentPresenter Margin="4,2,4,2"
+                                              Content="{TemplateBinding Content}"
+                                              ContentTemplate="{TemplateBinding ContentTemplate}"
+                                              VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                        </Grid>
+                    </Border>
+                    <!-- Row selection indicator arrow -->
+                    <Path x:Name="SelectionArrow" IsVisible="False"
+                          Data="M0,0 L4,4 0,8 z" Stretch="Fill"
+                          Width="6" Height="10" Margin="2,0,0,0"
+                          Fill="{DynamicResource DataGrid.Header.Foreground}"
+                          VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                </Grid>
+            </ControlTemplate>
+        </Setter>
+        <Style Selector="^:selected /template/ Path#SelectionArrow">
+            <Setter Property="IsVisible" Value="True"/>
+        </Style>
+        <Style Selector="^:pointerover /template/ Grid#HeaderGrid">
+            <Setter Property="Background" Value="{DynamicResource DataGrid.Header.MouseOver.Background}"/>
+        </Style>
+    </ControlTheme>
+
+    <!-- Right-Aligned Row Header Style -->
+    <ControlTheme x:Key="Right_RowHeaderStyle" TargetType="DataGridRowHeader"
+                  BasedOn="{StaticResource RowHeaderStyle}">
+        <Setter Property="HorizontalContentAlignment" Value="Right"/>
+        <Setter Property="ContentTemplate">
+            <DataTemplate>
+                <TextBlock TextWrapping="Wrap" TextAlignment="Right" VerticalAlignment="Center"
+                           FontWeight="Bold" HorizontalAlignment="Stretch" Text="{Binding}"/>
+            </DataTemplate>
+        </Setter>
+    </ControlTheme>
+
+    <!--
+    XGoodFit port: WPF's own DataGridRow style (Aero2), which upstream's row styles build on: the
+    row header beside the cells and the details below them. PART_BottomGridLine draws the row's
+    horizontal grid line. The new-item row's margin trigger isn't ported: ProDataGrid lays out its
+    new-item row like the others.
+    -->
+    <ControlTheme x:Key="DataGridRowDefaultTheme" TargetType="DataGridRow">
+        <Setter Property="Background" Value="{DynamicResource SystemColors.WindowBrush}"/>
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border Name="DGR_Border"
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}">
+                    <DataGridFrozenGrid Name="PART_Root" ColumnDefinitions="Auto,*" RowDefinitions="*,Auto">
+                        <DataGridCellsPresenter Name="PART_CellsPresenter" Grid.Column="1"
+                                                DataGridFrozenGrid.IsFrozen="True"/>
+                        <Rectangle Name="BottomGridLine" Grid.Column="1" Height="1"
+                                   VerticalAlignment="Bottom" HorizontalAlignment="Stretch"
+                                   Fill="{Binding HorizontalGridLinesBrush, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                   IsVisible="{Binding GridLinesVisibility, RelativeSource={RelativeSource AncestorType=DataGrid}, Converter={x:Static themes:DataGridGridLines.ShowsHorizontal}}"/>
+                        <DataGridDetailsPresenter Name="PART_DetailsPresenter" Grid.Column="1" Grid.Row="1"/>
+                        <DataGridRowHeader Name="PART_RowHeader" Grid.RowSpan="2"
+                                           DataGridFrozenGrid.IsFrozen="True"/>
+                    </DataGridFrozenGrid>
+                </Border>
+            </ControlTemplate>
+        </Setter>
+    </ControlTheme>
+
+    <ControlTheme x:Key="{x:Type DataGridRow}" TargetType="DataGridRow" BasedOn="{StaticResource DataGridRowDefaultTheme}"/>
+
+    <!-- DataGrid Row Style -->
+    <ControlTheme x:Key="DataGridRowStyle" TargetType="DataGridRow" BasedOn="{StaticResource DataGridRowDefaultTheme}">
+        <Setter Property="Background" Value="{DynamicResource DataGrid.Row.Background}"/>
+        <Setter Property="Foreground" Value="{DynamicResource DataGrid.Row.Foreground}"/>
+        <Style Selector="^:nth-child(2n)">
+            <Setter Property="Background" Value="{DynamicResource DataGrid.Row.Alternating.Background}"/>
+        </Style>
+        <Style Selector="^:pointerover">
+            <Setter Property="Background" Value="{DynamicResource DataGrid.Row.MouseOver.Background}"/>
+        </Style>
+        <Style Selector="^:selected">
+            <Setter Property="Background" Value="{DynamicResource DataGrid.Row.Selection.Background}"/>
+            <Setter Property="Foreground" Value="{DynamicResource DataGrid.Row.Selection.Foreground}"/>
+        </Style>
+        <Style Selector="^:selected[(wpf|WpfSelector.IsSelectionActive)=False]">
+            <Setter Property="Background" Value="{DynamicResource DataGrid.Row.Selection.Inactive.Background}"/>
+            <Setter Property="Foreground" Value="{DynamicResource DataGrid.Row.Selection.Inactive.Foreground}"/>
+        </Style>
+    </ControlTheme>
+
+    <!-- DataGrid Cell Style -->
+    <ControlTheme x:Key="DataGridCellStyle" TargetType="DataGridCell" BasedOn="{StaticResource SelectableDataGridCellStyle}"/>
+
+    <!--
+    Select All Button Style (top-left corner)
+    XGoodFit port: ProDataGrid's top-left corner header (see the notes above).
+    -->
+    <ControlTheme x:Key="DataGridSelectAllButtonStyle" TargetType="DataGridColumnHeader">
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Grid>
+                    <Border x:Name="Border"
+                            BorderBrush="{DynamicResource DataGrid.Header.Border}"
+                            BorderThickness="0,0,1,1">
+                        <Border.Background>
+                            <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                                <GradientStop Offset="0.25" Color="{DynamicResource DataGrid.Header.Background}"/>
+                                <GradientStop Offset="1" Color="{DynamicResource DataGrid.Header.GradientEnd}"/>
+                            </LinearGradientBrush>
+                        </Border.Background>
+                    </Border>
+                    <Polygon x:Name="Arrow"
+                             Fill="{DynamicResource DataGrid.Header.Foreground}"
+                             HorizontalAlignment="Right"
+                             Margin="8,8,3,3"
+                             Opacity="0.15"
+                             Points="0,10 10,10 10,0"
+                             Stretch="Uniform"
+                             VerticalAlignment="Bottom"/>
+                </Grid>
+            </ControlTemplate>
+        </Setter>
+        <Style Selector="^:pointerover /template/ Border#Border">
+            <Setter Property="Background" Value="{DynamicResource DataGrid.Header.MouseOver.Background}"/>
+        </Style>
+        <Style Selector="^:pressed /template/ Border#Border">
+            <Setter Property="Background" Value="{DynamicResource DataGrid.Header.MouseOver.Background}"/>
+        </Style>
+        <Style Selector="^:disabled /template/ Polygon#Arrow">
+            <Setter Property="IsVisible" Value="False"/>
+        </Style>
+    </ControlTheme>
+
+    <!--
+    XGoodFit port: WPF's own DataGrid style (Aero2) and the DataGrid defaults that differ from
+    ProDataGrid's (every header shown, all grid lines, auto-generated columns sized to their headers,
+    columns the user can resize and reorder), which upstream's grid styles build on. The template is
+    Aero2's: the select-all corner, the column headers, the rows under both, and the scroll bars.
+    ProDataGrid scrolls the rows itself, so the parts are ProDataGrid's (PART_RowsPresenter and the
+    legacy scroll bars) rather than a ScrollViewer. The grid's IsKeyboardFocusWithin is WPF's
+    Selector.IsSelectionActive for its rows and cells (see the notes above).
+    -->
+    <ControlTheme x:Key="DataGridDefaultTheme" TargetType="DataGrid">
+        <Setter Property="Background" Value="{DynamicResource SystemColors.ControlBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource SystemColors.ControlTextBrush}"/>
+        <Setter Property="BorderBrush" Value="#FF688CAF"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="HeadersVisibility" Value="All"/>
+        <Setter Property="GridLinesVisibility" Value="All"/>
+        <Setter Property="HorizontalGridLinesBrush" Value="Black"/>
+        <Setter Property="VerticalGridLinesBrush" Value="Black"/>
+        <Setter Property="AutoGenerateColumns" Value="True"/>
+        <Setter Property="CanUserResizeColumns" Value="True"/>
+        <Setter Property="CanUserReorderColumns" Value="True"/>
+        <Setter Property="ColumnWidth" Value="SizeToHeader"/>
+        <Setter Property="UseLightweightFiller" Value="True"/>
+        <Setter Property="FocusAdorner" Value="{x:Null}"/>
+        <Setter Property="wpf:WpfSelector.IsSelectionActive" Value="{Binding IsKeyboardFocusWithin, RelativeSource={RelativeSource Self}}"/>
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        Padding="{TemplateBinding Padding}">
+                    <Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,*,Auto" ClipToBounds="True">
+                        <!--Left Column Header Corner -->
+                        <DataGridColumnHeader Name="PART_TopLeftCornerHeader"
+                                              Theme="{DynamicResource DataGridSelectAllButtonStyle}"/>
+                        <!--Column Headers-->
+                        <!--
+                        XGoodFit port: WPF's column headers presenter has a filler header behind the
+                        headers, across the whole row of headers (PART_FillerColumnHeader). It is as wide as
+                        the rows' cells, which leaves its right edge out of view; the margin does that here.
+                        ProDataGrid's own filler header, to the right of the columns, is hidden by the header
+                        styles (it is the one header that is IsEnabled="False").
+                        -->
+                        <DataGridColumnHeader Name="FillerColumnHeader" Grid.Column="1" Margin="0,0,-1,0"
+                                              IsHitTestVisible="False" Focusable="False"
+                                              Theme="{TemplateBinding ColumnHeaderTheme}"/>
+                        <DataGridColumnHeadersPresenter Name="PART_ColumnHeadersPresenter" Grid.Column="1"/>
+                        <!--DataGrid content-->
+                        <DataGridRowsPresenter Name="PART_RowsPresenter" Grid.Row="1" Grid.ColumnSpan="2"/>
+                        <ScrollBar Name="PART_VerticalScrollbar" Grid.Row="1" Grid.Column="2" Orientation="Vertical"/>
+                        <Grid Grid.Row="2" Grid.Column="1" ColumnDefinitions="Auto,*,Auto">
+                            <Rectangle Name="PART_FrozenColumnScrollBarSpacer"/>
+                            <ScrollBar Name="PART_HorizontalScrollbar" Grid.Column="1" Orientation="Horizontal"/>
+                            <Rectangle Name="PART_FrozenColumnScrollBarSpacerRight" Grid.Column="2"/>
+                        </Grid>
+                    </Grid>
+                </Border>
+            </ControlTemplate>
+        </Setter>
+    </ControlTheme>
+
+    <!-- Main DataGrid Style -->
+    <ControlTheme x:Key="DataGridStyle" TargetType="DataGrid" BasedOn="{StaticResource DataGridDefaultTheme}">
+        <Setter Property="Background" Value="{DynamicResource DataGrid.Static.Background}"/>
+        <Setter Property="Foreground" Value="{DynamicResource DataGrid.Static.Foreground}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource DataGrid.Static.Border}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="HorizontalGridLinesBrush" Value="{DynamicResource DataGrid.GridLines}"/>
+        <Setter Property="VerticalGridLinesBrush" Value="{DynamicResource DataGrid.GridLines}"/>
+        <Setter Property="RowTheme" Value="{StaticResource DataGridRowStyle}"/>
+        <Setter Property="CellTheme" Value="{StaticResource DataGridCellStyle}"/>
+        <Setter Property="ColumnHeaderTheme" Value="{StaticResource ColumnHeaderStyle}"/>
+        <Setter Property="RowHeight" Value="22"/>
+        <Setter Property="GridLinesVisibility" Value="All"/>
+    </ControlTheme>
+
+    <ControlTheme x:Key="{x:Type DataGrid}" TargetType="DataGrid" BasedOn="{StaticResource DataGridStyle}"/>
+
+    <!--
+    XGoodFit port: the styles WPF's DataGridTextColumn and DataGridCheckBoxColumn give the elements they
+    create (DefaultElementStyle and DefaultEditingElementStyle), under the keys ProDataGrid's columns
+    look up (see the notes above).
+    -->
+    <ControlTheme x:Key="DataGridCellTextBlockTheme" TargetType="TextBlock">
+        <Setter Property="Margin" Value="2,0,2,0"/>
+    </ControlTheme>
+
+    <ControlTheme x:Key="DataGridCellTextBoxTheme" TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Padding" Value="0"/>
+    </ControlTheme>
+
+    <ControlTheme x:Key="DataGridCellCheckBoxTheme" TargetType="CheckBox" BasedOn="{StaticResource {x:Type CheckBox}}">
+        <Setter Property="HorizontalAlignment" Value="Center"/>
+        <Setter Property="VerticalAlignment" Value="Top"/>
+    </ControlTheme>
+
+</ResourceDictionary>

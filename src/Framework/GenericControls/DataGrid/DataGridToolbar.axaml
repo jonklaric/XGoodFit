@@ -1,0 +1,64 @@
+<!--
+    XGoodFit port of upstream's DataGrid/DataGridToolbar.xaml: ToolTip is ToolTip.Tip, and
+    Visibility="Collapsed" is IsVisible="False" (the code-behind shows it with Visibility). The resource
+    dictionary is merged with a ResourceInclude. SnapsToDevicePixels isn't ported.
+-->
+<UserControl x:Class="GenericControls.DataGridToolbar" x:Name="DataGridToolsControl"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="using:GenericControls"
+             mc:Ignorable="d"
+             d:DesignHeight="450" d:DesignWidth="800"
+             UseLayoutRounding="True">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceInclude Source="avares://GenericControls/Resources/ResourceDictionary.axaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <StackPanel Name="ToolbarStackPanel" Orientation="{Binding ElementName=DataGridToolsControl, Path=ToolOrientation, TargetNullValue=Horizontal, FallbackValue=Horizontal}" Background="{Binding ElementName=DataGridToolsControl, Path=BackgroundColor}">
+        <!--Add Row(s)-->
+        <Button x:Name="AddRowsButton" ToolTip.Tip="Add row(s) to the bottom of the table" Cursor="Hand" Click="AddRowsButton_Click">
+            <ContentControl Content="{DynamicResource AddRowIcon}"/>
+        </Button>
+        <!--Insert Row(s)-->
+        <Button x:Name="InsertRowsButton" ToolTip.Tip="Insert row(s) above selected cell(s) in table" Cursor="Hand" Click="InsertRowsButton_Click">
+            <ContentControl Content="{DynamicResource InsertRowIcon}"/>
+        </Button>
+        <!--Delete Row(s)-->
+        <Button x:Name="DeleteRowsButton" ToolTip.Tip="Delete row(s) from the table" Cursor="Hand" Click="DeleteRowsButton_Click">
+            <ContentControl Content="{DynamicResource DeleteRowIcon}"/>
+        </Button>
+
+        <!--Separator-->
+        <Separator x:Name="CustomOptionsSeparator" IsVisible="False"/>
+        <!--Custom Buttons-->
+
+
+        <!--Separator-->
+        <Separator x:Name="EditSelectSeparator" />
+        <!--Select All-->
+        <Button x:Name="SelectAllButton" ToolTip.Tip="Select all cells" Cursor="Hand" Click="SelectAllButton_Click">
+            <ContentControl Content="{DynamicResource SelectAllIcon}"/>
+        </Button>
+
+        <!--Copy-->
+        <Button x:Name="CopyButton" ToolTip.Tip="Copy selected cells" Cursor="Hand" Click="CopyButton_Click">
+            <ContentControl Content="{DynamicResource CopyIcon}"/>
+        </Button>
+
+        <!--Copy with Headers-->
+        <Button x:Name="CopyWithHeadersButton" ToolTip.Tip="Copy selected cells with table headers" Cursor="Hand" Click="CopyWithHeadersButton_Click">
+            <ContentControl Content="{DynamicResource CopyWithHeadersIcon}"/>
+        </Button>
+
+        <!--Paste-->
+        <Button x:Name="PasteButton" ToolTip.Tip="Paste from the clipboard into the table" Cursor="Hand" Click="PasteButton_Click">
+            <ContentControl Content="{DynamicResource PasteIcon}"/>
+        </Button>
+
+    </StackPanel>
+</UserControl>

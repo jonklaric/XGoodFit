@@ -53,6 +53,13 @@
     -->
     <SolidColorBrush x:Key="SystemColors.ControlTextBrush" Color="#FF000000"/>
     <SolidColorBrush x:Key="SystemColors.GrayTextBrush" Color="#FF6D6D6D"/>
+    <!-- The colours of WPF's own DataGrid, row and cell styles (DataGrid.axaml). -->
+    <SolidColorBrush x:Key="SystemColors.ControlBrush" Color="#FFF0F0F0"/>
+    <SolidColorBrush x:Key="SystemColors.WindowBrush" Color="#FFFFFFFF"/>
+    <SolidColorBrush x:Key="SystemColors.HighlightBrush" Color="#FF0078D7"/>
+    <SolidColorBrush x:Key="SystemColors.HighlightTextBrush" Color="#FFFFFFFF"/>
+    <SolidColorBrush x:Key="SystemColors.InactiveSelectionHighlightBrush" Color="#FFF0F0F0"/>
+    <SolidColorBrush x:Key="SystemColors.InactiveSelectionHighlightTextBrush" Color="#FF000000"/>
     <x:Double x:Key="SystemParameters.VerticalScrollBarWidth">17</x:Double>
     <x:Double x:Key="SystemParameters.HorizontalScrollBarHeight">17</x:Double>
     <x:Double x:Key="SystemParameters.VerticalScrollBarButtonHeight">17</x:Double>
@@ -82,9 +89,8 @@
     <!-- ═══════════════════════════════════════════════════════════════════════════ -->
     <!-- CONTROL TEMPLATES                                                            -->
     <!-- Ported control themes are merged here as they land, in upstream's order      -->
-    <!-- (docs/migration-plan.md §6, Phase 3). Not yet here: DataGrid (with           -->
-    <!-- ProDataGrid) and RichTextBox (with its replacements). StatusBar isn't        -->
-    <!-- ported: nothing upstream uses one.                                           -->
+    <!-- (docs/migration-plan.md §6, Phase 3). Not yet here: RichTextBox (with its    -->
+    <!-- replacements). StatusBar isn't ported: nothing upstream uses one.            -->
     <!-- ═══════════════════════════════════════════════════════════════════════════ -->
 
     <ResourceDictionary.MergedDictionaries>
@@ -93,6 +99,7 @@
         <ResourceInclude Source="avares://Themes/Resources/Controls/CheckBox.axaml"/>
         <ResourceInclude Source="avares://Themes/Resources/Controls/RadioButton.axaml"/>
         <ResourceInclude Source="avares://Themes/Resources/Controls/ComboBox.axaml"/>
+        <ResourceInclude Source="avares://Themes/Resources/Controls/DataGrid.axaml"/>
         <ResourceInclude Source="avares://Themes/Resources/Controls/Expander.axaml"/>
         <ResourceInclude Source="avares://Themes/Resources/Controls/GridSplitter.axaml"/>
         <ResourceInclude Source="avares://Themes/Resources/Controls/GroupBox.axaml"/>
