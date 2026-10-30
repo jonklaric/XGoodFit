@@ -9,6 +9,11 @@
     Docking is Dock.Avalonia.AvalonDock: AvalonDock's API (namespace AvalonDock rather than
     Xceed.Wpf.AvalonDock) over Dock's Avalonia controls. It reads and writes AvalonDock's layout XML,
     which projects store, unchanged.
+
+    Every upstream file is ported but two: Properties/Settings.Designer.cs (WPF application settings,
+    which nothing uses; the user settings are UserSettings' XML file) and
+    Themes/VS2013/Controls/MainWindowStyle.xaml (keyed styles that only it uses; see
+    Themes/VS2013/Controls/Merged.axaml). tools/FrameworkUI.Demo runs the shell.
   -->
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
@@ -40,6 +45,7 @@
 
   <ItemGroup>
     <!-- Upstream files that compile unchanged. -->
+    <UpstreamCompileInclude Include="Project Explorer/View Models/ElementNodeGroup.cs" />
     <UpstreamCompileInclude Include="Themes/ThemeColor.cs" />
     <UpstreamCompileInclude Include="Utilities/ApplicationAttributes.cs" />
   </ItemGroup>
@@ -53,6 +59,11 @@
   <ItemGroup>
     <!-- Element and project icons: WPF's ImageSource is Avalonia's IImage, keeping upstream's name. -->
     <Using Include="Avalonia.Media.IImage" Alias="ImageSource" />
+    <!--
+      Documents and properties panels: WPF's UIElement is Avalonia's Control, keeping upstream's name in
+      FrameworkUIController's abstract members (which applications override) and in MainWindow.
+    -->
+    <Using Include="Avalonia.Controls.Control" Alias="UIElement" />
   </ItemGroup>
 
 </Project>

@@ -17,7 +17,7 @@ public sealed class ShellTests
 {
     // The dock layout a sample RMC-BestFit project (usgs-download-example.bestfit) stores, as WPF's
     // AvalonDock wrote it: pane groups, pixel and star sizes, documents and activation times.
-    private const string StoredLayout = """
+    internal const string StoredLayout = """
         <?xml version="1.0" encoding="utf-8"?>
         <LayoutRoot>
           <RootPanel Orientation="Horizontal">

@@ -1,0 +1,69 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Avalonia port of upstream/WPF-Framework/src/FrameworkUI.Demo: a project of hazard functions in the
+    FrameworkUI shell, as a smoke test of the shell before RMC-BestFit's application is ported. With
+    "capture <folder>" it renders the shell in every theme to PNG files instead, headlessly.
+
+    Upstream C# files compile unchanged unless a ported copy exists here (Directory.Build.targets).
+    Left out until their libraries are ported (marked "XGoodFit port: deferred" where they were):
+    the hazard document's plot toolbar and the plot properties panel (OxyPlotControls), its parameter
+    sets table (DatabaseControls' TableViewer), and the probability ordinates editor (NumericControls).
+  -->
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>FrameworkUI.Demo</RootNamespace>
+    <AssemblyName>FrameworkUI.Demo</AssemblyName>
+    <!-- As upstream: the demo's code is written without nullable annotations. -->
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <ApplicationIcon>$(UpstreamFrameworkSrc)FrameworkUI.Demo/Resources/FrameworkUIDemo.ico</ApplicationIcon>
+    <!-- As upstream: the shell's title is the assembly's (ShellPublicVariables.SoftwareName). -->
+    <Company>U.S. Army Corps of Engineers</Company>
+    <AssemblyTitle>WPF Framework Demo</AssemblyTitle>
+    <Product>WPF Framework Demo</Product>
+    <Version>1.0.0</Version>
+    <UpstreamProjectDir>$(UpstreamFrameworkSrc)FrameworkUI.Demo/</UpstreamProjectDir>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <UpstreamCompileRemove Include="AssemblyResolver.cs" Reason="loads the Windows installer's Libraries folder; .NET's dependency manifest finds the libraries" />
+    <UpstreamCompileRemove Include="Properties/Resources.Designer.cs" Reason="WPF project resources nothing uses" />
+    <UpstreamCompileRemove Include="Properties/Settings.Designer.cs" Reason="WPF application settings nothing uses" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia.Desktop" />
+    <PackageReference Include="Avalonia.Headless" />
+    <PackageReference Include="Avalonia.Themes.Simple" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="$(UpstreamFrameworkSrc)DatabaseManager/DatabaseManager.csproj" />
+    <ProjectReference Include="$(UpstreamRoot)Numerics/Numerics/Numerics.csproj" />
+    <ProjectReference Include="../../src/Framework/FrameworkInterfaces/FrameworkInterfaces.csproj" />
+    <ProjectReference Include="../../src/Framework/FrameworkUI/FrameworkUI.csproj" />
+    <ProjectReference Include="../../src/Framework/GenericControls/GenericControls.csproj" />
+    <ProjectReference Include="../../src/Framework/OxyPlot/OxyPlot.Wpf/OxyPlot.Wpf.csproj" />
+    <ProjectReference Include="../../src/Framework/OxyPlotControls/OxyPlotControls.csproj" />
+    <ProjectReference Include="../../src/Framework/SoftwareUpdate/SoftwareUpdate.csproj" />
+    <ProjectReference Include="../../src/Framework/Themes/Themes.csproj" />
+    <ProjectReference Include="../../src/Framework/WpfCompat/WpfCompat.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!--
+      The hazard properties' parameter rows: NumericControls' Parameter, which has no WPF code, compiles
+      from upstream's source until NumericControls is ported (then it's a project reference).
+    -->
+    <Compile Include="$(UpstreamFrameworkSrc)NumericControls/Distributions/Univariate/Distribution Selector/Parameter.cs"
+             Link="upstream/NumericControls/Parameter.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- The project icon (DemoProject.ProjectImage). -->
+    <AvaloniaResource Include="$(UpstreamProjectDir)Resources/FrameworkUIDemo.ico" Link="Resources/FrameworkUIDemo.ico" />
+  </ItemGroup>
+
+</Project>

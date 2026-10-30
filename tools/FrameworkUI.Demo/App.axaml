@@ -1,0 +1,43 @@
+<!--
+    XGoodFit port of upstream's App.xaml:
+    - Startup, ShutdownMode and DispatcherUnhandledException are set in code (App.axaml.cs), where
+      Avalonia's desktop lifetime and dispatcher have them.
+    - The application's styles are Avalonia's base control themes, where WPF had its own, and the dock's
+      controls (AvalonDockTheme), which the shell gives the VS2013 look (DockThemeSwitcher).
+    - The resources merge in upstream's order. OxyPlotControls', NumericControls' and DatabaseControls'
+      themes are deferred until those libraries are ported; the property expander and properties tab
+      styles the hazard properties use, which upstream's comment places in OxyPlotControls' theme, are
+      Themes' (ThemeService adds them).
+-->
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:dock="using:AvalonDock.Themes"
+             x:Class="FrameworkUI.Demo.App">
+    <Application.Styles>
+        <SimpleTheme/>
+        <dock:AvalonDockTheme/>
+    </Application.Styles>
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <!-- Icon resources -->
+                <ResourceInclude Source="avares://FrameworkUI/Icons/IconDictionary.axaml"/>
+
+                <!-- Demo element icons (theme-aware vector icons) -->
+                <ResourceInclude Source="avares://FrameworkUI.Demo/Resources/IconDictionary.axaml"/>
+
+                <!-- Theme resources are loaded by ThemeService.Initialize() in App.axaml.cs -->
+                <!-- This ensures proper loading order and enables runtime theme switching -->
+
+                <!-- GenericControls Theme Resources (for CopyPasteDataGrid, cell/header styles, etc.) -->
+                <ResourceInclude Source="avares://GenericControls/Themes/GenericControlsTheme.axaml"/>
+
+                <!-- OxyPlotControls Theme Resources (for PropertyExpanderStyle, PropertiesTabItemStyle, etc.): deferred -->
+
+                <!-- NumericControls Theme Resources (for probability ordinate editing controls): deferred -->
+
+                <!-- DatabaseControls Theme Resources (for TableViewer styles): deferred -->
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

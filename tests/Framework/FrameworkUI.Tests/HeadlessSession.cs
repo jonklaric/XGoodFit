@@ -1,8 +1,9 @@
 using Avalonia;
 using Avalonia.Headless;
-using Themes;
+using Avalonia.Markup.Xaml.Styling;
 using Avalonia.Themes.Simple;
 using AvalonDock.Themes;
+using Themes;
 
 [assembly: DoNotParallelize]
 
@@ -16,6 +17,12 @@ public sealed class TestApp : Application
     {
         Styles.Add(new SimpleTheme());
         Styles.Add(new AvalonDockTheme());
+        // As upstream's applications: GenericControls' theme in the application's resources, before the
+        // themes ThemeManager.SetTheme adds.
+        Resources.MergedDictionaries.Add(new ResourceInclude(new Uri("avares://FrameworkUI.Tests/"))
+        {
+            Source = new Uri("avares://GenericControls/Themes/GenericControlsTheme.axaml"),
+        });
     }
 
     /// <summary>Builds the headless application.</summary>

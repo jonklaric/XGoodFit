@@ -1,0 +1,99 @@
+<!--
+    XGoodFit port of upstream's Unsaved Elements/SaveElementsDialog.xaml:
+    - The window's Style is its Theme, and its Icon, an image resource in WPF, is WpfCompat's
+      WindowIconSource.Icon.
+    - The grid is GenericControls' CopyPasteDataGrid as a plain WPF DataGrid (see the message window's
+      notes): the implicit DataGrid theme, and the WPF defaults CopyPasteDataGrid changes set back,
+      with DataGridStyle's row height. Its context menus are suppressed in the code-behind. RowStyle is
+      RowTheme, based on the ported WPF default row; column header styles are HeaderTheme;
+      ElementStyle is DataGridColumnStyles.ElementStyle.
+    - RenderOptions.BitmapScalingMode is BitmapInterpolationMode.
+-->
+<cntrls:MetroWindow x:Class="FrameworkUI.SaveElementsDialog"
+        xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:cntrls="using:GenericControls"
+        xmlns:wpf="using:WpfCompat"
+        mc:Ignorable="d"
+        Title="Save Changes"
+        wpf:WindowIconSource.Icon="{DynamicResource SaveImage}"
+        ResizeMode="NoResize"
+        ShowInTaskbar="True"
+        WindowStartupLocation="CenterScreen"
+        SizeToContent="WidthAndHeight"
+        Theme="{DynamicResource MetroWindowStyle}"
+        Background="{DynamicResource EnvironmentWindowBackground}"
+        Foreground="{DynamicResource EnvironmentWindowText}"
+        DataContext="{Binding RelativeSource={RelativeSource Self}}">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock Text="Would you like to save changes to the following items?" Margin="6,6,6,0" Grid.Row="0" VerticalAlignment="Bottom"/>
+
+        <!--Data Grid-->
+        <cntrls:CopyPasteDataGrid x:Name="MyDataGrid"  Margin="6" Grid.Row="1" Height="250" Width="400"
+                  Theme="{DynamicResource DataGridStyle}"
+                  AutoGenerateColumns="False"
+                  IsReadOnly="True"
+                  Background="{DynamicResource DataGrid.Static.Background}"
+                  BorderBrush="{DynamicResource SeparatorBorder}"
+                  BorderThickness="1"
+                  GridLinesVisibility="None"
+                  HeadersVisibility="Column"
+                  IsEnabled="False"
+                  SelectionUnit="FullRow" CanUserResizeColumns="True" CanUserSortColumns="True" CanUserReorderColumns="True"
+                  RowHeight="22" ShowSortContextMenu="False">
+            <cntrls:CopyPasteDataGrid.RowTheme>
+                <ControlTheme TargetType="DataGridRow" BasedOn="{StaticResource DataGridRowDefaultTheme}">
+                    <Setter Property="Background" Value="Transparent"/>
+                    <Setter Property="Foreground" Value="{DynamicResource EnvironmentWindowText}"/>
+                </ControlTheme>
+            </cntrls:CopyPasteDataGrid.RowTheme>
+            <cntrls:CopyPasteDataGrid.Columns>
+                <DataGridTemplateColumn HeaderTheme="{DynamicResource Center_ColumnHeaderStyle_Modal}" Width="SizeToCells" CanUserSort="False" CanUserReorder="False" CanUserResize="False">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Image Source="{Binding ImageSource}" Width="16" Height="16" RenderOptions.EdgeMode="Aliased" RenderOptions.BitmapInterpolationMode="HighQuality" VerticalAlignment="Center"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTextColumn HeaderTheme="{DynamicResource Left_ColumnHeaderStyle_Modal}" MinWidth="100" MaxWidth="200" Header="File Type" Binding="{Binding Element.ParentCollection.Name}" CanUserSort="True" CanUserReorder="False">
+                    <cntrls:DataGridColumnStyles.ElementStyle>
+                        <ControlTheme TargetType="TextBlock">
+                            <Setter Property="HorizontalAlignment" Value="Left" />
+                            <Setter Property="VerticalAlignment" Value="Center" />
+                            <Setter Property="TextAlignment" Value="Left" />
+                        </ControlTheme>
+                    </cntrls:DataGridColumnStyles.ElementStyle>
+                </DataGridTextColumn>
+                <DataGridTextColumn HeaderTheme="{DynamicResource Left_ColumnHeaderStyle_Modal}" MinWidth="100" Width="*" Header=" Name" Binding="{Binding Element.DisplayName}" CanUserSort="True" CanUserReorder="False">
+                    <cntrls:DataGridColumnStyles.ElementStyle>
+                        <ControlTheme TargetType="TextBlock">
+                            <Setter Property="HorizontalAlignment" Value="Left" />
+                            <Setter Property="VerticalAlignment" Value="Center" />
+                            <Setter Property="TextAlignment" Value="Left" />
+                        </ControlTheme>
+                    </cntrls:DataGridColumnStyles.ElementStyle>
+                </DataGridTextColumn>
+            </cntrls:CopyPasteDataGrid.Columns>
+        </cntrls:CopyPasteDataGrid>
+
+        <!--Buttons-->
+        <Grid Grid.Row="2" HorizontalAlignment="Right">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <Button Name="btn_Save" Click="Btn_Save_Click" Content="Save" Grid.Column="0" Width="75" Height="24" Margin="6,0,0,6" Cursor="Hand"/>
+            <Button Name="btn_DontSave" Click="Btn_DontSave_Click" Content="Don't Save" Grid.Column="1" Width="75" Height="24" Margin="6,0,0,6" Cursor="Hand"/>
+            <Button Name="btn_Cancel" Click="Btn_Cancel_Click" Content="Cancel" Grid.Column="2" Width="75" Height="24" Margin="6,0,6,6" Cursor="Hand"/>
+        </Grid>
+    </Grid>
+</cntrls:MetroWindow>
