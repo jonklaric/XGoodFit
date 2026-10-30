@@ -6,6 +6,11 @@
              xmlns:local="using:WpfCompat.Tests">
     <UserControl.Resources>
         <local:JoinConverter x:Key="Join"/>
+        <local:DefaultSizeConverter x:Key="RawSize"/>
+        <local:DefaultSizesConverter x:Key="Sizes"/>
+        <wpfd:TwoWayConverter x:Key="Size" x:Shared="False">
+            <local:DefaultSizeConverter/>
+        </wpfd:TwoWayConverter>
     </UserControl.Resources>
     <StackPanel>
         <TextBox x:Name="TwoWayBox">
@@ -23,6 +28,18 @@
                     <Binding ElementName="Host" Path="First"/>
                     <Binding ElementName="Host" Path="Second"/>
                     <Binding ElementName="Host" Path="Third"/>
+                </wpfd:MultiBinding>
+            </TextBox.Text>
+        </TextBox>
+        <!-- A size whose NaN shows as 12: Avalonia's binding writes the 12 back, the wrapped converter
+             and the multi-binding don't. -->
+        <TextBox x:Name="RawSizeBox" Text="{Binding RawSize, ElementName=Host, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource RawSize}}"/>
+        <TextBox x:Name="SizeBox" Text="{Binding Size, ElementName=Host, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource Size}}"/>
+        <TextBox x:Name="OtherSizeBox" Text="{Binding OtherSize, ElementName=Host, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource Size}}"/>
+        <TextBox x:Name="MultiSizeBox">
+            <TextBox.Text>
+                <wpfd:MultiBinding Converter="{StaticResource Sizes}" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay">
+                    <Binding ElementName="Host" Path="MultiSize"/>
                 </wpfd:MultiBinding>
             </TextBox.Text>
         </TextBox>

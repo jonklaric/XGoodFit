@@ -25,7 +25,9 @@ namespace WpfCompat.Data;
 /// <item>When a binding's value changes, the converter's <see cref="IMultiValueConverter.Convert"/>
 /// gives the target its new value.</item>
 /// <item>When the target changes otherwise, as when the user edits it, <see cref="IMultiValueConverter.ConvertBack"/>
-/// gives each binding a value, and the bindings that are two-way write theirs to their sources. A
+/// gives each binding a value, and the bindings that are two-way write theirs to their sources. As in
+/// WPF, the value the target was just given isn't converted back (Avalonia's bindings write it back; a
+/// converter that shows an automatic colour as the colour it will be would then fix the colour). A
 /// binding whose mode is Default takes the multi-binding's, as in WPF. A value of
 /// <see cref="BindingOperations.DoNothing"/> leaves its binding as it is.</item>
 /// <item>The converter's result <see cref="AvaloniaProperty.UnsetValue"/> gives the target the
@@ -152,6 +154,12 @@ public sealed class MultiBinding
             get => _value;
             set
             {
+                // The target's binding writes back the value it has just been given (Avalonia's bindings
+                // do, WPF's don't): that's not an edit.
+                if (TwoWayConverter.SameValue(value, _value))
+                {
+                    return;
+                }
                 _value = value;
                 UpdateSources(value);
             }
