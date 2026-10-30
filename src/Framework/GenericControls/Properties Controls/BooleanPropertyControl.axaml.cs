@@ -141,10 +141,17 @@ namespace GenericControls
         /// </summary>
         /// <param name="sender">The checkbox triggering the event.</param>
         /// <param name="e">The event arguments.</param>
-        /// <remarks>XGoodFit addition: Avalonia's check box has one event for both, IsCheckedChanged.</remarks>
+        /// <remarks>
+        /// XGoodFit addition: Avalonia's check box has one event for both, IsCheckedChanged. WPF's check box raises
+        /// Checked once its two-way binding has written the new state to <see cref="IsSelected"/>, and IsSelected's
+        /// own bindings to their sources; Avalonia's binding writes back only after IsCheckedChanged. So IsSelected
+        /// takes the state first, as the binding would, and the handlers read the new state from the source.
+        /// </remarks>
         private void CheckBox_IsCheckedChanged(object sender, RoutedEventArgs e)
         {
             bool? isChecked = ((CheckBox)sender).IsChecked;
+            if (isChecked is bool selected && IsSelected != selected)
+                IsSelected = selected;
             if (isChecked == true)
                 CheckBox_Checked(sender, e);
             else if (isChecked == false)
