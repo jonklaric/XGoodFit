@@ -143,9 +143,14 @@ namespace RMC.BestFit.App.Tests.XGoodFit
             ThemeManager.SetTheme(theme);
         }
 
-        /// <summary>Removes the dictionaries <see cref="UseAppResources"/> added, and draws popups in their windows again.</summary>
+        /// <summary>
+        /// Lets the test's closed views go (see <see cref="ViewTesting.Collect"/>), removes the dictionaries
+        /// <see cref="UseAppResources"/> added, and draws popups in their windows again.
+        /// </summary>
         public static void ReleaseAppResources()
         {
+            // The test's closed views and projects go first (see ViewTesting.Collect).
+            ViewTesting.Collect();
             foreach (var dictionary in _included)
                 Application.Current.Resources.MergedDictionaries.Remove(dictionary);
             _included.Clear();
@@ -171,6 +176,7 @@ namespace RMC.BestFit.App.Tests.XGoodFit
             root.Bind(Border.BackgroundProperty, root.GetResourceObservable("EnvironmentWindowBackground"));
             WpfCompat.Input.CommandManager.InvalidateRequerySuggested();
             var window = new Window { Width = width, Height = height, Content = root };
+            ViewTesting.ReleaseContentOnClose(window);
             window.Show();
             window.Activate();
             Settle();

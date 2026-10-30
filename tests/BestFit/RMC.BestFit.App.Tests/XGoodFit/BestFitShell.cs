@@ -166,6 +166,22 @@ namespace RMC.BestFit.App.Tests.XGoodFit
         }
 
         /// <summary>
+        /// Opens a copy of <paramref name="example"/> in <paramref name="window"/> with <see cref="MainWindow.OpenProject"/>,
+        /// as File &gt; Open does, and lets the previous project's documents go (see <see cref="ViewTesting.Collect"/>):
+        /// for tests that open several examples in one window, whose saved layouts reopen their documents.
+        /// </summary>
+        /// <returns>The copy's path.</returns>
+        public static string OpenExample(MainWindow window, string example)
+        {
+            string copy = Path.Combine(Folder, Path.GetFileName(example));
+            File.Copy(example, copy, overwrite: true);
+            window.OpenProject(copy);
+            Frame();
+            ViewTesting.Collect();
+            return copy;
+        }
+
+        /// <summary>
         /// Closes <paramref name="window"/> without the question about unsaved changes (the project copy is
         /// saved first), lets go of it (see <see cref="Release"/>), lets go of the application's resources and
         /// deletes the temporary folder.
@@ -194,6 +210,10 @@ namespace RMC.BestFit.App.Tests.XGoodFit
                     }
                     Frame();
                     Release(window);
+                    // As ViewTesting.Show's windows: a closed window still in memory re-resolves its resources on
+                    // every change of the application's (ViewTesting.ReleaseContentOnClose).
+                    window.Content = null;
+                    ViewTesting.Collect();
                 }
             }
             finally

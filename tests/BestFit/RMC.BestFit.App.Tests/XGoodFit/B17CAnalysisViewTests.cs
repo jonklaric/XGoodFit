@@ -53,10 +53,11 @@ namespace RMC.BestFit.App.Tests.XGoodFit
         public void Cleanup()
         {
             foreach (var window in _windows) window.Close();
+            _windows.Clear();
             foreach (var project in _projects) Close(project);
+            _projects.Clear();
+            // ReleaseAppResources collects the closed views; the lists let go of them (MSTest keeps the instance).
             ReleaseAppResources();
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
         }
 
         /// <summary>
