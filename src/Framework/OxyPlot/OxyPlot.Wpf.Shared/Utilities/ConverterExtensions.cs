@@ -144,6 +144,18 @@ namespace OxyPlot.Wpf
         }
 
         /// <summary>
+        /// Gets the OpenType weight of a font weight.
+        /// </summary>
+        /// <param name="fontWeight">The font weight.</param>
+        /// <returns>The weight, from 1 to 999.</returns>
+        /// <remarks>XGoodFit addition: WPF's <c>FontWeight.ToOpenTypeWeight()</c>, for Avalonia's font weight enum,
+        /// so the ported wrappers convert weights as before.</remarks>
+        public static int ToOpenTypeWeight(this FontWeight fontWeight)
+        {
+            return (int)fontWeight;
+        }
+
+        /// <summary>
         /// Converts a Thickness to an <see cref="OxyThickness" />.
         /// </summary>
         /// <param name="t">The thickness.</param>

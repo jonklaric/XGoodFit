@@ -1,0 +1,60 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Avalonia port of upstream/WPF-Framework/src/OxyPlot/OxyPlot.Wpf, the USACE fork of OxyPlot's WPF
+    layer: the declarative Plot (series, axes and annotations as elements), PlotView with its Canvas and
+    DrawingVisual backends, the render contexts, the exporters, and Serialization, which reads and writes
+    the plot settings saved in .bestfit files.
+
+    The namespace stays OxyPlot.Wpf, and every class and member keeps its name (docs/porting-guide.md §1):
+    Serialization writes type names such as OxyPlot.Wpf.LinearAxis into project files, and RMC-BestFit
+    uses these types directly. Nearly every file is WPF code, so the project opts in to upstream files
+    (Directory.Build.targets): only the ported copies and the files listed in UpstreamCompileInclude
+    compile.
+
+    Not ported, and not compiled:
+    - XpsExporter.cs: XPS printing; BestFit doesn't use it, and XPS is Windows-only.
+    - XamlExporter.cs and XamlRenderContext.cs: export as WPF XAML; BestFit doesn't use it, and Avalonia
+      can't write WPF XAML. PlotView.SaveXaml and ToXaml go with them.
+    - Properties/Settings.Designer.cs: an empty application settings class that nothing uses.
+    Not carried over from upstream's project: strong-name signing (OxyPlot.Wpf.snk) and WPF.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>OxyPlot.Wpf</RootNamespace>
+    <AssemblyName>OxyPlot.Wpf</AssemblyName>
+    <Nullable>disable</Nullable>
+    <!-- As upstream: implicit usings would make names such as Path (System.IO and Avalonia shapes) ambiguous. -->
+    <ImplicitUsings>disable</ImplicitUsings>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <UpstreamProjectDir>$(UpstreamFrameworkSrc)OxyPlot/OxyPlot.Wpf/</UpstreamProjectDir>
+    <UpstreamCompileMode>OptIn</UpstreamCompileMode>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Upstream files that compile unchanged. -->
+    <UpstreamCompileInclude Include="Axes/AngleAxisFullPlotArea.cs" />
+    <UpstreamCompileInclude Include="Axes/GumbelProbabilityAxis.cs" />
+    <UpstreamCompileInclude Include="Axes/NormalProbabilityAxis.cs" />
+    <UpstreamCompileInclude Include="Axes/TimeSpanAxis.cs" />
+    <UpstreamCompileInclude Include="RenderingBackend.cs" />
+    <UpstreamCompileInclude Include="Series/BarSeries/CategorizedSeries.cs" />
+    <UpstreamCompileInclude Include="Series/ScatterPointSeries.cs" />
+    <UpstreamCompileInclude Include="TextMeasurementMethod.cs" />
+    <UpstreamCompileInclude Include="WpfPdfExporter.cs" />
+    <UpstreamCompileInclude Include="WpfSvgExporter.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" />
+    <!-- SkiaSharp, for the glyph outlines of the PDF and SVG exports (TextToGeometryHelper). -->
+    <PackageReference Include="Avalonia.Skia" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="$(UpstreamFrameworkSrc)OxyPlot/OxyPlot/OxyPlot.csproj" />
+    <ProjectReference Include="../OxyPlot.Wpf.Shared/OxyPlot.Wpf.Shared.csproj" />
+    <ProjectReference Include="../../WpfCompat/WpfCompat.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -281,6 +281,11 @@ namespace OxyPlot.Wpf
         {
             PaddingProperty.OverrideDefaultValue<PlotViewBase>(new Thickness(8));
             FocusableProperty.OverrideDefaultValue<PlotViewBase>(true);
+
+            // XGoodFit port: WPF applies generic.xaml's style to a plot view as soon as it is made, even
+            // outside a window; Avalonia themes reach only controls in a window. So the theme's background
+            // is also the default, giving the same value in both.
+            BackgroundProperty.OverrideDefaultValue<PlotViewBase>(Brushes.White);
             ModelProperty.Changed.AddClassHandler<PlotViewBase>(ModelChanged);
             ContextRequestedEvent.AddClassHandler<PlotViewBase>(OnContextRequestedByPointer);
         }
