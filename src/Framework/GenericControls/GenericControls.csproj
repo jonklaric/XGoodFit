@@ -6,7 +6,10 @@
     is ported one at a time, so the project opts in to upstream files (Directory.Build.targets): only
     its ported copies and the upstream files listed in UpstreamCompileInclude compile.
 
-    Ported so far: Windows/MetroWindow.cs and Windows/MetroDialogWindow.cs.
+    Ported so far: the Metro windows, MessageBox and its window, NameDialog and NameTextBox, the
+    converters and utilities (Utilities/, BooleanToVisibilityConverter, ColorToByteConverter),
+    FolderBrowser, the icon and resource dictionaries, and the theme's control styles. Not ported:
+    Utilities/ValidationRules.cs, which nothing BestFit uses needs.
   -->
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
@@ -20,7 +23,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="GenericControls.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Avalonia" />
+    <PackageReference Include="ProDataGrid" />
   </ItemGroup>
 
   <ItemGroup>

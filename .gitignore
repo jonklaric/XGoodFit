@@ -37,3 +37,4 @@ Desktop.ini
 *.bestfit-wal
 *.bestfit-shm
 *.bestfit-journal
+__pycache__/

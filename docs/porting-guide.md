@@ -23,6 +23,8 @@ compared with its upstream original.
     XML in `.bestfit` files records type names such as `OxyPlot.Wpf.LinearAxis`, so a different
     namespace would break file compatibility.
 - New projects go in `XGoodFit.slnx`, and tests in `tests/` (MSTest.Sdk, headless; see below).
+- `scripts/porting/xgf_port.py` ports a file by exact, checked replacements: it copies the upstream
+  file and fails if a replacement doesn't match, so everything else stays as upstream wrote it.
 
 ## 2. Every ported file
 
@@ -42,23 +44,31 @@ compared with its upstream original.
 |---|---|
 | `xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"` | `xmlns="https://github.com/avaloniaui"` |
 | `clr-namespace:X;assembly=Y` | `using:X` |
-| `Style` with a template, `Style="{StaticResource K}"` | `ControlTheme`, `Theme="{DynamicResource K}"` (`TargetType` without `{x:Type}`) |
-| Implicit style `<Style TargetType="X">` | `<ControlTheme x:Key="{x:Type X}" TargetType="X">`, `BasedOn` the keyed theme |
+| `Style`, `Style="{StaticResource K}"` | `ControlTheme`, `Theme="{DynamicResource K}"` (`TargetType` without `{x:Type}`). Shapes and text blocks take themes too |
+| Implicit style `<Style TargetType="X">` | `<ControlTheme x:Key="{x:Type X}" TargetType="X">`, `BasedOn` the keyed theme. A theme with only setters keeps a user control's template (ContentControl's default) |
 | `<Setter.Value>` | the value directly inside `<Setter>` |
 | `ControlTemplate.Triggers` | nested styles: `^:pointerover /template/ Border#Name` |
 | `IsMouseOver` / `IsPressed` / `IsChecked` / `IsEnabled=False` / `IsSelected` / `IsKeyboardFocusWithin` / `IsFocused` | `:pointerover` / `:pressed` / `:checked` / `:disabled` / `:selected` / `:focus-within` / `:focus` |
 | Property trigger on another property | property selector `^[Prop=Value]` |
 | `MultiTrigger` | combined selector `^:a:b`. A false condition is `:not(...)`, but not right before `>` inside `/template/` |
 | Overlapping triggers | the same order: later styles win where they overlap |
-| `DataTrigger` | a bound class (`Classes.x="{Binding …}"`) and a style, a converter, or `Xaml.Behaviors` |
+| `DataTrigger` | a bound class and a style in the element's `Styles`: `Classes.invalid="{Binding ElementName=c, Path=!IsValid}"` with `<Style Selector="Border.invalid">` (see `NameTextBox.axaml`); or a converter, or `Xaml.Behaviors` |
 | `Visibility="Collapsed"` | `IsVisible="False"` |
 | `Visibility="Hidden"` | `Opacity="0"` with `IsHitTestVisible="False"` (keeps its space) |
+| `Visibility="{Binding …, Converter=…}"` | `wpf:WpfElement.Visibility="{Binding …}"` (`xmlns:wpf="using:WpfCompat"`): the converters produce WpfCompat's `Visibility`. Never bind one to `IsVisible`, which reads Visible (0) as false |
+| `{Binding IsEnabled, …}` (reading it) | `IsEffectivelyEnabled`: WPF's `IsEnabled` includes the parents', Avalonia's doesn't |
 | `pack://application:,,,/Asm;component/Path` | `avares://Asm/Path` |
 | `{Binding X, RelativeSource={RelativeSource FindAncestor, AncestorType=T}}` | `{Binding $parent[T].X}` |
-| `{Binding X, ElementName=n}` | `{Binding #n.X}` |
+| `{Binding X, ElementName=n}` | unchanged (Avalonia has `ElementName`), or `{Binding #n.X}` |
 | `ActualWidth` / `ActualHeight` | `Bounds.Width` / `Bounds.Height` |
 | `ContentPresenter` with `ContentSource` | `Content="{TemplateBinding Content}"` and `ContentTemplate` bound explicitly. A ContentControl's presenter is named `PART_ContentPresenter` |
 | `ToolTip="…"` | `ToolTip.Tip="…"` |
+| `PreviewKeyDown="H"`, `PreviewMouse…="H"` | no attribute: `AddHandler(KeyDownEvent, H, RoutingStrategies.Tunnel)` in the code-behind |
+| `TextChanged="H"` | `TextChanging` in the code-behind: Avalonia raises `TextChanged` after rendering, WPF as the text changes (see `NameTextBox.axaml.cs`) |
+| `x:Array` | `<wpfm:ArrayExtension Type="{x:Type sys:Double}">` (`xmlns:wpfm="using:WpfCompat.Markup"`, `xmlns:sys="using:System"`) |
+| `x:FieldModifier="public"` | `internal` unless another assembly uses the field: Avalonia's generated fields have no doc comments (a warning) |
+| `StrokeStartLineCap` / `StrokeEndLineCap` | `StrokeLineCap` (one for both) |
+| `Line X1 Y1 X2 Y2` | `StartPoint="x1,y1"` `EndPoint="x2,y2"` |
 | `LayoutTransform` | wrap in `LayoutTransformControl` |
 | `RenderTransformOrigin="0.5,0.5"` | `RenderTransformOrigin="50%,50%"`: Avalonia reads numbers without `%` as pixels |
 | `StrokeDashArray="1 2"` | `StrokeDashArray="1,2"` |
@@ -86,20 +96,35 @@ Templates and themes:
 |---|---|
 | `System.Windows.*` usings | `Avalonia`, `Avalonia.Controls`, `Avalonia.Input`, `Avalonia.Media`, … |
 | `DependencyProperty.Register` | `AvaloniaProperty.Register<TOwner, T>` (StyledProperty), or `RegisterDirect` for field-backed ones |
-| `PropertyChangedCallback` | `OnPropertyChanged` override, or `Property.Changed.AddClassHandler<T>(…)` in a static constructor |
+| `PropertyChangedCallback` | `OnPropertyChanged` override, or `Property.Changed.AddClassHandler<T>(…)` in a static constructor (put it before the callback's doc comment) |
 | `CoerceValueCallback` | the `coerce:` parameter of `Register` |
 | `RoutedEvent` / `EventManager.RegisterRoutedEvent` | `RoutedEvent.Register<TOwner, TArgs>` |
 | `Mouse*` / `Preview*` events | `Pointer*` / `AddHandler(…, RoutingStrategies.Tunnel)`; double-click via `e.ClickCount` |
 | `Dispatcher.Invoke` / `BeginInvoke` | `Dispatcher.UIThread.Invoke` / `Post` |
 | `VisualTreeHelper` | `GetVisualParent`, `GetVisualChildren`, `FindAncestorOfType<T>` (`Avalonia.VisualTree`) |
-| `Visibility` property | `IsVisible` (Hidden: see XAML above) |
-| `CommandBindings.Add(…)`, `RoutedCommand`, `ApplicationCommands`, `SystemCommands`, `ExecutedRoutedEventArgs` | WpfCompat's (`using WpfCompat.Input;`). Write `this.CommandBindings` |
+| `x.Visibility = Visibility.Hidden` | unchanged, with `using WpfCompat;` (an extension property that agrees with `IsVisible`) |
+| `CommandBindings.Add(…)`, `RoutedCommand`, `ApplicationCommands`, `SystemCommands`, `ExecutedRoutedEventArgs` | WpfCompat's (`using WpfCompat.Input;`) |
 | `Window.ResizeMode` | `WpfWindow.ResizeMode` (WpfCompat). Metro windows have it as a property |
-| `Brush`, `Color`, `ImageSource` | `IBrush`, `Color`, `IImage` |
+| `Brush`, `Color`, `ImageSource` | `IBrush`, `Color`, `IImage`. Solid colour brushes are `ISolidColorBrush`: `Brushes.*` and brushes parsed from text are immutable ones, not `SolidColorBrush` |
+| `Color.AreClose(a, b)` | `a == b` (the same for colours made of bytes) |
+| `FontFamily.Source` | `ToString()` |
+| `FindResource(k)` / `TryFindResource(k)` | `this.FindResource(k)` (Avalonia's, returns `UnsetValue` where WPF throws) / `this.TryFindResource(k)` (WpfCompat's) |
+| `control.ToolTip = …` | unchanged, with `using WpfCompat;` |
+| `TextBox.CaretIndex` (reading it with a selection) | `Math.Min(SelectionStart, SelectionEnd)`: WPF's is the selection's start. `SelectionLength` is WpfCompat's |
+| `TextBox.Text` | may be null in Avalonia (WPF's never is) |
+| `ContentRendered` | `Opened` |
+| `Cursors.Wait`, `Mouse.OverrideCursor` | WpfCompat.Input's |
+| `Application.Current.MainWindow` / `Windows` / `Shutdown()` | unchanged, with `using WpfCompat;` (the desktop lifetime's) |
+| `SystemParameters.VerticalScrollBarWidth`, drag distances | WpfCompat's `SystemParameters` |
+| `BindingOperations.GetBindingExpression` | `BindingOperations.GetBindingExpressionBase` |
 
-- `MessageBox`, file and folder dialogs, the clipboard and `ShowDialog` go through WpfCompat as they
-  are added (plan §4.4 and §5.3). Avalonia's dialogs are async: port the handler to `async void` and
-  `await`, keeping the same order of operations.
+- Dialogs wait, as in WPF (plan §5.3): `ShowDialog()` and `DialogResult` (WpfCompat's), WpfCompat's
+  file and folder dialogs and clipboard, and `GenericControls.MessageBox.Show`. Keep upstream's order
+  of operations; don't make handlers async.
+- C# reaches extension members only through a receiver: inside a class write `this.CommandBindings`,
+  `this.DialogResult`, `this.FindResource(…)`, `this.ToolTip`.
+- Metro windows (`GenericControls`) behave as WPF windows when closing: `Close()` after the window has
+  closed does nothing, and setting `DialogResult` in a Closing handler doesn't close it again.
 - `TextBox` bindings: WPF updates the source on `LostFocus` by default; Avalonia on every change. Add
   `UpdateSourceTrigger=LostFocus` where upstream relied on the default (plan §5.2).
 
@@ -127,7 +152,8 @@ Watch for others when porting:
   `{DynamicResource}` for keys in other files.
 - **Attached-property selectors:** they end a compound selector. Write `^[A=x][(ns|T.P)=y]`, not the
   reverse.
-- **Windows:** each sits under a TopLevelHost; stop walking up the tree at the window.
+- **Windows:** each sits under a TopLevelHost; stop walking up the tree at the window. A window's
+  implicit theme is keyed by `Window`, not its own type.
 - **Custom chrome:** see `MetroWindowStyle.axaml`.
   - The client area is extended, and the title bar carries `WindowDecorationProperties.ElementRole`.
   - `WindowDecorationsTheme` stops Avalonia drawing its own title bar.

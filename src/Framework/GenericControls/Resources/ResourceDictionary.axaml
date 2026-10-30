@@ -1,0 +1,177 @@
+<!--
+    XGoodFit port of upstream's Resources/ResourceDictionary.xaml:
+    - The styles are ControlThemes, which controls take as their Theme.
+    - The dot leader line's X1, Y1, X2 and Y2 are Avalonia's StartPoint and EndPoint.
+    - The plus-minus toggle's triggers are nested styles. Its disabled path has no data (upstream's
+      empty string).
+    - x:Array is WpfCompat's ArrayExtension: Avalonia's XAML has no x:Array.
+-->
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="using:System"
+                    xmlns:wpfm="using:WpfCompat.Markup">
+
+    <!--
+    ╔═══════════════════════════════════════════════════════════════════════════════╗
+    ║  GenericControls Resource Dictionary                                          ║
+    ╠═══════════════════════════════════════════════════════════════════════════════╣
+    ║  This dictionary provides shared resources used throughout the                ║
+    ║  GenericControls library:                                                     ║
+    ║                                                                               ║
+    ║  • Data arrays for common ComboBox selections (line widths, font sizes, etc.) ║
+    ║  • Text and line styles for property controls                                 ║
+    ║  • Vector icons (merged from IconDictionary.xaml)                             ║
+    ║                                                                               ║
+    ║  Usage:                                                                       ║
+    ║  Reference resources using StaticResource or DynamicResource:                 ║
+    ║  <ComboBox ItemsSource="{StaticResource LineWidthOptions}"/>                  ║
+    ╚═══════════════════════════════════════════════════════════════════════════════╝
+    -->
+
+    <!-- Merge Icon Dictionary for centralized vector icons -->
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceInclude Source="avares://GenericControls/Resources/IconDictionary.axaml"/>
+    </ResourceDictionary.MergedDictionaries>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+    <!-- PROPERTY CONTROL STYLES                                                     -->
+    <!-- Styles used in GenericControls property controls for consistent appearance  -->
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+
+    <!-- Dotted leader line style connecting property labels to values -->
+    <ControlTheme TargetType="Line" x:Key="DotLeaderLineStyle">
+        <Setter Property="Grid.Column" Value="1"/>
+        <Setter Property="StartPoint" Value="0,0"/>
+        <Setter Property="EndPoint" Value="1,0"/>
+        <Setter Property="Stroke" Value="{DynamicResource Button.Static.Border}"/>
+        <Setter Property="StrokeThickness" Value="1"/>
+        <Setter Property="VerticalAlignment" Value="Bottom"/>
+        <Setter Property="StrokeDashArray" Value="2,2"/>
+        <Setter Property="Stretch" Value="Uniform"/>
+        <Setter Property="Margin" Value="0,0,3,0"/>
+    </ControlTheme>
+
+    <!-- Title text style for property labels -->
+    <ControlTheme TargetType="TextBlock" x:Key="TitleTextStyle">
+        <Setter Property="VerticalAlignment" Value="Bottom"/>
+        <Setter Property="HorizontalAlignment" Value="Left"/>
+        <Setter Property="Margin" Value="0,0,3,0"/>
+        <Setter Property="Foreground" Value="{DynamicResource EnvironmentWindowText}"/>
+    </ControlTheme>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+    <!-- COMMON DATA ARRAYS                                                          -->
+    <!-- Reusable option arrays for ComboBox controls throughout the framework       -->
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+
+    <!-- Line width options (0-10 pixels) -->
+    <wpfm:ArrayExtension x:Key="LineWidthOptions" Type="{x:Type sys:Double}">
+        <sys:Double>0</sys:Double>
+        <sys:Double>1</sys:Double>
+        <sys:Double>2</sys:Double>
+        <sys:Double>3</sys:Double>
+        <sys:Double>4</sys:Double>
+        <sys:Double>5</sys:Double>
+        <sys:Double>7</sys:Double>
+        <sys:Double>10</sys:Double>
+    </wpfm:ArrayExtension>
+
+    <!-- Font size options (8-72pt, standard font size increments) -->
+    <wpfm:ArrayExtension x:Key="FontSizeOptions" Type="{x:Type sys:Double}">
+        <sys:Double>8</sys:Double>
+        <sys:Double>9</sys:Double>
+        <sys:Double>10</sys:Double>
+        <sys:Double>11</sys:Double>
+        <sys:Double>12</sys:Double>
+        <sys:Double>14</sys:Double>
+        <sys:Double>16</sys:Double>
+        <sys:Double>18</sys:Double>
+        <sys:Double>20</sys:Double>
+        <sys:Double>22</sys:Double>
+        <sys:Double>24</sys:Double>
+        <sys:Double>26</sys:Double>
+        <sys:Double>28</sys:Double>
+        <sys:Double>36</sys:Double>
+        <sys:Double>48</sys:Double>
+        <sys:Double>72</sys:Double>
+    </wpfm:ArrayExtension>
+
+    <!-- Padding/margin options (-4 to 30 pixels) -->
+    <wpfm:ArrayExtension x:Key="PaddingOptions" Type="{x:Type sys:Double}">
+        <sys:Double>-4</sys:Double>
+        <sys:Double>-2</sys:Double>
+        <sys:Double>0</sys:Double>
+        <sys:Double>1</sys:Double>
+        <sys:Double>2</sys:Double>
+        <sys:Double>3</sys:Double>
+        <sys:Double>4</sys:Double>
+        <sys:Double>6</sys:Double>
+        <sys:Double>8</sys:Double>
+        <sys:Double>10</sys:Double>
+        <sys:Double>14</sys:Double>
+        <sys:Double>18</sys:Double>
+        <sys:Double>22</sys:Double>
+        <sys:Double>26</sys:Double>
+        <sys:Double>30</sys:Double>
+    </wpfm:ArrayExtension>
+
+    <!-- Rotation angle options (0-360 degrees in 15-degree increments) -->
+    <wpfm:ArrayExtension x:Key="AngleOptions" Type="{x:Type sys:Double}">
+        <sys:Double>0</sys:Double>
+        <sys:Double>15</sys:Double>
+        <sys:Double>30</sys:Double>
+        <sys:Double>45</sys:Double>
+        <sys:Double>60</sys:Double>
+        <sys:Double>75</sys:Double>
+        <sys:Double>90</sys:Double>
+        <sys:Double>105</sys:Double>
+        <sys:Double>120</sys:Double>
+        <sys:Double>135</sys:Double>
+        <sys:Double>150</sys:Double>
+        <sys:Double>165</sys:Double>
+        <sys:Double>180</sys:Double>
+        <sys:Double>195</sys:Double>
+        <sys:Double>210</sys:Double>
+        <sys:Double>225</sys:Double>
+        <sys:Double>240</sys:Double>
+        <sys:Double>255</sys:Double>
+        <sys:Double>270</sys:Double>
+        <sys:Double>285</sys:Double>
+        <sys:Double>300</sys:Double>
+        <sys:Double>315</sys:Double>
+        <sys:Double>330</sys:Double>
+        <sys:Double>345</sys:Double>
+        <sys:Double>360</sys:Double>
+    </wpfm:ArrayExtension>
+
+    <!--#region Toggle Styles-->
+
+    <ControlTheme x:Key="PlusMinusToggleStyle" TargetType="ToggleButton">
+        <Setter Property="Focusable" Value="False"/>
+        <Setter Property="Template">
+            <ControlTemplate TargetType="ToggleButton">
+                <Grid Width="11" Height="11" Background="Transparent">
+                    <Rectangle Fill="{DynamicResource primaryBackgroundBrush}" />
+                    <Border Name="ExpandBorder" RenderOptions.EdgeMode="Aliased" BorderBrush="{DynamicResource EnvironmentWindowText}" BorderThickness="1" CornerRadius="0">
+                        <Path RenderOptions.EdgeMode="Aliased" Name="ExpandPath" Stroke="{DynamicResource EnvironmentWindowText}" Margin="0" StrokeThickness="1" Data="M 4.5,1 V 8 M 1,4.5 H 8" />
+                    </Border>
+                </Grid>
+            </ControlTemplate>
+        </Setter>
+        <Style Selector="^:checked /template/ Path#ExpandPath">
+            <Setter Property="Data" Value="M 1,4.5 H 8"/>
+        </Style>
+        <Style Selector="^:disabled">
+            <Style Selector="^ /template/ Border#ExpandBorder">
+                <Setter Property="BorderBrush" Value="{DynamicResource Button.Disabled.Foreground}" />
+            </Style>
+            <Style Selector="^ /template/ Path#ExpandPath">
+                <Setter Property="Stroke" Value="{DynamicResource Button.Disabled.Foreground}" />
+                <Setter Property="Data" Value="{x:Null}"/>
+            </Style>
+        </Style>
+    </ControlTheme>
+
+    <!--#endregion-->
+
+</ResourceDictionary>

@@ -275,8 +275,8 @@ Rejected or avoided:
 | `CopyPasteDataGrid` / `ValidationDataGrid` (WPF DataGrid) | Same classes re-based on ProDataGrid |
 | OxyPlot.Wpf `Plot` + `PlotSerializer` | OxyPlot.Avalonia `Plot` + ported `Serialization` (byte-identical XML) |
 | OxyPlot.Wpf zoom adorner, `DragAdorner` / `InsertionAdorner` | OxyPlot.Avalonia zoom rectangle; `AdornerLayer` |
-| `RoutedCommand` / `ApplicationCommands` / `CommandBinding` | Static `ICommand`s + `KeyBinding`s (Cmd on macOS via `PlatformHotkeyConfiguration`) |
-| `GenericControls.MessageBox`, `ShowDialog` | Same classes, themed `Window`s, behind a dialog service (§5.3) |
+| `RoutedCommand` / `ApplicationCommands` / `CommandBinding` | WpfCompat's routed commands, which route as WPF's do (Cmd on macOS) |
+| `GenericControls.MessageBox`, `ShowDialog` | Same classes and themed `Window`s; they wait, as in WPF (§5.3) |
 | `RichTextBox` (editable expression) | AvaloniaEdit |
 | `RichTextBox` (read-only reports) | `SelectableTextBlock` with inlines / read-only monospace `TextBox` |
 | `WebBrowser` | `NativeWebView` or `HtmlPanel` (or open in system browser) |
@@ -483,7 +483,7 @@ Sizes are relative, for one developer with AI-assisted porting: S ≈ ≤2 wk, M
 | `Themes.Tests` (headless, MSTest): every palette key matches upstream in all 3 themes; theme switching updates open windows; WPF's default font | ✅ 10/10 on Windows |
 | WPF-equivalent defaults: every window gets Segoe UI at 12 DIP, falling back to the embedded Selawik where Segoe UI isn't installed. Selawik 1.01 is vendored from its release download (`upstream-assets.lock`, SHA-256-checked) | ✅ `ThemeService.Initialize` adds the styles (`Resources/Defaults.axaml`) |
 | Theme gallery (`tools/ThemeGallery`): all 322 palette keys as live swatches next to standard controls, with a theme switcher. `ThemeGallery capture <folder>` renders it in each theme headlessly | ✅ Phase 1 exit: the demo window switches Light/Blue/Dark |
-| `WpfCompat` shims | Started (`src/Framework/WpfCompat`, 12 tests):<ul><li>WPF's routed commands: `RoutedCommand`, `CommandBinding` and every element's `CommandBindings`; `ApplicationCommands` with WPF's key gestures (Cmd on macOS), and `SystemCommands`. The `{wpf:Command …}` markup extension routes a button's command from the button and a menu item's from the focused element, as WPF does.</li><li>`ResizeMode`, and `Visibility` (with Hidden) as an attached and an extension property.</li><li>Synchronous `ShowDialog()` and `DialogResult`, WPF's message-box enums, the file and folder dialogs, and the clipboard (§5.3).</li></ul>The rest follow as Phase 2–3 code needs them |
+| `WpfCompat` shims | Started (`src/Framework/WpfCompat`, 12 tests):<ul><li>WPF's routed commands: `RoutedCommand`, `CommandBinding` and every element's `CommandBindings`; `ApplicationCommands` with WPF's key gestures (Cmd on macOS), and `SystemCommands`. The `{wpf:Command …}` markup extension routes a button's command from the button and a menu item's from the focused element, as WPF does.</li><li>`ResizeMode`, and `Visibility` (with Hidden) as an attached and an extension property.</li><li>Synchronous `ShowDialog()` and `DialogResult`, WPF's message-box enums, the file and folder dialogs, and the clipboard (§5.3).</li><li>WPF members Avalonia lacks: `ToolTip`, `SelectionLength`, one-argument `TryFindResource`, `Application.MainWindow`/`Windows`/`Shutdown()`, `Cursors` and `Mouse.OverrideCursor`, `SystemParameters`, and `x:Array`.</li></ul>The rest follow as Phase 2–3 code needs them |
 
 ### Phase 2: Walking-skeleton shell (`FrameworkUI`) (L)
 - `MainWindow` with menus, a toolbar with undo/redo history drop-downs, key bindings, recent files, auto-backup and file compaction.
@@ -513,7 +513,11 @@ Sizes are relative, for one developer with AI-assisted porting: S ≈ ≤2 wk, M
   - macOS: the native traffic lights stay.
   - Linux: the native title bar stays, and the drawn one hides.
   - Caption buttons run MetroWindow's command handlers through WpfCompat's routed commands, as in WPF.
-- `GenericControls` has started: `MetroWindow` and `MetroDialogWindow`, with headless tests for their caption buttons and ResizeMode. Its upstream files are nearly all WPF code, so the project opts in to upstream files (`UpstreamCompileMode=OptIn`) and gains them one port at a time. The theme gallery now runs in a `MetroWindow`.
+- `GenericControls` has started. Its upstream files are nearly all WPF code, so the project opts in to upstream files (`UpstreamCompileMode=OptIn`) and gains them one port at a time. Ported so far:
+  - `MetroWindow` and `MetroDialogWindow`, with headless tests for their caption buttons and ResizeMode. The theme gallery runs in a `MetroWindow`.
+  - `MessageBox` (with its "don't show again" option), `NameDialog` and `NameTextBox`, tested headlessly and captured by the gallery.
+  - The converters, `NumberFormatHelper`, `GeneralMethods` and `FolderBrowser` (on WpfCompat's folder dialog); the icon and resource dictionaries; the theme's control styles.
+  - Not ported: `ValidationRules.cs`, which nothing BestFit uses needs.
 - Behaviour gaps to close when the controls that need them are ported:
   - Slider track clicks: WPF moves the thumb by LargeChange, unless IsMoveToPointEnabled; Avalonia always moves it to the pointer. GenericControls' NumericSlider needs WPF's default, and its ColorPicker uses move-to-point.
   - ComboBox drop-downs: WPF's maximum height is a third of the screen; the theme assumes a 1080-pixel screen until WpfCompat can read the real one.

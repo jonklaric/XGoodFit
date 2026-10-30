@@ -76,10 +76,39 @@ namespace GenericControls
         /// XGoodFit port: Avalonia sets a window's owner only when it's shown. Setting this records the
         /// owner that <c>ShowDialog()</c> (WpfCompat's <see cref="DialogWindows"/>) shows the window for.
         /// </remarks>
-        public new WindowBase Owner
+        public new Window Owner
         {
-            get => base.Owner ?? DialogWindows.GetRequestedOwner(this);
-            set => DialogWindows.SetRequestedOwner(this, value as Window);
+            get => base.Owner as Window ?? DialogWindows.GetRequestedOwner(this);
+            set => DialogWindows.SetRequestedOwner(this, value);
+        }
+
+        /// <summary>
+        /// Closes the window. Once it's closed, this does nothing, as WPF's <c>Close()</c>.
+        /// </summary>
+        /// <remarks>
+        /// XGoodFit port: Avalonia raises Closing again when a closed window is closed. Ported dialogs
+        /// often set DialogResult, which closes them, and then call Close().
+        /// </remarks>
+        public new void Close()
+        {
+            if (PlatformImpl is null)
+            {
+                return;
+            }
+            base.Close();
+        }
+
+        /// <summary>
+        /// Raises the Closing event. While it runs, setting DialogResult doesn't close the window again,
+        /// as in WPF (WpfCompat's <see cref="DialogWindows.Closing(Window)"/>).
+        /// </summary>
+        /// <param name="e">The event arguments.</param>
+        protected override void OnClosing(WindowClosingEventArgs e)
+        {
+            using (DialogWindows.Closing(this))
+            {
+                base.OnClosing(e);
+            }
         }
 
         /// <summary>

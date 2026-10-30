@@ -14,6 +14,9 @@ namespace WpfCompat;
 /// owner is the one requested with <see cref="SetRequestedOwner"/> (WPF's <c>Owner</c>; Avalonia's
 /// <c>Owner</c> can only be set by showing the window), or else the active window.</item>
 /// <item>As in WPF, a dialog closed without a result returns false.</item>
+/// <item>Setting <c>DialogResult</c> while the window's Closing event runs doesn't close it again, as in
+/// WPF. Window classes mark that time with <see cref="Closing(Window)"/> from <c>OnClosing</c>, as the
+/// Metro windows do.</item>
 /// </list>
 /// </remarks>
 public static class DialogWindows
@@ -29,12 +32,16 @@ public static class DialogWindows
     private static readonly AttachedProperty<bool> IsShownAsDialogProperty =
         AvaloniaProperty.RegisterAttached<Window, bool>("IsShownAsDialog", typeof(DialogWindows));
 
+    private static readonly AttachedProperty<bool> IsClosingProperty =
+        AvaloniaProperty.RegisterAttached<Window, bool>("IsClosing", typeof(DialogWindows));
+
     static DialogWindows()
     {
         // Setting the result of an open dialog closes it, as in WPF.
         DialogResultProperty.Changed.AddClassHandler<Window>((window, e) =>
         {
-            if (window.GetValue(IsShownAsDialogProperty) && e.GetNewValue<bool?>() is not null)
+            if (window.GetValue(IsShownAsDialogProperty) && !window.GetValue(IsClosingProperty)
+                && e.GetNewValue<bool?>() is not null)
             {
                 window.Close();
             }
@@ -46,6 +53,22 @@ public static class DialogWindows
 
     /// <summary>Sets the window's dialog result, closing it if it's an open dialog.</summary>
     public static void SetDialogResult(Window window, bool? value) => window.SetValue(DialogResultProperty, value);
+
+    /// <summary>
+    /// Marks <paramref name="window"/> as closing until the result is disposed: call it around the
+    /// Closing event (in <c>OnClosing</c>), so that setting <c>DialogResult</c> there doesn't close the
+    /// window again.
+    /// </summary>
+    public static IDisposable Closing(Window window)
+    {
+        window.SetValue(IsClosingProperty, true);
+        return new ClosingScope(window);
+    }
+
+    private sealed class ClosingScope(Window window) : IDisposable
+    {
+        public void Dispose() => window.SetValue(IsClosingProperty, false);
+    }
 
     /// <summary>Gets the owner the window will be shown for.</summary>
     public static Window? GetRequestedOwner(Window window) => window.GetValue(RequestedOwnerProperty);

@@ -3,11 +3,14 @@ using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Controls.Primitives;
 using Avalonia.Headless;
+using Avalonia.Markup.Xaml.Styling;
 using Avalonia.Media.Imaging;
 using Avalonia.Styling;
 using Avalonia.Themes.Simple;
 using Avalonia.Threading;
+using GenericControls;
 using Themes;
+using WpfCompat;
 
 namespace ThemeGallery;
 
@@ -75,18 +78,34 @@ internal static class Program
 
             window.Pages.SelectedItem = window.PalettePage;
             Save(window, folder, "palette", theme);
+
+            var messageBox = new MessageBoxWindow();
+            messageBox.Configure("Save changes to the project before closing?", "XGoodFit", MessageBoxButton.YesNoCancel,
+                MessageBoxImage.Question, MessageBoxResult.None, showSuppressCheckBox: true);
+            Save(messageBox, folder, "message-box", theme, show: true);
+
+            // An existing name: the dialog shows it's invalid.
+            Save(new NameDialog(64, "Analysis 1", false, ["Analysis 1"]), folder, "name-dialog", theme, show: true);
         }
         window.Close();
         return 0;
     }
 
-    private static void Save(Window window, string folder, string page, Theme theme)
+    private static void Save(Window window, string folder, string page, Theme theme, bool show = false)
     {
+        if (show)
+        {
+            window.Show();
+        }
         Settle();
         string path = Path.Combine(folder, $"theme-gallery-{page}-{theme}.png");
         using var frame = window.CaptureRenderedFrame() ?? throw new InvalidOperationException("No frame was rendered.");
         frame.Save(path, new PngBitmapEncoderOptions());
         Console.WriteLine(path);
+        if (show)
+        {
+            window.Close();
+        }
     }
 
     // Lets layout run and fade-in animations finish: the headless render timer uses real time.
@@ -101,7 +120,16 @@ internal static class Program
 
 internal sealed class App : Application
 {
-    public override void Initialize() => Styles.Add(new SimpleTheme());
+    public override void Initialize()
+    {
+        Styles.Add(new SimpleTheme());
+
+        // As upstream's App.xaml: GenericControls' theme, then ThemeService adds Themes after it.
+        Resources.MergedDictionaries.Add(new ResourceInclude(new Uri("avares://ThemeGallery"))
+        {
+            Source = new Uri("avares://GenericControls/Themes/GenericControlsTheme.axaml"),
+        });
+    }
 
     public override void OnFrameworkInitializationCompleted()
     {

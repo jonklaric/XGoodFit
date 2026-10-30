@@ -1,0 +1,43 @@
+<!--
+    XGoodFit port of upstream's General Controls/NameTextBox.xaml:
+    - The text box's style cleared its tool tip while the name is valid. ValidateText already does
+      that with a local value, which wins over a style's, so the style isn't ported.
+    - The border's DataTriggers are an "invalid" class bound to IsValid.
+    - The border shows while NameGrid is effectively enabled: WPF's IsEnabled includes the parents',
+      Avalonia's IsEffectivelyEnabled does.
+    - PreviewKeyDown and PreviewKeyUp are tunnelling handlers, and TextChanged is TextChanging, all
+      added in the code-behind: Avalonia raises TextChanged later, WPF as the text changes.
+    - NameTBox is internal, not public: Avalonia's generated fields have no documentation comments
+      (a build warning), and only this assembly uses it.
+-->
+<UserControl x:Class="GenericControls.NameTextBox" x:Name="NameTextBoxControl"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="using:GenericControls"
+             xmlns:wpf="using:WpfCompat"
+             mc:Ignorable="d"
+             d:DesignHeight="450" d:DesignWidth="800">
+    <UserControl.Resources>
+        <local:BooleanToVisibilityConverter x:Key="BoolToVisConverter" TrueValue="Visible" FalseValue="Collapsed"/>
+    </UserControl.Resources>
+    <Grid x:Name="NameGrid">
+        <TextBox x:Name="NameTBox" x:FieldModifier="internal"
+                 VerticalContentAlignment="Center"
+                 VerticalAlignment="Stretch"
+                 Text="{Binding ElementName=NameTextBoxControl, Path=Text, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"/>
+        <Border x:Name="NameBorder" 
+                Width="{Binding ElementName=NameTBox, Path=Bounds.Width}"
+                Height="{Binding ElementName=NameTBox, Path=Bounds.Height}"
+                wpf:WpfElement.Visibility="{Binding ElementName=NameGrid, Path=IsEffectivelyEnabled, Converter={StaticResource BoolToVisConverter}}"
+                Classes.invalid="{Binding ElementName=NameTextBoxControl, Path=!IsValid}"
+                IsHitTestVisible="False" BorderThickness="1">
+            <Border.Styles>
+                <Style Selector="Border.invalid">
+                    <Setter Property="BorderBrush" Value="{DynamicResource DataGrid.Cell.Error.Border}"/>
+                </Style>
+            </Border.Styles>
+        </Border>
+    </Grid>
+</UserControl>

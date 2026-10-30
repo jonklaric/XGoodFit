@@ -42,11 +42,30 @@ public static class WpfElement
         VisibilityProperty.Changed.AddClassHandler<Visual>((visual, e) => Apply(visual, e.GetNewValue<Visibility>()));
     }
 
-    /// <summary>Gets <paramref name="visual"/>'s visibility.</summary>
-    public static Visibility GetVisibility(Visual visual) => visual.GetValue(VisibilityProperty);
+    /// <summary>
+    /// Gets <paramref name="visual"/>'s visibility. An element that ported XAML hides with
+    /// <c>IsVisible="False"</c> (WPF's <c>Visibility="Collapsed"</c>) is Collapsed.
+    /// </summary>
+    public static Visibility GetVisibility(Visual visual)
+    {
+        if (!visual.IsVisible)
+        {
+            return Visibility.Collapsed;
+        }
+        return visual.GetValue(VisibilityProperty) == Visibility.Hidden ? Visibility.Hidden : Visibility.Visible;
+    }
 
     /// <summary>Sets <paramref name="visual"/>'s visibility.</summary>
-    public static void SetVisibility(Visual visual, Visibility value) => visual.SetValue(VisibilityProperty, value);
+    public static void SetVisibility(Visual visual, Visibility value)
+    {
+        if (visual.GetValue(VisibilityProperty) == value)
+        {
+            // IsVisible may have changed on its own (in XAML, say): apply the value again.
+            Apply(visual, value);
+            return;
+        }
+        visual.SetValue(VisibilityProperty, value);
+    }
 
     private static void Apply(Visual visual, Visibility visibility)
     {

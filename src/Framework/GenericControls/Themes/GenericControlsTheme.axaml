@@ -1,0 +1,124 @@
+<!--
+    XGoodFit port of upstream's Themes/GenericControlsTheme.xaml:
+    - Styles are ControlThemes. A theme with only setters keeps a control's template, which for user
+      controls is ContentControl's default, as in WPF.
+    - Windows find their implicit theme by Window's type, so the NameDialog and MessageBoxWindow themes
+      apply only when set. Upstream's never applied either: both windows set MetroDialogStyle.
+    - StackPanelButtonStyleBase and VerticalSeparatorStyle aren't ported. Themes defines both keys and
+      is merged after this dictionary (by ThemeManager.SetTheme, as in upstream's App), so its
+      definitions are the ones the app uses.
+    - Each control's theme is added here as the control is ported. Still to come: DataGridToolbar,
+      SeparatorWithHeader, NumericTextBox, NumericTextBox2, NumericUpDown, NumericSlider,
+      ThicknessControl, GridLengthControl, ColorPicker, ColorPickerPopup, ClockControl, the date and
+      time controls, ResizableTextBoxControl, the property controls and the DataGrid styles.
+-->
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:local="using:GenericControls">
+
+    <!--
+    ╔═══════════════════════════════════════════════════════════════════════════════╗
+    ║  GenericControls Theme Resource Dictionary                                    ║
+    ╠═══════════════════════════════════════════════════════════════════════════════╣
+    ║  Contains theme-aware styles for all GenericControls components that use      ║
+    ║  DynamicResource bindings to respond to runtime theme changes.                ║
+    ║                                                                               ║
+    ║  CONTENTS:                                                                    ║
+    ║  • Common Styles      - Separators, title text, dot leaders                   ║
+    ║  • DataGrid Toolbar   - Toolbar button and separator styles                   ║
+    ║  • General Controls   - NumericTextBox, ColorPicker, DateTimePicker, etc.    ║
+    ║  • Property Controls  - TextPropertyControl, NumericPropertyControl, etc.    ║
+    ║  • DataGrid Styles    - Cell, column header, and row header styles           ║
+    ║  • CopyPasteDataGrid  - Enhanced DataGrid with copy/paste support            ║
+    ║  • ValidationDataGrid - DataGrid with validation error highlighting          ║
+    ║                                                                               ║
+    ║  THEME SUPPORT:                                                               ║
+    ║  All colors use DynamicResource bindings to the Themes library.               ║
+    ║  Common theme resources referenced:                                           ║
+    ║  • EnvironmentWindowText/Background - Window text and background colors       ║
+    ║  • TextBox.Static.*                 - TextBox colors                          ║
+    ║  • Button.MouseOver/Pressed.*       - Interactive button states               ║
+    ║  • DataGrid.*                       - DataGrid-specific theming               ║
+    ║                                                                               ║
+    ║  USAGE:                                                                       ║
+    ║  Styles are automatically applied to controls via implicit styling.           ║
+    ║  Named styles can be explicitly referenced:                                   ║
+    ║  <DataGrid Style="{StaticResource CopyPasteDataGridStyle}"/>                  ║
+    ╚═══════════════════════════════════════════════════════════════════════════════╝
+    -->
+
+    <!-- Merge Icon Dictionary for centralized vector icons -->
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceInclude Source="avares://GenericControls/Resources/IconDictionary.axaml"/>
+    </ResourceDictionary.MergedDictionaries>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+    <!-- COMMON STYLES                                                                -->
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+
+    <!-- Separator Background (transparent) -->
+    <SolidColorBrush x:Key="SeparatorBackground">#00FFFFFF</SolidColorBrush>
+
+    <!-- Dot Leader Line Style for property controls -->
+    <ControlTheme TargetType="Line" x:Key="DotLeaderLineStyle">
+        <Setter Property="Grid.Column" Value="1"/>
+        <Setter Property="StartPoint" Value="0,0"/>
+        <Setter Property="EndPoint" Value="1,0"/>
+        <Setter Property="Stroke" Value="{DynamicResource Button.Static.Border}"/>
+        <Setter Property="StrokeThickness" Value="1"/>
+        <Setter Property="VerticalAlignment" Value="Bottom"/>
+        <Setter Property="StrokeDashArray" Value="2,2"/>
+        <Setter Property="Stretch" Value="Uniform"/>
+        <Setter Property="Margin" Value="0,0,3,0"/>
+    </ControlTheme>
+
+    <!-- Title Text Style -->
+    <ControlTheme TargetType="TextBlock" x:Key="TitleTextStyle">
+        <Setter Property="VerticalAlignment" Value="Bottom"/>
+        <Setter Property="HorizontalAlignment" Value="Left"/>
+        <Setter Property="Margin" Value="0,0,3,0"/>
+        <Setter Property="Foreground" Value="{DynamicResource EnvironmentWindowText}"/>
+    </ControlTheme>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+    <!-- NAME TEXTBOX                                                                 -->
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+
+    <ControlTheme x:Key="NameTextBoxStyle" TargetType="local:NameTextBox">
+        <Setter Property="Foreground" Value="{DynamicResource EnvironmentWindowText}"/>
+    </ControlTheme>
+
+    <ControlTheme x:Key="{x:Type local:NameTextBox}" TargetType="local:NameTextBox" BasedOn="{StaticResource NameTextBoxStyle}"/>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+    <!-- NAME DIALOG                                                                  -->
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+
+    <ControlTheme x:Key="NameDialogStyle" TargetType="local:NameDialog">
+        <Setter Property="Background" Value="{DynamicResource EnvironmentWindowBackground}"/>
+        <Setter Property="Foreground" Value="{DynamicResource EnvironmentWindowText}"/>
+    </ControlTheme>
+
+    <ControlTheme x:Key="{x:Type local:NameDialog}" TargetType="local:NameDialog" BasedOn="{StaticResource NameDialogStyle}"/>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+    <!-- MESSAGE BOX WINDOW                                                          -->
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+
+    <ControlTheme x:Key="MessageBoxWindowStyle" TargetType="local:MessageBoxWindow">
+        <Setter Property="Background" Value="{DynamicResource EnvironmentWindowBackground}"/>
+        <Setter Property="Foreground" Value="{DynamicResource EnvironmentWindowText}"/>
+    </ControlTheme>
+
+    <ControlTheme x:Key="{x:Type local:MessageBoxWindow}" TargetType="local:MessageBoxWindow" BasedOn="{StaticResource MessageBoxWindowStyle}"/>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+    <!-- PROPERTY CONTROLS                                                            -->
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+
+    <!-- Base Property Control Style -->
+    <ControlTheme x:Key="PropertyControlBaseStyle" TargetType="UserControl">
+        <Setter Property="Foreground" Value="{DynamicResource EnvironmentWindowText}"/>
+    </ControlTheme>
+
+</ResourceDictionary>

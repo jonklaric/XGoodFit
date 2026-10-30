@@ -16,6 +16,8 @@
     <PackageVersion Include="Avalonia.Headless" Version="$(AvaloniaVersion)" />
     <PackageVersion Include="Avalonia.Skia" Version="$(AvaloniaVersion)" />
     <PackageVersion Include="Avalonia.Themes.Simple" Version="$(AvaloniaVersion)" />
+    <!-- WPF's DataGrid: cell selection, SelectedCells, CanUserAddRows, copy and paste (plan §4.2). -->
+    <PackageVersion Include="ProDataGrid" Version="12.1.0.6" />
   </ItemGroup>
 
 </Project>

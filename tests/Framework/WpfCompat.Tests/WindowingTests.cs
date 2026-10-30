@@ -38,6 +38,18 @@ public sealed class WindowingTests
     }
 
     [TestMethod]
+    public void Visibility_AgreesWithIsVisibleSetInXaml()
+    {
+        // Ported XAML writes WPF's Visibility="Collapsed" as IsVisible="False".
+        var border = new Border { IsVisible = false };
+        Assert.AreEqual(Visibility.Collapsed, border.Visibility);
+
+        border.Visibility = Visibility.Visible;
+        Assert.IsTrue(border.IsVisible, "code can show it again");
+        Assert.AreEqual(Visibility.Visible, border.Visibility);
+    }
+
+    [TestMethod]
     public void ShowDialog_WaitsAndReturnsTheDialogResult()
     {
         HeadlessSession.Run(() =>
