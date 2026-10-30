@@ -437,9 +437,10 @@ Sizes are relative, for one developer with AI-assisted porting: S ≈ ≤2 wk, M
 - **Upstream's OxyPlot tests can't run outside Windows.** The test assembly requires an STA thread, and elsewhere NUnit silently runs nothing.
   - `scripts/run-upstream-tests.sh` skips that suite outside Windows, and fails any suite that runs zero tests.
   - A cross-platform wrapper for those tests belongs to Spike C.
-- **Three upstream model tests are excluded.**
+- **Four upstream model tests are excluded.**
   - `RunAsync_MultipleAnalyses_Parallel` asserts a 250 ms wall-clock limit, so it fails intermittently on both OSes. It measures speed, not results.
   - `XYOrdinatesChange_EstimatedAnalysis_PreservesMcmcResults` races with itself, so it failed once on a Windows CI runner. Setting `XYOrdinates` starts a fire-and-forget reprocess (`AnalysisBase.ReprocessIfEstimated`), while the test calls `CreateFrequencyAnalysisResultsAsync` directly; a failed background run clears `IsEstimated`. Worth reporting upstream: the same pattern could reach the app if anything else rebuilds results while a reprocess is in flight.
+  - `Cancel_DuringParallelLoop_StopsAndReportsCanceled` cancels a run 50 ms after starting it, with work sized for a Debug build. In Release on a fast machine the run can finish first, so it failed once on a Windows CI runner (2026-10-30). It measures timing, not results.
   - `Documentation_LocalLinksResolve` checks links into folders that are deliberately not vendored.
 - **The upstream default connection uses WAL journal mode.** It converts any non-WAL database when opened and creates `-wal`/`-shm` side files. Tools such as the probe therefore read temporary copies, and the file-compatibility suite must do the same.
 - **HEC-DSS usage is read-only.** BestFit reads DSS files only: open, catalogue paths, read time series. It goes through HEC's `Hec.Dss` wrapper (2.0.3, net9.0, 31 native calls), plus one direct call, `hec_dss_tsGetDateTimeRange`, which is present in the current C library.

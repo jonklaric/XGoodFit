@@ -60,10 +60,14 @@ run Test_Numerics dotnet test upstream/Numerics/Test_Numerics/Test_Numerics.cspr
 #    XYOrdinates starts a fire-and-forget reprocess (AnalysisBase.ReprocessIfEstimated) while the
 #    test calls CreateFrequencyAnalysisResultsAsync directly, so it fails intermittently (seen once
 #    on a Windows CI runner).
+#  - Cancel_DuringParallelLoop_StopsAndReportsCanceled: cancels a run 50 ms after starting it, with
+#    work sized for a Debug build. In Release on a fast machine the run can finish first, and the
+#    test fails (seen once on a Windows CI runner: Succeeded=True). It measures timing, not results.
 bestfit="upstream/RMC-BestFit/src/RMC.BestFit.Tests"
 bestfit_filter="FullyQualifiedName!=RMC.BestFit.Tests.Documentation.TechnicalReferenceDocumentationTests.Documentation_LocalLinksResolve"
 bestfit_filter+="&FullyQualifiedName!=RMC.BestFit.Tests.BatchAnalysis.BatchAnalysisRunnerTests.RunAsync_MultipleAnalyses_Parallel"
 bestfit_filter+="&FullyQualifiedName!=RMC.BestFit.Tests.Bivariate.BivariateAnalysisXYOrdinatesReprocessTests.XYOrdinatesChange_EstimatedAnalysis_PreservesMcmcResults"
+bestfit_filter+="&FullyQualifiedName!=RMC.BestFit.Tests.Bivariate.CoincidentFrequencyAnalysisTests.Cancel_DuringParallelLoop_StopsAndReportsCanceled"
 if dotnet build "$bestfit/RMC.BestFit.Tests.csproj" -c Release > "$logs/build-RMC.BestFit.Tests.log" 2>&1; then
   run RMC.BestFit.Tests dotnet "$bestfit/bin/Release/net10.0/RMC.BestFit.Tests.dll" --filter "$bestfit_filter"
 else
