@@ -69,6 +69,14 @@ jobs:
         shell: bash
         run: bash scripts/run-app-tests.sh Release
 
+      # Each class's full output, for failures the step's summary doesn't explain.
+      - uses: actions/upload-artifact@v7
+        if: failure()
+        with:
+          name: app-tests-${{ matrix.name }}
+          path: artifacts/logs/app-tests/
+          if-no-files-found: ignore
+
       # The tests above include the file-compatibility suite (tests/BestFit/RMC.BestFit.FileCompat.Tests):
       # every example opened and saved by the port, compared with what upstream's WPF RMC-BestFit saves.
       # This shows what it found here, including the platform differences it accepts outside Windows.

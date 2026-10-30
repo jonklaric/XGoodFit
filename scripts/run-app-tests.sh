@@ -41,7 +41,8 @@ run() {
   summary="$(grep -E "^\s+(total|failed|succeeded|skipped):" "$log" | tr -s ' ' | tr '\n' ' ')"
   echo "==> $name ($((SECONDS - start)) s):$summary"
   if [[ $status -ne 0 ]]; then
-    grep -E "^failed " "$log" | head -20
+    # Each failed test with the first lines of its message and stack.
+    grep -E -A6 "^failed " "$log" | head -60
     echo "    FAILED (exit $status), see ${log#"$root/"}"
     failed=1
   fi
@@ -56,6 +57,19 @@ for file in "$project"/XGoodFit/*Tests.cs "$project"/XGoodFit/*Captures.cs; do
   grep -q "\[TestClass\]" "$file" && grep -Eq "class $class([^A-Za-z0-9_]|$)" "$file" || continue
   run "$class" "FullyQualifiedName~.XGoodFit.$class.&TestCategory!=External"
   rest+="&FullyQualifiedName!~.XGoodFit.$class."
+done
+
+# Upstream classes that need a process of their own:
+#  - PointEstimatorControlContractTests: its Bivariate row hits an upstream race. Switching the point
+#    estimator starts the reprocess on a worker, which enumerates the marginals' exact series, while the
+#    element's validation sorts those series in place on the UI thread (BivariateDistribution's
+#    GetEligibleExactData); the reprocess then throws and clears IsEstimated. After the other classes
+#    ran in the same process it failed in about a third of runs on two cores; on its own it passed 22 of
+#    22 (with the thread pool capped at three workers, it still failed once in 10).
+#    See IssuesToRaise/README.md, "Pending".
+for class in PointEstimatorControlContractTests; do
+  run "$class" "FullyQualifiedName~.$class.&TestCategory!=External"
+  rest+="&FullyQualifiedName!~.$class."
 done
 
 # Everything else: upstream's tests (support classes and ported copies), which are light.
