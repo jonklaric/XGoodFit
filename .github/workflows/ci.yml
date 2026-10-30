@@ -22,7 +22,9 @@ jobs:
   portable:
     name: Portable layer (${{ matrix.name }})
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 60
+    # The App tests (tests/BestFit/RMC.BestFit.App.Tests) take most of this, the macOS runner longest:
+    # 120 minutes until they're made lighter.
+    timeout-minutes: 120
     strategy:
       fail-fast: false
       matrix:
