@@ -1,0 +1,114 @@
+<!--
+    XGoodFit port of upstream's GUI/Support/Controls/QuantilePriorsControl.xaml:
+    - GenericControls' resource dictionary is an Avalonia resource include. The grid's Style is its Theme, and
+      its columns' HeaderStyle and CellStyle are their HeaderTheme and CellTheme. Avalonia's XAML can't name
+      a grid column: the code-behind finds upstream's named columns by position.
+    - The PreviewMouseLeftButtonDown handlers are added in the code-behind (Avalonia has no Preview events
+      in XAML), and the toggle button's ToolTip is ToolTip.Tip.
+    - The popup's Placement="Right" is RightEdgeAlignedTop (WPF aligns the tops), and StaysOpen="False" is
+      IsLightDismissEnabled. Not ported: PopupAnimation and AllowsTransparency, which Avalonia lacks.
+    - The cell template's ElementName bindings to the control's own elements find them through the
+      template's name scope, which falls back to the control's.
+    - The quantile combo box shows its probabilities in WPF's binding culture (WpfCompat's FormattingCulture,
+      plan §5.2), as WPF's content presenter does.
+    - The single quantile check box's Visibility binding is WpfCompat's Visibility.
+-->
+<UserControl x:Class="RMC_BestFit.QuantilePriorsControl" x:Name="QuantilePriors"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="using:RMC_BestFit"
+             xmlns:cntrls="using:GenericControls"
+             xmlns:wpf="using:WpfCompat"
+             xmlns:oxycntrls="using:OxyPlotControls"
+             xmlns:numcntrls="using:NumericControls.Distributions.Univariate"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800"
+             Background="{DynamicResource PropertyGrid.Content.Background}"
+             Foreground="{DynamicResource EnvironmentWindowText}"
+             DataContext="{Binding RelativeSource={RelativeSource Self}}">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceInclude Source="avares://GenericControls/Resources/ResourceDictionary.axaml"/>
+                <ResourceDictionary>
+                    <cntrls:BooleanToVisibilityConverter x:Key="BoolVisibilityConverter"/>
+                    <cntrls:ReverseBooleanConverter x:Key="ReverseBoolConverter"/>
+                    <cntrls:DoubleToGridLengthConverter x:Key="ActualToLengthConverter" />
+                </ResourceDictionary>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <!--Prior Distribution Grid-->
+        <cntrls:CopyPasteDataGrid Name="PriorDistributionsDataGrid" Grid.Row="0" HeadersVisibility="Column" Theme="{DynamicResource CopyPasteDataGridStyle}"
+                                    SelectionMode="Extended" SelectionUnit="Cell" IsReadOnly="True" AutoGenerateColumns="False"
+                                    CanUserDeleteRows="False" CanUserAddRows="False" CanUserResizeColumns="True" CanUserAddInsertDeleteRows="False"
+                                    CanUserResizeRows="False" CanUserSortColumns="False" CanUserReorderColumns="False" 
+                                    IsEnabled="{Binding ElementName=EnablePriorQuantileDistributions, Path=IsSelected}">
+            <DataGrid.Resources>
+                <DataTemplate x:Key="DistributionSelector">
+                    <Grid>
+                        <ToggleButton Name="PopupToggleButton" Margin="1" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" ToolTip.Tip="Click to edit the distribution."
+                                      IsHitTestVisible="{Binding ElementName=DistributionPopup, Path=IsOpen, Converter={StaticResource ReverseBoolConverter}}">
+                            <TextBlock Name="DistributionTextBlock" Text="{Binding Path=Distribution.DisplayLabel}" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="3,0,0,0"/>
+                        </ToggleButton>
+
+                        <Popup Name="DistributionPopup" IsOpen="{Binding ElementName=PopupToggleButton, Path=IsChecked, Mode=TwoWay}" 
+                                                        Placement="RightEdgeAlignedTop" PlacementTarget="{Binding ElementName=PopupToggleButton}"
+                                                        IsLightDismissEnabled="True"
+                                                        Opened="DistributionPopup_Opened"
+                                                        Closed="DistributionPopup_Closed"
+                                                        >
+                            <Border Background="{DynamicResource EnvironmentWindowBackground}" BorderBrush="{DynamicResource Button.Static.Border}" BorderThickness="1" >
+                                <numcntrls:DistributionSelectorControl x:Name="SelectorControl" Margin="5" Width="300"
+                                                               BackgroundColor="{DynamicResource EnvironmentWindowBackground}" 
+                                                               ShowAxisTitle="True"                                                               
+                                                               ShowTickLines="True"
+                                                               ShowAxisLabel="True"
+                                                               ExpandPlot="False"                                                          
+                                                               ShowPlot="True"
+                                                               ShowStatistics="True"
+                                                               DistributionTitle="{Binding Path=QuantileLabel}">
+                                </numcntrls:DistributionSelectorControl>
+                            </Border>
+                        </Popup>
+                    </Grid>
+                </DataTemplate>
+            </DataGrid.Resources>
+            <cntrls:CopyPasteDataGrid.Columns>
+                <DataGridTemplateColumn Header="Probability" IsReadOnly="False" Width="0.5*" HeaderTheme="{DynamicResource Left_ColumnHeaderStyle}">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <ComboBox x:Name="QuantileComboBox" ItemsSource="{Binding ElementName=QuantilePriors, Path=QuantileOptions}" SelectedValue="{Binding Alpha, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding ConverterCulture={x:Static wpf:FormattingCulture.Current}}"/>
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="Distribution"  
+                                        HeaderTheme="{DynamicResource Center_ColumnHeaderStyle}" CellTemplate="{StaticResource DistributionSelector}"
+                                        Width="0.5*"  MaxWidth="200" MinWidth="10"
+                                        />
+            </cntrls:CopyPasteDataGrid.Columns>
+        </cntrls:CopyPasteDataGrid>
+        <!--Enable Prior Quantile Distributions-->
+        <cntrls:BooleanPropertyControl x:Name="EnablePriorQuantileDistributions" Margin="0 2" Grid.Row="1" Title="Enable Priors on Quantiles"
+                                       IsSelected="{Binding Model.EnableQuantilePriors, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"  />
+        <!--Single Quantile-->
+        <cntrls:BooleanPropertyControl x:Name="UseSingleQuantile" Margin="0 2" Grid.Row="2" Title="Use Single Quantile"
+                                       IsSelected="{Binding Model.UseSingleQuantile, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" 
+                                       wpf:WpfElement.Visibility="{Binding ShowSingleQuantileCheckBox, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay, Converter={StaticResource BoolVisibilityConverter}}"
+                                       IsEnabled="{Binding ElementName=EnablePriorQuantileDistributions, Path=IsSelected}"/>
+    </Grid>
+</UserControl>

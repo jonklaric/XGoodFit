@@ -1,0 +1,515 @@
+// XGoodFit port of upstream's GUI/Support/Controls/KernelDensityControl.xaml.cs: the dependency properties are Avalonia
+// styled properties with upstream's callbacks; the XAML's PreviewMouseDown handler and the check box's Checked and Unchecked handlers are added in the
+// constructor (WpfCompat's mouse and toggle events), and Avalonia's GetVisualAt is WPF's hit test. The
+// wait cursor is WpfCompat's, and Point3D is WpfCompat's.
+using OxyPlot;
+using OxyPlot.Wpf;
+using OxyPlotControls;
+using RMC.BestFit.Models;
+using RMC.BestFit.Estimation;
+using RMC.BestFit.UI;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Input;
+using Avalonia.Interactivity;
+using Avalonia.Media;
+using Avalonia.VisualTree;
+using WpfCompat;
+using WpfCompat.Input;
+using WpfCompat.Media.Media3D;
+
+namespace RMC_BestFit
+{
+    /// <summary>
+    /// A user control that displays a kernel density estimation (KDE) visualization of posterior parameter distributions
+    /// from a Bayesian analysis, with optional prior distribution overlay.
+    /// </summary>
+    public partial class KernelDensityControl : UserControl
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="KernelDensityControl"/> class.
+        /// </summary>
+        public KernelDensityControl()
+        {
+            InitializeComponent();
+
+            // XGoodFit port: upstream's XAML PreviewMouseDown, Checked and Unchecked handlers (Avalonia has no Preview
+            // events in XAML, and its check box raises IsCheckedChanged where WPF's raises Checked and Unchecked).
+            this.AddPreviewMouseDownHandler(UserControl_PreviewMouseDown);
+            ShowPriorDistribution.AddCheckedHandler(ShowPriorDistribution_Checked);
+            ShowPriorDistribution.AddUncheckedHandler(ShowPriorDistribution_Unchecked);
+        }
+
+        /// <summary>
+        /// Identifies the <see cref="Analysis"/> dependency property.
+        /// </summary>
+        public static readonly StyledProperty<BayesianAnalysis> AnalysisProperty = AvaloniaProperty.Register<KernelDensityControl, BayesianAnalysis>(nameof(Analysis), null);
+
+        /// <summary>
+        /// Gets or sets the Bayesian analysis object that provides data for the kernel density visualization.
+        /// </summary>
+        public BayesianAnalysis Analysis
+        {
+            get { return (BayesianAnalysis)GetValue(AnalysisProperty); }
+            set { SetValue(AnalysisProperty, value); }
+        }
+
+        static KernelDensityControl()
+        {
+            // XGoodFit port: the property-changed callbacks of upstream's metadata.
+            AnalysisProperty.Changed.AddClassHandler<KernelDensityControl>(ElementCallback);
+        }
+
+        /// <summary>
+        /// Handles property change callbacks for the <see cref="Analysis"/> dependency property.
+        /// Subscribes to property change events on the new analysis object.
+        /// </summary>
+        /// <param name="d">The dependency object whose property changed.</param>
+        /// <param name="e">Event data containing the old and new property values.</param>
+        private static void ElementCallback(AvaloniaObject d, AvaloniaPropertyChangedEventArgs e)
+        {
+            if (d == null) return;
+            if (d as KernelDensityControl == null) return;
+            var thisControl = (KernelDensityControl)d;
+
+            // Unsubscribe from old element
+            if (e.OldValue is BayesianAnalysis oldElement)
+                oldElement.PropertyChanged -= thisControl.Analysis_PropertyChanged;
+
+            if (e.NewValue == null) return;
+            var newElement = e.NewValue as BayesianAnalysis;
+            if (newElement == null) return;
+
+            newElement.PropertyChanged += thisControl.Analysis_PropertyChanged;
+
+            // Initialize combo and UI now that Analysis is available
+            thisControl.LoadParameterComboBox();
+            thisControl.LoadPercentileHeaders();
+            thisControl.UpdatePlot();
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the control should display in simplified view mode.
+        /// When true, hides advanced diagnostic columns like Gelman-Rubin and ESS statistics.
+        /// </summary>
+        public bool SimpleView { get; set; } = false;
+
+        /// <summary>
+        /// XGoodFit port: upstream's GelmanRubinColumn, the statistics grid's first column (Avalonia's XAML
+        /// can't name a column).
+        /// </summary>
+        private DataGridColumn GelmanRubinColumn => KDEDataGrid.Columns[0];
+
+        /// <summary>
+        /// XGoodFit port: upstream's ESSColumn, the statistics grid's second column.
+        /// </summary>
+        private DataGridColumn ESSColumn => KDEDataGrid.Columns[1];
+
+        /// <summary>
+        /// XGoodFit port: upstream's Percentile1Column, the statistics grid's fifth column.
+        /// </summary>
+        private DataGridColumn Percentile1Column => KDEDataGrid.Columns[4];
+
+        /// <summary>
+        /// XGoodFit port: upstream's Percentile3Column, the statistics grid's seventh column.
+        /// </summary>
+        private DataGridColumn Percentile3Column => KDEDataGrid.Columns[6];
+
+        /// <summary>
+        /// Tracks whether the control has been loaded and initialized.
+        /// </summary>
+        private bool _isLoaded = false;
+
+        /// <summary>
+        /// The plot object. Injected by the parent control via <see cref="SetPlot"/>
+        /// (the parent obtains it from <c>BayesianController.KernelDensityPlot</c>).
+        /// </summary>
+        private Plot _plot;
+
+        /// <summary>
+        /// Gets the plot displayed by this control. Set via <see cref="SetPlot"/> by the parent control.
+        /// </summary>
+        public Plot Plot => _plot;
+
+        /// <summary>
+        /// Gets a value indicating whether the plot area has been clicked by the user.
+        /// </summary>
+        public bool PlotClicked { get; private set; } = false;
+
+        /// <summary>
+        /// Occurs when the control is clicked, providing information about what area was clicked.
+        /// </summary>
+        public event PreviewControlClickedEventHandler PreviewControlClicked;
+
+        /// <summary>
+        /// Represents the method that will handle the <see cref="PreviewControlClicked"/> event.
+        /// </summary>
+        /// <param name="plotClicked">True if the plot area was clicked.</param>
+        /// <param name="toolbarClicked">True if the toolbar area was clicked.</param>
+        /// <param name="plot">The plot object that was clicked.</param>
+        public delegate void PreviewControlClickedEventHandler(bool plotClicked, bool toolbarClicked, Plot plot);
+
+        /// <summary>
+        /// Occurs when plot properties are requested to be displayed or modified.
+        /// </summary>
+        public event PlotPropertiesCalledEventHandler PlotPropertiesCalled;
+
+        /// <summary>
+        /// Represents the method that will handle the <see cref="PlotPropertiesCalled"/> event.
+        /// </summary>
+        /// <param name="plot">The plot whose properties are being accessed.</param>
+        /// <param name="openProperties">True if the properties panel should be opened.</param>
+        /// <param name="propertyExpander">The property expander control to display.</param>
+        /// <param name="selectedObject">The object whose properties are being displayed.</param>
+        public delegate void PlotPropertiesCalledEventHandler(Plot plot, bool openProperties, OxyPlotPropertiesControl.PropertyEXP? propertyExpander, object selectedObject);
+
+
+
+
+
+        /// <summary>
+        /// Handles the Loaded event of the UserControl. Initializes the control on first load
+        /// by populating the parameter combo box, setting up percentile headers, and updating the plot.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">Event data.</param>
+        private void UserControl_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (_isLoaded == false)
+            {
+                // One-time setup: visibility config is set once on first load.
+                LoadParameterComboBox();
+                LoadPercentileHeaders();
+                if (SimpleView)
+                {
+                    ShowPriorDistribution.Visibility = Visibility.Collapsed;
+                    // XGoodFit port: a grid column isn't a visual: its IsVisible is WPF's Visibility.
+                    GelmanRubinColumn.IsVisible = false;
+                    ESSColumn.IsVisible = false;
+                }
+            }
+            _isLoaded = true;
+            // Always refresh on load so Analysis changes between unload and reload are applied.
+            UpdatePlot();
+        }
+
+        /// <summary>
+        /// Handles property changes on the Analysis object. Updates the plot and UI elements
+        /// when relevant analysis properties change.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">Event data containing the name of the property that changed.</param>
+        private void Analysis_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(Analysis.IsEstimated))
+            {
+                UpdatePlot();
+            }
+            if (e.PropertyName == nameof(Analysis.CredibleIntervalWidth))
+            {
+                // Relabel column headers (90% LowerCI -> 95% LowerCI) AND rebind the data
+                // table so the LowerCI/UpperCI cell values reflect the new alpha. Headers
+                // alone aren't enough — the cached ItemsSource holds stale percentiles.
+                LoadPercentileHeaders();
+                UpdatePlot();
+            }
+            if (e.PropertyName == nameof(Analysis.Model) ||
+                e.PropertyName == nameof(Analysis.ParameterNames) ||
+                e.PropertyName == nameof(Analysis.Results))
+            {
+                LoadParameterComboBox();
+            }
+        }
+
+        /// <summary>
+        /// Populates the parameter combo box with the display names of all parameters
+        /// from the analysis model.
+        /// </summary>
+        private void LoadParameterComboBox()
+        {
+            if (Analysis == null || Analysis.ParameterNames == null) return;
+            var selectedParameter = ParameterComboBox.SelectedValue as string;
+            var parms = GetSampledParameterNames();
+            ParameterComboBox.ItemsSource = null;
+            ParameterComboBox.ItemsSource = parms;
+            int selectedIndex = selectedParameter == null ? -1 : parms.IndexOf(selectedParameter);
+            ParameterComboBox.SelectedIndex = selectedIndex >= 0
+                ? selectedIndex
+                : parms.Count > 0 ? 0 : -1;
+        }
+
+        /// <summary>
+        /// Gets names aligned with the coordinates stored in the MCMC results.
+        /// </summary>
+        /// <returns>Sampled parameter names; the derived final mixture weight is omitted for new K-1 results.</returns>
+        private List<string> GetSampledParameterNames()
+        {
+            var names = Analysis.ParameterNames!.ToList();
+            if (Analysis.Model is MixtureModel mixtureModel &&
+                mixtureModel.Mixture is not null &&
+                mixtureModel.Mixture.Distributions.Length > 1 &&
+                Analysis.Results?.ParameterResults?.Length == names.Count - 1)
+            {
+                names.RemoveAt(mixtureModel.Mixture.Distributions.Length - 1);
+            }
+            return names;
+        }
+
+        /// <summary>
+        /// Maps a stored diagnostic index to its public model-parameter index.
+        /// </summary>
+        /// <param name="storedIndex">The stored diagnostic index.</param>
+        /// <returns>The corresponding public model-parameter index.</returns>
+        private int GetModelParameterIndex(int storedIndex)
+        {
+            if (Analysis.Model is MixtureModel mixtureModel &&
+                mixtureModel.Mixture is not null &&
+                mixtureModel.Mixture.Distributions.Length > 1 &&
+                Analysis.Results?.ParameterResults?.Length == Analysis.Model.Parameters.Count - 1)
+            {
+                int derivedWeightIndex = mixtureModel.Mixture.Distributions.Length - 1;
+                return storedIndex < derivedWeightIndex ? storedIndex : storedIndex + 1;
+            }
+            return storedIndex;
+        }
+
+        /// <summary>
+        /// Updates the percentile column headers in the data grid based on the current
+        /// credible interval width from the analysis.
+        /// </summary>
+        private void LoadPercentileHeaders()
+        {
+            if (Analysis == null) return;
+            var alpha = (1 - Analysis.CredibleIntervalWidth) / 2d;
+            Percentile1Column.Header = (alpha * 100).ToString("F1") + "%";
+            Percentile3Column.Header = ((1 - alpha) * 100).ToString("F1") + "%";
+        }
+
+        /// <summary>
+        /// Handles the Checked event of the ShowPriorDistribution checkbox.
+        /// Updates the plot to display the prior distribution overlay.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">Event data.</param>
+        private void ShowPriorDistribution_Checked(object sender, RoutedEventArgs e)
+        {
+            if (_isLoaded == true) UpdatePlot();
+        }
+
+        /// <summary>
+        /// Handles the Unchecked event of the ShowPriorDistribution checkbox.
+        /// Updates the plot to remove the prior distribution overlay.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">Event data.</param>
+        private void ShowPriorDistribution_Unchecked(object sender, RoutedEventArgs e)
+        {
+            if (_isLoaded == true) UpdatePlot();
+        }
+
+        /// <summary>
+        /// Handles the SelectionChanged event of the ParameterComboBox.
+        /// Updates the plot to display the kernel density for the newly selected parameter.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">Event data.</param>
+        private void ParameterComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (_isLoaded == true) UpdatePlot();
+        }
+
+        /// <summary>
+        /// Handles the PreviewMouseDown event of the UserControl. Performs hit testing
+        /// to determine if the plot or toolbar was clicked and raises the appropriate event.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">Event data.</param>
+        private void UserControl_PreviewMouseDown(object sender, PointerPressedEventArgs e)
+        {
+            if (_plot == null) return;
+            // XGoodFit port: Avalonia's GetVisualAt is WPF's VisualTreeHelper.HitTest.
+            var plotHitResult = _plot.GetVisualAt(e.GetPosition(_plot));
+            var toolbarHitResult = PlotToolbar.GetVisualAt(e.GetPosition(PlotToolbar));
+            PreviewControlClicked?.Invoke(plotHitResult != null, toolbarHitResult != null, _plot);
+            PlotClicked = plotHitResult != null;
+        }
+
+        /// <summary>
+        /// Handles the LostFocus event of the UserControl. Resets the PlotClicked state.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">Event data.</param>
+        private void UserControl_LostFocus(object sender, RoutedEventArgs e)
+        {
+            PlotClicked = false;
+        }
+
+        /// <summary>
+        /// Handles the PropertiesCalled event from the plot toolbar.
+        /// Forwards the event to subscribers of the PlotPropertiesCalled event.
+        /// </summary>
+        /// <param name="targetPlot">The plot whose properties are being accessed.</param>
+        /// <param name="openProperties">True if the properties panel should be opened.</param>
+        /// <param name="propertyExpander">The property expander control to display.</param>
+        /// <param name="selectedObject">The object whose properties are being displayed.</param>
+        private void PlotToolbar_PropertiesCalled(Plot targetPlot, bool openProperties, OxyPlotPropertiesControl.PropertyEXP? propertyExpander, object selectedObject)
+        {
+            PlotPropertiesCalled?.Invoke(targetPlot, openProperties, propertyExpander, selectedObject);
+        }
+
+        /// <summary>
+        /// Sets the external plot to display in this control. Called by parent controls
+        /// that own the Plot object (Pattern B). The plot is attached to PlotHost and PlotToolbar.
+        /// </summary>
+        /// <param name="plot">The external plot to display.</param>
+        public void SetPlot(Plot plot)
+        {
+            _plot = plot;
+            PlotHost.Content = _plot;
+            PlotToolbar.Plot = _plot;
+        }
+
+        /// <summary>
+        /// Sets the plot title. Suppresses PropertyChanged so the change is not recorded
+        /// as an undoable action — the title tracks combo selection, not user intent.
+        /// </summary>
+        private void SetPlotTitle(string title)
+        {
+            if (_plot == null) return;
+            _plot.SuppressPropertyChanged = true;
+            _plot.Title = title;
+            _plot.SuppressPropertyChanged = false;
+        }
+
+        /// <summary>
+        /// Updates the kernel density plot with the current parameter data from the analysis results.
+        /// Displays the posterior distribution as a smoothed density curve and optionally overlays the prior distribution.
+        /// Also updates the summary statistics table.
+        /// </summary>
+        private void UpdatePlot()
+        {
+            if (_plot == null) return;
+
+            // Set plot title and axis title to reflect the selected parameter. Suppress
+            // PropertyChanged so the PlotUndoManager does not record these as undoable
+            // actions — they track combo selection, not user intent.
+            string paramName = ParameterComboBox.SelectedValue as string ?? "";
+            string densityLabel = SimpleView ? "Marginal Density" : "Marginal Posterior Density";
+            SetPlotTitle(string.IsNullOrEmpty(paramName) ? densityLabel : $"{densityLabel} of {paramName}");
+            foreach (var axis in _plot.Axes)
+            {
+                if (axis.Position == OxyPlot.Axes.AxisPosition.Bottom)
+                {
+                    axis.SuppressPropertyChanged = true;
+                    axis.Title = paramName;
+                    axis.SuppressPropertyChanged = false;
+                }
+            }
+
+            // Lookup-or-create named series so user-customized styling survives Save/Open.
+            var priorSeries = _plot.Series.OfType<AreaSeries>().FirstOrDefault(s => s.Name == "PriorDensity")
+                ?? new AreaSeries
+                {
+                    Name = "PriorDensity",
+                    Title = "Prior Density",
+                    Fill = Color.FromArgb(125, 104, 140, 175),
+                    Color = Color.FromArgb(255, 53, 59, 122),
+                    LineStyle = LineStyle.Solid,
+                    BrokenLineThickness = 1,
+                    StrokeThickness = 1,
+                    Decimator = OxyPlot.Decimator.Decimate,
+                };
+            var posteriorSeries = _plot.Series.OfType<AreaSeries>().FirstOrDefault(s => s.Name == "PosteriorDensity")
+                ?? new AreaSeries
+                {
+                    Name = "PosteriorDensity",
+                    Title = "Posterior Density",
+                    Fill = Color.FromArgb(75, 220, 20, 60),
+                    Color = Color.FromArgb(255, 255, 0, 0),
+                    LineStyle = LineStyle.Solid,
+                    BrokenLineThickness = 1,
+                    StrokeThickness = 1,
+                    Decimator = OxyPlot.Decimator.Decimate,
+                };
+
+            // BC3: Clear series in a single block without an intermediate InvalidatePlot
+            // so the plot never renders in a transient blank state between clear and repopulate.
+            _plot.Series.Clear();
+
+            KDEDataGrid.ItemsSource = null;
+            KDEDataGrid.ItemsSource = new List<Numerics.Sampling.MCMC.ParameterStatistics>() { new Numerics.Sampling.MCMC.ParameterStatistics() { Rhat = double.NaN, ESS = double.NaN, Mean = double.NaN, StandardDeviation = double.NaN, LowerCI = double.NaN, Median = double.NaN, UpperCI = double.NaN } };
+            KDEDataGrid.Items.Refresh();
+
+            if (Analysis == null || Analysis.IsEstimated == false || Analysis.Results == null)
+            {
+                _plot.InvalidatePlot(true);
+                return;
+            }
+
+            if (Analysis.IsEstimated == true)
+            {
+                Mouse.OverrideCursor = Cursors.Wait;
+                try
+                {
+
+                int index = ParameterComboBox.SelectedIndex;
+                if (Analysis.Results.ParameterResults == null ||
+                    index < 0 ||
+                    index >= Analysis.Results.ParameterResults.Length)
+                {
+                    _plot.InvalidatePlot(true);
+                    return;
+                }
+
+                if (ShowPriorDistribution.IsChecked == true && Analysis.Model != null)
+                {
+                    int modelParameterIndex = GetModelParameterIndex(index);
+                    var pdf = Analysis.Model.Parameters[modelParameterIndex].PriorDistribution.CreatePDFGraph();
+                    priorSeries.Title = Analysis.Model is MixtureModel mixtureModel &&
+                        mixtureModel.Mixture is not null &&
+                        modelParameterIndex < mixtureModel.Mixture.Distributions.Length - 1
+                            ? "Configured Prior Factor"
+                            : "Prior Density";
+                    var priorPoints = new List<Point3D>();
+                    for (int i = 0; i < pdf.GetLength(0); i++)
+                        priorPoints.Add(new Point3D(pdf[i, 0], 0, pdf[i, 1]));
+
+                    priorSeries.ItemsSource = priorPoints;
+                    priorSeries.DataFieldX = nameof(Point3D.X);
+                    priorSeries.DataFieldY = nameof(Point3D.Y);
+                    priorSeries.DataFieldX2 = nameof(Point3D.X);
+                    priorSeries.DataFieldY2 = nameof(Point3D.Z);
+                    priorSeries.TrackerFormatString = "{0}" + Environment.NewLine + "{1}: {2:0.0000}" + Environment.NewLine + "{3}: {4:0.000000}";
+                    _plot.Series.Add(priorSeries);
+                }
+
+                var postPoints = new List<Point3D>();
+                for (int i = 0; i < Analysis.Results.ParameterResults[index].KernelDensity.GetLength(0); i++)
+                    postPoints.Add(new Point3D(Analysis.Results.ParameterResults[index].KernelDensity[i, 0], 0, Analysis.Results.ParameterResults[index].KernelDensity[i, 1]));
+
+                posteriorSeries.ItemsSource = postPoints;
+                posteriorSeries.DataFieldX = nameof(Point3D.X);
+                posteriorSeries.DataFieldY = nameof(Point3D.Y);
+                posteriorSeries.DataFieldX2 = nameof(Point3D.X);
+                posteriorSeries.DataFieldY2 = nameof(Point3D.Z);
+                posteriorSeries.TrackerFormatString = "{0}" + Environment.NewLine + "{1}: {2:0.0000}" + Environment.NewLine + "{3}: {4:0.000000}";
+                _plot.Series.Add(posteriorSeries);
+                _plot.InvalidatePlot(true);
+
+                // Update stats table            
+                KDEDataGrid.ItemsSource = new List<Numerics.Sampling.MCMC.ParameterStatistics>() { Analysis.Results.ParameterResults[index].SummaryStatistics };
+                KDEDataGrid.Items.Refresh();
+
+                }
+                finally
+                {
+                    Mouse.OverrideCursor = null;
+                }
+            }
+        }
+    }
+}

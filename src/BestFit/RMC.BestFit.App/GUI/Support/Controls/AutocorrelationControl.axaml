@@ -1,0 +1,114 @@
+<!--
+    XGoodFit port of upstream's GUI/Support/Controls/AutocorrelationControl.xaml:
+    - The PreviewMouseDown handler is added in the code-behind (Avalonia has no Preview events in XAML), and
+      the labels' ToolTip is ToolTip.Tip.
+    - The resources (unused, as upstream's) are ControlThemes, as in KernelDensityControl.
+-->
+<UserControl x:Class="RMC_BestFit.AutocorrelationControl"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="using:RMC_BestFit"
+             xmlns:cntrls="using:GenericControls"
+             xmlns:oxy="http://oxyplot.org/wpf"
+             xmlns:oxyCntrls="using:OxyPlotControls"
+             xmlns:themes="using:Themes"
+             xmlns:wpf="using:WpfCompat"
+             mc:Ignorable="d" 
+             d:DesignHeight="600" 
+             d:DesignWidth="1000" 
+             Loaded="UserControl_Loaded"
+             LostFocus="UserControl_LostFocus"
+             Background="{DynamicResource EnvironmentWindowBackground}"
+             Foreground="{DynamicResource EnvironmentWindowText}"
+             DataContext="{Binding RelativeSource={RelativeSource Self}}">
+    <UserControl.Resources>
+        <!--
+            XGoodFit port: the styles are ControlThemes. WPF still applied its own DataGridColumnHeader style
+            (Aero2) under the header style, which sets no template: KDEDataGridHeaderDefaultTheme is its port,
+            as FrameworkUI's MessageWindowDataGridHeaderDefaultTheme. The triggers are :pointerover and
+            :focus-within; SnapsToDevicePixels isn't ported.
+        -->
+        <ControlTheme x:Key="KDEDataGridHeaderDefaultTheme" TargetType="DataGridColumnHeader">
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Grid>
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter Name="PART_ContentPresenter"
+                                              Content="{TemplateBinding Content}"
+                                              ContentTemplate="{TemplateBinding (themes:ColumnHeaderContent.EffectiveTemplate)}"
+                                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                              HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                              RecognizesAccessKey="True"/>
+                        </Border>
+                    </Grid>
+                </ControlTemplate>
+            </Setter>
+        </ControlTheme>
+        <ControlTheme x:Key="KDEDataGridHeaderStyle" TargetType="DataGridColumnHeader" BasedOn="{StaticResource KDEDataGridHeaderDefaultTheme}">
+            <Setter Property="Height" Value="22"/>
+            <Setter Property="Background" Value="{DynamicResource EnvironmentWindowBackground}"/>
+            <Setter Property="Foreground" Value="{DynamicResource MessageWindow.Foreground}"/>
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalAlignment" Value="Stretch"/>
+            <Setter Property="VerticalContentAlignment" Value="Bottom"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource MessageWindow.Gridlines}"/>
+            <Setter Property="BorderThickness" Value="0,0,0,1"/>
+            <Style Selector="^:pointerover">
+                <Setter Property="Background" Value="{DynamicResource MessageWindow.HeaderHoveredBackground}" />
+            </Style>
+            <Style Selector="^:focus-within">
+                <Setter Property="Background" Value="{DynamicResource MessageWindow.HeaderHoveredBackground}" />
+            </Style>
+        </ControlTheme>
+        <ControlTheme x:Key="KDECellStyle" TargetType="DataGridCell" BasedOn="{StaticResource Center_CellStyle}">
+            <Setter Property="TextBlock.TextAlignment" Value="Center"/>
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Grid Background="{TemplateBinding Background}">
+                        <ContentPresenter Name="PART_ContentPresenter"
+                                          Content="{TemplateBinding Content}"
+                                          ContentTemplate="{TemplateBinding ContentTemplate}"
+                                          VerticalAlignment="Bottom" />
+                    </Grid>
+                </ControlTemplate>
+            </Setter>
+        </ControlTheme>
+        <cntrls:DoubleToNAConverter x:Key="NAConverter"/>
+    </UserControl.Resources>
+    <ScrollViewer x:Name="Viewer" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <Label Content="Select Parameter" Margin="0" Grid.Row="0" Grid.Column="0" ToolTip.Tip="Select a model parameter."/>
+            <ComboBox Name="ParameterComboBox" Margin="4"  Width="200" Grid.Row="1" Grid.Column="0" SelectionChanged="ParameterComboBox_SelectionChanged"/>
+
+            <!--Plot-->
+            <Grid Grid.Row="2" Grid.ColumnSpan="2">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <!--Plot-->
+                <ContentControl x:Name="PlotHost" Grid.Row="0" Grid.Column="0" Margin="2,2,0,0" />
+                <!-- Plot Toolbar-->
+                <oxyCntrls:OxyPlotToolbar x:Name="PlotToolbar" Grid.Row="0" Grid.Column="1" Background="Transparent" VerticalAlignment="Stretch" ToolBarOrientation="Vertical" PropertiesCalled="PlotToolbar_PropertiesCalled" />
+            </Grid>
+        </Grid>
+    </ScrollViewer>
+</UserControl>

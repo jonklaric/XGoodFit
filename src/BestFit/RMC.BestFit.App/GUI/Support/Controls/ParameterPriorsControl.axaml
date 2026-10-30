@@ -1,0 +1,97 @@
+<!--
+    XGoodFit port of upstream's GUI/Support/Controls/ParameterPriorsControl.xaml:
+    - GenericControls' resource dictionary is an Avalonia resource include. The grid's Style is its Theme, and
+      its columns' HeaderStyle and CellStyle are their HeaderTheme and CellTheme. Avalonia's XAML can't name
+      a grid column: the code-behind finds upstream's named columns by position.
+    - The PreviewMouseLeftButtonDown handlers are added in the code-behind (Avalonia has no Preview events
+      in XAML), and the toggle button's ToolTip is ToolTip.Tip.
+    - The popup's Placement="Right" is RightEdgeAlignedTop (WPF aligns the tops), and StaysOpen="False" is
+      IsLightDismissEnabled. Not ported: PopupAnimation and AllowsTransparency, which Avalonia lacks.
+    - The cell template's ElementName bindings to the control's own elements find them through the
+      template's name scope, which falls back to the control's.
+-->
+<UserControl x:Class="RMC_BestFit.ParameterPriorsControl" x:Name="ParameterPriors"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="using:RMC_BestFit"
+             xmlns:cntrls="using:GenericControls"
+             xmlns:oxycntrls="using:OxyPlotControls"
+             xmlns:numcntrls="using:NumericControls.Distributions.Univariate"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800"
+             Background="{DynamicResource PropertyGrid.Content.Background}"
+             Foreground="{DynamicResource EnvironmentWindowText}"
+             DataContext="{Binding RelativeSource={RelativeSource Self}}">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceInclude Source="avares://GenericControls/Resources/ResourceDictionary.axaml"/>
+                <ResourceDictionary>
+                    <cntrls:ReverseBooleanConverter x:Key="ReverseBoolConverter"/>
+                    <cntrls:DoubleToGridLengthConverter x:Key="ActualToLengthConverter" />
+                </ResourceDictionary>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!--Prior Distribution Grid-->
+        <cntrls:CopyPasteDataGrid Name="PriorDistributionsDataGrid" Grid.Row="0" HeadersVisibility="Column" Theme="{DynamicResource CopyPasteDataGridStyle}"
+                                    SelectionMode="Extended" SelectionUnit="Cell" IsReadOnly="True" AutoGenerateColumns="False"
+                                    CanUserDeleteRows="False" CanUserAddRows="False" CanUserResizeColumns="True" MaxHeight="200" 
+                                    CanUserResizeRows="False" CanUserSortColumns="False" CanUserReorderColumns="False"  >
+            <DataGrid.Resources>
+                <DataTemplate x:Key="DistributionSelector">
+                    <Grid>
+                        <ToggleButton Name="PopupToggleButton" Margin="1" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" ToolTip.Tip="Click to edit the distribution."
+                                      IsHitTestVisible="{Binding ElementName=DistributionPopup, Path=IsOpen, Converter={StaticResource ReverseBoolConverter}}"
+                                      IsEnabled="{Binding ElementName=UsePriorDistributionDefaults, Path=IsSelected, Converter={StaticResource ReverseBoolConverter}}">
+                            <TextBlock Name="DistributionTextBlock" Text="{Binding Path=PriorDistribution.DisplayLabel}" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="3,0,0,0"/>
+                        </ToggleButton>
+
+                        <Popup Name="DistributionPopup" IsOpen="{Binding ElementName=PopupToggleButton, Path=IsChecked, Mode=TwoWay}" 
+                                                        Placement="RightEdgeAlignedTop" PlacementTarget="{Binding ElementName=PopupToggleButton}"
+                                                        IsLightDismissEnabled="True"
+                                                        Opened="DistributionPopup_Opened"
+                                                        Closed="DistributionPopup_Closed"
+                                                        >
+                            <Border Background="{DynamicResource EnvironmentWindowBackground}" BorderBrush="{DynamicResource Button.Static.Border}" BorderThickness="1" >
+                                <numcntrls:DistributionSelectorControl x:Name="SelectorControl" Margin="5" Width="300"
+                                                               BackgroundColor="{DynamicResource EnvironmentWindowBackground}" 
+                                                               ShowAxisTitle="True"                                                               
+                                                               ShowTickLines="True"
+                                                               ShowAxisLabel="True"
+                                                               ExpandPlot="False"
+                                                               ShowPlot="True"
+                                                               ShowStatistics="True"
+                                                               DistributionTitle="{Binding Path=Name}">
+                                </numcntrls:DistributionSelectorControl>
+                            </Border>
+                        </Popup>
+                    </Grid>
+                </DataTemplate>
+            </DataGrid.Resources>
+            <cntrls:CopyPasteDataGrid.Columns>
+                <DataGridTextColumn Header="Parameter" IsReadOnly="True" Width="0.5*" Binding="{Binding Path=DisplayName}"
+                                    HeaderTheme="{DynamicResource Left_ColumnHeaderStyle}" CellTheme="{DynamicResource Left_CellStyle}"/>
+                <DataGridTemplateColumn Header="Distribution" CellTemplate="{StaticResource DistributionSelector}" 
+                                        HeaderTheme="{DynamicResource Center_ColumnHeaderStyle}" 
+                                        Width="0.5*" 
+                                        MaxWidth="200"
+                                        MinWidth="10"
+                                        />
+            </cntrls:CopyPasteDataGrid.Columns>
+        </cntrls:CopyPasteDataGrid>
+
+        <!--Use Default Flat Priors-->
+        <cntrls:BooleanPropertyControl x:Name="UsePriorDistributionDefaults" Margin="0 2" Grid.Row="1" Title="Use Default Flat Priors"
+                                       IsSelected="{Binding Model.UseDefaultFlatPriors, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"  />
+
+    </Grid>
+</UserControl>
