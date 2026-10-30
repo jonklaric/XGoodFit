@@ -1,0 +1,268 @@
+<!--
+    XGoodFit port of upstream's Expander/ExpanderStyle.xaml, following Themes' Expander.axaml:
+    - The Style is a ControlTheme. Its header toggle button's inline style becomes the keyed theme
+      ExcelExpanderHeaderStyle, and the inline styles each other ExpandDirection switches to become
+      ExcelExpanderRightHeaderStyle, ExcelExpanderUpHeaderStyle and ExcelExpanderLeftHeaderStyle, which the
+      direction styles (:right, :up, :left) set. The header's focus visual style is a FocusAdorner.
+    - Triggers are nested styles in upstream's order; TextElement.Foreground is the presenter's Foreground.
+    - The expand site is PART_ContentPresenter, as Avalonia's Expander needs, and shows with :expanded.
+    - Defaults from WPF's Aero2 Expander style under upstream's, as in Themes' port: Foreground,
+      Background, content alignment Stretch, BorderBrush and BorderThickness="1".
+    - Relative RenderTransformOrigin values are percentages; LayoutTransform is a LayoutTransformControl.
+    - Not ported: SnapsToDevicePixels and ContentStringFormat (Avalonia has neither).
+-->
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:OxyPlotControls">
+
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary>
+            <SolidColorBrush x:Key="Expander.MouseOver.Circle.Stroke" Color="#FF5593FF"/>
+            <SolidColorBrush x:Key="Expander.MouseOver.Circle.Fill" Color="#FFF3F9FF"/>
+            <SolidColorBrush x:Key="Expander.MouseOver.Arrow.Stroke" Color="#FF000000"/>
+            <SolidColorBrush x:Key="Expander.Pressed.Circle.Stroke" Color="#FF3C77DD"/>
+            <SolidColorBrush x:Key="Expander.Pressed.Circle.Fill" Color="#FFD9ECFF"/>
+            <SolidColorBrush x:Key="Expander.Pressed.Arrow.Stroke" Color="#FF000000"/>
+            <SolidColorBrush x:Key="Expander.Disabled.Circle.Stroke" Color="#FFBCBCBC"/>
+            <SolidColorBrush x:Key="Expander.Disabled.Circle.Fill" Color="#FFE6E6E6"/>
+            <SolidColorBrush x:Key="Expander.Disabled.Arrow.Stroke" Color="#FF707070"/>
+            <SolidColorBrush x:Key="Expander.Static.Circle.Fill" Color="#FFFFFFFF"/>
+            <SolidColorBrush x:Key="Expander.Static.Circle.Stroke" Color="#FF333333"/>
+            <SolidColorBrush x:Key="Expander.Static.Arrow.Stroke" Color="#FF333333"/>
+
+            <FocusAdornerTemplate x:Key="ExcelExpanderHeaderFocusVisual">
+                <Border>
+                    <Rectangle x:Name="Rect1" Margin="0" Stroke="Black" StrokeThickness="1" StrokeDashArray="1,2"/>
+                </Border>
+            </FocusAdornerTemplate>
+
+            <!-- The header, expanding down: upstream's inline ToggleButton style. -->
+            <ControlTheme x:Key="ExcelExpanderHeaderStyle" TargetType="ToggleButton">
+                <Setter Property="Template">
+                    <ControlTemplate>
+                        <Border x:Name="Border1" BorderThickness="1" BorderBrush="Transparent" Padding="{TemplateBinding Padding}" Background="{x:Null}" OpacityMask="{x:Null}">
+                            <Grid x:Name="Grid1" HorizontalAlignment="Stretch" Background="Transparent">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="10"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Polygon x:Name="arrow" Fill="Transparent" Points="0,-3 4,2 8,-3" HorizontalAlignment="Center" StrokeThickness="1" VerticalAlignment="Center" RenderTransformOrigin="60%,10%">
+                                    <Polygon.Stroke>
+                                        <SolidColorBrush Color="Black"/>
+                                    </Polygon.Stroke>
+                                    <Polygon.RenderTransform>
+                                        <TransformGroup>
+                                            <ScaleTransform/>
+                                            <SkewTransform/>
+                                            <RotateTransform Angle="-90"/>
+                                            <TranslateTransform/>
+                                        </TransformGroup>
+                                    </Polygon.RenderTransform>
+                                </Polygon>
+                                <ContentPresenter x:Name="HeaderContent1" TextElement.FontFamily="Calibri" TextElement.FontWeight="UltraBold" TextElement.FontSize="14" ContentTemplate="{TemplateBinding ContentTemplate}" Content="{TemplateBinding Content}" Grid.Column="1" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="6,0,0,0" RecognizesAccessKey="True" VerticalAlignment="Center"/>
+                            </Grid>
+                        </Border>
+                    </ControlTemplate>
+                </Setter>
+                <Style Selector="^:checked">
+                    <Style Selector="^ /template/ Polygon#arrow">
+                        <Setter Property="Points" Value="2,-4 2,2 8,2"/>
+                        <Setter Property="Fill" Value="Black"/>
+                    </Style>
+                    <Style Selector="^ /template/ ContentPresenter#HeaderContent1">
+                        <Setter Property="Foreground" Value="#FF0051a1"/>
+                    </Style>
+                </Style>
+                <Style Selector="^:pointerover:checked /template/ Border#Border1">
+                    <Setter Property="Background" Value="#FFdeeeff"/>
+                </Style>
+                <Style Selector="^:pointerover:unchecked">
+                    <Style Selector="^ /template/ Border#Border1">
+                        <Setter Property="BorderBrush" Value="#FFD9ECFF"/>
+                        <Setter Property="Background" Value="#FFdeeeff"/>
+                    </Style>
+                    <Style Selector="^ /template/ Polygon#arrow">
+                        <Setter Property="Stroke" Value="Black"/>
+                        <Setter Property="Fill" Value="Black"/>
+                    </Style>
+                </Style>
+                <Style Selector="^:pressed /template/ Border#Border1">
+                    <Setter Property="Background" Value="#FFD9ECFF"/>
+                    <Setter Property="BorderBrush" Value="#FF3C77DD"/>
+                </Style>
+                <Style Selector="^:disabled /template/ Polygon#arrow">
+                    <Setter Property="Stroke" Value="#FF707070"/>
+                </Style>
+            </ControlTheme>
+
+            <!-- The headers for the other expand directions share their arrow states. -->
+            <ControlTheme x:Key="ExcelExpanderSideHeaderBase" TargetType="ToggleButton">
+                <Style Selector="^:checked /template/ Polygon#arrow">
+                    <Setter Property="Points" Value="0,0 3.5,3.5 7,0"/>
+                </Style>
+                <Style Selector="^:pointerover /template/ Polygon#arrow">
+                    <Setter Property="Stroke" Value="Black"/>
+                </Style>
+                <Style Selector="^:pressed /template/ Polygon#arrow">
+                    <Setter Property="Stroke" Value="Black"/>
+                </Style>
+                <Style Selector="^:disabled /template/ Polygon#arrow">
+                    <Setter Property="Stroke" Value="#FF707070"/>
+                </Style>
+            </ControlTheme>
+
+            <ControlTheme x:Key="ExcelExpanderRightHeaderStyle" TargetType="ToggleButton" BasedOn="{StaticResource ExcelExpanderSideHeaderBase}">
+                <Setter Property="Template">
+                    <ControlTemplate>
+                        <Border Padding="{TemplateBinding Padding}">
+                            <Grid Background="Transparent" RowDefinitions="19,*">
+                                <LayoutTransformControl>
+                                    <LayoutTransformControl.LayoutTransform>
+                                        <TransformGroup>
+                                            <RotateTransform Angle="-90"/>
+                                        </TransformGroup>
+                                    </LayoutTransformControl.LayoutTransform>
+                                    <Polygon x:Name="arrow" Fill="Green" Points="0,0 3.5,3.5 7,0" HorizontalAlignment="Center" StrokeThickness="1" VerticalAlignment="Center" RenderTransformOrigin="50%,50%">
+                                        <Polygon.Stroke>
+                                            <SolidColorBrush Color="Black"/>
+                                        </Polygon.Stroke>
+                                        <Polygon.RenderTransform>
+                                            <TransformGroup>
+                                                <ScaleTransform/>
+                                                <SkewTransform/>
+                                                <RotateTransform Angle="-90"/>
+                                                <TranslateTransform/>
+                                            </TransformGroup>
+                                        </Polygon.RenderTransform>
+                                    </Polygon>
+                                </LayoutTransformControl>
+                                <ContentPresenter ContentTemplate="{TemplateBinding ContentTemplate}" Content="{TemplateBinding Content}" HorizontalAlignment="Center" Margin="0,4,0,0" Grid.Row="1" RecognizesAccessKey="True" VerticalAlignment="Top"/>
+                            </Grid>
+                        </Border>
+                    </ControlTemplate>
+                </Setter>
+            </ControlTheme>
+
+            <ControlTheme x:Key="ExcelExpanderUpHeaderStyle" TargetType="ToggleButton" BasedOn="{StaticResource ExcelExpanderSideHeaderBase}">
+                <Setter Property="Template">
+                    <ControlTemplate>
+                        <Border Padding="{TemplateBinding Padding}">
+                            <Grid Background="Transparent" ColumnDefinitions="10,*">
+                                <LayoutTransformControl>
+                                    <LayoutTransformControl.LayoutTransform>
+                                        <TransformGroup>
+                                            <RotateTransform Angle="180"/>
+                                        </TransformGroup>
+                                    </LayoutTransformControl.LayoutTransform>
+                                    <Polygon x:Name="arrow" Fill="Green" Points="0,0 3.5,3.5 7,0" HorizontalAlignment="Center" StrokeThickness="1" VerticalAlignment="Center" RenderTransformOrigin="50%,50%">
+                                        <Polygon.Stroke>
+                                            <SolidColorBrush Color="Black"/>
+                                        </Polygon.Stroke>
+                                        <Polygon.RenderTransform>
+                                            <TransformGroup>
+                                                <ScaleTransform/>
+                                                <SkewTransform/>
+                                                <RotateTransform Angle="-35"/>
+                                                <TranslateTransform/>
+                                            </TransformGroup>
+                                        </Polygon.RenderTransform>
+                                    </Polygon>
+                                </LayoutTransformControl>
+                                <ContentPresenter ContentTemplate="{TemplateBinding ContentTemplate}" Content="{TemplateBinding Content}" Grid.Column="1" HorizontalAlignment="Left" Margin="4,0,0,0" RecognizesAccessKey="True" VerticalAlignment="Center"/>
+                            </Grid>
+                        </Border>
+                    </ControlTemplate>
+                </Setter>
+            </ControlTheme>
+
+            <ControlTheme x:Key="ExcelExpanderLeftHeaderStyle" TargetType="ToggleButton" BasedOn="{StaticResource ExcelExpanderSideHeaderBase}">
+                <Setter Property="Template">
+                    <ControlTemplate>
+                        <Border Padding="{TemplateBinding Padding}">
+                            <Grid Background="Transparent" RowDefinitions="19,*">
+                                <LayoutTransformControl>
+                                    <LayoutTransformControl.LayoutTransform>
+                                        <TransformGroup>
+                                            <RotateTransform Angle="90"/>
+                                        </TransformGroup>
+                                    </LayoutTransformControl.LayoutTransform>
+                                    <Polygon x:Name="arrow" Fill="Black" Points="0,0 3.5,3.5 7,0" HorizontalAlignment="Center" StrokeThickness="1" VerticalAlignment="Center" RenderTransformOrigin="50%,50%">
+                                        <Polygon.Stroke>
+                                            <SolidColorBrush Color="Black"/>
+                                        </Polygon.Stroke>
+                                        <Polygon.RenderTransform>
+                                            <TransformGroup>
+                                                <ScaleTransform/>
+                                                <SkewTransform/>
+                                                <RotateTransform Angle="-90"/>
+                                                <TranslateTransform/>
+                                            </TransformGroup>
+                                        </Polygon.RenderTransform>
+                                    </Polygon>
+                                </LayoutTransformControl>
+                                <ContentPresenter ContentTemplate="{TemplateBinding ContentTemplate}" Content="{TemplateBinding Content}" HorizontalAlignment="Center" Margin="0,4,0,0" Grid.Row="1" RecognizesAccessKey="True" VerticalAlignment="Top"/>
+                            </Grid>
+                        </Border>
+                    </ControlTemplate>
+                </Setter>
+            </ControlTheme>
+
+            <ControlTheme x:Key="ExcelExpanderStyle" TargetType="Expander">
+                <Setter Property="Foreground" Value="{DynamicResource SystemColors.ControlTextBrush}"/>
+                <Setter Property="Background" Value="Transparent"/>
+                <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                <Setter Property="VerticalContentAlignment" Value="Stretch"/>
+                <Setter Property="BorderBrush" Value="Transparent"/>
+                <Setter Property="BorderThickness" Value="1"/>
+                <Setter Property="Template">
+                    <ControlTemplate>
+                        <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="3">
+                            <DockPanel x:Name="DockPanel1">
+                                <ToggleButton x:Name="HeaderSite" ContentTemplate="{TemplateBinding HeaderTemplate}" Content="{TemplateBinding Header}" DockPanel.Dock="Top" Foreground="{TemplateBinding Foreground}" FontWeight="{TemplateBinding FontWeight}" FontStyle="{TemplateBinding FontStyle}" FontStretch="{TemplateBinding FontStretch}" FontSize="{TemplateBinding FontSize}" FontFamily="{TemplateBinding FontFamily}" HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                              IsChecked="{TemplateBinding IsExpanded, Mode=TwoWay}"
+                                              Margin="1,0,0,0" MinWidth="0" MinHeight="0" Padding="{TemplateBinding Padding}" VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" Background="{x:Null}" BorderBrush="{x:Null}"
+                                              FocusAdorner="{StaticResource ExcelExpanderHeaderFocusVisual}"
+                                              Theme="{StaticResource ExcelExpanderHeaderStyle}"/>
+                                <ContentPresenter x:Name="PART_ContentPresenter" ContentTemplate="{TemplateBinding ContentTemplate}" Content="{TemplateBinding Content}" DockPanel.Dock="Bottom" Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="4,2,0,2" IsVisible="False" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                            </DockPanel>
+                        </Border>
+                    </ControlTemplate>
+                </Setter>
+
+                <Style Selector="^:expanded /template/ ContentPresenter#PART_ContentPresenter">
+                    <Setter Property="IsVisible" Value="True"/>
+                </Style>
+                <Style Selector="^:right">
+                    <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
+                        <Setter Property="DockPanel.Dock" Value="Right"/>
+                    </Style>
+                    <Style Selector="^ /template/ ToggleButton#HeaderSite">
+                        <Setter Property="DockPanel.Dock" Value="Left"/>
+                        <Setter Property="Theme" Value="{StaticResource ExcelExpanderRightHeaderStyle}"/>
+                    </Style>
+                </Style>
+                <Style Selector="^:up">
+                    <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
+                        <Setter Property="DockPanel.Dock" Value="Top"/>
+                    </Style>
+                    <Style Selector="^ /template/ ToggleButton#HeaderSite">
+                        <Setter Property="DockPanel.Dock" Value="Bottom"/>
+                        <Setter Property="Theme" Value="{StaticResource ExcelExpanderUpHeaderStyle}"/>
+                    </Style>
+                </Style>
+                <Style Selector="^:left">
+                    <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
+                        <Setter Property="DockPanel.Dock" Value="Left"/>
+                    </Style>
+                    <Style Selector="^ /template/ ToggleButton#HeaderSite">
+                        <Setter Property="DockPanel.Dock" Value="Right"/>
+                        <Setter Property="Theme" Value="{StaticResource ExcelExpanderLeftHeaderStyle}"/>
+                    </Style>
+                </Style>
+                <Style Selector="^:disabled">
+                    <Setter Property="Foreground" Value="{DynamicResource SystemColors.GrayTextBrush}"/>
+                </Style>
+            </ControlTheme>
+        </ResourceDictionary>
+    </ResourceDictionary.MergedDictionaries>
+</ResourceDictionary>

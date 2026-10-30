@@ -1,0 +1,348 @@
+<!--
+    XGoodFit port of upstream's Resources/ResourceDictionary.xaml (conversion rules: Themes' Button.axaml
+    and ComboBox.axaml):
+    - Styles are ControlThemes and triggers nested styles, in upstream's order. The merged dictionaries
+      are ResourceIncludes; x:Array is WpfCompat's ArrayExtension.
+    - FocusVisual is a FocusAdornerTemplate. SystemColors and SystemParameters values are Themes' fixed
+      resources (Merged.axaml).
+    - ComboBoxTemplate follows Themes' port of the same template: Avalonia's ComboBox needs PART_Popup and
+      PART_ItemsPresenter, and the drop-down's scroll viewer takes the ComboBox's ScrollViewer settings,
+      which WPF's picks up by itself. Not ported, as there: the opaque rectangle and ClearTypeHint
+      behind the items (a WPF ClearType aid), KeyboardNavigation.DirectionalNavigation, the grouping
+      triggers, the popup animation, ContentTemplateSelector and ContentStringFormat, and the WPF touch
+      and pen settings (ScrollViewer.PanningMode, Stylus.IsFlicksEnabled, CanContentScroll).
+    - CleanButtonStyle and CleanComboBoxStyle set the defaults WPF's Aero2 styles gave under upstream's:
+      the button's Foreground, the combo box's content alignment (WPF Control: Left, Top) and drop-down
+      height.
+    - CustomTabItemStyle isn't based on the implicit TabItem style, which only gives it a template it
+      replaces (as Themes' PropertiesTabItemStyle); its header presenter is PART_ContentPresenter, and
+      the hidden bold header text is Opacity="0" without hit testing.
+-->
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="using:System"
+                    xmlns:local="using:OxyPlotControls"
+                    xmlns:cntrls="using:GenericControls"
+                    xmlns:wpfm="using:WpfCompat.Markup">
+
+    <!--
+    ╔═══════════════════════════════════════════════════════════════════════════════╗
+    ║  OxyPlotControls Resource Dictionary                                          ║
+    ╠═══════════════════════════════════════════════════════════════════════════════╣
+    ║  Contains shared resources for OxyPlotControls:                               ║
+    ║                                                                               ║
+    ║  CONTENTS:                                                                    ║
+    ║  • Data Arrays          - Common ComboBox options (line widths, fonts, etc.)  ║
+    ║  • ComboBox Styles      - Clean, minimal ComboBox styling                     ║
+    ║  • Tab Item Styles      - Horizontal tab item with equal width tabs           ║
+    ║  • Converters           - Tab size calculation converters                     ║
+    ║                                                                               ║
+    ║  MERGED DICTIONARIES:                                                         ║
+    ║  • ExpanderStyle.xaml   - Collapsible expander styling                        ║
+    ║  • IconDictionary.xaml  - Vector icons for OxyPlot controls                   ║
+    ║                                                                               ║
+    ║  USAGE:                                                                       ║
+    ║  <ComboBox Style="{StaticResource CleanComboBoxStyle}"                        ║
+    ║            ItemsSource="{StaticResource LineWidthOptions}"/>                  ║
+    ╚═══════════════════════════════════════════════════════════════════════════════╝
+    -->
+
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceInclude Source="avares://OxyPlotControls/Expander/ExpanderStyle.axaml"/>
+        <ResourceInclude Source="avares://OxyPlotControls/Resources/IconDictionary.axaml"/>
+    </ResourceDictionary.MergedDictionaries>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+    <!-- CONVERTERS                                                                  -->
+    <!-- Tab size calculation converters                                             -->
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+
+    <cntrls:TabSizeConverter x:Key="TabSizeConverter" />
+    <local:VerticalTabSizeConverter x:Key="VerticalTabSizeConverter" />
+
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+    <!-- COMBOBOX STYLES                                                             -->
+    <!-- Clean, minimal ComboBox styling for plot properties                         -->
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+
+    <!-- Focus visual for accessibility -->
+    <FocusAdornerTemplate x:Key="FocusVisual">
+        <Rectangle Margin="2" Stroke="{DynamicResource SystemColors.ControlTextBrush}" StrokeThickness="1" StrokeDashArray="1,2"/>
+    </FocusAdornerTemplate>
+
+    <!-- ComboBox state brushes -->
+    <SolidColorBrush x:Key="OxyComboStatic.Background" Color="Transparent"/>
+    <SolidColorBrush x:Key="OxyComboStatic.Border" Color="Transparent"/>
+    <SolidColorBrush x:Key="OxyComboStatic.Glyph" Color="#FF606060"/>
+    <SolidColorBrush x:Key="OxyComboMouseOver.Glyph" Color="#FF000000"/>
+    <LinearGradientBrush x:Key="OxyComboMouseOver.Background" EndPoint="0%,100%" StartPoint="0%,0%">
+        <GradientStop Color="#FFECF4FC" Offset="0.0"/>
+        <GradientStop Color="#FFDCECFC" Offset="1.0"/>
+    </LinearGradientBrush>
+    <SolidColorBrush x:Key="OxyComboMouseOver.Border" Color="#FF7EB4EA"/>
+    <SolidColorBrush x:Key="OxyComboPressed.Glyph" Color="#FF000000"/>
+    <LinearGradientBrush x:Key="OxyComboPressed.Background" EndPoint="0%,100%" StartPoint="0%,0%">
+        <GradientStop Color="#FFDAECFC" Offset="0.0"/>
+        <GradientStop Color="#FFC4E0FC" Offset="1.0"/>
+    </LinearGradientBrush>
+    <SolidColorBrush x:Key="OxyComboPressed.Border" Color="#FF569DE5"/>
+    <SolidColorBrush x:Key="OxyComboDisabled.Glyph" Color="#FFBFBFBF"/>
+    <SolidColorBrush x:Key="OxyComboDisabled.Background" Color="#FFF0F0F0"/>
+    <SolidColorBrush x:Key="OxyComboDisabled.Border" Color="#FFD9D9D9"/>
+
+    <!-- Clean button style for toolbar buttons -->
+    <ControlTheme x:Key="CleanButtonStyle" TargetType="Button">
+        <Setter Property="Foreground" Value="{DynamicResource SystemColors.ControlTextBrush}"/>
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Padding" Value="4"/>
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border x:Name="Border" Background="{TemplateBinding Background}">
+                    <ContentPresenter x:Name="PART_ContentPresenter" Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                </Border>
+            </ControlTemplate>
+        </Setter>
+        <Style Selector="^:pointerover /template/ Border#Border">
+            <Setter Property="Background" Value="#FFdeeeff" />
+            <Setter Property="BorderBrush" Value="#FFD9ECFF" />
+        </Style>
+    </ControlTheme>
+
+    <!-- ComboBox toggle button style -->
+    <ControlTheme x:Key="ComboBoxToggleButton" TargetType="ToggleButton">
+        <Setter Property="IsTabStop" Value="False"/>
+        <Setter Property="Focusable" Value="False"/>
+        <Setter Property="ClickMode" Value="Press"/>
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border x:Name="templateRoot" BorderBrush="{StaticResource OxyComboStatic.Border}" BorderThickness="{TemplateBinding BorderThickness}" Background="{StaticResource OxyComboStatic.Background}">
+                    <Border x:Name="splitBorder" BorderBrush="Transparent" BorderThickness="1" HorizontalAlignment="Right" Margin="0" Width="{DynamicResource SystemParameters.VerticalScrollBarWidth}">
+                        <Path x:Name="arrow" Data="M 0 0 L 4 6 L 8 0 Z" Fill="{StaticResource OxyComboStatic.Glyph}" HorizontalAlignment="Center" Margin="0" VerticalAlignment="Center"/>
+                    </Border>
+                </Border>
+            </ControlTemplate>
+        </Setter>
+        <Style Selector="^:pointerover">
+            <Style Selector="^ /template/ Path#arrow">
+                <Setter Property="Fill" Value="{StaticResource OxyComboMouseOver.Glyph}"/>
+            </Style>
+            <Style Selector="^ /template/ Border#templateRoot">
+                <Setter Property="Background" Value="{StaticResource OxyComboMouseOver.Background}"/>
+                <Setter Property="BorderBrush" Value="{StaticResource OxyComboMouseOver.Border}"/>
+            </Style>
+        </Style>
+        <Style Selector="^:pressed">
+            <Style Selector="^ /template/ Path#arrow">
+                <Setter Property="Fill" Value="{StaticResource OxyComboPressed.Glyph}"/>
+            </Style>
+            <Style Selector="^ /template/ Border#templateRoot">
+                <Setter Property="Background" Value="{StaticResource OxyComboPressed.Background}"/>
+                <Setter Property="BorderBrush" Value="{StaticResource OxyComboPressed.Border}"/>
+            </Style>
+        </Style>
+        <Style Selector="^:disabled">
+            <Style Selector="^ /template/ Path#arrow">
+                <Setter Property="Fill" Value="{StaticResource OxyComboDisabled.Glyph}"/>
+            </Style>
+            <Style Selector="^ /template/ Border#templateRoot">
+                <Setter Property="Background" Value="{StaticResource OxyComboDisabled.Background}"/>
+                <Setter Property="BorderBrush" Value="{StaticResource OxyComboDisabled.Border}"/>
+            </Style>
+        </Style>
+    </ControlTheme>
+
+    <!-- ComboBox template -->
+    <ControlTemplate x:Key="ComboBoxTemplate" TargetType="ComboBox">
+        <Grid x:Name="templateRoot">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition MinWidth="{DynamicResource SystemParameters.VerticalScrollBarWidth}" Width="0"/>
+            </Grid.ColumnDefinitions>
+            <Popup x:Name="PART_Popup" Grid.ColumnSpan="2"
+                   IsOpen="{TemplateBinding IsDropDownOpen, Mode=TwoWay}"
+                   IsLightDismissEnabled="True"
+                   InheritsTransform="True"
+                   PlacementTarget="{TemplateBinding}"
+                   Margin="1" Placement="BottomEdgeAlignedLeft">
+                <Border x:Name="dropDownBorder" MaxHeight="{TemplateBinding MaxDropDownHeight}" MinWidth="{Binding #templateRoot.Bounds.Width}" BorderBrush="{DynamicResource SystemColors.WindowFrameBrush}" BorderThickness="1" Background="{DynamicResource SystemColors.WindowBrush}">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <ScrollViewer x:Name="DropDownScrollViewer"
+                                      HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
+                                      VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}"
+                                      IsDeferredScrollingEnabled="{TemplateBinding ScrollViewer.IsDeferredScrollingEnabled}"
+                                      IsScrollChainingEnabled="False">
+                            <Grid x:Name="grid">
+                                <ItemsPresenter x:Name="PART_ItemsPresenter" ItemsPanel="{TemplateBinding ItemsPanel}"/>
+                            </Grid>
+                        </ScrollViewer>
+                        <ItemsControl x:Name="SpecialOptions" Grid.Row="1"/>
+                    </Grid>
+                </Border>
+            </Popup>
+            <ToggleButton x:Name="toggleButton" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Grid.ColumnSpan="2"
+                          IsChecked="{TemplateBinding IsDropDownOpen, Mode=TwoWay}"
+                          Theme="{StaticResource ComboBoxToggleButton}"/>
+            <ContentPresenter x:Name="contentPresenter" ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}" Content="{TemplateBinding SelectionBoxItem}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" IsHitTestVisible="False" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+        </Grid>
+    </ControlTemplate>
+
+    <!-- Clean ComboBox style -->
+    <ControlTheme TargetType="ComboBox" x:Key="CleanComboBoxStyle">
+        <Setter Property="FocusAdorner" Value="{StaticResource FocusVisual}"/>
+        <Setter Property="Background" Value="{StaticResource OxyComboStatic.Background}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource OxyComboStatic.Border}"/>
+        <Setter Property="Foreground" Value="{DynamicResource SystemColors.WindowTextBrush}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto"/>
+        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto"/>
+        <Setter Property="Padding" Value="6,3,5,3"/>
+        <Setter Property="HorizontalContentAlignment" Value="Left"/>
+        <Setter Property="VerticalContentAlignment" Value="Top"/>
+        <Setter Property="MaxDropDownHeight" Value="{DynamicResource SystemParameters.ComboBoxMaxDropDownHeight}"/>
+        <Setter Property="Template" Value="{StaticResource ComboBoxTemplate}"/>
+        <Style Selector="^[IsEditable=True]">
+            <Setter Property="IsTabStop" Value="False"/>
+            <Setter Property="Padding" Value="2"/>
+            <Setter Property="Template" Value="{StaticResource ComboBoxTemplate}"/>
+        </Style>
+    </ControlTheme>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+    <!-- TAB ITEM STYLES                                                             -->
+    <!-- Equal-width horizontal tabs with hover/selection effects                    -->
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+
+    <ControlTheme TargetType="TabItem" x:Key="CustomTabItemStyle">
+        <Setter Property="Width">
+            <MultiBinding Converter="{StaticResource TabSizeConverter}">
+                <Binding RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType=TabControl}" />
+                <Binding RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType=TabControl}" Path="Bounds.Width" />
+            </MultiBinding>
+        </Setter>
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border x:Name="border" Margin="{TemplateBinding Margin}" BorderThickness="{TemplateBinding BorderThickness}" BorderBrush="{TemplateBinding BorderBrush}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}">
+                    <ContentPresenter x:Name="PART_ContentPresenter" Content="{TemplateBinding Header}" ContentTemplate="{TemplateBinding HeaderTemplate}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" Margin="{TemplateBinding Margin}"/>
+                </Border>
+            </ControlTemplate>
+        </Setter>
+        <Setter Property="HeaderTemplate">
+            <DataTemplate>
+                <Grid HorizontalAlignment="Center">
+                    <TextBlock HorizontalAlignment="Stretch" Text="{Binding}"/>
+                    <TextBlock HorizontalAlignment="Stretch" Text="{Binding}" FontWeight="Bold" Opacity="0" IsHitTestVisible="False"/>
+                </Grid>
+            </DataTemplate>
+        </Setter>
+        <Style Selector="^:pointerover:not(:selected) /template/ Border#border">
+            <Setter Property="Background" Value="#FFECF4FC"/>
+            <Setter Property="BorderBrush" Value="#FFD9ECFF"/>
+        </Style>
+        <Style Selector="^:not(:pointerover):not(:selected) /template/ Border#border">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+        </Style>
+        <Style Selector="^:selected">
+            <Style Selector="^ /template/ Border#border">
+                <Setter Property="Background" Value="#FFdeeeff"/>
+                <Setter Property="BorderBrush" Value="Transparent"/>
+            </Style>
+            <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
+                <Setter Property="FontWeight" Value="Bold"/>
+            </Style>
+        </Style>
+        <Style Selector="^:not(:selected) /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="FontWeight" Value="Normal"/>
+        </Style>
+    </ControlTheme>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+    <!-- COMMON DATA ARRAYS                                                          -->
+    <!-- Reusable option arrays for ComboBox controls in plot properties             -->
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+
+    <!-- Line width options (0-10 pixels) -->
+    <wpfm:ArrayExtension Type="{x:Type sys:Double}" x:Key="LineWidthOptions">
+        <sys:Double>0</sys:Double>
+        <sys:Double>1</sys:Double>
+        <sys:Double>2</sys:Double>
+        <sys:Double>3</sys:Double>
+        <sys:Double>4</sys:Double>
+        <sys:Double>5</sys:Double>
+        <sys:Double>7</sys:Double>
+        <sys:Double>10</sys:Double>
+    </wpfm:ArrayExtension>
+
+    <!-- Font size options (8-72pt, standard font size increments) -->
+    <wpfm:ArrayExtension Type="{x:Type sys:Double}" x:Key="FontSizeOptions">
+        <sys:Double>8</sys:Double>
+        <sys:Double>9</sys:Double>
+        <sys:Double>10</sys:Double>
+        <sys:Double>11</sys:Double>
+        <sys:Double>12</sys:Double>
+        <sys:Double>14</sys:Double>
+        <sys:Double>16</sys:Double>
+        <sys:Double>18</sys:Double>
+        <sys:Double>20</sys:Double>
+        <sys:Double>22</sys:Double>
+        <sys:Double>24</sys:Double>
+        <sys:Double>26</sys:Double>
+        <sys:Double>28</sys:Double>
+        <sys:Double>36</sys:Double>
+        <sys:Double>48</sys:Double>
+        <sys:Double>72</sys:Double>
+    </wpfm:ArrayExtension>
+
+    <!-- Padding/margin options (-4 to 30 pixels) -->
+    <wpfm:ArrayExtension Type="{x:Type sys:Double}" x:Key="PaddingOptions">
+        <sys:Double>-4</sys:Double>
+        <sys:Double>-2</sys:Double>
+        <sys:Double>0</sys:Double>
+        <sys:Double>1</sys:Double>
+        <sys:Double>2</sys:Double>
+        <sys:Double>3</sys:Double>
+        <sys:Double>4</sys:Double>
+        <sys:Double>6</sys:Double>
+        <sys:Double>8</sys:Double>
+        <sys:Double>10</sys:Double>
+        <sys:Double>14</sys:Double>
+        <sys:Double>18</sys:Double>
+        <sys:Double>22</sys:Double>
+        <sys:Double>26</sys:Double>
+        <sys:Double>30</sys:Double>
+    </wpfm:ArrayExtension>
+
+    <!-- Rotation angle options (0-360 degrees in 15-degree increments) -->
+    <wpfm:ArrayExtension Type="{x:Type sys:Double}" x:Key="AngleOptions">
+        <sys:Double>0</sys:Double>
+        <sys:Double>15</sys:Double>
+        <sys:Double>30</sys:Double>
+        <sys:Double>45</sys:Double>
+        <sys:Double>60</sys:Double>
+        <sys:Double>75</sys:Double>
+        <sys:Double>90</sys:Double>
+        <sys:Double>105</sys:Double>
+        <sys:Double>120</sys:Double>
+        <sys:Double>135</sys:Double>
+        <sys:Double>150</sys:Double>
+        <sys:Double>165</sys:Double>
+        <sys:Double>180</sys:Double>
+        <sys:Double>195</sys:Double>
+        <sys:Double>210</sys:Double>
+        <sys:Double>225</sys:Double>
+        <sys:Double>240</sys:Double>
+        <sys:Double>255</sys:Double>
+        <sys:Double>270</sys:Double>
+        <sys:Double>285</sys:Double>
+        <sys:Double>300</sys:Double>
+        <sys:Double>315</sys:Double>
+        <sys:Double>330</sys:Double>
+        <sys:Double>345</sys:Double>
+        <sys:Double>360</sys:Double>
+    </wpfm:ArrayExtension>
+
+</ResourceDictionary>

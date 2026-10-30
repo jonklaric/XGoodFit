@@ -61,6 +61,9 @@
     <SolidColorBrush x:Key="SystemColors.HighlightTextBrush" Color="#FFFFFFFF"/>
     <SolidColorBrush x:Key="SystemColors.InactiveSelectionHighlightBrush" Color="#FFF0F0F0"/>
     <SolidColorBrush x:Key="SystemColors.InactiveSelectionHighlightTextBrush" Color="#FF000000"/>
+    <!-- OxyPlotControls' combo box style (Resources/ResourceDictionary.axaml). -->
+    <SolidColorBrush x:Key="SystemColors.WindowFrameBrush" Color="#FF646464"/>
+    <SolidColorBrush x:Key="SystemColors.WindowTextBrush" Color="#FF000000"/>
     <x:Double x:Key="SystemParameters.VerticalScrollBarWidth">17</x:Double>
     <x:Double x:Key="SystemParameters.HorizontalScrollBarHeight">17</x:Double>
     <x:Double x:Key="SystemParameters.VerticalScrollBarButtonHeight">17</x:Double>

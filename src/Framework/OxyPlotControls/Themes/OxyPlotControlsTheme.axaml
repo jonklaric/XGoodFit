@@ -1,0 +1,506 @@
+<!--
+    XGoodFit port of upstream's Themes/OxyPlotControlsTheme.xaml (conversion rules: Themes' Button.axaml,
+    ComboBox.axaml and Expander.axaml):
+    - Styles are ControlThemes, triggers nested styles in upstream's order, and implicit styles
+      ControlThemes keyed by their type and based on the keyed ones. The control themes have setters
+      only, so the user controls keep their content templates.
+    - The expander header's inline style is the keyed theme OxyPropertyExpanderHeaderStyle, and its
+      expand site PART_ContentPresenter, as Avalonia's Expander needs. Defaults from WPF's Aero2 styles
+      under upstream's: the expander's content alignment Stretch, BorderBrush and BorderThickness="1"; the
+      combo box's content alignment (WPF Control: Left, Top) and drop-down height.
+    - The combo box template follows Themes' port of the same template (PART_Popup, PART_ItemsPresenter;
+      the WPF-only parts listed in Resources/ResourceDictionary.axaml aren't ported).
+    - The expander header's Segoe UI falls back to Selawik, as Themes' default font does.
+    - The properties tab item's header presenter is PART_ContentPresenter (Themes' TabControl.axaml).
+    - SavePlotImageDialogStyle is ported, though, as in WPF, the dialog sets its own theme (MetroDialogStyle),
+      which an implicit one doesn't override. Avalonia also keys a window's implicit theme by Window.
+-->
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:local="using:OxyPlotControls">
+
+    <!--
+    ╔═══════════════════════════════════════════════════════════════════════════════╗
+    ║  OxyPlotControls Theme Resource Dictionary                                    ║
+    ╠═══════════════════════════════════════════════════════════════════════════════╣
+    ║  Contains theme-aware styles for OxyPlotControls components that use          ║
+    ║  DynamicResource bindings to respond to runtime theme changes.                ║
+    ║                                                                               ║
+    ║  CONTENTS:                                                                    ║
+    ║  • ComboBox Styles        - OxyComboBoxStyle with theme support               ║
+    ║  • Button Styles          - OxyButtonStyle for toolbar buttons                ║
+    ║  • Expander Styles        - Property and Excel-style expanders                ║
+    ║  • Tab Styles             - PropertiesTabItemStyle for property panels        ║
+    ║  • Control Styles         - Self-styles for all OxyPlot control types         ║
+    ║                                                                               ║
+    ║  THEME SUPPORT:                                                               ║
+    ║  All colors use DynamicResource bindings to the Themes library.               ║
+    ║  Common theme resources referenced:                                           ║
+    ║  • EnvironmentWindowText/Background - Window colors                           ║
+    ║  • ComboBox.Static/MouseOver.*      - ComboBox state colors                   ║
+    ║  • PropertyGrid.*                   - Property panel theming                  ║
+    ║                                                                               ║
+    ║  USAGE:                                                                       ║
+    ║  Control styles are applied automatically via implicit styling.               ║
+    ║  Named styles can be explicitly referenced:                                   ║
+    ║  <ComboBox Style="{StaticResource OxyComboBoxStyle}"/>                        ║
+    ╚═══════════════════════════════════════════════════════════════════════════════╝
+    -->
+
+    <!-- Merge shared resources (icons, data arrays, ComboBox styles) -->
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceInclude Source="avares://OxyPlotControls/Resources/ResourceDictionary.axaml"/>
+    </ResourceDictionary.MergedDictionaries>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+    <!-- COMBOBOX TOGGLE BUTTON STYLE                                                -->
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+
+    <ControlTheme x:Key="OxyComboBoxToggleButton" TargetType="ToggleButton">
+        <Setter Property="IsTabStop" Value="False"/>
+        <Setter Property="Focusable" Value="False"/>
+        <Setter Property="ClickMode" Value="Press"/>
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border x:Name="templateRoot"
+                        BorderBrush="{DynamicResource ComboBox.Static.Border}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        Background="{DynamicResource PropertyGrid.Content.Background}">
+                    <Border x:Name="splitBorder"
+                            BorderBrush="Transparent"
+                            BorderThickness="1"
+                            HorizontalAlignment="Right"
+                            Margin="0"
+                            Width="{DynamicResource SystemParameters.VerticalScrollBarWidth}">
+                        <Path x:Name="arrow"
+                              Data="M 0 0 L 4 6 L 8 0 Z"
+                              Fill="{DynamicResource ComboBox.Static.Glyph}"
+                              HorizontalAlignment="Center"
+                              Margin="0"
+                              VerticalAlignment="Center"/>
+                    </Border>
+                </Border>
+            </ControlTemplate>
+        </Setter>
+        <Style Selector="^:pointerover">
+            <Style Selector="^ /template/ Path#arrow">
+                <Setter Property="Fill" Value="{DynamicResource ComboBox.MouseOver.Glyph}"/>
+            </Style>
+            <Style Selector="^ /template/ Border#templateRoot">
+                <Setter Property="Background" Value="{DynamicResource ComboBox.MouseOver.Button.Background}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource ComboBox.MouseOver.Button.Border}"/>
+            </Style>
+        </Style>
+        <Style Selector="^:pressed">
+            <Style Selector="^ /template/ Path#arrow">
+                <Setter Property="Fill" Value="{DynamicResource ComboBox.Pressed.Glyph}"/>
+            </Style>
+            <Style Selector="^ /template/ Border#templateRoot">
+                <Setter Property="Background" Value="{DynamicResource ComboBox.Pressed.Button.Background}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource ComboBox.Pressed.Button.Border}"/>
+            </Style>
+        </Style>
+        <Style Selector="^:disabled">
+            <Style Selector="^ /template/ Path#arrow">
+                <Setter Property="Fill" Value="{DynamicResource ComboBox.Disabled.Glyph}"/>
+            </Style>
+            <Style Selector="^ /template/ Border#templateRoot">
+                <Setter Property="Background" Value="{DynamicResource ComboBox.Disabled.Button.Background}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource ComboBox.Disabled.Button.Border}"/>
+            </Style>
+        </Style>
+    </ControlTheme>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+    <!-- COMBOBOX TEMPLATE                                                           -->
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+
+    <ControlTemplate x:Key="OxyComboBoxTemplate" TargetType="ComboBox">
+        <Grid x:Name="templateRoot">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition MinWidth="{DynamicResource SystemParameters.VerticalScrollBarWidth}" Width="0"/>
+            </Grid.ColumnDefinitions>
+            <Popup x:Name="PART_Popup"
+                   Grid.ColumnSpan="2"
+                   IsOpen="{TemplateBinding IsDropDownOpen, Mode=TwoWay}"
+                   IsLightDismissEnabled="True"
+                   InheritsTransform="True"
+                   PlacementTarget="{TemplateBinding}"
+                   Margin="1"
+                   Placement="BottomEdgeAlignedLeft">
+                <Border x:Name="dropDownBorder"
+                        MaxHeight="{TemplateBinding MaxDropDownHeight}"
+                        MinWidth="{Binding #templateRoot.Bounds.Width}"
+                        BorderBrush="{DynamicResource ComboBox.DropDown.Border}"
+                        BorderThickness="1"
+                        Background="{DynamicResource ComboBox.DropDown.Background}">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <ScrollViewer x:Name="DropDownScrollViewer"
+                                      HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
+                                      VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}"
+                                      IsDeferredScrollingEnabled="{TemplateBinding ScrollViewer.IsDeferredScrollingEnabled}"
+                                      IsScrollChainingEnabled="False">
+                            <Grid x:Name="grid">
+                                <ItemsPresenter x:Name="PART_ItemsPresenter" ItemsPanel="{TemplateBinding ItemsPanel}"/>
+                            </Grid>
+                        </ScrollViewer>
+                        <ItemsControl x:Name="SpecialOptions" Grid.Row="1"/>
+                    </Grid>
+                </Border>
+            </Popup>
+            <ToggleButton x:Name="toggleButton"
+                          BorderBrush="{TemplateBinding BorderBrush}"
+                          BorderThickness="{TemplateBinding BorderThickness}"
+                          Background="{TemplateBinding Background}"
+                          Grid.ColumnSpan="2"
+                          IsChecked="{TemplateBinding IsDropDownOpen, Mode=TwoWay}"
+                          Theme="{StaticResource OxyComboBoxToggleButton}"/>
+            <ContentPresenter x:Name="contentPresenter"
+                              ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
+                              Content="{TemplateBinding SelectionBoxItem}"
+                              HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                              IsHitTestVisible="False"
+                              Margin="{TemplateBinding Padding}"
+                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+        </Grid>
+    </ControlTemplate>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+    <!-- COMBOBOX STYLE                                                              -->
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+
+    <ControlTheme TargetType="ComboBox" x:Key="OxyComboBoxStyle">
+        <Setter Property="FocusAdorner" Value="{x:Null}"/>
+        <Setter Property="Background" Value="{DynamicResource PropertyGrid.Content.Background}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource ComboBox.Static.Border}"/>
+        <Setter Property="Foreground" Value="{DynamicResource EnvironmentToolWindowText}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto"/>
+        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto"/>
+        <Setter Property="Padding" Value="6,3,5,3"/>
+        <Setter Property="HorizontalContentAlignment" Value="Left"/>
+        <Setter Property="VerticalContentAlignment" Value="Top"/>
+        <Setter Property="MaxDropDownHeight" Value="{DynamicResource SystemParameters.ComboBoxMaxDropDownHeight}"/>
+        <Setter Property="Template" Value="{StaticResource OxyComboBoxTemplate}"/>
+        <Style Selector="^[IsEditable=True]">
+            <Setter Property="IsTabStop" Value="False"/>
+            <Setter Property="Padding" Value="2"/>
+            <Setter Property="Template" Value="{StaticResource OxyComboBoxTemplate}"/>
+        </Style>
+    </ControlTheme>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+    <!-- BUTTON STYLE                                                                -->
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+
+    <ControlTheme x:Key="OxyButtonStyle" TargetType="Button">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Foreground" Value="{DynamicResource EnvironmentWindowText}"/>
+        <Setter Property="Padding" Value="4"/>
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border x:Name="Border" Background="{TemplateBinding Background}">
+                    <ContentPresenter x:Name="PART_ContentPresenter" Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                </Border>
+            </ControlTemplate>
+        </Setter>
+        <Style Selector="^:pointerover /template/ Border#Border">
+            <Setter Property="Background" Value="{DynamicResource Button.MouseOver.Background}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource Button.MouseOver.Border}" />
+        </Style>
+        <Style Selector="^:pressed /template/ Border#Border">
+            <Setter Property="Background" Value="{DynamicResource Button.Pressed.Background}" />
+        </Style>
+    </ControlTheme>
+
+    <!-- Clean button style alias -->
+    <ControlTheme x:Key="CleanButtonStyle" TargetType="Button" BasedOn="{StaticResource OxyButtonStyle}"/>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+    <!-- CLEAN COMBOBOX STYLE (alias for backwards compatibility)                    -->
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+
+    <ControlTheme x:Key="CleanComboBoxStyle" TargetType="ComboBox" BasedOn="{StaticResource OxyComboBoxStyle}"/>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+    <!-- EXPANDER STYLE                                                              -->
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+
+    <!-- The header: upstream's inline ToggleButton style. -->
+    <ControlTheme x:Key="OxyPropertyExpanderHeaderStyle" TargetType="ToggleButton">
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border x:Name="Border1"
+                        BorderThickness="1"
+                        BorderBrush="Transparent"
+                        Padding="{TemplateBinding Padding}"
+                        Background="{x:Null}">
+                    <Grid x:Name="Grid1"
+                          HorizontalAlignment="Stretch"
+                          Background="Transparent">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="10"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Polygon x:Name="arrow"
+                                 Fill="Transparent"
+                                 Points="0,-3 4,2 8,-3"
+                                 HorizontalAlignment="Center"
+                                 StrokeThickness="1"
+                                 VerticalAlignment="Center"
+                                 RenderTransformOrigin="60%,10%"
+                                 Stroke="{DynamicResource EnvironmentWindowText}">
+                            <Polygon.RenderTransform>
+                                <TransformGroup>
+                                    <ScaleTransform/>
+                                    <SkewTransform/>
+                                    <RotateTransform Angle="-90"/>
+                                    <TranslateTransform/>
+                                </TransformGroup>
+                            </Polygon.RenderTransform>
+                        </Polygon>
+                        <ContentPresenter x:Name="HeaderContent1"
+                                          TextElement.FontFamily="Segoe UI, avares://Themes/Assets/Fonts#Selawik"
+                                          TextElement.FontWeight="SemiBold"
+                                          TextElement.FontSize="12"
+                                          ContentTemplate="{TemplateBinding ContentTemplate}"
+                                          Content="{TemplateBinding Content}"
+                                          Grid.Column="1"
+                                          HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                          Margin="6,0,0,0"
+                                          RecognizesAccessKey="True"
+                                          VerticalAlignment="Center"/>
+                    </Grid>
+                </Border>
+            </ControlTemplate>
+        </Setter>
+        <Style Selector="^:checked">
+            <Style Selector="^ /template/ Polygon#arrow">
+                <Setter Property="Points" Value="2,-4 2,2 8,2"/>
+                <Setter Property="Fill" Value="{DynamicResource EnvironmentWindowText}"/>
+            </Style>
+            <Style Selector="^ /template/ ContentPresenter#HeaderContent1">
+                <Setter Property="Foreground" Value="{DynamicResource AccentBrush}"/>
+            </Style>
+        </Style>
+        <Style Selector="^:pointerover:checked /template/ Border#Border1">
+            <Setter Property="Background" Value="{DynamicResource Button.MouseOver.Background}"/>
+        </Style>
+        <Style Selector="^:pointerover:unchecked">
+            <Style Selector="^ /template/ Border#Border1">
+                <Setter Property="Background" Value="{DynamicResource Button.MouseOver.Background}"/>
+            </Style>
+            <Style Selector="^ /template/ Polygon#arrow">
+                <Setter Property="Fill" Value="{DynamicResource EnvironmentWindowText}"/>
+            </Style>
+        </Style>
+        <Style Selector="^:pressed /template/ Border#Border1">
+            <Setter Property="Background" Value="{DynamicResource Button.Pressed.Background}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource Button.Pressed.Border}"/>
+        </Style>
+        <Style Selector="^:disabled /template/ Polygon#arrow">
+            <Setter Property="Stroke" Value="{DynamicResource EnvironmentDisabledText}"/>
+        </Style>
+    </ControlTheme>
+
+    <ControlTheme x:Key="PropertyExpanderStyle" TargetType="Expander">
+        <Setter Property="Foreground" Value="{DynamicResource EnvironmentWindowText}"/>
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+        <Setter Property="VerticalContentAlignment" Value="Stretch"/>
+        <Setter Property="BorderBrush" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        Background="{TemplateBinding Background}"
+                        CornerRadius="3">
+                    <DockPanel x:Name="DockPanel1">
+                        <ToggleButton x:Name="HeaderSite"
+                                      ContentTemplate="{TemplateBinding HeaderTemplate}"
+                                      Content="{TemplateBinding Header}"
+                                      DockPanel.Dock="Top"
+                                      Foreground="{TemplateBinding Foreground}"
+                                      FontWeight="{TemplateBinding FontWeight}"
+                                      FontStyle="{TemplateBinding FontStyle}"
+                                      FontStretch="{TemplateBinding FontStretch}"
+                                      FontSize="{TemplateBinding FontSize}"
+                                      FontFamily="{TemplateBinding FontFamily}"
+                                      HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                      IsChecked="{TemplateBinding IsExpanded, Mode=TwoWay}"
+                                      Margin="1,0,0,0"
+                                      MinWidth="0"
+                                      MinHeight="0"
+                                      Padding="{TemplateBinding Padding}"
+                                      VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                                      Background="{x:Null}"
+                                      BorderBrush="{x:Null}"
+                                      Theme="{StaticResource OxyPropertyExpanderHeaderStyle}"/>
+                        <ContentPresenter x:Name="PART_ContentPresenter"
+                                          ContentTemplate="{TemplateBinding ContentTemplate}"
+                                          Content="{TemplateBinding Content}"
+                                          DockPanel.Dock="Bottom"
+                                          Focusable="False"
+                                          HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                          Margin="4,2,0,2"
+                                          IsVisible="False"
+                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                    </DockPanel>
+                </Border>
+            </ControlTemplate>
+        </Setter>
+        <Style Selector="^:expanded /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="IsVisible" Value="True"/>
+        </Style>
+        <Style Selector="^:disabled">
+            <Setter Property="Foreground" Value="{DynamicResource EnvironmentDisabledText}"/>
+        </Style>
+    </ControlTheme>
+
+    <!-- Excel Expander Style alias -->
+    <ControlTheme x:Key="ExcelExpanderStyle" TargetType="Expander" BasedOn="{StaticResource PropertyExpanderStyle}"/>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+    <!-- TAB ITEM STYLE                                                              -->
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+
+    <ControlTheme x:Key="PropertiesTabItemStyle" TargetType="TabItem">
+        <Setter Property="Foreground" Value="{DynamicResource EnvironmentWindowText}"/>
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Padding" Value="8,4"/>
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border x:Name="Border"
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{DynamicResource Button.Static.Border}"
+                        BorderThickness="1,1,1,0"
+                        Padding="{TemplateBinding Padding}"
+                        Margin="0,0,2,0">
+                    <ContentPresenter x:Name="PART_ContentPresenter"
+                                      Content="{TemplateBinding Header}"
+                                      ContentTemplate="{TemplateBinding HeaderTemplate}"
+                                      HorizontalAlignment="Center"
+                                      VerticalAlignment="Center"/>
+                </Border>
+            </ControlTemplate>
+        </Setter>
+        <Style Selector="^:selected">
+            <Setter Property="Foreground" Value="{DynamicResource AccentBrush}"/>
+            <Style Selector="^ /template/ Border#Border">
+                <Setter Property="Background" Value="{DynamicResource EnvironmentWindowBackground}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+                <Setter Property="BorderThickness" Value="1,2,1,0"/>
+            </Style>
+        </Style>
+        <Style Selector="^:pointerover:not(:selected) /template/ Border#Border">
+            <Setter Property="Background" Value="{DynamicResource Button.MouseOver.Background}"/>
+        </Style>
+    </ControlTheme>
+
+    <!-- CustomTabItemStyle alias -->
+    <ControlTheme x:Key="CustomTabItemStyle" TargetType="TabItem" BasedOn="{StaticResource PropertiesTabItemStyle}"/>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+    <!-- OXYPLOT PROPERTIES CONTROL STYLE                                            -->
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+
+    <ControlTheme x:Key="OxyPlotControlStyle" TargetType="local:OxyPlotPropertiesControl">
+        <Setter Property="Background" Value="{DynamicResource PropertyGrid.Content.Background}"/>
+        <Setter Property="Foreground" Value="{DynamicResource EnvironmentToolWindowText}"/>
+        <Setter Property="PropertyControlComboBoxStyle" Value="{DynamicResource OxyComboBoxStyle}" />
+        <Setter Property="BackButtonStyle" Value="{DynamicResource OxyButtonStyle}" />
+        <Setter Property="ExpanderStyle" Value="{DynamicResource PropertyExpanderStyle}" />
+        <Setter Property="TabItemStyle" Value="{DynamicResource PropertiesTabItemStyle}" />
+    </ControlTheme>
+
+    <ControlTheme x:Key="{x:Type local:OxyPlotPropertiesControl}" TargetType="local:OxyPlotPropertiesControl" BasedOn="{StaticResource OxyPlotControlStyle}"/>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+    <!-- OXYPLOT TOOLBAR STYLE                                                       -->
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+
+    <ControlTheme x:Key="OxyPlotToolbarStyle" TargetType="local:OxyPlotToolbar">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Foreground" Value="{DynamicResource EnvironmentWindowText}"/>
+    </ControlTheme>
+
+    <ControlTheme x:Key="{x:Type local:OxyPlotToolbar}" TargetType="local:OxyPlotToolbar" BasedOn="{StaticResource OxyPlotToolbarStyle}"/>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+    <!-- GENERAL PLOT CONTROL STYLE                                                  -->
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+
+    <ControlTheme x:Key="GeneralPlotControlStyle" TargetType="local:GeneralPlotControl">
+        <Setter Property="Foreground" Value="{DynamicResource EnvironmentWindowText}"/>
+    </ControlTheme>
+
+    <ControlTheme x:Key="{x:Type local:GeneralPlotControl}" TargetType="local:GeneralPlotControl" BasedOn="{StaticResource GeneralPlotControlStyle}"/>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+    <!-- LEGEND CONTROL STYLE                                                        -->
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+
+    <ControlTheme x:Key="LegendControlStyle" TargetType="local:LegendControl">
+        <Setter Property="Foreground" Value="{DynamicResource EnvironmentWindowText}"/>
+    </ControlTheme>
+
+    <ControlTheme x:Key="{x:Type local:LegendControl}" TargetType="local:LegendControl" BasedOn="{StaticResource LegendControlStyle}"/>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+    <!-- AXES CONTROL STYLE                                                          -->
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+
+    <ControlTheme x:Key="AxesControlStyle" TargetType="local:AxesControl">
+        <Setter Property="Foreground" Value="{DynamicResource EnvironmentWindowText}"/>
+    </ControlTheme>
+
+    <ControlTheme x:Key="{x:Type local:AxesControl}" TargetType="local:AxesControl" BasedOn="{StaticResource AxesControlStyle}"/>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+    <!-- AXIS CONTROL STYLE                                                          -->
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+
+    <ControlTheme x:Key="AxisControlStyle" TargetType="local:AxisControl">
+        <Setter Property="Foreground" Value="{DynamicResource EnvironmentWindowText}"/>
+    </ControlTheme>
+
+    <ControlTheme x:Key="{x:Type local:AxisControl}" TargetType="local:AxisControl" BasedOn="{StaticResource AxisControlStyle}"/>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+    <!-- SERIES SELECTOR CONTROL STYLE                                               -->
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+
+    <ControlTheme x:Key="SeriesSelectorControlStyle" TargetType="local:SeriesSelectorControl">
+        <Setter Property="Foreground" Value="{DynamicResource EnvironmentWindowText}"/>
+    </ControlTheme>
+
+    <ControlTheme x:Key="{x:Type local:SeriesSelectorControl}" TargetType="local:SeriesSelectorControl" BasedOn="{StaticResource SeriesSelectorControlStyle}"/>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+    <!-- ANNOTATION SELECTOR CONTROL STYLE                                           -->
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+
+    <ControlTheme x:Key="AnnotationSelectorControlStyle" TargetType="local:AnnotationSelectorControl">
+        <Setter Property="Foreground" Value="{DynamicResource EnvironmentWindowText}"/>
+    </ControlTheme>
+
+    <ControlTheme x:Key="{x:Type local:AnnotationSelectorControl}" TargetType="local:AnnotationSelectorControl" BasedOn="{StaticResource AnnotationSelectorControlStyle}"/>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+    <!-- SAVE PLOT IMAGE DIALOG STYLE                                                -->
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+
+    <ControlTheme x:Key="SavePlotImageDialogStyle" TargetType="local:SavePlotImageDialog">
+        <Setter Property="Background" Value="{DynamicResource EnvironmentWindowBackground}"/>
+        <Setter Property="Foreground" Value="{DynamicResource EnvironmentWindowText}"/>
+    </ControlTheme>
+
+    <ControlTheme x:Key="{x:Type local:SavePlotImageDialog}" TargetType="local:SavePlotImageDialog" BasedOn="{StaticResource SavePlotImageDialogStyle}"/>
+
+</ResourceDictionary>
