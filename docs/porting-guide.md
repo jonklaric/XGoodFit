@@ -136,7 +136,7 @@ Templates and themes:
 | `Window.ResizeMode` | `WpfWindow.ResizeMode` (WpfCompat). Metro windows have it as a property |
 | `Brush`, `Color`, `ImageSource` | `IBrush`, `Color`, `IImage`. Solid colour brushes are `ISolidColorBrush`: `Brushes.*` and brushes parsed from text are immutable ones, not `SolidColorBrush` |
 | `Color.AreClose(a, b)` | `a == b` (the same for colours made of bytes) |
-| `FontFamily.Source` | `ToString()` |
+| `FontFamily.Source` | `WpfCompat.Media.FontFamilyConverter.ToString(family)`, WPF's text form. Not `ToString()`, which adds the font collection's key to some families (`fonts:SystemFonts#Segoe UI`) |
 | `FindResource(k)` / `TryFindResource(k)` | `this.FindResource(k)` (Avalonia's, returns `UnsetValue` where WPF throws) / `this.TryFindResource(k)` (WpfCompat's) |
 | `control.ToolTip = …` | unchanged, with `using WpfCompat;` |
 | `TextBox.CaretIndex` (reading it with a selection) | `Math.Min(SelectionStart, SelectionEnd)`: WPF's is the selection's start. `SelectionLength` is WpfCompat's |

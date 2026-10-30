@@ -77,6 +77,20 @@ public sealed class SupportControlTests
     }
 
     [TestMethod]
+    public void FontConverters_GiveWpfsFamilyName_WithoutTheFontCollectionsKey()
+    {
+        // A family Avalonia caches after the platform substituted a font for it (fontconfig on Linux
+        // does this for "Segoe UI") carries the system collection's key. Its WPF text, which the font
+        // selector stores and plots save, is the plain name.
+        var keyed = new FontFamily("fonts:SystemFonts#Segoe UI");
+        Assert.AreEqual("fonts:SystemFonts#Segoe UI", keyed.ToString(), "what ToString() would have given");
+        Assert.AreEqual("Segoe UI", new FontToFontFamilyConverter().ConvertBack(keyed, typeof(string), null!, System.Globalization.CultureInfo.InvariantCulture));
+        Assert.AreEqual("Segoe UI", new FontFamilyToFontStringConverter().Convert(keyed, typeof(string), null!, System.Globalization.CultureInfo.InvariantCulture));
+        Assert.AreEqual("Arial, Verdana", new FontFamilyToFontStringConverter().Convert(new FontFamily("Arial, Verdana"), typeof(string), null!, System.Globalization.CultureInfo.InvariantCulture),
+            "a list of families is written as it was made, as in WPF");
+    }
+
+    [TestMethod]
     public void InsertionAdorner_DrawsALineAcrossTheAdornedElement_OnTheHalfItIsIn()
     {
         HeadlessSession.Run(() =>
