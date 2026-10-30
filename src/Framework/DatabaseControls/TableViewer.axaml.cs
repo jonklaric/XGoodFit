@@ -1197,7 +1197,8 @@ namespace DatabaseControls
                     ((ColumnHeader)ColumnHeadersGrid.Children[i * 2]).AddSorter(false);
             }
 
-            var lengthBinding = new Binding("Bounds.Width") { ElementName = "GridPanel" };
+            // XGoodFit port: the element itself as the source; Avalonia finds names only from XAML's name scope.
+            var lengthBinding = new Binding("Bounds.Width") { Source = GridPanel };
             double rowDistanceFromTop = RowHeight * GridPanel.RowDefinitions.Count - (RowLineThickness / 2);
             var rowLine = new Line
             {
@@ -1366,7 +1367,8 @@ namespace DatabaseControls
                     ((ColumnHeader)ColumnHeadersGrid.Children[i * 2]).AddSorter(false);
             }
 
-            var lengthBinding = new Binding("Bounds.Width") { ElementName = "GridPanel" };
+            // XGoodFit port: the element itself as the source; Avalonia finds names only from XAML's name scope.
+            var lengthBinding = new Binding("Bounds.Width") { Source = GridPanel };
             double rowDistanceFromTop = RowHeight * GridPanel.RowDefinitions.Count - (RowLineThickness / 2);
             var rowLine = new Line
             {

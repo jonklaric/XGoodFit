@@ -1,0 +1,27 @@
+<Project Sdk="MSTest.Sdk/3.6.4">
+
+  <!-- Tests for the Avalonia port of DatabaseControls (src/Framework/DatabaseControls), run headlessly. -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia.HarfBuzz" />
+    <PackageReference Include="Avalonia.Headless" />
+    <PackageReference Include="Avalonia.Skia" />
+    <PackageReference Include="Avalonia.Themes.Simple" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../../src/Framework/DatabaseControls/DatabaseControls.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- The synthetic table of upstream's gallery screenshot of DatabaseControls.Demo (Captures.cs). -->
+    <None Include="$(UpstreamFrameworkSrc)../docs/assets/gallery/samples/synthetic-gallery-sample.csv"
+          Link="TestData/synthetic-gallery-sample.csv" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>

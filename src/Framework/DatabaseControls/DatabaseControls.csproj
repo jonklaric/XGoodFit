@@ -22,6 +22,14 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <UpstreamProjectDir>$(UpstreamFrameworkSrc)DatabaseControls/</UpstreamProjectDir>
     <UpstreamCompileMode>OptIn</UpstreamCompileMode>
+    <!--
+      AVLN3001: the runtime loader can't load the XAML of a window without a public parameterless
+      constructor by its URI. As upstream's, the FieldCalculator, SelectByAttribute, ColumnStatsWindow and
+      CalculatorHelpWindow take what they show and are only made with it, never loaded by URI; a
+      parameterless constructor would be API that upstream lacks. Avalonia's XAML compiler logs this
+      warning to MSBuild directly, so it can't be turned off for single files.
+    -->
+    <MSBuildWarningsAsMessages>$(MSBuildWarningsAsMessages);AVLN3001</MSBuildWarningsAsMessages>
   </PropertyGroup>
 
   <ItemGroup>

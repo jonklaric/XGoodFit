@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
 using DatabaseManager;
@@ -147,8 +148,8 @@ namespace DatabaseControls
         /// Unsubscribes from the TableViewer's SelectedRowIndicesChanged event to prevent memory leaks.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="CancelEventArgs"/> instance containing the event data.</param>
-        private void ColumnStatsWindow_Closing(object sender, CancelEventArgs e)
+        /// <param name="e">The <see cref="WindowClosingEventArgs"/> instance containing the event data.</param>
+        private void ColumnStatsWindow_Closing(object sender, WindowClosingEventArgs e)
         {
             if (_viewer != null)
                 _viewer.SelectedRowIndicesChanged -= ViewerSelectionChanged;

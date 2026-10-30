@@ -15,6 +15,7 @@
   </Folder>
   <Folder Name="/tests/" />
   <Folder Name="/tests/Framework/">
+    <Project Path="tests/Framework/DatabaseControls.Tests/DatabaseControls.Tests.csproj" />
     <Project Path="tests/Framework/ExpressionParserControls.Tests/ExpressionParserControls.Tests.csproj" />
     <Project Path="tests/Framework/FrameworkUI.Tests/FrameworkUI.Tests.csproj" />
     <Project Path="tests/Framework/GenericControls.Tests/GenericControls.Tests.csproj" />
