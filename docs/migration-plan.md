@@ -75,7 +75,7 @@
 - **Only the branding layer changes:** window title, About box, executable and `.app` names, bundle ID and Velopack pack ID, settings folder, installer and update-feed names. Library and namespace names (`RMC.BestFit.*`, `FrameworkUI`, …) stay identical to upstream, so upstream diffs stay small. A working codename is used until the name is chosen.
 - **Keep the `.bestfit` extension**, because files are shared with RMC-BestFit. Register as an additional "Open with" handler instead of taking over the default when RMC-BestFit is installed.
 - **Credit and disclaimer** in the About box and README: "Based on RMC-BestFit by the USACE Risk Management Center. Not affiliated with or endorsed by USACE." The 0BSD licence doesn't require attribution; this is about clarity.
-- **Licence: MIT** (chosen), plus `THIRD_PARTY_NOTICES.md`. It lists the 0BSD upstream projects and the bundled MIT/OFL components (Avalonia, Dock, ProDataGrid, OxyPlot, AvaloniaEdit, Velopack, Selawik, Cascadia Mono) as they are adopted.
+- **Licence: MIT** (chosen), plus `THIRD_PARTY_NOTICES.md`. It lists the 0BSD upstream projects and the bundled MIT/OFL components (Avalonia, Dock, ProDataGrid, OxyPlot, AvaloniaEdit, Velopack, Selawik, Cascadia Mono, Caladea, Carlito) as they are adopted, and the BSD-3-Clause HTML Renderer core inside Avalonia.HtmlRenderer (free and open source, as D5 requires).
 
 ---
 
@@ -145,7 +145,7 @@ All three upstream repos run CI **on Windows only**, so "portable" code has neve
 | `GenericControls/.../FolderBrowser.cs` | `IShellItem` COM folder dialog | `StorageProvider.OpenFolderPickerAsync` |
 | `GenericControls/.../RecentFileList.cs` | MRU stored in **Registry** | JSON in per-user app-data dir; one-time import from the Registry on Windows |
 | `Microsoft.Win32.Open/SaveFileDialog` (47 sites) | Win32 dialogs | `StorageProvider` pickers (WPF filter-string adapter) |
-| `DatabaseControls/.../CalculatorHelpWindow` | `WebBrowser` (IE) | `Avalonia.Controls.WebView` (MIT) or `Avalonia.HtmlRenderer` |
+| `DatabaseControls/.../CalculatorHelpWindow` | `WebBrowser` (IE) | **`Avalonia.HtmlRenderer`** (chosen 2026-10-30: managed, the same on every OS, testable headlessly; the help pages are plain HTML 4) |
 | `ExpressionParserControls/ExpressionControl` | `RichTextBox` + `FlowDocument` (syntax colouring) | **AvaloniaEdit** |
 | App reports (`MCMCReport`, `GMMReport`, USGS raw text), Terms & Conditions | Read-only `RichTextBox` | `SelectableTextBlock` / read-only `TextBox` (monospace) |
 | AvalonDock (`HwndHost`, `HwndSource`, `WindowInteropHelper`) | Win32 windowing | Replaced by Dock.Avalonia |
@@ -249,7 +249,7 @@ The portable upstream projects compile **directly from `upstream/` via `ProjectR
 | Data grid | `ProDataGrid` (wieslawsoltes) | 12.1.0.x | Cell, `CellOrRowHeader` … selection; `SelectedCells`; `CanUserAddRows`; TSV copy **and paste** |
 | Charts | The fork's `OxyPlot.Wpf`, ported (`src/Framework/OxyPlot`) | fork | Declarative `Plot` with Avalonia-element series and axes, on the fork's core; oxyplot-avalonia is the reference |
 | Code editor | `Avalonia.AvaloniaEdit` | 12.0.0 | Expression editor with syntax colouring |
-| HTML help | `Avalonia.Controls.WebView` / `Avalonia.HtmlRenderer` | 12.1.x / 12.0.0 | WebView is MIT since 12.0 |
+| HTML help | `Avalonia.HtmlRenderer` | 12.0.0 | MIT, with the BSD-3-Clause HTML Renderer core; no native web view to ship (WebView2, WebKitGTK, WKWebView) |
 | Behaviours (DataTriggers) | `Xaml.Behaviors.Avalonia` | *verify v12* | `DataTriggerBehavior` for the hardest DataTriggers |
 | Tests | `Avalonia.Headless` (+ `Verify.Avalonia` optional) | 12.1.4 | MSTest via a manual `HeadlessUnitTestSession` |
 | SQLite | `System.Data.SQLite` + `SourceGear.sqlite3` | 2.0.x / 3.50.x | Same as upstream; fallback `Microsoft.Data.Sqlite` |
@@ -575,6 +575,8 @@ Sizes are relative, for one developer with AI-assisted porting: S ≈ ≤2 wk, M
   - Upstream bugs kept: `ExpandPlot` is never read; the math button binds to a missing `PresetsPopup`; the math popup reads "Applies to rows 0, 0." and changes nothing when value cells are selected; validation messages after the first start with a newline; an invalid distribution set from code doesn't flag its parameter cells.
   - Found while porting, fixed in the shared grids: scroll bars were disabled in every grid, the filler header stayed with hidden column headers, wrapped headers kept a stale height, and two-way cell bindings wrote formatted (rounded) values back into the data.
   - The time-series date column formats in the machine's culture, as upstream, while numbers use en-US (§13, with D8).
+- `DatabaseControls` is ported: `TableViewer` (a hand-drawn grid, not a DataGrid) and every window it opens (find and replace, the field calculator, select by attribute, the calculator help, the column statistics), with 34 tests and captures in three themes. Edits through the viewer write the same SQLite values as DatabaseManager does directly, and the calculator's results equal upstream's ExpressionParser. The help shows in Avalonia.HtmlRenderer. Waiting for OxyPlotControls: the plot toolbar and properties panel in the column statistics views (kept in comments with what they need).
+  - Upstream quirks kept: Escape never clears the copy selection; `SelectByAttribute.html` links pictures that exist only in the field calculator's help folder; the numeric statistics leave the wait cursor on when a classification gives no breaks; `CsvReader` types every column as text.
 
 **Exit:** demo-page parity and `TableViewer` edit/undo tests.
 

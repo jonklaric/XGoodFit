@@ -141,7 +141,12 @@ Templates and themes:
 | `control.ToolTip = …` | unchanged, with `using WpfCompat;` |
 | `TextBox.CaretIndex` (reading it with a selection) | `Math.Min(SelectionStart, SelectionEnd)`: WPF's is the selection's start. `SelectionLength` is WpfCompat's |
 | `TextBox.Text` | may be null in Avalonia (WPF's never is) |
-| `ContentRendered` | `Opened` |
+| `ContentRendered` | `Opened`. Avalonia raises it before `Loaded`, so post work that needs layout at `DispatcherPriority.Background` |
+| `SizeChanged += H` | `element.AddSizeChangedHandler(H)` (WpfCompat): raised after the layout pass, as WPF's is; Avalonia's runs during it |
+| `MouseDoubleClick` | `AddMouseDoubleClickHandler` (WpfCompat): left or right button, handled presses included, as WPF's `Control` raises it |
+| `WebBrowser.Navigate(html file)` | Avalonia.HtmlRenderer's `HtmlPanel`: `Text` from the file, relative pictures in `ImageLoad` (see `CalculatorHelpWindow`) |
+| `comboBoxItem.IsSelected = true` | the combo box's `SelectedItem`: Avalonia drops `IsSelected` on items its drop-down hasn't shown |
+| A binding made in code with `ElementName` | `Source = element`: `ElementName` fails in code |
 | `Cursors.Wait`, `Mouse.OverrideCursor` | WpfCompat.Input's |
 | `Application.Current.MainWindow` / `Windows` / `Shutdown()` | unchanged, with `using WpfCompat;` (the desktop lifetime's) |
 | `SystemParameters.VerticalScrollBarWidth`, drag distances | WpfCompat's `SystemParameters` |
@@ -211,7 +216,16 @@ Watch for others when porting:
 - **Compiled bindings** are off (`AvaloniaUseCompiledBindingsByDefault=false`): reflection bindings, as
   in WPF.
 - **Resource lookup:** `{StaticResource}` across `ResourceInclude`d files may not resolve; use
-  `{DynamicResource}` for keys in other files.
+  `{DynamicResource}` for keys in other files. `FindResource` on an element that isn't in a tree yet
+  doesn't reach the application's resources.
+- **Shared elements:** an element resource used in two places at once (an icon in two menus) needs
+  `x:Shared="False"`: WPF quietly moves it, Avalonia throws ("already has a visual parent").
+- **`avares://X`** resolves to the first loaded assembly whose name starts with X, so a test assembly
+  named `X.Tests` can win if X isn't loaded yet.
+- **Scroll bars:** WPF's disables itself when Maximum ≤ Minimum; Avalonia's doesn't. Avalonia's
+  ScrollViewer scrolls sideways on Shift+wheel (kept).
+- **Handlers named in XAML** must match the event's signature exactly (e.g. `WindowClosingEventArgs`).
+  AVLN3001 can only be silenced through `MSBuildWarningsAsMessages`.
 - **Attached-property selectors:** they end a compound selector. Write `^[A=x][(ns|T.P)=y]`, not the
   reverse.
 - **Windows:** each sits under a TopLevelHost; stop walking up the tree at the window. A window's
@@ -263,9 +277,11 @@ Watch for others when porting:
 
 ## 7. Tests and checks
 
-- **Tests that need natives or downloads** (the DSS suites, the example projects) skip when they're
-  missing, so a plain `dotnet test` passes on a fresh clone, and fail instead under an environment
-  variable that CI sets (`XGOODFIT_REQUIRE_HECDSS=1`). To compare with an upstream release, load its
+- **Tests that need natives or downloads:** `tests/Hec.Dss.Tests` skips when the natives or sample
+  data are missing, and fails instead under an environment variable that CI sets
+  (`XGOODFIT_REQUIRE_HECDSS=1`). Upstream's own tests can't skip: RMC.BestFit.UI.Tests' DSS tests need
+  the natives and two of its tests need the example projects. So before `dotnet test`, run
+  `native/build-hecdss.sh` and `scripts/fetch-sample-data.sh RMC-BestFit dss-test-data`, as CI does. To compare with an upstream release, load its
   binaries in their own `AssemblyLoadContext` (see `tests/Hec.Dss.Tests`).
 - **Tests:** each ported project gets a headless MSTest project in `tests/`, copying
   `HeadlessSession.cs` from an existing one. Test what a screenshot can't show: commands, state, layout
