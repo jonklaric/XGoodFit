@@ -132,6 +132,52 @@ jobs:
           path: artifacts/logs/
           if-no-files-found: ignore
 
+  # The example tour (XGoodFit/ExampleTour*Tests.cs): every element of each of RMC-BestFit's 32 example
+  # projects opened through the main window, as a user does, changing nothing. A job of its own, so it
+  # runs beside the portable layer. Its screenshots show each OS's rendering of every view.
+  example-tour:
+    name: Example tour (${{ matrix.name }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { name: windows-x64, os: windows-latest, rids: win-x64 }
+          - { name: macos-arm64, os: macos-latest, rids: osx-arm64 }
+          - { name: linux-x64, os: ubuntu-latest, rids: linux-x64 }
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Fetch sample data
+        shell: bash
+        run: bash scripts/fetch-sample-data.sh RMC-BestFit
+
+      # The HEC-DSS example's time series come from its DSS file.
+      - name: Build HEC-DSS natives
+        shell: bash
+        run: bash native/build-hecdss.sh ${{ matrix.rids }}
+
+      - name: Build the application's tests
+        run: dotnet build tests/BestFit/RMC.BestFit.App.Tests -c Release
+
+      - name: Example tour
+        shell: bash
+        run: bash scripts/run-app-tests.sh Release Tour
+
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: example-tour-${{ matrix.name }}
+          path: |
+            artifacts/screenshots/examples/
+            artifacts/logs/app-tests/
+          if-no-files-found: ignore
+
   compare-probes:
     name: Project files read identically on every OS
     needs: portable

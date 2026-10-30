@@ -6,8 +6,12 @@
 # the Windows and macOS jobs ran for over 90 minutes. Tests in category External (live web services)
 # are left out, as dotnet test leaves them out. Used by CI; dotnet test skips the project when
 # -p:XGoodFitAppTestsInScript=true is passed. Build first. Logs go to artifacts/logs/app-tests/.
-# Usage: scripts/run-app-tests.sh [configuration [group...]], where a group is one of those classes
-# or Others; all groups by default.
+#
+# The example tour (XGoodFit/ExampleTour*Tests.cs: every element of every example project, through the
+# main window) runs only when asked for, with the group Tour or a tour class's name.
+#
+# Usage: scripts/run-app-tests.sh [configuration [group...]], where a group is one of those classes,
+# Others or Tour; by default, every group but the tour.
 set -uo pipefail
 
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -31,12 +35,14 @@ failed=0
 ran=0
 retried=""
 
+# Whether a group runs: it's named, or no group is named (the tour runs only when named).
+wanted() { [[ "$selected" == "  " || "$selected" == *" $1 "* ]]; }
+
 # Runs one group in its own process. A third argument allows that many attempts in all, for a known
 # upstream race (see below); every other group fails on its first failure.
 run() {
   local name="$1" filter="$2" attempts="${3:-1}"
   local log="$logs/$name.log" status attempt=1 start=$SECONDS
-  [[ "$selected" == "  " || "$selected" == *" $name "* ]] || return 0
   while true; do
     status=0
     "$exe" --filter "$filter" > "$log" 2>&1 || status=$?
@@ -63,12 +69,17 @@ run() {
 
 # XGoodFit's test classes, one process each. A file is a class of the same name.
 rest="TestCategory!=External"
+tour=""
 for file in "$project"/XGoodFit/*Tests.cs "$project"/XGoodFit/*Captures.cs; do
   [[ -f "$file" ]] || continue
   class="$(basename "$file" .cs)"
   grep -q "\[TestClass\]" "$file" && grep -Eq "class $class([^A-Za-z0-9_]|$)" "$file" || continue
-  run "$class" "FullyQualifiedName~.XGoodFit.$class.&TestCategory!=External"
   rest+="&FullyQualifiedName!~.XGoodFit.$class."
+  if [[ "$class" == ExampleTour* ]]; then
+    tour+=" $class"
+    continue
+  fi
+  wanted "$class" && run "$class" "FullyQualifiedName~.XGoodFit.$class.&TestCategory!=External"
 done
 
 # Upstream classes that need a process of their own:
@@ -82,12 +93,22 @@ done
 #    attempts, and the summary names it when it passed only on a retry.
 #    See IssuesToRaise/README.md, "Pending".
 for class in PointEstimatorControlContractTests; do
-  run "$class" "FullyQualifiedName~.$class.&TestCategory!=External" 3
+  wanted "$class" && run "$class" "FullyQualifiedName~.$class.&TestCategory!=External" 3
   rest+="&FullyQualifiedName!~.$class."
 done
 
 # Everything else: upstream's tests (support classes and ported copies), which are light.
-run "Others" "$rest"
+wanted Others && run "Others" "$rest"
+
+# The example tour, when asked for. It lists the elements whose views aren't ported yet.
+rm -f "$logs/tour-not-ported.txt"
+for class in $tour; do
+  [[ "$selected" == *" Tour "* || "$selected" == *" $class "* ]] && run "$class" "FullyQualifiedName~.XGoodFit.$class."
+done
+if [[ -f "$logs/tour-not-ported.txt" ]]; then
+  echo "The tour skipped these elements, whose views aren't ported yet:"
+  sed 's/^/    /' "$logs/tour-not-ported.txt"
+fi
 
 [[ -n "$retried" ]] && echo "Passed only on a retry:$retried"
 if [[ $failed -ne 0 ]]; then
