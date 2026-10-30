@@ -1,7 +1,6 @@
-// XGoodFit port of upstream's GUI/Support/Controls/ParameterSetsControl.xaml.cs: the dependency property
-// is an Avalonia styled property with upstream's callback (readonly, as Avalonia requires), and Visibility is
-// WpfCompat's. The table and
-// its mixture logic are upstream's.
+// XGoodFit port of upstream's GUI/Support/Controls/ParameterSetsControl.xaml.cs: the dependency property is
+// an Avalonia styled property with upstream's callback (readonly, as Avalonia requires), and Visibility is
+// WpfCompat's. The table and its mixture logic are upstream's.
 using Numerics.Distributions;
 using RMC.BestFit.Models;
 using RMC.BestFit.Estimation;

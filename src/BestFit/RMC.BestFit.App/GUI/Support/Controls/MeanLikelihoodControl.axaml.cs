@@ -1,6 +1,6 @@
-// XGoodFit port of upstream's GUI/Support/Controls/MeanLikelihoodControl.xaml.cs: the dependency properties are Avalonia
-// styled properties with upstream's callbacks; the XAML's PreviewMouseDown handler is added in the
-// constructor (WpfCompat's mouse and toggle events), and Avalonia's GetVisualAt is WPF's hit test. The
+// XGoodFit port of upstream's GUI/Support/Controls/MeanLikelihoodControl.xaml.cs: the dependency properties
+// are Avalonia styled properties with upstream's callbacks; the XAML's PreviewMouseDown handler is added in
+// the constructor (WpfCompat's mouse and toggle events), and Avalonia's GetVisualAt is WPF's hit test. The
 // wait cursor is WpfCompat's.
 using OxyPlot;
 using OxyPlot.Wpf;

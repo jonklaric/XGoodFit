@@ -1,7 +1,8 @@
-// XGoodFit port of upstream's GUI/Support/Controls/ParameterPriorsControl.xaml.cs: the dependency properties are
-// Avalonia styled properties with upstream's callback (readonly, as Avalonia requires), the XAML's
-// PreviewMouseLeftButtonDown handlers are added in the constructor (WpfCompat's mouse events), and the header styles are ControlThemes. Avalonia's
-// XAML can't name grid columns: upstream's named columns are found by position.
+// XGoodFit port of upstream's GUI/Support/Controls/ParameterPriorsControl.xaml.cs: the dependency properties
+// are Avalonia styled properties with upstream's callback (readonly, as Avalonia requires), the XAML's
+// PreviewMouseLeftButtonDown handlers are added in the constructor (WpfCompat's mouse events), and the header
+// styles are ControlThemes. Avalonia's XAML can't name grid columns: upstream's named columns are found by
+// position.
 using NumericControls.Distributions.Univariate;
 using Numerics.Distributions;
 using RMC.BestFit.Models;

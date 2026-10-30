@@ -1,6 +1,6 @@
-// XGoodFit port of upstream's GUI/Support/Controls/BayesianOutputControl.xaml.cs: the dependency
-// properties are Avalonia styled properties with upstream's callback (readonly, as Avalonia requires), and
-// the XAML's PreviewMouseLeftButtonDown handlers are added in the constructor (WpfCompat's mouse events).
+// XGoodFit port of upstream's GUI/Support/Controls/BayesianOutputControl.xaml.cs: the dependency properties
+// are Avalonia styled properties with upstream's callback (readonly, as Avalonia requires), and the XAML's
+// PreviewMouseLeftButtonDown handlers are added in the constructor (WpfCompat's mouse events).
 using OxyPlot;
 using RMC.BestFit.Estimation;
 using RMC.BestFit.UI;

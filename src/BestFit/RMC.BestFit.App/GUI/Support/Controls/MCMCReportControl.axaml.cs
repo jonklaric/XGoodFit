@@ -1,6 +1,6 @@
-// XGoodFit port of upstream's GUI/Support/Controls/MCMCReportControl.xaml.cs: the dependency property is an Avalonia
-// styled property with upstream's callback (readonly, as Avalonia requires), and the report's flow document
-// is WpfCompat's.
+// XGoodFit port of upstream's GUI/Support/Controls/MCMCReportControl.xaml.cs: the dependency property is an
+// Avalonia styled property with upstream's callback (readonly, as Avalonia requires), and the report's flow
+// document is WpfCompat's.
 using RMC.BestFit.Estimation;
 using System.ComponentModel;
 using Avalonia;

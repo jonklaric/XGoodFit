@@ -1,6 +1,6 @@
-// XGoodFit port of upstream's GUI/Support/Controls/AutocorrelationControl.xaml.cs: the dependency properties are Avalonia
-// styled properties with upstream's callbacks; the XAML's PreviewMouseDown handler is added in the
-// constructor (WpfCompat's mouse and toggle events), and Avalonia's GetVisualAt is WPF's hit test. The
+// XGoodFit port of upstream's GUI/Support/Controls/AutocorrelationControl.xaml.cs: the dependency properties
+// are Avalonia styled properties with upstream's callbacks; the XAML's PreviewMouseDown handler is added in
+// the constructor (WpfCompat's mouse and toggle events), and Avalonia's GetVisualAt is WPF's hit test. The
 // wait cursor is WpfCompat's, the annotations' text alignments are Avalonia's, and Point3D is WpfCompat's.
 using Numerics;
 using Numerics.Data.Statistics;

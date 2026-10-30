@@ -1,7 +1,8 @@
-// XGoodFit port of upstream's GUI/Support/Controls/InfluenceDiagnosticsControl.xaml.cs: the dependency properties are Avalonia
-// styled properties with upstream's callbacks; the XAML's PreviewMouseDown handler and the check box's Checked and Unchecked handlers are added in the
-// constructor (WpfCompat's mouse and toggle events), and Avalonia's GetVisualAt is WPF's hit test. The
-// wait cursor is WpfCompat's, and the annotations' text alignments are Avalonia's.
+// XGoodFit port of upstream's GUI/Support/Controls/InfluenceDiagnosticsControl.xaml.cs: the dependency
+// properties are Avalonia styled properties with upstream's callbacks; the XAML's PreviewMouseDown handler
+// and the check box's Checked and Unchecked handlers are added in the constructor (WpfCompat's mouse and
+// toggle events), and Avalonia's GetVisualAt is WPF's hit test. The wait cursor is WpfCompat's, and the
+// annotations' text alignments are Avalonia's.
 using OxyPlot;
 using OxyPlot.Wpf;
 using OxyPlotControls;
