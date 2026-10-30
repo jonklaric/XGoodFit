@@ -22,4 +22,6 @@ added as dependencies are adopted.
 | [ReactiveUI](https://github.com/reactiveui/ReactiveUI) | Used by Dock's AvalonDock adapter (NuGet) | MIT |
 | [ProDataGrid](https://github.com/wieslawsoltes/ProDataGrid) | The data grids (NuGet) | MIT |
 | [SkiaSharp](https://github.com/mono/SkiaSharp) | Avalonia's renderer; also gives the glyph outlines of the plots' PDF and SVG exports (NuGet, through Avalonia.Skia) | MIT |
+| [Velopack](https://github.com/velopack/velopack) (Velopack Ltd) | Installers, packages and updates: the `Velopack` library (NuGet) and the `vpk` tool, which adds Velopack's launcher and updater (`Update.exe`, `UpdateMac`, `UpdateNix`) to every package | MIT |
+| [AppImage type2-runtime](https://github.com/AppImage/type2-runtime) | The runtime at the start of the Linux AppImage, which `vpk` adds. It has [libfuse](https://github.com/libfuse/libfuse) (LGPL-2.1) and [squashfuse](https://github.com/vasi/squashfuse) (BSD-2-Clause) linked in statically | MIT |
 | [Selawik](https://github.com/microsoft/Selawik) (Microsoft) | Substitute for Segoe UI where it isn't installed (macOS, Linux). Vendored in `upstream/Selawik` and embedded in the app | [OFL-1.1](upstream/Selawik/LICENSE.txt) |

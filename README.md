@@ -41,6 +41,10 @@ dotnet run --project tools/ThemeGallery
 Reading DSS files also needs HEC-DSS's native library, which is built from `upstream/hec-dss` with
 CMake and a C compiler: run `native/build-hecdss.sh` before `dotnet build` ([details](native/README.md)).
 
+`scripts/package.sh` builds the installable, self-updating packages for this machine's OS
+([packaging/README.md](packaging/README.md)); [docs/install.md](docs/install.md) tells users how to
+install them.
+
 To check that this machine gives the same results as the other platforms, you also need bash (on
 Windows, Git Bash, which comes with Git for Windows) and git 2.35 or later:
 
