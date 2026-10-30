@@ -34,9 +34,17 @@ public sealed class ExportTests
             Assert.AreEqual(320, BinaryPrimitives.ReadInt32BigEndian(png.AsSpan(16)), "width");
             Assert.AreEqual(200, BinaryPrimitives.ReadInt32BigEndian(png.AsSpan(20)), "height");
 
+            // The resolution, after the header as WPF's encoder wrote it: 96 dpi is 3780 pixels per
+            // metre, with the chunk's CRC.
+            CollectionAssert.AreEqual(Convert.FromHexString("000000097048597300000EC400000EC401952B0E1B"), png[33..54], "a pHYs chunk");
+
             stream.Position = 0;
             var bitmap = new Bitmap(stream);
             Assert.AreEqual(new Avalonia.PixelSize(320, 200), bitmap.PixelSize, "it decodes");
+
+            using var print = new MemoryStream();
+            new PngExporter { Width = 320, Height = 200, Resolution = 300 }.Export(model, print);
+            Assert.AreEqual(11811, BinaryPrimitives.ReadInt32BigEndian(print.ToArray().AsSpan(41)), "300 dpi");
         });
     }
 

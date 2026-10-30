@@ -9,6 +9,7 @@
 
 namespace OxyPlot.Wpf
 {
+    using System;
     using System.IO;
     using Avalonia;
     using Avalonia.Controls;
@@ -19,7 +20,8 @@ namespace OxyPlot.Wpf
     /// </summary>
     /// <remarks>
     /// XGoodFit port: the plot is drawn on an Avalonia canvas and rendered to Avalonia's
-    /// <see cref="RenderTargetBitmap"/>, whose PNG encoder writes the file. Avalonia has no text
+    /// <see cref="RenderTargetBitmap"/>, whose PNG encoder writes the file, with the resolution added as
+    /// WPF's encoder wrote it (<see cref="PngResolution"/>). Avalonia has no text
     /// formatting modes (WPF set Ideal here). Avalonia lays out a canvas outside a window only when asked,
     /// so the canvas is measured and arranged again after drawing (WPF's <c>UpdateLayout</c>).
     /// </remarks>
@@ -81,8 +83,14 @@ namespace OxyPlot.Wpf
         /// <param name="stream">The output stream.</param>
         public void Export(IPlotModel model, Stream stream)
         {
-            var bmp = this.ExportToBitmap(model);
-            bmp.Save(stream, PngBitmapEncoderOptions.Default);
+            // XGoodFit port: Avalonia's bitmaps hold native memory until they're disposed. Its PNG encoder
+            // writes no resolution, which WPF's did, so PngResolution adds it.
+            using (var bmp = this.ExportToBitmap(model))
+            using (var png = new MemoryStream())
+            {
+                bmp.Save(png, PngBitmapEncoderOptions.Default);
+                PngResolution.Write(png.GetBuffer().AsSpan(0, (int)png.Length), this.Resolution, stream);
+            }
         }
 
         /// <summary>
