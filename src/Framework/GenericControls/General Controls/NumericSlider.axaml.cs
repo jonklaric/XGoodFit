@@ -1,6 +1,9 @@
+using System.Globalization;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Data;
 using Avalonia.Interactivity;
+using WpfCompat;
 
 namespace GenericControls
 {
@@ -104,8 +107,28 @@ namespace GenericControls
             {
                 valueToFormat = newValue;
             }
-            thisControl.NumericTextBox.Text = NumberFormatHelper.FormatDouble(valueToFormat, thisControl.FormatString);
+            // XGoodFit port: WPF's two-way binding of the text box writes a changed text back to Value,
+            // clamping a value outside the bounds and rounding it to the decimal places. Avalonia's binding
+            // hasn't seen this change of Value yet, so it skips the write when the text reads as Value's
+            // old value. WriteTextBack writes it as WPF's binding would.
+            string text = NumberFormatHelper.FormatDouble(valueToFormat, thisControl.FormatString);
+            bool textChanges = thisControl.NumericTextBox.Text != text;
+            thisControl.NumericTextBox.Text = text;
+            if (textChanges)
+                thisControl.WriteTextBack(text);
             thisControl.ValueChanged?.Invoke(thisControl.Value);
+        }
+
+        // XGoodFit port: the text box binding's write to Value (see SetText), converting the text as WPF's
+        // binding does: with the binding's culture, allowing thousands separators. WPF's binding then shows
+        // the value as it converts it, as Avalonia's does when it makes the write itself.
+        private void WriteTextBack(string text)
+        {
+            if (double.TryParse(text, NumberStyles.Float | NumberStyles.AllowThousands, FormattingCulture.Current, out double written) && written != Value)
+            {
+                Value = written;
+                BindingOperations.GetBindingExpressionBase(this.NumericTextBox, NumericTextBox.TextProperty)?.UpdateTarget();
+            }
         }
 
         /// <summary>
