@@ -1,0 +1,82 @@
+<!--
+  Ported from upstream/WPF-Framework/src/OxyPlot/OxyPlot.Wpf.Shared/Themes/Generic.xaml.
+  XGoodFit port:
+  - The implicit styles are ControlThemes keyed by type. GenericTheme merges this dictionary into the
+    application's resources, as WPF applied generic.xaml by itself. Every plot view uses PlotViewBase's
+    theme (PlotViewBase.StyleKeyOverride, WPF's DefaultStyleKey).
+  - The tracker's lines show or hide in TrackerControl's code, as Avalonia can't bind WPF's Visibility
+    enum to IsVisible; the setters stay. Avalonia can't bind an edge mode either (RenderOptions isn't a
+    property), so TrackerControl also sets the border path's edge mode from BorderEdgeMode.
+  - FocusVisualStyle={x:Null} is FocusAdorner={x:Null}.
+  - The tracker's ContentPresenter binds the content explicitly, as Avalonia's presenters need.
+-->
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:local="using:OxyPlot.Wpf">
+
+    <local:ThicknessConverter x:Key="ThicknessConverter" />
+
+    <ControlTheme x:Key="{x:Type local:TrackerControl}" TargetType="local:TrackerControl">
+        <Setter Property="Background" Value="#E0FFFFA0" />
+        <Setter Property="Foreground" Value="Black" />
+        <Setter Property="BorderBrush" Value="Black" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="BorderEdgeMode" Value="Aliased" />
+        <Setter Property="LineStroke" Value="#80000000" />
+        <Setter Property="HorizontalLineVisibility" Value="Visible" />
+        <Setter Property="VerticalLineVisibility" Value="Visible" />
+        <Setter Property="LineThickness" Value="1" />
+        <Setter Property="Distance" Value="7" />
+        <Setter Property="CornerRadius" Value="0" />
+        <Setter Property="ShowPointer" Value="true" />
+        <Setter Property="CanCenterHorizontally" Value="true" />
+        <Setter Property="CanCenterVertically" Value="true" />
+        <Setter Property="IsHitTestVisible" Value="false" />
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Canvas HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                    <Line x:Name="PART_HorizontalLine"
+                          Stroke="{TemplateBinding LineStroke}" RenderOptions.EdgeMode="Aliased"
+                          StrokeDashArray="{TemplateBinding LineDashArray}" StrokeThickness="{TemplateBinding LineThickness}" />
+                    <Line x:Name="PART_VerticalLine"
+                          Stroke="{TemplateBinding LineStroke}" RenderOptions.EdgeMode="Aliased"
+                          StrokeDashArray="{TemplateBinding LineDashArray}" StrokeThickness="{TemplateBinding LineThickness}" />
+                    <Grid x:Name="PART_ContentContainer">
+                        <Path x:Name="PART_Path" Fill="{TemplateBinding Background}" Stroke="{TemplateBinding BorderBrush}"
+                              StrokeThickness="{TemplateBinding BorderThickness, Converter={StaticResource ThicknessConverter}}" />
+                        <ContentPresenter x:Name="PART_Content" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                          Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}" />
+                    </Grid>
+                </Canvas>
+            </ControlTemplate>
+        </Setter>
+    </ControlTheme>
+
+    <ControlTheme x:Key="{x:Type local:PlotViewBase}" TargetType="local:PlotViewBase">
+        <Setter Property="Background" Value="White" />
+        <Setter Property="FocusAdorner" Value="{x:Null}" />
+        <Setter Property="DefaultTrackerTemplate">
+            <ControlTemplate>
+                <local:TrackerControl Position="{Binding Position}" LineExtents="{Binding PlotModel.PlotArea}">
+                    <local:TrackerControl.Content>
+                        <TextBlock Text="{Binding}" Margin="7" />
+                    </local:TrackerControl.Content>
+                </local:TrackerControl>
+            </ControlTemplate>
+        </Setter>
+        <Setter Property="ZoomRectangleTemplate">
+            <ControlTemplate>
+                <Rectangle Fill="#40FFFF00" Stroke="Black" StrokeDashArray="3,1" />
+            </ControlTemplate>
+        </Setter>
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}">
+                    <Grid x:Name="PART_Grid" />
+                </Border>
+            </ControlTemplate>
+        </Setter>
+    </ControlTheme>
+
+</ResourceDictionary>

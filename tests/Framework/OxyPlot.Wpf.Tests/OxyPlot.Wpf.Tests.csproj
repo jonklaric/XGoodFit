@@ -1,0 +1,26 @@
+<Project Sdk="MSTest.Sdk/3.6.4">
+
+  <!-- Tests for the Avalonia port of OxyPlot.Wpf and OxyPlot.Wpf.Shared (src/Framework/OxyPlot), run headlessly. -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia.HarfBuzz" />
+    <PackageReference Include="Avalonia.Headless" />
+    <PackageReference Include="Avalonia.Skia" />
+    <PackageReference Include="Avalonia.Themes.Simple" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../../src/Framework/OxyPlot/OxyPlot.Wpf/OxyPlot.Wpf.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Plot settings written by the WPF fork, to compare with the port's (see Fixtures/README.md). -->
+    <None Include="Fixtures/**" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>

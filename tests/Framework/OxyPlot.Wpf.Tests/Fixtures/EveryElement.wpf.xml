@@ -1,0 +1,448 @@
+<OxyplotProperties>
+  <General IsEnabled="True" TextColor="#FF101010">
+    <Title Title="Every element" TitleColor="#00000001" TitleFontSize="18" TitleFontWeight="Bold" TitlePadding="6" />
+    <Subtitle SubtitleColor="#00000001" SubtitleFontSize="14" SubtitleFontWeight="Normal" />
+    <Chart Background="#FFFFFFFF" BorderBrush="" BorderThickness="0,0,0,0" Padding="4,6,4,6" />
+    <Plot PlotAreaBackground="" PlotAreaBorderColor="#FF808080" PlotAreaBorderThickness="1,1,1,1" />
+  </General>
+  <Legend>
+    <Area IsLegendVisible="false" LegendBackground="#80FFFFFF" LegendBorder="#00000000" LegendBorderThickness="1" LegendPadding="8" LegendMargin="8" LegendMaxHeight="NaN" LegendMaxWidth="NaN" />
+    <Position LegendPlacement="Inside" LegendPosition="RightTop" LegendOrientation="Vertical" />
+    <Title LegendTitle="Legend" LegendTitleColor="#00000001" LegendTitleFontSize="NaN" LegendTitleFontWeight="Bold" />
+    <Items LegendTextColor="#00000001" LegendFontSize="NaN" LegendFontWeight="Normal" LegendSymbolLength="16" LegendSymbolMargin="4" LegendSymbolPlacement="Left" LegendColumnSpacing="8" LegendItemAlignment="Center" LegendItemClickTogglesSeriesVisibility="false" LegendItemOrder="Normal" LegendItemSpacing="24" LegendLineSpacing="0" />
+  </Legend>
+  <Axes>
+    <Axis AxisType="OxyPlot.Wpf.LinearAxis">
+      <General Name="" IsEnabled="True" IsAxisVisible="True" Layer="BelowSeries" StartPosition="0" EndPosition="1" IsPanEnabled="True" IsZoomEnabled="True" />
+      <Numbers Maximum="NaN" Minimum="NaN" AbsoluteMaximum="1.7976931348623157E+308" AbsoluteMinimum="-1.7976931348623157E+308" FilterMaxValue="1.7976931348623157E+308" FilterMinValue="-1.7976931348623157E+308" MaximumPadding="0.01" MinimumPadding="0.01" MaximumRange="Infinity" MinimumRange="0" />
+      <Style AxislineColor="#FF000080" AxislineStyle="Solid" AxislineThickness="1" />
+      <Position AxisDistance="0" PositionAtZeroCrossing="False" Position="Left" Key="linear" PositionTier="0" />
+      <Title Title="Linear" TitleColor="#00000001" TitleFontSize="NaN" TitleFontWeight="Normal" AxisTitleDistance="4" ClipTitle="True" TitleClippingLength="0.90000000000000002" />
+      <Labels TextColor="#00000001" FontSize="NaN" FontWeight="Normal" Angle="0" AxisTickToLabelDistance="4" UseSuperExponentialFormat="False" IntervalLength="60" />
+      <MajorGridlines MajorGridlineColor="#40000000" MajorGridlineStyle="None" MajorGridlineThickness="1" MajorStep="NaN" MajorTickSize="7" />
+      <MinorGridlines MinorGridlineColor="#20000000" MinorGridlineStyle="None" MinorGridlineThickness="1" MinorStep="NaN" MinorTickSize="4" />
+      <ExtraGridlines ExtraGridlineColor="#FF000000" ExtraGridlineStyle="Solid" ExtraGridlineThickness="1">
+        <ExtraGridlines />
+      </ExtraGridlines>
+      <Tick TickStyle="Outside" TicklineColor="#FF000000" />
+      <LinearAxis FormatAsFractions="True" />
+    </Axis>
+    <Axis AxisType="OxyPlot.Wpf.CategoryAxis">
+      <General Name="" IsEnabled="True" IsAxisVisible="True" Layer="BelowSeries" StartPosition="0" EndPosition="1" IsPanEnabled="True" IsZoomEnabled="True" />
+      <Numbers Maximum="NaN" Minimum="NaN" AbsoluteMaximum="1.7976931348623157E+308" AbsoluteMinimum="-1.7976931348623157E+308" FilterMaxValue="1.7976931348623157E+308" FilterMinValue="-1.7976931348623157E+308" MaximumPadding="0" MinimumPadding="0" MaximumRange="Infinity" MinimumRange="0" />
+      <Style AxislineColor="#FF000000" AxislineStyle="None" AxislineThickness="1" />
+      <Position AxisDistance="0" PositionAtZeroCrossing="False" Position="Bottom" Key="category" PositionTier="0" />
+      <Title Title="Category" TitleColor="#00000001" TitleFontSize="NaN" TitleFontWeight="Normal" AxisTitleDistance="4" ClipTitle="True" TitleClippingLength="0.90000000000000002" />
+      <Labels TextColor="#00000001" FontSize="NaN" FontWeight="Normal" Angle="0" AxisTickToLabelDistance="4" UseSuperExponentialFormat="False" IntervalLength="60" />
+      <MajorGridlines MajorGridlineColor="#40000000" MajorGridlineStyle="None" MajorGridlineThickness="1" MajorStep="1" MajorTickSize="7" />
+      <MinorGridlines MinorGridlineColor="#20000000" MinorGridlineStyle="None" MinorGridlineThickness="1" MinorStep="NaN" MinorTickSize="4" />
+      <ExtraGridlines ExtraGridlineColor="#FF000000" ExtraGridlineStyle="Solid" ExtraGridlineThickness="1">
+        <ExtraGridlines />
+      </ExtraGridlines>
+      <Tick TickStyle="Outside" TicklineColor="#FF008080" />
+      <CategoryAxis IsTickCentered="True" GapWidth="1" />
+    </Axis>
+    <Axis AxisType="OxyPlot.Wpf.LogarithmicAxis">
+      <General Name="" IsEnabled="True" IsAxisVisible="True" Layer="BelowSeries" StartPosition="0" EndPosition="1" IsPanEnabled="True" IsZoomEnabled="True" />
+      <Numbers Maximum="NaN" Minimum="NaN" AbsoluteMaximum="1.7976931348623157E+308" AbsoluteMinimum="-1.7976931348623157E+308" FilterMaxValue="1.7976931348623157E+308" FilterMinValue="0" MaximumPadding="0.01" MinimumPadding="0.01" MaximumRange="Infinity" MinimumRange="0" />
+      <Style AxislineColor="#FF000000" AxislineStyle="None" AxislineThickness="1" />
+      <Position AxisDistance="0" PositionAtZeroCrossing="False" Position="Right" Key="log" PositionTier="0" />
+      <Title Title="Log" TitleColor="#00000001" TitleFontSize="NaN" TitleFontWeight="Normal" AxisTitleDistance="4" ClipTitle="True" TitleClippingLength="0.90000000000000002" />
+      <Labels TextColor="#00000001" FontSize="NaN" FontWeight="Normal" Angle="0" AxisTickToLabelDistance="4" UseSuperExponentialFormat="False" IntervalLength="60" />
+      <MajorGridlines MajorGridlineColor="#40000000" MajorGridlineStyle="None" MajorGridlineThickness="1" MajorStep="NaN" MajorTickSize="7" />
+      <MinorGridlines MinorGridlineColor="#FFC0C0C0" MinorGridlineStyle="Dot" MinorGridlineThickness="1" MinorStep="NaN" MinorTickSize="4" />
+      <ExtraGridlines ExtraGridlineColor="#FF000000" ExtraGridlineStyle="Solid" ExtraGridlineThickness="1">
+        <ExtraGridlines />
+      </ExtraGridlines>
+      <Tick TickStyle="Outside" TicklineColor="#FF000000" />
+      <LogarithmicAxis Base="10" PowerPadding="True" />
+    </Axis>
+    <Axis AxisType="OxyPlot.Wpf.DateTimeAxis">
+      <General Name="" IsEnabled="True" IsAxisVisible="True" Layer="BelowSeries" StartPosition="0" EndPosition="1" IsPanEnabled="True" IsZoomEnabled="True" />
+      <Numbers Maximum="NaN" Minimum="NaN" AbsoluteMaximum="1.7976931348623157E+308" AbsoluteMinimum="-1.7976931348623157E+308" FilterMaxValue="1.7976931348623157E+308" FilterMinValue="-1.7976931348623157E+308" MaximumPadding="0.01" MinimumPadding="0.01" MaximumRange="Infinity" MinimumRange="0" />
+      <Style AxislineColor="#FF000000" AxislineStyle="None" AxislineThickness="1" />
+      <Position AxisDistance="0" PositionAtZeroCrossing="False" Position="Top" Key="date" PositionTier="0" />
+      <Title TitleColor="#FF800000" TitleFontSize="NaN" TitleFontWeight="Normal" AxisTitleDistance="4" ClipTitle="True" TitleClippingLength="0.90000000000000002" />
+      <Labels TextColor="#00000001" FontSize="NaN" FontWeight="Normal" Angle="0" AxisTickToLabelDistance="4" StringFormat="yyyy" UseSuperExponentialFormat="False" IntervalLength="60" />
+      <MajorGridlines MajorGridlineColor="#40000000" MajorGridlineStyle="None" MajorGridlineThickness="1" MajorStep="NaN" MajorTickSize="7" />
+      <MinorGridlines MinorGridlineColor="#20000000" MinorGridlineStyle="None" MinorGridlineThickness="1" MinorStep="NaN" MinorTickSize="4" />
+      <ExtraGridlines ExtraGridlineColor="#FF000000" ExtraGridlineStyle="Solid" ExtraGridlineThickness="1">
+        <ExtraGridlines />
+      </ExtraGridlines>
+      <Tick TickStyle="Outside" TicklineColor="#FF000000" />
+      <DateTimeAxis CalendarWeekRule="FirstFourDayWeek" />
+    </Axis>
+    <Axis AxisType="OxyPlot.Wpf.TimeSpanAxis">
+      <General Name="" IsEnabled="True" IsAxisVisible="True" Layer="BelowSeries" StartPosition="0" EndPosition="1" IsPanEnabled="True" IsZoomEnabled="True" />
+      <Numbers Maximum="NaN" Minimum="NaN" AbsoluteMaximum="1.7976931348623157E+308" AbsoluteMinimum="-1.7976931348623157E+308" FilterMaxValue="1.7976931348623157E+308" FilterMinValue="-1.7976931348623157E+308" MaximumPadding="0.01" MinimumPadding="0.01" MaximumRange="Infinity" MinimumRange="0" />
+      <Style AxislineColor="#FF000000" AxislineStyle="None" AxislineThickness="1" />
+      <Position AxisDistance="0" PositionAtZeroCrossing="False" Position="Top" Key="span" PositionTier="0" />
+      <Title TitleColor="#00000001" TitleFontSize="NaN" TitleFontWeight="Normal" AxisTitleDistance="4" Unit="h" ClipTitle="True" TitleClippingLength="0.90000000000000002" />
+      <Labels TextColor="#00000001" FontSize="NaN" FontWeight="Normal" Angle="0" AxisTickToLabelDistance="4" UseSuperExponentialFormat="False" IntervalLength="60" />
+      <MajorGridlines MajorGridlineColor="#40000000" MajorGridlineStyle="None" MajorGridlineThickness="1" MajorStep="NaN" MajorTickSize="7" />
+      <MinorGridlines MinorGridlineColor="#20000000" MinorGridlineStyle="None" MinorGridlineThickness="1" MinorStep="NaN" MinorTickSize="4" />
+      <ExtraGridlines ExtraGridlineColor="#FF000000" ExtraGridlineStyle="Solid" ExtraGridlineThickness="1">
+        <ExtraGridlines />
+      </ExtraGridlines>
+      <Tick TickStyle="Outside" TicklineColor="#FF000000" />
+      <TimeSpanAxis />
+    </Axis>
+    <Axis AxisType="OxyPlot.Wpf.AngleAxis">
+      <General Name="" IsEnabled="True" IsAxisVisible="True" Layer="BelowSeries" StartPosition="0" EndPosition="1" IsPanEnabled="False" IsZoomEnabled="False" />
+      <Numbers Maximum="NaN" Minimum="NaN" AbsoluteMaximum="1.7976931348623157E+308" AbsoluteMinimum="-1.7976931348623157E+308" FilterMaxValue="1.7976931348623157E+308" FilterMinValue="-1.7976931348623157E+308" MaximumPadding="0.01" MinimumPadding="0.01" MaximumRange="Infinity" MinimumRange="0" />
+      <Style AxislineColor="#FF000000" AxislineStyle="None" AxislineThickness="1" />
+      <Position AxisDistance="0" PositionAtZeroCrossing="False" Position="None" Key="angle" PositionTier="0" />
+      <Title TitleColor="#00000001" TitleFontSize="NaN" TitleFontWeight="Normal" AxisTitleDistance="4" ClipTitle="True" TitleClippingLength="0.90000000000000002" />
+      <Labels TextColor="#00000001" FontSize="NaN" FontWeight="Normal" Angle="0" AxisTickToLabelDistance="4" UseSuperExponentialFormat="False" IntervalLength="60" />
+      <MajorGridlines MajorGridlineColor="#FF808000" MajorGridlineStyle="Solid" MajorGridlineThickness="1" MajorStep="NaN" MajorTickSize="7" />
+      <MinorGridlines MinorGridlineColor="#20000000" MinorGridlineStyle="Solid" MinorGridlineThickness="1" MinorStep="NaN" MinorTickSize="4" />
+      <ExtraGridlines ExtraGridlineColor="#FF000000" ExtraGridlineStyle="Solid" ExtraGridlineThickness="1">
+        <ExtraGridlines />
+      </ExtraGridlines>
+      <Tick TickStyle="None" TicklineColor="#FF000000" />
+      <AngleAxis StartAngle="90" EndAngle="450" />
+    </Axis>
+    <Axis AxisType="OxyPlot.Wpf.MagnitudeAxis">
+      <General Name="" IsEnabled="True" IsAxisVisible="True" Layer="BelowSeries" StartPosition="0" EndPosition="1" IsPanEnabled="False" IsZoomEnabled="False" />
+      <Numbers Maximum="NaN" Minimum="NaN" AbsoluteMaximum="1.7976931348623157E+308" AbsoluteMinimum="-1.7976931348623157E+308" FilterMaxValue="1.7976931348623157E+308" FilterMinValue="-1.7976931348623157E+308" MaximumPadding="0.01" MinimumPadding="0.01" MaximumRange="Infinity" MinimumRange="0" />
+      <Style AxislineColor="#FF000000" AxislineStyle="None" AxislineThickness="1" />
+      <Position AxisDistance="0" PositionAtZeroCrossing="False" Position="None" Key="magnitude" PositionTier="0" />
+      <Title TitleColor="#00000001" TitleFontSize="NaN" TitleFontWeight="Normal" AxisTitleDistance="4" ClipTitle="True" TitleClippingLength="0.90000000000000002" />
+      <Labels TextColor="#FF800080" FontSize="NaN" FontWeight="Normal" Angle="0" AxisTickToLabelDistance="4" UseSuperExponentialFormat="False" IntervalLength="60" />
+      <MajorGridlines MajorGridlineColor="#40000000" MajorGridlineStyle="Solid" MajorGridlineThickness="1" MajorStep="NaN" MajorTickSize="7" />
+      <MinorGridlines MinorGridlineColor="#20000000" MinorGridlineStyle="Solid" MinorGridlineThickness="1" MinorStep="NaN" MinorTickSize="4" />
+      <ExtraGridlines ExtraGridlineColor="#FF000000" ExtraGridlineStyle="Solid" ExtraGridlineThickness="1">
+        <ExtraGridlines />
+      </ExtraGridlines>
+      <Tick TickStyle="Outside" TicklineColor="#FF000000" />
+      <MagnitudeAxis FormatAsFractions="False" />
+    </Axis>
+    <Axis AxisType="OxyPlot.Wpf.LinearColorAxis">
+      <General Name="" IsEnabled="True" IsAxisVisible="True" Layer="BelowSeries" StartPosition="0" EndPosition="1" IsPanEnabled="True" IsZoomEnabled="True" />
+      <Numbers Maximum="NaN" Minimum="NaN" AbsoluteMaximum="1.7976931348623157E+308" AbsoluteMinimum="-1.7976931348623157E+308" FilterMaxValue="1.7976931348623157E+308" FilterMinValue="-1.7976931348623157E+308" MaximumPadding="0.01" MinimumPadding="0.01" MaximumRange="Infinity" MinimumRange="0" />
+      <Style AxislineColor="#FF000000" AxislineStyle="None" AxislineThickness="1" />
+      <Position AxisDistance="0" PositionAtZeroCrossing="False" Position="Left" Key="linearColor" PositionTier="0" />
+      <Title TitleColor="#00000001" TitleFontSize="NaN" TitleFontWeight="Normal" AxisTitleDistance="4" ClipTitle="True" TitleClippingLength="0.90000000000000002" />
+      <Labels TextColor="#00000001" FontSize="NaN" FontWeight="Normal" Angle="0" AxisTickToLabelDistance="4" UseSuperExponentialFormat="False" IntervalLength="60" />
+      <MajorGridlines MajorGridlineColor="#40000000" MajorGridlineStyle="None" MajorGridlineThickness="1" MajorStep="NaN" MajorTickSize="7" />
+      <MinorGridlines MinorGridlineColor="#20000000" MinorGridlineStyle="None" MinorGridlineThickness="1" MinorStep="NaN" MinorTickSize="4" />
+      <ExtraGridlines ExtraGridlineColor="#FF000000" ExtraGridlineStyle="Solid" ExtraGridlineThickness="1">
+        <ExtraGridlines />
+      </ExtraGridlines>
+      <Tick TickStyle="Outside" TicklineColor="#FF000000" />
+      <LinearColorAxis HighColor="#FFFF0000" LowColor="#FF0000FF" PaletteSize="16" InvalidNumberColor="#FF000000" />
+    </Axis>
+    <Axis AxisType="OxyPlot.Wpf.NormalProbabilityAxis">
+      <General Name="" IsEnabled="True" IsAxisVisible="True" Layer="BelowSeries" StartPosition="1" EndPosition="0" IsPanEnabled="True" IsZoomEnabled="True" />
+      <Numbers Maximum="0.999" Minimum="9.9999999999999995E-08" AbsoluteMaximum="1.7976931348623157E+308" AbsoluteMinimum="-1.7976931348623157E+308" FilterMaxValue="1.7976931348623157E+308" FilterMinValue="-1.7976931348623157E+308" MaximumPadding="0.01" MinimumPadding="0.01" MaximumRange="Infinity" MinimumRange="0" />
+      <Style AxislineColor="#FF000000" AxislineStyle="None" AxislineThickness="1" />
+      <Position AxisDistance="0" PositionAtZeroCrossing="False" Position="Bottom" Key="normal" PositionTier="0" />
+      <Title Title="Exceedance Probability" TitleColor="#00000001" TitleFontSize="16" TitleFontWeight="Normal" AxisTitleDistance="15" ClipTitle="True" TitleClippingLength="0.90000000000000002" />
+      <Labels TextColor="#00000001" FontSize="12" FontWeight="Normal" Angle="0" AxisTickToLabelDistance="4" UseSuperExponentialFormat="False" IntervalLength="60" />
+      <MajorGridlines MajorGridlineColor="#40000000" MajorGridlineStyle="Solid" MajorGridlineThickness="1" MajorStep="NaN" MajorTickSize="7" />
+      <MinorGridlines MinorGridlineColor="#20000000" MinorGridlineStyle="None" MinorGridlineThickness="1" MinorStep="NaN" MinorTickSize="4" />
+      <ExtraGridlines ExtraGridlineColor="#FFFFA500" ExtraGridlineStyle="Solid" ExtraGridlineThickness="1">
+        <ExtraGridlines>
+          <Value>0.5</Value>
+          <Value>0.98999999999999999</Value>
+        </ExtraGridlines>
+      </ExtraGridlines>
+      <Tick TickStyle="None" TicklineColor="#FF000000" />
+      <NormalProbabilityAxis />
+    </Axis>
+    <Axis AxisType="OxyPlot.Wpf.GumbelProbabilityAxis">
+      <General Name="" IsEnabled="True" IsAxisVisible="True" Layer="BelowSeries" StartPosition="1" EndPosition="0" IsPanEnabled="True" IsZoomEnabled="True" />
+      <Numbers Maximum="0.98999999999999999" Minimum="9.9999999999999995E-08" AbsoluteMaximum="1.7976931348623157E+308" AbsoluteMinimum="-1.7976931348623157E+308" FilterMaxValue="1.7976931348623157E+308" FilterMinValue="-1.7976931348623157E+308" MaximumPadding="0.01" MinimumPadding="0.01" MaximumRange="Infinity" MinimumRange="0" />
+      <Style AxislineColor="#FF000000" AxislineStyle="None" AxislineThickness="1" />
+      <Position AxisDistance="0" PositionAtZeroCrossing="False" Position="Bottom" Key="gumbel" PositionTier="0" />
+      <Title Title="Exceedance Probability" TitleColor="#00000001" TitleFontSize="16" TitleFontWeight="Normal" AxisTitleDistance="15" ClipTitle="True" TitleClippingLength="0.90000000000000002" />
+      <Labels TextColor="#00000001" FontSize="12" FontWeight="Normal" Angle="0" AxisTickToLabelDistance="4" UseSuperExponentialFormat="False" IntervalLength="60" />
+      <MajorGridlines MajorGridlineColor="#40000000" MajorGridlineStyle="Solid" MajorGridlineThickness="1" MajorStep="NaN" MajorTickSize="7" />
+      <MinorGridlines MinorGridlineColor="#20000000" MinorGridlineStyle="None" MinorGridlineThickness="1" MinorStep="NaN" MinorTickSize="4" />
+      <ExtraGridlines ExtraGridlineColor="#FF000000" ExtraGridlineStyle="Solid" ExtraGridlineThickness="1">
+        <ExtraGridlines />
+      </ExtraGridlines>
+      <Tick TickStyle="None" TicklineColor="#FF000000" />
+      <GumbelProbabilityAxis />
+    </Axis>
+    <Axis AxisType="OxyPlot.Wpf.CategoryColorAxis">
+      <General Name="" IsEnabled="True" IsAxisVisible="True" Layer="BelowSeries" StartPosition="0" EndPosition="1" IsPanEnabled="True" IsZoomEnabled="True" />
+      <Numbers Maximum="NaN" Minimum="NaN" AbsoluteMaximum="1.7976931348623157E+308" AbsoluteMinimum="-1.7976931348623157E+308" FilterMaxValue="1.7976931348623157E+308" FilterMinValue="-1.7976931348623157E+308" MaximumPadding="0" MinimumPadding="0" MaximumRange="Infinity" MinimumRange="0" />
+      <Style AxislineColor="#FF000000" AxislineStyle="None" AxislineThickness="1" />
+      <Position AxisDistance="0" PositionAtZeroCrossing="False" Position="Bottom" Key="categoryColor" PositionTier="0" />
+      <Title TitleColor="#00000001" TitleFontSize="NaN" TitleFontWeight="Normal" AxisTitleDistance="4" ClipTitle="True" TitleClippingLength="0.90000000000000002" />
+      <Labels TextColor="#00000001" FontSize="NaN" FontWeight="Normal" Angle="0" AxisTickToLabelDistance="4" UseSuperExponentialFormat="False" IntervalLength="60" />
+      <MajorGridlines MajorGridlineColor="#40000000" MajorGridlineStyle="None" MajorGridlineThickness="1" MajorStep="1" MajorTickSize="7" />
+      <MinorGridlines MinorGridlineColor="#20000000" MinorGridlineStyle="None" MinorGridlineThickness="1" MinorStep="NaN" MinorTickSize="4" />
+      <ExtraGridlines ExtraGridlineColor="#FF000000" ExtraGridlineStyle="Solid" ExtraGridlineThickness="1">
+        <ExtraGridlines />
+      </ExtraGridlines>
+      <Tick TickStyle="Outside" TicklineColor="#FF000000" />
+      <CategoryColorAxis IsTickCentered="False" GapWidth="1" InvalidCategoryColor="#FFFFC0CB" />
+    </Axis>
+    <Axis AxisType="OxyPlot.Wpf.LogarithmicColorAxis">
+      <General Name="" IsEnabled="True" IsAxisVisible="True" Layer="BelowSeries" StartPosition="0" EndPosition="1" IsPanEnabled="False" IsZoomEnabled="False" />
+      <Numbers Maximum="NaN" Minimum="NaN" AbsoluteMaximum="1.7976931348623157E+308" AbsoluteMinimum="-1.7976931348623157E+308" FilterMaxValue="1.7976931348623157E+308" FilterMinValue="0" MaximumPadding="0.01" MinimumPadding="0.01" MaximumRange="Infinity" MinimumRange="0" />
+      <Style AxislineColor="#FF000000" AxislineStyle="None" AxislineThickness="1" />
+      <Position AxisDistance="0" PositionAtZeroCrossing="False" Position="None" Key="logColor" PositionTier="0" />
+      <Title TitleColor="#00000001" TitleFontSize="NaN" TitleFontWeight="Normal" AxisTitleDistance="4" ClipTitle="True" TitleClippingLength="0.90000000000000002" />
+      <Labels TextColor="#00000001" FontSize="NaN" FontWeight="Normal" Angle="0" AxisTickToLabelDistance="4" UseSuperExponentialFormat="False" IntervalLength="60" />
+      <MajorGridlines MajorGridlineColor="#40000000" MajorGridlineStyle="None" MajorGridlineThickness="1" MajorStep="NaN" MajorTickSize="7" />
+      <MinorGridlines MinorGridlineColor="#20000000" MinorGridlineStyle="None" MinorGridlineThickness="1" MinorStep="NaN" MinorTickSize="4" />
+      <ExtraGridlines ExtraGridlineColor="#FF000000" ExtraGridlineStyle="Solid" ExtraGridlineThickness="1">
+        <ExtraGridlines />
+      </ExtraGridlines>
+      <Tick TickStyle="Outside" TicklineColor="#FF000000" />
+      <LogarithmicColorAxis HighColor="#FFFFFF00" LowColor="#FF008000" PaletteSize="8" InvalidNumberColor="#FFFFFFFF" RenderAsImage="False" Base="10" PowerPadding="True" />
+    </Axis>
+    <Axis AxisType="OxyPlot.Wpf.RangeColorAxis">
+      <General Name="" IsEnabled="True" IsAxisVisible="True" Layer="BelowSeries" StartPosition="0" EndPosition="1" IsPanEnabled="False" IsZoomEnabled="False" />
+      <Numbers Maximum="NaN" Minimum="NaN" AbsoluteMaximum="1.7976931348623157E+308" AbsoluteMinimum="-1.7976931348623157E+308" FilterMaxValue="1.7976931348623157E+308" FilterMinValue="-1.7976931348623157E+308" MaximumPadding="0.01" MinimumPadding="0.01" MaximumRange="Infinity" MinimumRange="0" />
+      <Style AxislineColor="#FF000000" AxislineStyle="None" AxislineThickness="1" />
+      <Position AxisDistance="0" PositionAtZeroCrossing="False" Position="None" Key="rangeColor" PositionTier="0" />
+      <Title TitleColor="#00000001" TitleFontSize="NaN" TitleFontWeight="Normal" AxisTitleDistance="4" ClipTitle="True" TitleClippingLength="0.90000000000000002" />
+      <Labels TextColor="#00000001" FontSize="NaN" FontWeight="Normal" Angle="0" AxisTickToLabelDistance="4" UseSuperExponentialFormat="False" IntervalLength="60" />
+      <MajorGridlines MajorGridlineColor="#40000000" MajorGridlineStyle="None" MajorGridlineThickness="1" MajorStep="NaN" MajorTickSize="7" />
+      <MinorGridlines MinorGridlineColor="#20000000" MinorGridlineStyle="None" MinorGridlineThickness="1" MinorStep="NaN" MinorTickSize="4" />
+      <ExtraGridlines ExtraGridlineColor="#FF000000" ExtraGridlineStyle="Solid" ExtraGridlineThickness="1">
+        <ExtraGridlines />
+      </ExtraGridlines>
+      <Tick TickStyle="Outside" TicklineColor="#FF000000" />
+      <RangeColorAxis HighColor="#FF00FFFF" LowColor="#FFFF00FF" InvalidNumberColor="#FFA52A2A" FormatAsFractions="False" />
+    </Axis>
+    <Axis AxisType="OxyPlot.Wpf.AngleAxisFullPlotArea">
+      <General Name="" IsEnabled="True" IsAxisVisible="True" Layer="BelowSeries" StartPosition="0" EndPosition="1" IsPanEnabled="False" IsZoomEnabled="False" />
+      <Numbers Maximum="NaN" Minimum="NaN" AbsoluteMaximum="1.7976931348623157E+308" AbsoluteMinimum="-1.7976931348623157E+308" FilterMaxValue="1.7976931348623157E+308" FilterMinValue="-1.7976931348623157E+308" MaximumPadding="0.01" MinimumPadding="0.01" MaximumRange="Infinity" MinimumRange="0" />
+      <Style AxislineColor="#FF000000" AxislineStyle="None" AxislineThickness="1" />
+      <Position AxisDistance="0" PositionAtZeroCrossing="False" Position="None" Key="angleFull" PositionTier="0" />
+      <Title TitleColor="#00000001" TitleFontSize="NaN" TitleFontWeight="Normal" AxisTitleDistance="4" ClipTitle="True" TitleClippingLength="0.90000000000000002" />
+      <Labels TextColor="#00000001" FontSize="NaN" FontWeight="Normal" Angle="0" AxisTickToLabelDistance="4" UseSuperExponentialFormat="False" IntervalLength="60" />
+      <MajorGridlines MajorGridlineColor="#40000000" MajorGridlineStyle="Solid" MajorGridlineThickness="1" MajorStep="NaN" MajorTickSize="7" />
+      <MinorGridlines MinorGridlineColor="#FFFF7F50" MinorGridlineStyle="Solid" MinorGridlineThickness="1" MinorStep="NaN" MinorTickSize="4" />
+      <ExtraGridlines ExtraGridlineColor="#FF000000" ExtraGridlineStyle="Solid" ExtraGridlineThickness="1">
+        <ExtraGridlines />
+      </ExtraGridlines>
+      <Tick TickStyle="None" TicklineColor="#FF000000" />
+      <AngleAxisFullPlotArea StartAngle="0" EndAngle="360" />
+    </Axis>
+    <Axis AxisType="OxyPlot.Wpf.MagnitudeAxisFullPlotArea">
+      <General Name="" IsEnabled="True" IsAxisVisible="True" Layer="BelowSeries" StartPosition="0" EndPosition="1" IsPanEnabled="True" IsZoomEnabled="False" />
+      <Numbers Maximum="NaN" Minimum="NaN" AbsoluteMaximum="1.7976931348623157E+308" AbsoluteMinimum="-1.7976931348623157E+308" FilterMaxValue="1.7976931348623157E+308" FilterMinValue="-1.7976931348623157E+308" MaximumPadding="0.01" MinimumPadding="0.01" MaximumRange="Infinity" MinimumRange="0" />
+      <Style AxislineColor="#FF4B0082" AxislineStyle="None" AxislineThickness="1" />
+      <Position AxisDistance="0" PositionAtZeroCrossing="False" Position="None" Key="magnitudeFull" PositionTier="0" />
+      <Title TitleColor="#00000001" TitleFontSize="NaN" TitleFontWeight="Normal" AxisTitleDistance="4" ClipTitle="True" TitleClippingLength="0.90000000000000002" />
+      <Labels TextColor="#00000001" FontSize="NaN" FontWeight="Normal" Angle="0" AxisTickToLabelDistance="4" UseSuperExponentialFormat="False" IntervalLength="60" />
+      <MajorGridlines MajorGridlineColor="#40000000" MajorGridlineStyle="Solid" MajorGridlineThickness="1" MajorStep="NaN" MajorTickSize="7" />
+      <MinorGridlines MinorGridlineColor="#20000000" MinorGridlineStyle="Solid" MinorGridlineThickness="1" MinorStep="NaN" MinorTickSize="4" />
+      <ExtraGridlines ExtraGridlineColor="#FF000000" ExtraGridlineStyle="Solid" ExtraGridlineThickness="1">
+        <ExtraGridlines />
+      </ExtraGridlines>
+      <Tick TickStyle="Outside" TicklineColor="#FF000000" />
+      <MagnitudeAxisFullPlotArea FormatAsFractions="False" MidshiftH="0" MidshiftV="0" />
+    </Axis>
+  </Axes>
+  <Annotations>
+    <Annotation AnnotationType="OxyPlot.Wpf.ArrowAnnotation">
+      <General Name="" IsEnabled="True" Layer="AboveSeries" />
+      <Textual Text="Arrow" TextColor="#FF000000" FontSize="NaN" FontWeight="Normal" TextPosition="NaN, NaN" TextRotation="0" TextHorizontalAlignment="Left" TextVerticalAlignment="Bottom">
+        <Arrow Color="#FFFF0000" ArrowDirection="0, 0" StartPoint="0, 0" EndPoint="1, 1" HeadLength="12" HeadWidth="3" Veeness="0" LineJoin="Miter" LineStyle="Solid" StrokeThickness="2" />
+      </Textual>
+    </Annotation>
+    <Annotation AnnotationType="OxyPlot.Wpf.TextAnnotation">
+      <General Name="" IsEnabled="True" Layer="AboveSeries" />
+      <Textual Text="Text" TextColor="#FF000000" FontSize="NaN" FontWeight="Normal" TextPosition="2, 3" TextRotation="0" TextHorizontalAlignment="Center" TextVerticalAlignment="Bottom">
+        <Text Background="#FFFFFFE0" Offset="0, 0" Padding="4,4,4,4" Stroke="#FF000000" StrokeThickness="2" />
+      </Textual>
+    </Annotation>
+    <Annotation AnnotationType="OxyPlot.Wpf.EllipseAnnotation">
+      <General Name="" IsEnabled="True" Layer="AboveSeries" />
+      <Textual Text="Ellipse" TextColor="#FF000000" FontSize="NaN" FontWeight="Normal" TextPosition="NaN, NaN" TextRotation="0" TextHorizontalAlignment="Center" TextVerticalAlignment="Center">
+        <Shape Fill="#FFADD8E6" Stroke="#FF0000FF" StrokeThickness="0">
+          <Ellipse MinimumX="-0.5" MaximumY="4" MaximumX="2.5" MinimumY="0" X="1" Y="2" Width="3" Height="4" />
+        </Shape>
+      </Textual>
+    </Annotation>
+    <Annotation AnnotationType="OxyPlot.Wpf.RectangleAnnotation">
+      <General Name="" IsEnabled="True" Layer="AboveSeries" />
+      <Textual Text="Rectangle" TextColor="#FF000000" FontSize="NaN" FontWeight="Normal" TextPosition="NaN, NaN" TextRotation="0" TextHorizontalAlignment="Center" TextVerticalAlignment="Center">
+        <Shape Fill="#FFFFE4E1" Stroke="#FF000000" StrokeThickness="0">
+          <Rectangle MinimumX="1" MaximumY="1.7976931348623157E+308" MaximumX="2" MinimumY="-1.7976931348623157E+308" />
+        </Shape>
+      </Textual>
+    </Annotation>
+    <Annotation AnnotationType="OxyPlot.Wpf.PointAnnotation">
+      <General Name="" IsEnabled="True" Layer="AboveSeries" />
+      <Textual Text="Point" TextColor="#FF000000" FontSize="NaN" FontWeight="Normal" TextPosition="NaN, NaN" TextRotation="0" TextHorizontalAlignment="Center" TextVerticalAlignment="Top">
+        <Shape Fill="#FF008000" Stroke="#FF000000" StrokeThickness="0">
+          <Point X="0.5" Y="0.5" Size="6" TextMargin="2" Shape="Diamond" />
+        </Shape>
+      </Textual>
+    </Annotation>
+    <Annotation AnnotationType="OxyPlot.Wpf.PolygonAnnotation">
+      <General Name="" IsEnabled="True" Layer="AboveSeries" />
+      <Textual Text="Polygon" TextColor="#FF000000" FontSize="NaN" FontWeight="Normal" TextPosition="NaN, NaN" TextRotation="0" TextHorizontalAlignment="Center" TextVerticalAlignment="Top">
+        <Shape Fill="#FFE6E6FA" Stroke="#FF000000" StrokeThickness="0">
+          <Polygon LineJoin="Miter" LineStyle="Solid" MinimumSegmentLength="2">
+            <Points>
+              <DataPoint X="0" Y="0" />
+              <DataPoint X="1" Y="1" />
+              <DataPoint X="2" Y="0" />
+            </Points>
+          </Polygon>
+        </Shape>
+      </Textual>
+    </Annotation>
+    <Annotation AnnotationType="OxyPlot.Wpf.LineAnnotation">
+      <General Name="" IsEnabled="True" Layer="AboveSeries" />
+      <Textual Text="Line" TextColor="#FF000000" FontSize="NaN" FontWeight="Normal" TextPosition="NaN, NaN" TextRotation="0" TextHorizontalAlignment="Right" TextVerticalAlignment="Top">
+        <Path Color="#FF8B0000" ClipByXAxis="True" ClipByYAxis="True" ClipText="True" LineJoin="Miter" LineStyle="Dash" StrokeThickness="1" TextMargin="12" TextOrientation="AlongLine" TextLinePosition="1">
+          <Line Type="LinearEquation" X="0" Y="0" Intercept="1" MinimumX="-1.7976931348623157E+308" MaximumY="1.7976931348623157E+308" MaximumX="1.7976931348623157E+308" MinimumY="-1.7976931348623157E+308" Slope="2" />
+        </Path>
+      </Textual>
+    </Annotation>
+    <Annotation AnnotationType="OxyPlot.Wpf.PolylineAnnotation">
+      <General Name="" IsEnabled="True" Layer="AboveSeries" />
+      <Textual Text="Polyline" TextColor="#FF000000" FontSize="NaN" FontWeight="Normal" TextPosition="NaN, NaN" TextRotation="0" TextHorizontalAlignment="Center" TextVerticalAlignment="Top">
+        <Path Color="#FF008080" ClipByXAxis="True" ClipByYAxis="True" ClipText="True" LineJoin="Miter" LineStyle="Dash" StrokeThickness="1" TextMargin="12" TextOrientation="AlongLine" TextLinePosition="1">
+          <Polyline MinimumSegmentLength="2">
+            <Points>
+              <DataPoint X="0" Y="1" />
+              <DataPoint X="1" Y="2" />
+            </Points>
+          </Polyline>
+        </Path>
+      </Textual>
+    </Annotation>
+    <Annotation AnnotationType="OxyPlot.Wpf.FunctionAnnotation">
+      <General Name="" IsEnabled="True" Layer="AboveSeries" />
+      <Textual Text="Function" TextColor="#FF000000" FontSize="NaN" FontWeight="Normal" TextPosition="NaN, NaN" TextRotation="0" TextHorizontalAlignment="Center" TextVerticalAlignment="Top">
+        <Path Color="#FFFF1493" ClipByXAxis="True" ClipByYAxis="True" ClipText="True" LineJoin="Miter" LineStyle="Dash" StrokeThickness="1" TextMargin="12" TextOrientation="AlongLine" TextLinePosition="1">
+          <Function Type="EquationX" Resolution="400" />
+        </Path>
+      </Textual>
+    </Annotation>
+  </Annotations>
+  <Series>
+    <SeriesItem SeriesType="OxyPlot.Wpf.HeatMapSeries">
+      <General Name="" Title="HeatMap" IsEnabled="True" Visibility="Visible" RenderInLegend="True" Background="" Foreground="#FF000000" Color="#00000001" FontFamily="Segoe UI" FontSize="12" FontWeight="Normal" Padding="0,0,0,0" TrackerFormatString="{0}&#xA;{1}: {2}&#xA;{3}: {4}&#xA;{5}: {6}" IsHitTestEnabled="True" EdgeRenderingMode="Automatic" />
+      <XYAxisSeries />
+      <HeatMapSeries Y0="3" Y1="4" X0="1" X1="2" HighColor="#FFFF0000" CoordinateDefinition="Center" Interpolate="false" LabelFontSize="0" LowColor="#FF0000FF" />
+    </SeriesItem>
+    <SeriesItem SeriesType="OxyPlot.Wpf.LineSeries">
+      <General Name="" Title="Line" IsEnabled="True" Visibility="Visible" RenderInLegend="True" Background="" Foreground="#FF000000" Color="#00000001" FontFamily="Segoe UI" FontSize="12" FontWeight="Normal" Padding="0,0,0,0" IsHitTestEnabled="True" EdgeRenderingMode="Automatic" />
+      <XYAxisSeries />
+      <DataPointSeries CanTrackerInterpolatePoints="True" />
+      <LineSeries LineJoin="Round" LineLegendPosition="None" LineStyle="Automatic" MarkerFill="#FFFFD700" MarkerResolution="0" MarkerSize="3" MarkerStroke="#FF000000" MarkerStrokeThickness="1" MarkerType="Square" MinimumSegmentLength="2" StrokeThickness="2" LabelMargin="6" BrokenLineColor="#FF808080" BrokenLineStyle="Solid" BrokenLineThickness="0" />
+    </SeriesItem>
+    <SeriesItem SeriesType="OxyPlot.Wpf.ColumnSeries">
+      <General Name="" Title="Column" IsEnabled="True" Visibility="Visible" RenderInLegend="True" Background="" Foreground="#FF000000" Color="#00000001" FontFamily="Segoe UI" FontSize="12" FontWeight="Normal" Padding="0,0,0,0" TrackerFormatString="{0}&#xA;{1}: {2}" IsHitTestEnabled="True" EdgeRenderingMode="Automatic" />
+      <XYAxisSeries />
+      <BarSeriesBase BaseValue="0" FillColor="#FF87CEEB" LabelMargin="2" StrokeColor="#FF000080" StackGroup="" NegativeFillColor="#FFFF6347" LabelPlacement="Outside" StrokeThickness="0" IsStacked="false" />
+      <ColumnSeries ColumnWidth="0.5" />
+    </SeriesItem>
+    <SeriesItem SeriesType="OxyPlot.Wpf.BarSeries">
+      <General Name="" Title="Bar" IsEnabled="True" Visibility="Visible" RenderInLegend="True" Background="" Foreground="#FF000000" Color="#00000001" FontFamily="Segoe UI" FontSize="12" FontWeight="Normal" Padding="0,0,0,0" TrackerFormatString="{0}&#xA;{1}: {2}" IsHitTestEnabled="True" EdgeRenderingMode="Automatic" />
+      <XYAxisSeries />
+      <BarSeriesBase BaseValue="0" FillColor="#FFF0E68C" LabelMargin="2" StrokeColor="#FF000000" StackGroup="g" NegativeFillColor="#00000000" LabelPlacement="Outside" StrokeThickness="0" IsStacked="true" />
+      <BarSeries BarWidth="0.75" />
+    </SeriesItem>
+    <SeriesItem SeriesType="OxyPlot.Wpf.HistogramSeries">
+      <General Name="" Title="Histogram" IsEnabled="True" Visibility="Visible" RenderInLegend="True" Background="" Foreground="#FF000000" Color="#00000001" FontFamily="Segoe UI" FontSize="12" FontWeight="Normal" Padding="0,0,0,0" IsHitTestEnabled="True" EdgeRenderingMode="Automatic" />
+      <XYAxisSeries />
+      <HistogramSeries FillColor="#FFDDA0DD" NegativeFillColor="#FFFAF0E6" LabelPlacement="Outside" StrokeColor="#FF800080" StrokeThickness="2" />
+    </SeriesItem>
+    <SeriesItem SeriesType="OxyPlot.Wpf.ScatterPointSeries">
+      <General Name="" Title="ScatterPoint" IsEnabled="True" Visibility="Visible" RenderInLegend="True" Background="" Foreground="#FF000000" Color="#00000001" FontFamily="Segoe UI" FontSize="12" FontWeight="Normal" Padding="0,0,0,0" IsHitTestEnabled="True" EdgeRenderingMode="Automatic" />
+      <XYAxisSeries />
+      <ScatterPointSeries BinSize="0" MarkerFill="#FF00FF00" MarkerSize="5" MarkerStroke="#FF006400" MarkerStrokeThickness="1" MarkerType="Triangle" />
+      <ScatterSeries BinSize="0" MarkerFill="#FF00FF00" MarkerSize="5" MarkerStroke="#FF006400" MarkerStrokeThickness="1" MarkerType="Triangle" />
+    </SeriesItem>
+    <SeriesItem SeriesType="OxyPlot.Wpf.ScatterErrorSeries">
+      <General Name="" Title="ScatterError" IsEnabled="True" Visibility="Visible" RenderInLegend="True" Background="" Foreground="#FF000000" Color="#00000001" FontFamily="Segoe UI" FontSize="12" FontWeight="Normal" Padding="0,0,0,0" IsHitTestEnabled="True" EdgeRenderingMode="Automatic" />
+      <XYAxisSeries />
+      <ScatterErrorSeries BinSize="0" MarkerFill="#FFF5DEB3" MarkerSize="5" MarkerStroke="#00000001" MarkerStrokeThickness="1" MarkerType="Square" ErrorBarStopWidth="3" MinimumErrorSize="0" ErrorBarStrokeThickness="1" ErrorBarColor="#FFDC143C" />
+    </SeriesItem>
+    <SeriesItem SeriesType="OxyPlot.Wpf.AreaSeries">
+      <General Name="" Title="Area" IsEnabled="True" Visibility="Visible" RenderInLegend="True" Background="" Foreground="#FF000000" Color="#00000001" FontFamily="Segoe UI" FontSize="12" FontWeight="Normal" Padding="0,0,0,0" IsHitTestEnabled="True" EdgeRenderingMode="Automatic" />
+      <XYAxisSeries />
+      <DataPointSeries CanTrackerInterpolatePoints="True" />
+      <LineSeries LineJoin="Bevel" LineLegendPosition="None" LineStyle="Automatic" MarkerFill="#00000001" MarkerResolution="0" MarkerSize="3" MarkerStroke="#00000001" MarkerStrokeThickness="1" MarkerType="None" MinimumSegmentLength="2" StrokeThickness="2" LabelMargin="6" BrokenLineColor="#00000000" BrokenLineStyle="Solid" BrokenLineThickness="0" />
+      <AreaSeries Color2="#FFA0522D" Fill="#FFF5F5DC" Reverse2="false" />
+    </SeriesItem>
+    <SeriesItem SeriesType="OxyPlot.Wpf.BoxPlotSeries">
+      <General Name="" Title="BoxPlot" IsEnabled="True" Visibility="Visible" RenderInLegend="True" Background="" Foreground="#FF000000" Color="#00000001" FontFamily="Segoe UI" FontSize="12" FontWeight="Normal" Padding="0,0,0,0" TrackerFormatString="{0}&#xA;{1}: {2}&#xA;Upper Whisker: {3:N2}&#xA;Third Quartil: {4:N2}&#xA;Median: {5:N2}&#xA;First Quartil: {6:N2}&#xA;Lower Whisker: {7:N2}&#xA;Mean: {8:N2}" IsHitTestEnabled="True" EdgeRenderingMode="Automatic" />
+      <XYAxisSeries />
+      <BoxPlotSeries StrokeThickness="1" Stroke="#FF696969" LineStyle="Solid" IsVertical="true" Fill="#FFD3D3D3" OutlierType="Circle" WhiskerWidth="0.29999999999999999" ShowMedianAsDot="true" MedianPointSize="2" OutlierSize="2" BoxWidth="0.29999999999999999" ShowBox="true" />
+    </SeriesItem>
+    <SeriesItem SeriesType="OxyPlot.Wpf.HighLowSeries">
+      <General Name="" Title="HighLow" IsEnabled="True" Visibility="Visible" RenderInLegend="True" Background="" Foreground="#FF000000" Color="#00000001" FontFamily="Segoe UI" FontSize="12" FontWeight="Normal" Padding="0,0,0,0" TrackerFormatString="{0}&#xA;{1}: {2}&#xA;High: {3:0.###}&#xA;Low: {4:0.###}&#xA;Open: {5:0.###}&#xA;Close: {6:0.###}" IsHitTestEnabled="True" EdgeRenderingMode="Automatic" />
+      <XYAxisSeries />
+      <HighLowSeries Color="#FF8B4513" StrokeThickness="1" TickLength="6" LineStyle="Solid" />
+    </SeriesItem>
+    <SeriesItem SeriesType="OxyPlot.Wpf.CandleStickSeries">
+      <General Name="" Title="CandleStick" IsEnabled="True" Visibility="Visible" RenderInLegend="True" Background="" Foreground="#FF000000" Color="#00000001" FontFamily="Segoe UI" FontSize="12" FontWeight="Normal" Padding="0,0,0,0" TrackerFormatString="{0}&#xA;{1}: {2}&#xA;High: {3:0.###}&#xA;Low: {4:0.###}&#xA;Open: {5:0.###}&#xA;Close: {6:0.###}" IsHitTestEnabled="True" EdgeRenderingMode="Automatic" />
+      <XYAxisSeries />
+      <HighLowSeries Color="#00000001" StrokeThickness="1" TickLength="4" LineStyle="Solid" />
+      <CandleStickSeries IncreasingColor="#FF228B22" DecreasingColor="#FFB22222" CandleWidth="0.59999999999999998" />
+    </SeriesItem>
+    <SeriesItem SeriesType="OxyPlot.Wpf.PieSeries">
+      <General Name="" Title="Pie" IsEnabled="True" Visibility="Visible" RenderInLegend="True" Background="" Foreground="#FF000000" Color="#00000001" FontFamily="Segoe UI" FontSize="12" FontWeight="Normal" Padding="0,0,0,0" TrackerFormatString="{1}: {2:0.###} ({3:P1})" IsHitTestEnabled="True" EdgeRenderingMode="Automatic" />
+      <PieSeries Stroke="#FFFFFFFF" StrokeThickness="1" Diameter="0.80000000000000004" InnerDiameter="0" StartAngle="45" AngleSpan="360" AngleIncrement="1" OutsideLabelFormat="{2:0} %" InsideLabelColor="#FF000000" InsideLabelFormat="{1}" InsideLabelPosition="0.5" AreInsideLabelsAngled="false" TickDistance="0" TickRadialLength="6" TickHorizontalLength="8" TickLabelDistance="4" ExplodedDistance="0" />
+    </SeriesItem>
+    <SeriesItem SeriesType="OxyPlot.Wpf.ContourSeries">
+      <General Name="" Title="Contour" IsEnabled="True" Visibility="Visible" RenderInLegend="True" Background="" Foreground="#FF000000" Color="#FF008B8B" FontFamily="Segoe UI" FontSize="12" FontWeight="Normal" Padding="0,0,0,0" TrackerFormatString="{0}&#xA;{1}: {2}&#xA;{3}: {4}&#xA;{5}: {6}" IsHitTestEnabled="True" EdgeRenderingMode="Automatic" />
+      <XYAxisSeries />
+      <ContourSeries Color="#FF008B8B" StrokeThickness="1" LineStyle="Solid" ContourLevelStep="0.5" LabelBackground="#FFFFFFF0" LabelStep="1" />
+    </SeriesItem>
+    <SeriesItem SeriesType="OxyPlot.Wpf.VectorSeries">
+      <General Name="" Title="Vector" IsEnabled="True" Visibility="Visible" RenderInLegend="True" Background="" Foreground="#FF000000" Color="#00000001" FontFamily="Segoe UI" FontSize="12" FontWeight="Normal" Padding="0,0,0,0" TrackerFormatString="{0}&#xA;{1}: {2}&#xA;{3}: {4}&#xA;{5}: {6}&#xA;Δ{1}: {7}&#xA;Δ{3}: {8}" IsHitTestEnabled="True" EdgeRenderingMode="Automatic" />
+      <XYAxisSeries />
+      <VectorSeries Color="#FF483D8B" StrokeThickness="2" ArrowHeadLength="4" ArrowHeadWidth="2" ArrowHeadPosition="1" ArrowVeeness="0" ArrowStartPosition="0" LineStyle="Solid" LabelFormatString="0.00" LabelFontSize="0" />
+    </SeriesItem>
+    <SeriesItem SeriesType="OxyPlot.Wpf.RectangleSeries">
+      <General Name="" Title="Rectangle" IsEnabled="True" Visibility="Visible" RenderInLegend="True" Background="" Foreground="#FF000000" Color="#00000001" FontFamily="Segoe UI" FontSize="12" FontWeight="Normal" Padding="0,0,0,0" TrackerFormatString="{0}&#xA;{1}: {2}&#xA;{3}: {4}&#xA;{5}: {6}" IsHitTestEnabled="True" EdgeRenderingMode="Automatic" />
+      <XYAxisSeries />
+      <RectangleSeries CanTrackerInterpolatePoints="false" ColorAxisKey="linearColor" LabelFormatString="0.00" LabelFontSize="10" />
+    </SeriesItem>
+    <SeriesItem SeriesType="OxyPlot.Wpf.TwoColorLineSeries">
+      <General Name="" Title="TwoColorLine" IsEnabled="True" Visibility="Visible" RenderInLegend="True" Background="" Foreground="#FF000000" Color="#FFFF0000" FontFamily="Segoe UI" FontSize="12" FontWeight="Normal" Padding="0,0,0,0" IsHitTestEnabled="True" EdgeRenderingMode="Automatic" />
+      <XYAxisSeries />
+      <DataPointSeries CanTrackerInterpolatePoints="True" />
+      <LineSeries LineJoin="Bevel" LineLegendPosition="None" LineStyle="Automatic" MarkerFill="#00000001" MarkerResolution="0" MarkerSize="3" MarkerStroke="#00000001" MarkerStrokeThickness="1" MarkerType="None" MinimumSegmentLength="2" StrokeThickness="2" LabelMargin="6" BrokenLineColor="#00000000" BrokenLineStyle="Solid" BrokenLineThickness="0" />
+      <TwoColorLineSeries Color2="#FF0000FF" Limit="5" LineStyle2="Dash" />
+    </SeriesItem>
+    <SeriesItem SeriesType="OxyPlot.Wpf.ThreeColorLineSeries">
+      <General Name="" Title="ThreeColorLine" IsEnabled="True" Visibility="Visible" RenderInLegend="True" Background="" Foreground="#FF000000" Color="#00000001" FontFamily="Segoe UI" FontSize="12" FontWeight="Normal" Padding="0,0,0,0" IsHitTestEnabled="True" EdgeRenderingMode="Automatic" />
+      <XYAxisSeries />
+      <DataPointSeries CanTrackerInterpolatePoints="True" />
+      <LineSeries LineJoin="Bevel" LineLegendPosition="None" LineStyle="Automatic" MarkerFill="#00000001" MarkerResolution="0" MarkerSize="3" MarkerStroke="#00000001" MarkerStrokeThickness="1" MarkerType="None" MinimumSegmentLength="2" StrokeThickness="2" LabelMargin="6" BrokenLineColor="#00000000" BrokenLineStyle="Solid" BrokenLineThickness="0" />
+      <ThreeColorLineSeries ColorLo="#FF0000FF" ColorHi="#FFFF0000" LimitLo="-1" LimitHi="1" LineStyleLo="Solid" LineStyleHi="Dot" />
+    </SeriesItem>
+    <SeriesItem SeriesType="OxyPlot.Wpf.StairStepSeries">
+      <General Name="" Title="StairStep" IsEnabled="True" Visibility="Visible" RenderInLegend="True" Background="" Foreground="#FF000000" Color="#00000001" FontFamily="Segoe UI" FontSize="12" FontWeight="Normal" Padding="0,0,0,0" IsHitTestEnabled="True" EdgeRenderingMode="Automatic" />
+      <XYAxisSeries />
+      <DataPointSeries CanTrackerInterpolatePoints="True" />
+      <LineSeries LineJoin="Bevel" LineLegendPosition="None" LineStyle="Automatic" MarkerFill="#00000001" MarkerResolution="0" MarkerSize="3" MarkerStroke="#00000001" MarkerStrokeThickness="1" MarkerType="None" MinimumSegmentLength="2" StrokeThickness="2" LabelMargin="6" BrokenLineColor="#00000000" BrokenLineStyle="Solid" BrokenLineThickness="0" />
+      <StairStepSeries VerticalLineStyle="Dash" VerticalStrokeThickness="2" />
+    </SeriesItem>
+    <SeriesItem SeriesType="OxyPlot.Wpf.StemSeries">
+      <General Name="" Title="Stem" IsEnabled="True" Visibility="Visible" RenderInLegend="True" Background="" Foreground="#FF000000" Color="#00000001" FontFamily="Segoe UI" FontSize="12" FontWeight="Normal" Padding="0,0,0,0" IsHitTestEnabled="True" EdgeRenderingMode="Automatic" />
+      <XYAxisSeries />
+      <DataPointSeries CanTrackerInterpolatePoints="True" />
+      <LineSeries LineJoin="Bevel" LineLegendPosition="None" LineStyle="Automatic" MarkerFill="#00000001" MarkerResolution="0" MarkerSize="3" MarkerStroke="#00000001" MarkerStrokeThickness="1" MarkerType="None" MinimumSegmentLength="2" StrokeThickness="2" LabelMargin="6" BrokenLineColor="#00000000" BrokenLineStyle="Solid" BrokenLineThickness="0" />
+      <StemSeries Base="1.5" />
+    </SeriesItem>
+    <SeriesItem SeriesType="OxyPlot.Wpf.ExtrapolationLineSeries">
+      <General Name="" Title="Extrapolation" IsEnabled="True" Visibility="Visible" RenderInLegend="True" Background="" Foreground="#FF000000" Color="#00000001" FontFamily="Segoe UI" FontSize="12" FontWeight="Normal" Padding="0,0,0,0" IsHitTestEnabled="True" EdgeRenderingMode="Automatic" />
+      <XYAxisSeries />
+      <DataPointSeries CanTrackerInterpolatePoints="True" />
+      <LineSeries LineJoin="Bevel" LineLegendPosition="None" LineStyle="Dot" MarkerFill="#00000001" MarkerResolution="0" MarkerSize="3" MarkerStroke="#00000001" MarkerStrokeThickness="1" MarkerType="None" MinimumSegmentLength="2" StrokeThickness="2" LabelMargin="6" BrokenLineColor="#00000000" BrokenLineStyle="Solid" BrokenLineThickness="0" />
+      <ExtrapolationLineSeries ExtrapolationColor="#FFDA70D6" ExtrapolationLineStyle="LongDash" IgnoreExtrapolationForScaling="True" />
+    </SeriesItem>
+    <SeriesItem SeriesType="OxyPlot.Wpf.ScatterSeries">
+      <General Name="" Title="Scatter" IsEnabled="True" Visibility="Visible" RenderInLegend="True" Background="" Foreground="#FF000000" Color="#00000001" FontFamily="Segoe UI" FontSize="12" FontWeight="Normal" Padding="0,0,0,0" IsHitTestEnabled="True" EdgeRenderingMode="Automatic" />
+      <XYAxisSeries />
+      <ScatterSeries BinSize="2" MarkerFill="#FF00FFFF" MarkerSize="7" MarkerStroke="#00000001" MarkerStrokeThickness="1" MarkerType="Square" />
+    </SeriesItem>
+  </Series>
+</OxyplotProperties>

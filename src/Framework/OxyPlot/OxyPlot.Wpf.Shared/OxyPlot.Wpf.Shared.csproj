@@ -1,0 +1,44 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Avalonia port of upstream/WPF-Framework/src/OxyPlot/OxyPlot.Wpf.Shared, the USACE fork of OxyPlot's
+    WPF base layer: PlotViewBase (input, tracker, zoom rectangle, rendering schedule), the tracker
+    control, value converters, plot commands and the conversions between OxyPlot and UI types.
+
+    The namespace stays OxyPlot.Wpf, as upstream (docs/porting-guide.md §1). Nearly every file is WPF
+    code, so the project opts in to upstream files (Directory.Build.targets): only the ported copies
+    and the files listed in UpstreamCompileInclude compile. Themes/Generic.xaml is ported to
+    Themes/Generic.axaml.
+
+    Not carried over from upstream's project: strong-name signing (OxyPlot.Wpf.Shared.snk; nothing
+    here needs a strong name) and WPF (UseWPF, net10.0-windows).
+  -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>OxyPlot.Wpf</RootNamespace>
+    <AssemblyName>OxyPlot.Wpf.Shared</AssemblyName>
+    <Nullable>disable</Nullable>
+    <!-- As upstream: implicit usings would make names such as Path (System.IO and Avalonia shapes) ambiguous. -->
+    <ImplicitUsings>disable</ImplicitUsings>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <UpstreamProjectDir>$(UpstreamFrameworkSrc)OxyPlot/OxyPlot.Wpf.Shared/</UpstreamProjectDir>
+    <UpstreamCompileMode>OptIn</UpstreamCompileMode>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Upstream files that compile unchanged. -->
+    <UpstreamCompileInclude Include="ExporterExtensions.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- The fork's OxyPlot core is portable and compiles unchanged from upstream. -->
+    <ProjectReference Include="$(UpstreamFrameworkSrc)OxyPlot/OxyPlot/OxyPlot.csproj" />
+    <!-- RoutedUICommand and command bindings (PlotCommands), and the Visibility enum. -->
+    <ProjectReference Include="../../WpfCompat/WpfCompat.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -34,7 +34,7 @@
 - **Recommended approach: a faithful 1:1 port.** Use Avalonia **12.1** with an MIT-only stack:
   - Dock.Avalonia
   - ProDataGrid
-  - a vendored OxyPlot.Avalonia
+  - the OxyPlot fork's own WPF layer, ported (with oxyplot-avalonia as the reference)
   - AvaloniaEdit
 
   Keep the same project, class and file structure, namespaces and code-behind flow, so logic is preserved and upstream changes can be re-ported release by release. Reproduce the VS2013 look by porting the theme's palettes and templates. Prove parity with automated screenshot diffs and file round-trip tests.
@@ -111,7 +111,7 @@ All three upstream repos run CI **on Windows only**, so "portable" code has neve
 | `DatabaseControls` + `ExpressionParserControls` | 10,352 | 2,050 | Port `TableViewer` and the dialogs it opens |
 | `SoftwareUpdate` + `.Updater` | 4,133 | – | **Replace** with Velopack (D7) |
 | `AvalonDock` + VS2013 theme (vendored) | 34,844 | 5,547 | **Replace** with Dock.Avalonia + custom VS2013 theme |
-| `OxyPlot.Wpf` + `.Wpf.Shared` (vendored fork) | 25,774 | 78 | **Replace** with vendored OxyPlot.Avalonia; port the fork's additions and the 3,613-line `Serialization` |
+| `OxyPlot.Wpf` + `.Wpf.Shared` (vendored fork) | 25,774 | 78 | **Port**, keeping the fork's classes and the 3,613-line `Serialization`; oxyplot-avalonia is the reference for the Avalonia parts (Phase 4) |
 | `RMC.BestFit.UI` / `RMC.BestFit.App` | 30,510 / 39,913 | 380 / 8,124 | Light-touch / full port |
 
 **WPF idioms that need real translation** (counts across the code to port):
@@ -158,7 +158,7 @@ All three upstream repos run CI **on Windows only**, so "portable" code has neve
 
 1. **`.bestfit` files are SQLite databases.** They are opened via `DatabaseManager` → `System.Data.SQLite` 2.0.2 plus `SourceGear.sqlite3`. In 2.0, everything is a P/Invoke to `e_sqlite3`, with natives for win, osx and linux (x64 and arm64), so it should work everywhere. *Validate in Phase 0.* Database passwords can't be supported cross-platform (the legacy codec was removed upstream in 2020). BestFit never calls the password API.
 2. **Plot customizations are persisted as XML inside project files.** `PlotSerializer.ToXElement(OxyPlot.Wpf.Plot)` writes them into SQLite columns, and there is a legacy-format fallback. The Avalonia port must read and write **exactly** the same XML.
-3. **The OxyPlot fork's core has custom additions:** `NormalProbabilityAxis` and `GumbelProbabilityAxis` (the exceedance-probability axes), plus modified series and `DataPoint` types. Stock `OxyPlot.Avalonia` (which needs `OxyPlot.Core` ≥ 2.2.0 from NuGet) can't be used as-is. Its source must be compiled against the fork.
+3. **The OxyPlot fork's core has custom additions:** `NormalProbabilityAxis` and `GumbelProbabilityAxis` (the exceedance-probability axes), plus modified series and `DataPoint` types. Stock `OxyPlot.Avalonia` (which needs `OxyPlot.Core` ≥ 2.2.0 from NuGet) can't be used as-is. Its source must be compiled against the fork. *The port ports the fork's own WPF layer instead (Phase 4).*
 4. **DataGrid semantics:**
 
    | Feature | Uses |
@@ -216,12 +216,12 @@ crossplatformrmcbestfit/
 │  ├─ Framework/             # Avalonia port of the WPF-Framework subset (same namespaces)
 │  │  ├─ WpfCompat/          # thin shims: Visibility, dialogs, clipboard, dispatcher, commands, culture
 │  │  ├─ FrameworkInterfaces/  Themes/  GenericControls/  NumericControls/
-│  │  ├─ OxyPlot.Avalonia/   # vendored oxyplot-avalonia, compiled against the fork's core
+│  │  ├─ OxyPlot/            # the fork's OxyPlot.Wpf and OxyPlot.Wpf.Shared, ported (Phase 4)
 │  │  ├─ OxyPlotControls/  DatabaseControls/  ExpressionParserControls/
 │  │  ├─ FrameworkUI/        # shell on Dock.Avalonia
 │  │  └─ SoftwareUpdate/
 │  └─ BestFit/
-│     ├─ RMC.BestFit.UI/     # project layer (OxyPlot.Avalonia, icon keys)
+│     ├─ RMC.BestFit.UI/     # project layer (the ported OxyPlot.Wpf, icon keys)
 │     └─ RMC.BestFit.App/    # the desktop app
 ├─ tests/                    # ported UI/App tests on Avalonia.Headless + compat/parity suites
 ├─ tools/                    # ParityCapture.Wpf (Windows), ParityCapture.Avalonia, parity report
@@ -247,7 +247,7 @@ The portable upstream projects compile **directly from `upstream/` via `ProjectR
 | UI framework | `Avalonia`, `Avalonia.Desktop`, `Avalonia.Themes.Simple` | 12.1.4 | Base templates for anything we don't restyle |
 | Docking | `Dock.Avalonia.AvalonDock` (wieslawsoltes) | 12.1.0.13 | AvalonDock's API (namespace `AvalonDock`) and layout XML over Dock's controls: tabs, tool panes, auto-hide, floating, drag-and-drop docking |
 | Data grid | `ProDataGrid` (wieslawsoltes) | 12.1.0.x | Cell, `CellOrRowHeader` … selection; `SelectedCells`; `CanUserAddRows`; TSV copy **and paste** |
-| Charts | OxyPlot.Avalonia (vendored source) | 2.2.0 | Declarative `Plot` with Avalonia-element series and axes; built against the fork's core |
+| Charts | The fork's `OxyPlot.Wpf`, ported (`src/Framework/OxyPlot`) | fork | Declarative `Plot` with Avalonia-element series and axes, on the fork's core; oxyplot-avalonia is the reference |
 | Code editor | `Avalonia.AvaloniaEdit` | 12.0.0 | Expression editor with syntax colouring |
 | HTML help | `Avalonia.Controls.WebView` / `Avalonia.HtmlRenderer` | 12.1.x / 12.0.0 | WebView is MIT since 12.0 |
 | Behaviours (DataTriggers) | `Xaml.Behaviors.Avalonia` | *verify v12* | `DataTriggerBehavior` for the hardest DataTriggers |
@@ -273,8 +273,8 @@ Rejected or avoided:
 | `DataTrigger` / `MultiDataTrigger` | Bound style classes (`Classes.x="{Binding}"`), converters, or `DataTriggerBehavior` |
 | `Storyboard` / `EventTrigger` | `Transitions` / style `Animations` |
 | `CopyPasteDataGrid` / `ValidationDataGrid` (WPF DataGrid) | Same classes re-based on ProDataGrid |
-| OxyPlot.Wpf `Plot` + `PlotSerializer` | OxyPlot.Avalonia `Plot` + ported `Serialization` (byte-identical XML) |
-| OxyPlot.Wpf zoom adorner, `DragAdorner` / `InsertionAdorner` | OxyPlot.Avalonia zoom rectangle; `AdornerLayer` |
+| OxyPlot.Wpf `Plot` + `PlotSerializer` | The same classes, ported, in the `OxyPlot.Wpf` namespace (byte-identical XML) |
+| OxyPlot.Wpf zoom adorner, `DragAdorner` / `InsertionAdorner` | The ported zoom rectangle; `AdornerLayer` |
 | `RoutedCommand` / `ApplicationCommands` / `CommandBinding` | WpfCompat's routed commands, which route as WPF's do (Cmd on macOS) |
 | `GenericControls.MessageBox`, `ShowDialog` | Same classes and themed `Window`s; they wait, as in WPF (§5.3) |
 | `RichTextBox` (editable expression) | AvaloniaEdit |
@@ -401,7 +401,7 @@ Sizes are relative, for one developer with AI-assisted porting: S ≈ ≤2 wk, M
 |---|---|---|
 | A | Grid | `CopyPasteDataGrid` on ProDataGrid: rectangular cell selection, `SelectedCells`, add-row placeholder, TSV copy/paste with Excel, validation styling, keyboard navigation. |
 | B | Docking | The FrameworkUI layout on Dock.Avalonia (explorer, documents, properties, messages), with auto-hide, float, close and persistence, plus one VS2013-Blue pane header and tab. |
-| C | Plotting | Vendored OxyPlot.Avalonia compiled against the fork, with a `NormalProbabilityAxis` wrapper. Render a univariate "Frequency" plot from an example project and diff it against the WPF capture. |
+| C | Plotting | The fork's plotting layer on Avalonia (planned as vendored OxyPlot.Avalonia; the fork's WPF layer was ported instead, Phase 4), with the probability axes. Render a univariate "Frequency" plot from an example project and diff it against the WPF capture. |
 | D | Dialogs | Async vs nested-loop modal dialogs and pickers on Windows, macOS, Linux X11 and XWayland. |
 | E | Theming | Runtime Light/Dark/Blue switching with ported palettes; Button, ComboBox, CheckBox and DataGrid header templates diffed against WPF. |
 | F | Fonts and culture | Selawik/Cascadia fallback metrics; en-US binding culture. |
@@ -537,12 +537,22 @@ Sizes are relative, for one developer with AI-assisted porting: S ≈ ≤2 wk, M
 - The theme gallery shows each control in all three themes, including open menus, context menus and combo box drop-downs. `Themes.Tests` checks that every implicit theme loads and applies its template, and behaviour a screenshot can't show, such as the stroke defaults and the tree view's expander.
 
 ### Phase 4: Plotting (L)
-- OxyPlot.Avalonia vendored, with the fork's additions mirrored: probability axes plus any modified series and annotations.
+- The fork's WPF layer (`OxyPlot.Wpf`, `.Wpf.Shared`) ported, with its additions: the probability axes and its modified series and annotations.
 - `Serialization` port with **golden XML fixtures captured from WPF**. Deserialize then re-serialize must give byte-identical XML, including the legacy-format fallback.
 - PNG/SVG/PDF export and copy-image-to-clipboard.
 - `OxyPlotControls`: `OxyPlotToolbar` (pointer, pan, zoom, extents, add annotation, screenshot, export, settings), properties editors (axes, series, annotations), `SavePlotImageDialog`, `OxyPlotThemeManager`.
 
 **Exit:** every plot type BestFit uses has parity, and the serialization fixtures are green on 3 OSes.
+
+**Progress (2026-10-30):** the fork's WPF layer is ported, rather than vendoring OxyPlot.Avalonia (decided 2026-10-30). That keeps the fork's own classes and changes (the declarative `Plot` with dirty-tracked synchronisation, the DrawingVisual backend, the probability axes, `ExtrapolationLineSeries`, `Serialization`), with oxyplot-avalonia as the reference for the Avalonia parts.
+- `src/Framework/OxyPlot/OxyPlot.Wpf.Shared` and `OxyPlot.Wpf` overlay their upstream projects in opt-in mode, and keep the `OxyPlot.Wpf` namespace and every type and member name. The fork's OxyPlot core compiles unchanged from `upstream/`.
+- Dependency properties are styled properties with the same defaults and callbacks; 11 upstream files compile unchanged. A script did the regular conversion, and each file's notes say what else changed.
+- The DrawingVisual backend draws into XGoodFit's `DrawingVisual`, a recording its host replays, because Avalonia's own recorded drawing can't hold bitmaps (heat maps). The Canvas backend fills an Avalonia canvas.
+- Exports: PNG through Avalonia's `RenderTargetBitmap`, with the resolution chunk WPF's encoder wrote. The fork's PDF and SVG exports draw text as outlines; Avalonia lays the text out and SkiaSharp gives the glyph outlines. XPS and XAML export aren't ported (BestFit doesn't use them).
+- `Serialization` writes WPF's text forms through new WpfCompat converters (`ColorConverter`, `BrushConverter`, `FontWeightConverter`, `FontFamilyConverter`, `ThicknessConverter`) and keeps WPF's three-state `Visibility` on series.
+- `OxyPlot.Wpf.Tests` (26 tests) renders both backends headlessly, exports PNG, SVG and PDF, drives the plot with the mouse (zoom, pan, tracker, context menu), and checks property synchronisation. Its golden fixtures come from the WPF fork itself (`tools/OxyPlotFixtures.Wpf`, Windows only), for a frequency plot and for one of every axis, series and annotation type. The port writes the same XML byte for byte and reads it back unchanged.
+- A finding from the fixtures: WPF applies `generic.xaml`'s style to a plot as soon as it's made, even outside a window, so off-screen plots save and draw a white background. The port makes that white the default.
+- Still to do: the legacy-format fallback in `RMC.BestFit.UI` (Phase 6), `OxyPlotControls`, and screenshot parity.
 
 ### Phase 5: Numeric, database & expression controls (L)
 - `NumericControls`: `DistributionSelectorControl`, `ProbabilityOrdinatesControl`, `TimeSeriesTable`, `UncertainOrderedTableEditor`, … (plus their dependencies).
@@ -554,7 +564,7 @@ Sizes are relative, for one developer with AI-assisted porting: S ≈ ≤2 wk, M
 **Exit:** demo-page parity and `TableViewer` edit/undo tests.
 
 ### Phase 6: BestFit project layer (`RMC.BestFit.UI`) (M)
-- Swap in OxyPlot.Avalonia `Plot` types, icon keys and portable colours; `DssTimeSeriesReader` on the new natives.
+- The ported `OxyPlot.Wpf` `Plot` types (same names), icon keys and portable colours; `DssTimeSeriesReader` on the new natives.
 - Port `RMC.BestFit.UI.Tests` (711 tests) to Avalonia.Headless.
 - **File-compatibility suite:** open and save every example project, then compare to the WPF-saved files table by table and cell by cell, with exact plot XML.
 
@@ -681,7 +691,7 @@ USACE is actively developing BestFit (2.0.1 shipped recently).
 | # | Risk | L | I | Mitigation |
 |---|---|:-:|:-:|---|
 | R1 | ProDataGrid gaps or abandonment (single maintainer, created Jul 2025) | M | H | Spike A; pin; wrap behind `CopyPasteDataGrid` API; MIT, so we can fork |
-| R2 | OxyPlot.Avalonia doesn't build or render identically against the fork | M | H | Spike C; thin wrappers; parity harness |
+| R2 | The ported plotting layer doesn't render identically to WPF's | M | H | Spike C; WPF-written fixtures; parity harness |
 | R3 | Plot-XML incompatibility breaks `.bestfit` round-trip | M | H | Golden WPF fixtures; exact-XML tests; schema frozen |
 | R4 | Async dialog conversion changes control flow | M | M–H | Spike D; sync-compat for complex sites; tests per site |
 | R5 | HEC-DSS natives needed on every OS at 1.0 (D6), but HEC publishes macOS only for 7-JA-7 (`libz` rpath) and the pre-build step is Windows-only | M | H | Build from source in CI for win-x64, linux-x64, osx-arm64 and osx-x64; sign with the app; keep a clear "not available" message as a safety net |
@@ -757,7 +767,7 @@ USACE is actively developing BestFit (2.0.1 shipped recently).
 **Libraries**
 - Dock: https://github.com/wieslawsoltes/Dock
 - ProDataGrid: https://github.com/wieslawsoltes/ProDataGrid
-- OxyPlot.Avalonia: https://github.com/oxyplot/oxyplot-avalonia
+- OxyPlot.Avalonia (the reference for the OxyPlot port): https://github.com/oxyplot/oxyplot-avalonia
 - AvaloniaEdit: https://www.nuget.org/packages/Avalonia.AvaloniaEdit
 - Velopack: https://github.com/velopack/velopack
 

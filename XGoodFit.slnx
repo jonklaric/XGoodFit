@@ -5,6 +5,8 @@
     <Project Path="src/Framework/FrameworkInterfaces/FrameworkInterfaces.csproj" />
     <Project Path="src/Framework/FrameworkUI/FrameworkUI.csproj" />
     <Project Path="src/Framework/GenericControls/GenericControls.csproj" />
+    <Project Path="src/Framework/OxyPlot/OxyPlot.Wpf/OxyPlot.Wpf.csproj" />
+    <Project Path="src/Framework/OxyPlot/OxyPlot.Wpf.Shared/OxyPlot.Wpf.Shared.csproj" />
     <Project Path="src/Framework/SoftwareUpdate/SoftwareUpdate.csproj" />
     <Project Path="src/Framework/Themes/Themes.csproj" />
     <Project Path="src/Framework/WpfCompat/WpfCompat.csproj" />
@@ -14,6 +16,7 @@
     <Project Path="tests/Framework/ExpressionParserControls.Tests/ExpressionParserControls.Tests.csproj" />
     <Project Path="tests/Framework/FrameworkUI.Tests/FrameworkUI.Tests.csproj" />
     <Project Path="tests/Framework/GenericControls.Tests/GenericControls.Tests.csproj" />
+    <Project Path="tests/Framework/OxyPlot.Wpf.Tests/OxyPlot.Wpf.Tests.csproj" />
     <Project Path="tests/Framework/Themes.Tests/Themes.Tests.csproj" />
     <Project Path="tests/Framework/WpfCompat.Tests/WpfCompat.Tests.csproj" />
   </Folder>
@@ -24,5 +27,6 @@
   <Folder Name="/upstream/">
     <Project Path="upstream/WPF-Framework/src/DatabaseManager/DatabaseManager.csproj" />
     <Project Path="upstream/WPF-Framework/src/ExpressionParser/ExpressionParser.csproj" />
+    <Project Path="upstream/WPF-Framework/src/OxyPlot/OxyPlot/OxyPlot.csproj" />
   </Folder>
 </Solution>

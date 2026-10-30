@@ -135,6 +135,26 @@ Templates and themes:
 - `TextBox` bindings: WPF updates the source on `LostFocus` by default; Avalonia on every change. Add
   `UpdateSourceTrigger=LostFocus` where upstream relied on the default (plan §5.2).
 
+### Code that uses the ported OxyPlot.Wpf
+
+`src/Framework/OxyPlot` keeps upstream's namespace, type and member names, `Serialization` API and saved
+XML. Code that uses it changes only where Avalonia's types differ:
+
+| WPF fork | Port |
+|---|---|
+| `Brush`, `FontWeight`, `Cursor`, `ControlTemplate` properties | Avalonia's `IBrush`, `FontWeight` (an enum), `Cursor`, `IControlTemplate` |
+| `ToBitmap()`, `ExportToBitmap()` return a `BitmapSource` | They return an Avalonia `Bitmap`; dispose it |
+| `Visibility` on every plot element | `Series` and the tracker lines keep `Visibility` (on series it agrees with `IsVisible`); axes and annotations have only `IsVisible` |
+| `PropertyChanged` (`INotifyPropertyChanged`) | The same event, declared `new` over Avalonia's; cast to `AvaloniaObject` for Avalonia's |
+| `OnMouse*`, `OnManipulation*` overrides | `OnPointerPressed`, `Moved`, `Released`, `WheelChanged`, `Entered`, `Exited`; no touch gestures |
+| `public override OnApplyTemplate()` | `protected override OnApplyTemplate(TemplateAppliedEventArgs)` |
+| Clipboard copy | `SetTextAsync` / `SetBitmapAsync`, not awaited |
+| `PlotCommands`, `ApplicationCommands.Copy` | WpfCompat's routed commands: `((RoutedCommand)command).Execute(parameter, plot)` |
+| `DrawingVisualHost.Visual` (WPF's `DrawingVisual`) | The port's `DrawingVisual`; `RenderOpen()` returns a `DrawingRecorder` |
+| `TextFormattingMode` on render contexts | Removed |
+| The view's and tracker's styles from `generic.xaml` | Merged into the application's resources when the first plot is made. `Plot.Background` defaults to white, as WPF's style made it |
+| XPS and XAML export (`SaveXaml`, `ToXaml`) | Not ported; BestFit doesn't use them |
+
 ## 5. Defaults that differ
 
 Already handled for every ported control (Themes' `ThemeService.Initialize`):

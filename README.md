@@ -10,7 +10,8 @@ The goal is the same application, looking and behaving the same, running nativel
 
 > [!NOTE]
 > XGoodFit is in early development and is not usable yet. The groundwork is in place and the UI port
-> has begun with the VS2013 theme (Light, Blue and Dark). The [migration plan](docs/migration-plan.md)
+> has begun with the VS2013 theme (Light, Blue and Dark) and the plotting library, which writes the
+> same plot settings to project files as RMC-BestFit. The [migration plan](docs/migration-plan.md)
 > describes the approach and roadmap.
 
 ## Approach
