@@ -1,0 +1,30 @@
+<!--
+    XGoodFit port of upstream's GUI/Support/Controls/AlternativeControl.xaml: Avalonia has no ListView, so the
+    list is a ListBox with the ported ListView theme (Themes' ListView.axaml), as WPF's implicit ListView
+    style gave it.
+-->
+<UserControl x:Class="RMC_BestFit.AlternativeControl"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="using:RMC_BestFit"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800"
+             Background="{DynamicResource EnvironmentWindowBackground}"
+             Foreground="{DynamicResource EnvironmentWindowText}"
+             DataContext="{Binding RelativeSource={RelativeSource Self}}">
+    <Grid>
+        <ListBox x:Name="AlternativeListBox" Loaded="AlternativeListBox_Loaded" Width="200" Background="Transparent" Theme="{DynamicResource ListViewStyle}">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel>
+                        <CheckBox IsChecked="{Binding IsChecked}" IsEnabled="{Binding Alternative.Analysis.IsEstimated}">
+                            <TextBlock Text="{Binding Alternative.Name, UpdateSourceTrigger=PropertyChanged}"/>
+                        </CheckBox>
+                    </StackPanel>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+    </Grid>
+</UserControl>

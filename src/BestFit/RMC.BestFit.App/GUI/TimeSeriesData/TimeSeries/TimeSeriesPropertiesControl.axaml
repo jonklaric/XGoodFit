@@ -1,0 +1,227 @@
+<!--
+    XGoodFit port of upstream's GUI/TimeSeriesData/TimeSeries/TimeSeriesPropertiesControl.xaml:
+    - The grid's width follows the scroll viewer's viewport (WPF's ViewportWidth is Viewport.Width), and the
+      expanders' Style is their Theme.
+    - The PreviewMouseLeftButtonDown handlers are added in the code-behind (Avalonia has no Preview events in
+      XAML).
+    - The combo boxes' DisplayMemberPath and SelectedValuePath are DisplayMemberBinding and
+      SelectedValueBinding. The entry method items' ToolTip setter is a style of the combo box's items, which
+      keeps their theme (an ItemContainerTheme would replace it).
+    - ToolTip is ToolTip.Tip, and the dates format in WPF's binding culture (WpfCompat's FormattingCulture).
+-->
+<UserControl x:Class="RMC_BestFit.TimeSeriesPropertiesControl"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="using:RMC_BestFit"
+             xmlns:cntrls="using:GenericControls"
+             xmlns:wpf="using:WpfCompat"
+             mc:Ignorable="d" 
+             MinWidth="100"
+             MinHeight="100"
+             d:DesignHeight="450" d:DesignWidth="800"
+             Background="{DynamicResource PropertyGrid.Content.Background}"
+             Foreground="{DynamicResource EnvironmentWindowText}"
+>
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <cntrls:DoubleToGridLengthConverter x:Key="ActualToLengthConverter" />
+            <cntrls:ReverseBooleanConverter x:Key="ReverseBoolConverter"/>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="10000000*" MinHeight="200"/>
+            <RowDefinition Height="*" MinHeight="1"/>
+            <RowDefinition Height="Auto" MinHeight="50" MaxHeight="200" />
+        </Grid.RowDefinitions>
+        <ScrollViewer x:Name="Viewer" Grid.Row="0" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+            <Grid x:Name="MainGrid" Width="{Binding ElementName=Viewer, Path=Viewport.Width}" MinWidth="200">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+            <!--Element Properties-->
+            <Expander Grid.Row="0" 
+                    Margin="0,4,4,8" 
+                    Header="TIME SERIES PROPERTIES" 
+                    IsExpanded="True"
+                    Theme="{DynamicResource PropertyExpanderStyle}">
+                <DockPanel>
+
+                    <cntrls:NameTextPropertyControl x:Name="ElementName" Margin="0 2" CharacterLimit="50" DockPanel.Dock="Top" Title="Name" MaxPropertyWidth="200"
+                                                    Text="{Binding Element.Name, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                                                    ExistingNames="{Binding ExistingNames, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}"
+                                                    PropertyWidth="{Binding ElementName=EntryMethod, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}"
+                                                    GotFocus="Name_GotFocus"
+                                                    LostFocus="Name_LostFocus"/>
+
+                    <cntrls:ResizeableTextPropertyControl x:Name="Description" Margin="0 2" DockPanel.Dock="Top" Title="Description" MaxPropertyWidth="200" TextBoxHeight="88"
+                                                          Text="{Binding Element.Description, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                                                          PropertyWidth="{Binding ElementName=EntryMethod, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}"/>
+
+                    <cntrls:TextPropertyControl x:Name="CreationDate" Margin="0 2" DockPanel.Dock="Top" Title="Created On" MaxPropertyWidth="200" IsReadOnly="True"
+                                                Text="{Binding Element.CreationDate, UpdateSourceTrigger=PropertyChanged, Mode=OneWay, ConverterCulture={x:Static wpf:FormattingCulture.Current}}"
+                                                PropertyWidth="{Binding ElementName=EntryMethod, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}"/>
+
+                        <cntrls:TextPropertyControl x:Name="LastModified" Margin="0 2" DockPanel.Dock="Top" Title="Last Modified" MaxPropertyWidth="200" IsReadOnly="True" 
+                                                Text="{Binding Element.LastModified, UpdateSourceTrigger=PropertyChanged, Mode=OneWay, ConverterCulture={x:Static wpf:FormattingCulture.Current}}"
+                                                PropertyWidth="{Binding ElementName=EntryMethod, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}"/>
+
+
+                        <cntrls:TextPropertyControl x:Name="UnitLabel" Margin="0 2" DockPanel.Dock="Top" Title="Unit Label" MaxPropertyWidth="200" 
+                                                Text="{Binding Element.UnitLabel, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                                                PropertyWidth="{Binding ElementName=EntryMethod, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}"/>
+
+                </DockPanel>
+            </Expander>
+
+            <!--Time Series Options-->
+            <Expander x:Name="TimeSeriesExpander"
+                Grid.Row="1" 
+                Margin="0,4,4,8" 
+                Header="TIME SERIES OPTIONS" 
+                IsExpanded="True"
+                Theme="{DynamicResource PropertyExpanderStyle}">
+                <DockPanel>
+
+                        <!-- Entry Method -->
+                        <cntrls:ContentPropertyControl x:Name="EntryMethod" Margin="0 2" DockPanel.Dock="Top" Title="Data Entry Method" MaxPropertyWidth="200">
+                            <cntrls:ContentPropertyControl.InnerContent>
+                                <ComboBox HorizontalAlignment="Stretch" VerticalAlignment="Bottom"
+                                          ItemsSource="{Binding EntryMethodOptions}"
+                                          DisplayMemberBinding="{Binding DisplayName}"
+                                          SelectedValueBinding="{Binding Value}"
+                                          SelectedValue="{Binding Element.EntryMethod, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                                          SelectionChanged="EntryMethodComboBox_SelectionChanged">
+                                    <ComboBox.Styles>
+                                        <Style Selector="ComboBoxItem">
+                                            <Setter Property="ToolTip.Tip" Value="{Binding ToolTip}"/>
+                                        </Style>
+                                    </ComboBox.Styles>
+                                </ComboBox>
+                            </cntrls:ContentPropertyControl.InnerContent>
+                        </cntrls:ContentPropertyControl>
+
+
+                        <!-- HEC-DSS Filename -->
+                        <cntrls:FileSelectorControl x:Name="HECDSSFilename" Title="DSS Filename" IsReadOnly="True" DockPanel.Dock="Top" Margin="0,2,0,2" MaxPropertyWidth="200"
+                                               Text="{Binding Element.HECDSSFullFilename, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" ToolTip.Tip="{Binding Element.HECDSSFullFilename}"
+                                               PropertyWidth="{Binding ElementName=EntryMethod, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}"/>
+
+
+                        <cntrls:ContentPropertyControl x:Name="HECDSSPathname" Margin="0 2" DockPanel.Dock="Top" Title="DSS Pathname" MaxPropertyWidth="200" 
+                                                               PropertyWidth="{Binding ElementName=EntryMethod, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}">
+                            <cntrls:ContentPropertyControl.InnerContent>
+                                <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox 
+                                        Grid.Column="0"                     
+                                        HorizontalAlignment="Stretch" 
+                                        VerticalAlignment="Stretch"
+                                        Text="{Binding Element.HECDSSDataPathname, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                                        IsReadOnly="True"/>
+                                    <Button 
+                                        Grid.Column="1" 
+                                        Margin="2,0,0,0" 
+                                        Width="22" 
+                                        Height="22" 
+                                        VerticalAlignment="Center" 
+                                        Click="PathNameButton_Click" > 
+                                        <TextBlock Text="..." HorizontalAlignment="Center"/>
+                                    </Button>
+                                </Grid>
+                            </cntrls:ContentPropertyControl.InnerContent>
+                        </cntrls:ContentPropertyControl>
+
+                        <!--Series Type -->
+                        <cntrls:ContentPropertyControl x:Name="DataType" Margin="0 2" DockPanel.Dock="Top" Title="Data Type" MaxPropertyWidth="200"
+                                                       PropertyWidth="{Binding ElementName=EntryMethod, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}">
+                            <cntrls:ContentPropertyControl.InnerContent>
+                                <ComboBox HorizontalAlignment="Stretch" VerticalAlignment="Bottom"
+                                          DisplayMemberBinding="{Binding DisplayName}"
+                                          SelectedValueBinding="{Binding Value}"
+                                          SelectedValue="{Binding Element.SeriesType, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                                          SelectionChanged="DataType_SelectionChanged"/>
+                            </cntrls:ContentPropertyControl.InnerContent>
+                        </cntrls:ContentPropertyControl>
+                    
+                        <!-- GHCN Site Number -->
+                        <cntrls:TextPropertyControl x:Name="GHCNSiteNumber" Title="Site Number" DockPanel.Dock="Top" Margin="0,2,0,2" MaxPropertyWidth="200"
+                                               Text="{Binding Element.GHCNSiteNumber, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                                               PropertyWidth="{Binding ElementName=EntryMethod, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}"/>
+
+                        <!-- GHCN Depth Unit -->
+                        <cntrls:ContentPropertyControl x:Name="DepthUnitSelector" Margin="0 2" DockPanel.Dock="Top" Title="Depth Unit" MaxPropertyWidth="200"
+                                                   PropertyWidth="{Binding ElementName=EntryMethod, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}">
+                            <cntrls:ContentPropertyControl.InnerContent>
+                                <ComboBox HorizontalAlignment="Stretch" VerticalAlignment="Bottom"
+                                      ItemsSource="{Binding DepthUnitOptions}"
+                                      DisplayMemberBinding="{Binding DisplayName}"
+                                      SelectedValueBinding="{Binding Value}"
+                                      SelectedValue="{Binding Element.DepthUnit, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"/>
+                            </cntrls:ContentPropertyControl.InnerContent>
+                        </cntrls:ContentPropertyControl>
+
+
+                        <!--USGS Site Number -->
+                        <cntrls:TextPropertyControl x:Name="USGSSiteNumber" Title="Site Number" DockPanel.Dock="Top" Margin="0,2,0,2" MaxPropertyWidth="200"
+                                                   Text="{Binding Element.USGSSiteNumber, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                                                   PropertyWidth="{Binding ElementName=EntryMethod, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}"/>
+
+                        <!-- CHMN Site Number -->
+                        <cntrls:TextPropertyControl x:Name="CHMNSiteNumber" Title="Site Number" DockPanel.Dock="Top" Margin="0,2,0,2" MaxPropertyWidth="200"
+                                                   Text="{Binding Element.CHMNSiteNumber, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                                                   PropertyWidth="{Binding ElementName=EntryMethod, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}"/>
+
+                        <!-- ABOM Site Number -->
+                        <cntrls:TextPropertyControl x:Name="ABOMSiteNumber" Title="Site Number" DockPanel.Dock="Top" Margin="0,2,0,2" MaxPropertyWidth="200"
+                                                   Text="{Binding Element.ABOMSiteNumber, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                                                   PropertyWidth="{Binding ElementName=EntryMethod, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}"/>
+
+                        <cntrls:ContentPropertyControl x:Name="TimeIntervalSelector" Margin="0 2" DockPanel.Dock="Top" Title="Time Interval" MaxPropertyWidth="200"
+                                                       PropertyWidth="{Binding ElementName=EntryMethod, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}">
+                            <cntrls:ContentPropertyControl.InnerContent>
+                                <ComboBox HorizontalAlignment="Stretch" VerticalAlignment="Bottom"
+                                          ItemsSource="{Binding TimeIntervalOptions}"
+                                          DisplayMemberBinding="{Binding DisplayName}"
+                                          SelectedValueBinding="{Binding Value}"
+                                          SelectedValue="{Binding Element.TimeInterval, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"/>
+                            </cntrls:ContentPropertyControl.InnerContent>
+                        </cntrls:ContentPropertyControl>
+
+                        <cntrls:DateTimePropertyControl x:Name="StartDateTime" Margin="0 2" DockPanel.Dock="Top" Title="Start Date" MaxPropertyWidth="200"
+                                                        SelectedDateTime="{Binding Element.StartDateTime, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                                                        PropertyWidth="{Binding ElementName=EntryMethod, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}"/>
+
+                    <!--Process Data Button-->
+                    <Grid DockPanel.Dock="Top">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <Button Name="ProcessDataButton" ToolTip.Tip="Import Time Series Data" Grid.Column="1"  VerticalContentAlignment="Center" HorizontalContentAlignment="Center" 
+                            Width="83" Height="24" Margin="0,5,0,0" Cursor="Hand" Click="ProcessDataButton_Click">
+                            <StackPanel Orientation="Horizontal">
+                                <ContentControl Content="{DynamicResource DownloadIcon}" Margin="0,0,4,0"/>
+                                <TextBlock x:Name="ProcessDataButtonText" Text="Import" />
+                            </StackPanel>
+                        </Button>
+                    </Grid>
+                    
+                </DockPanel>
+            </Expander>
+
+            </Grid>
+        </ScrollViewer>
+        <GridSplitter Grid.Row="1" Height="1" HorizontalAlignment="Stretch" VerticalAlignment="Bottom" Background="{DynamicResource SeparatorBorder}"/>
+        <cntrls:PropertyAttributes x:Name="PropertyAttributes" Grid.Row="2"/>
+    </Grid>
+</UserControl>
