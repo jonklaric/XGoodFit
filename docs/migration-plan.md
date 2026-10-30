@@ -226,6 +226,7 @@ crossplatformrmcbestfit/
 ├─ tests/                    # ported UI/App tests on Avalonia.Headless + compat/parity suites
 ├─ tools/                    # ParityCapture.Wpf (Windows), ParityCapture.Avalonia, parity report
 ├─ native/                   # HEC-DSS build scripts → runtimes/<rid>/native
+├─ packaging/                # Velopack packaging notes, per-OS templates (scripts/package.sh)
 ├─ docs/                     # this plan, porting rules, ADRs, Avalonia docs snapshot
 └─ Directory.Build.props · Directory.Packages.props · global.json
 ```
@@ -628,6 +629,13 @@ Each slice includes its XAML and code-behind, its share of `RMC.BestFit.App.Test
 
 **Exit:** CI produces installable artifacts for every OS, and the update flow is tested end-to-end.
 
+**Progress (2026-10-30):** packaging is in place, with `tools/ThemeGallery` as the stand-in app until `RMC.BestFit.App` is ported (`APP_PROJECT` in `scripts/package.sh`).
+- `scripts/package.sh` builds, per runtime, a self-contained untrimmed publish with that runtime's HEC-DSS native, packed by Velopack: Windows `Setup.exe` (per-user) and a portable zip; macOS `.pkg` and a portable `.app` (osx-arm64 and osx-x64, `.icns`, `.bestfit` exported with the Alternate rank, hardened runtime with .NET's entitlements); Linux AppImage and tarball (`.desktop`, `application/x-bestfit`). Each runtime is its own update channel; deltas work (tested on Windows).
+- `scripts/check-package.sh` checks a package without installing it: structure, signature, and the packaged app run headless. Verified on Windows, Linux, and macOS arm64 and x64 (Rosetta).
+- `src/XGoodFit.Platform`: Velopack's startup hook, Windows' per-user "Open with" registration (never the default, removed on uninstall), the update service, and files to open from the command line or Finder (`FileOpenRequests`).
+- `.github/workflows/package.yml` packs on each OS (Linux on ubuntu-22.04 for an older glibc) on manual runs and `v*` tags, and drafts a release on tags. Apple signing and notarization need the secrets `APPLE_DEVELOPER_ID_CERTIFICATE`, `APPLE_DEVELOPER_ID_CERTIFICATE_PASSWORD`, `APPLE_ID`, `APPLE_TEAM_ID` and `APPLE_APP_SPECIFIC_PASSWORD`; without them macOS builds are ad-hoc signed. `docs/install.md` is the per-OS install page.
+- Still open: the workflow on real runners and a real release-to-release update; Developer ID signing and notarization (if notarization rejects Velopack's `codesign --deep`, use `--signDisableDeep`); importing MRU and settings from an existing RMC-BestFit install; checks on KDE and X11; SignPath; a DMG if wanted; XGoodFit's own icon (the packages use RMC-BestFit's as a placeholder, `XGoodFitIcon` in `Directory.Build.props`). The bundle declares macOS 12.0, the highest minimum among its binaries; set it to .NET 10's own minimum before release.
+
 ### Phase 9: Verification & release (M)
 - Numerical reproducibility report across RIDs (model tests + scoped verification runs).
 - Visual parity sign-off (view × theme × OS).
@@ -661,7 +669,7 @@ Each slice includes its XAML and code-behind, its share of `RMC.BestFit.App.Test
   | OS | Location |
   |---|---|
   | Windows | `%AppData%`, `%LocalAppData%` |
-  | macOS | `~/Library/Application Support/RMC-BestFit` |
+  | macOS | `~/Library/Application Support/XGoodFit` |
   | Linux | XDG dirs (`~/.config`, `~/.local/share`) |
 
   Linux file systems are case-sensitive, so resource and asset names must match exactly.
@@ -689,7 +697,7 @@ On macOS, swapping files inside a signed `.app` breaks the signature.
 - delta updates;
 - built-in signing and notarization.
 
-The port publishes releases from its own repository. `SoftwareUpdate` and its updater exe are not ported.
+The port publishes releases from its own repository. `SoftwareUpdate`'s `IUpdateService` stays, so the main window's update UI is unchanged; `XGoodFit.Platform.VelopackUpdateService` implements it (same states, events and skipped versions), and upstream's `GitHubUpdateService` and updater exe go unused. Velopack is pinned at 1.2.161.
 
 Velopack is a fast-moving 1.x release, so pin its version. Note that its macOS updater checks file hashes, not the code signature.
 

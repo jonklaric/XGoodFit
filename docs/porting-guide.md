@@ -32,6 +32,10 @@ compared with its upstream original.
   on Avalonia's UI thread.
 - `scripts/porting/xgf_port.py` ports a file by exact, checked replacements: it copies the upstream
   file and fails if a replacement doesn't match, so everything else stays as upstream wrote it.
+- The application's startup (RMC.BestFit.App) follows `packaging/README.md`: the first line of
+  `Main` is `PlatformStartup.BuildVelopackApp(args)?.Run();`, `OnFrameworkInitializationCompleted`
+  creates `FileOpenRequests.For(this)` and handles `FilesOpened`, and the main window's
+  `UpdateService` is a `VelopackUpdateService` when the app is installed (`XGoodFit.Platform`).
 - Native libraries are build outputs (`native/build-hecdss.sh` writes `artifacts/native`), never
   committed. The project that wraps one ships it as `runtimes/<rid>/native` assets, which reach every
   project that references it (see `src/Hec.Dss`).
@@ -243,6 +247,8 @@ Watch for others when porting:
     `window.Activate()` first.
   - A mouse-down and move shows Dock's docking targets in the window's adorner layer, and
     `NavigatorWindow` can be shown directly.
+  - Tests can't implement Avalonia 12's `IActivatableLifetime` or `IStorageFile` (they're marked not
+    implementable by user code): test what's built on them through the code's own seams.
 - **Popups in captures:** set `Popup.ShouldUseOverlayLayer`. The headless render timer uses real time.
 - **Bindings in templates:** a `{Binding}` inside a ControlTemplate applies at LocalValue priority, so
   no style can override it. Use `TemplateBinding`, or a style, where a theme must win.
