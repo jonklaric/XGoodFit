@@ -52,8 +52,11 @@ so `dotnet build` afterwards copies them to every project that references it. Th
   and zlib stay inside the library (`--exclude-libs`).
 - **No Java library**: `javaHeclib` isn't built.
 
-The macOS libraries target macOS 11.0, the first with Apple silicon. The script prints the libraries
-each build loads, and fails if one of them is a separate zlib or the Visual C++ runtime.
+The macOS libraries target macOS 11.0, the first with Apple silicon. On Linux, the library needs the
+glibc version it was built against or a later one, for some functions: built on a current distribution
+(glibc 2.33 or later), it needs glibc 2.33, so release builds should come from an older one. The
+script prints the libraries each build loads, and fails if one of them is a separate zlib or the
+Visual C++ runtime.
 
 `--test` also builds HEC's C tests (`test/C` and `test/Dss-C`, as HEC's own CMake registers them)
 and HEC's test of the shared library's API (`test/C/hecdss_test.c`), and runs them with CTest. On a

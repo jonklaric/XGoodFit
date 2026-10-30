@@ -92,7 +92,8 @@ library_dependencies() {
   case "$1" in
     *.dll) if command -v objdump >/dev/null 2>&1; then objdump -p "$1" | awk '/DLL Name:/ { print $3 }'; fi ;;
     *.so) if command -v objdump >/dev/null 2>&1; then objdump -p "$1" | awk '$1 == "NEEDED" { print $2 }'; fi ;;
-    *.dylib) otool -L "$1" | tail -n +2 | awk '{ print $1 }' ;;
+    # otool -L also lists the library's own install name (otool -D), which isn't a dependency.
+    *.dylib) otool -L "$1" | tail -n +2 | awk '{ print $1 }' | grep -vxF "$(otool -D "$1" | tail -n +2)" ;;
   esac
 }
 
