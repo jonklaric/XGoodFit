@@ -116,8 +116,15 @@ namespace Hec.Dss.Tests
       }
       // Make sure the two really are different libraries.
       IntPtr native = NativeLibrary.Load(reference.NativeLibrary);
-      Assert.AreNotEqual(DssNative.Library == IntPtr.Zero ? NativeLibraryTests.LoadBundledLibrary() : DssNative.Library, native);
-      Assert.IsNull(DssNative.ReadApiVersion(native), "The reference should be HEC's 7-IU-6, which has no hec_dss_api_version");
+      try
+      {
+        Assert.AreNotEqual(DssNative.Library == IntPtr.Zero ? NativeLibraryTests.LoadBundledLibrary() : DssNative.Library, native);
+        Assert.IsNull(DssNative.ReadApiVersion(native), "The reference should be HEC's 7-IU-6, which has no hec_dss_api_version");
+      }
+      finally
+      {
+        NativeLibrary.Free(native);
+      }
       return referenceWrapper;
     }
 
