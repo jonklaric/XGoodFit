@@ -158,7 +158,7 @@ internal static class TestSupport
     }
 
     /// <summary>Clicks a button as the user does, raising its Click event.</summary>
-    public static void Click(this Button button) => button.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+    public static void RaiseClick(this Button button) => button.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
 
     /// <summary>The button with the given content in a window.</summary>
     public static Button ButtonWithContent(this Window window, string content) =>

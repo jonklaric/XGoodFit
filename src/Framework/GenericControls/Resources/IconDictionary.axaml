@@ -2,6 +2,9 @@
     XGoodFit port of upstream's Resources/IconDictionary.xaml: the XAML namespace changes, and the
     calendar icon's start and end line caps (both Round) are Avalonia's single StrokeLineCap. Avalonia
     has the same drawing, brush and shape elements, and x:Shared="False".
+    The three sort filter icons are x:Shared="False" here, as upstream's other icons are: WPF's
+    ContentPresenter takes a shared element from the presenter that showed it before (a closed menu's
+    item), where Avalonia's throws, so each new menu (TableViewer's column menu) needs its own.
 -->
 <ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
@@ -331,7 +334,7 @@
     <!-- ═══════════════════════════════════════════════════════════════════════════ -->
 
     <!-- Sort Ascending Filter - Solid funnel with up arrow -->
-    <Viewbox x:Key="SortAscFilterIcon" Width="16" Height="16">
+    <Viewbox x:Key="SortAscFilterIcon" Width="16" Height="16" x:Shared="False">
         <Rectangle Width="16" Height="16">
             <Rectangle.Fill>
                 <DrawingBrush>
@@ -351,7 +354,7 @@
     </Viewbox>
 
     <!-- Sort Descending Filter - Solid funnel with down arrow -->
-    <Viewbox x:Key="SortDescFilterIcon" Width="16" Height="16">
+    <Viewbox x:Key="SortDescFilterIcon" Width="16" Height="16" x:Shared="False">
         <Rectangle Width="16" Height="16">
             <Rectangle.Fill>
                 <DrawingBrush>
@@ -371,7 +374,7 @@
     </Viewbox>
 
     <!-- Clear Filter - Solid funnel with red X -->
-    <Viewbox x:Key="ClearFilterIcon" Width="16" Height="16">
+    <Viewbox x:Key="ClearFilterIcon" Width="16" Height="16" x:Shared="False">
         <Rectangle Width="16" Height="16">
             <Rectangle.Fill>
                 <DrawingBrush>
