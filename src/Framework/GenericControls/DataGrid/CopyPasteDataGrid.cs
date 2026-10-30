@@ -210,6 +210,8 @@ namespace GenericControls
             AddHandler(PointerPressedEvent, Navigation_End, RoutingStrategies.Tunnel, handledEventsToo: true);
             CurrentCellChanged += (sender, e) => SelectForNavigation();
             SelectedCellsChanged += (sender, e) => NoteSelectionAnchor();
+            // XGoodFit port: the cells show their values through one-way bindings, as WPF's do (DataGridDisplayBinding).
+            DataGridDisplayBinding.Register();
 
         }
 
