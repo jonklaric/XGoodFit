@@ -536,7 +536,8 @@ namespace DatabaseControls
             PreviewGrid.Columns.Add(new DataGridTextColumn
             {
                 Header = "Row",
-                Binding = new Avalonia.Data.Binding("Row"),
+                // XGoodFit port: the row number turns into text with WPF's binding culture (en-US).
+                Binding = new Avalonia.Data.Binding("Row") { ConverterCulture = FormattingCulture.Current },
                 Width = new DataGridLength(45),
                 IsReadOnly = true
             });
