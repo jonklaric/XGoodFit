@@ -73,6 +73,10 @@ if(XGF_HECDSS_TESTS)
   add_executable(hecdss_test "${XGF_HECDSS_SOURCE_DIR}/test/C/hecdss_test.c")
   target_link_libraries(hecdss_test PRIVATE hecdss)
   target_include_directories(hecdss_test PRIVATE "${XGF_HECDSS_SOURCE_DIR}/heclib/hecdss")
+  if(NOT MSVC)
+    # It calls unlink without including <unistd.h>, which GCC 14+ and Clang 16+ reject.
+    target_compile_options(hecdss_test PRIVATE -include unistd.h)
+  endif()
   add_test(NAME hecdss_test COMMAND hecdss_test)
   if(WIN32)
     set_property(TEST hecdss_test PROPERTY ENVIRONMENT_MODIFICATION
