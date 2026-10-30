@@ -1,11 +1,18 @@
 using System;
+using System.Globalization;
 using System.Runtime.CompilerServices;
+using Avalonia;
 using Avalonia.Data;
+using Avalonia.Data.Converters;
 using OxyPlot.Wpf;
 
 // XGoodFit port: Avalonia's binding API. A binding is cleared by disposing its expression, which
 // removes it, as WPF's BindingOperations.ClearBinding did; clearing the value alone would leave it
-// bound.
+// bound. WPF also clears a one-way binding when its target is given a local value, which is how
+// the user's edit of a bound title (in the plot properties editor) detaches the axis; Avalonia keeps
+// the binding, which would put the label back at its next change. So TitleBinding stops the binding
+// from setting the title again once anything else sets it, and IsDefaultManaged counts such a
+// released binding as cleared. (Disposing it would reset the title.)
 
 namespace RMC.BestFit.UI
 {
@@ -36,6 +43,11 @@ namespace RMC.BestFit.UI
         private static readonly ConditionalWeakTable<Axis, TitleState> AxisStates = new ConditionalWeakTable<Axis, TitleState>();
 
         /// <summary>
+        /// XGoodFit port: the label binding of each bound axis (see <see cref="TitleBinding"/>).
+        /// </summary>
+        private static readonly ConditionalWeakTable<Axis, TitleBinding> TitleBindings = new ConditionalWeakTable<Axis, TitleBinding>();
+
+        /// <summary>
         /// Determines whether an axis title is still managed by an automatic data-label default.
         /// </summary>
         /// <param name="axis">The axis whose title should be evaluated.</param>
@@ -51,7 +63,8 @@ namespace RMC.BestFit.UI
         {
             if (axis == null) throw new ArgumentNullException(nameof(axis));
 
-            if (BindingOperations.GetBindingExpressionBase(axis, Axis.TitleProperty) != null)
+            if (BindingOperations.GetBindingExpressionBase(axis, Axis.TitleProperty) != null
+                && !(TitleBindings.TryGetValue(axis, out var titleBinding) && titleBinding.IsReleased))
             {
                 return true;
             }
@@ -92,6 +105,7 @@ namespace RMC.BestFit.UI
                 return false;
             }
 
+            if (TitleBindings.TryGetValue(axis, out var titleBinding)) titleBinding.Detach();
             BindingOperations.GetBindingExpressionBase(axis, Axis.TitleProperty)?.Dispose();
             axis.Title = title;
             RememberAutomaticTitle(axis, title);
@@ -135,18 +149,21 @@ namespace RMC.BestFit.UI
                 return false;
             }
 
+            // XGoodFit port: the binding's converter formats the label (as StringFormat would) and
+            // notes each title it gives the axis, so that a title set by anything else releases the
+            // binding, as WPF's local value cleared it.
+            if (TitleBindings.TryGetValue(axis, out var previous)) previous.Detach();
+            var titleBinding = new TitleBinding(axis, stringFormat);
             var binding = new Binding(sourcePropertyName)
             {
                 Source = source,
                 Mode = BindingMode.OneWay,
-                UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
+                UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged,
+                Converter = titleBinding
             };
-            if (!string.IsNullOrEmpty(stringFormat))
-            {
-                binding.StringFormat = stringFormat;
-            }
 
             axis.Bind(Axis.TitleProperty, binding);
+            titleBinding.Attach();
             RememberAutomaticTitle(axis, currentDefaultTitle);
             return true;
         }
@@ -177,6 +194,82 @@ namespace RMC.BestFit.UI
         private static void RememberAutomaticTitle(Axis axis, string title)
         {
             AxisStates.GetOrCreateValue(axis).AutomaticTitle = title ?? string.Empty;
+        }
+
+        /// <summary>
+        /// XGoodFit port: a label binding of an axis title that stops, as WPF's one-way binding was
+        /// cleared, when anything else sets the title.
+        /// </summary>
+        /// <remarks>
+        /// As the binding's converter, it formats the label (WPF's StringFormat) and notes the title it
+        /// gives the axis. After a title change it didn't make (the plot properties editor, undo,
+        /// loading plot settings) it's released: it gives the axis no more titles, and
+        /// <see cref="IsDefaultManaged"/> doesn't count it. It isn't disposed, because disposing an
+        /// Avalonia binding resets the title it holds. One difference remains: setting the title to the
+        /// text it already has raises no change, so it doesn't release the binding, where WPF's local
+        /// value would have cleared it.
+        /// </remarks>
+        private sealed class TitleBinding : IValueConverter
+        {
+            private readonly Axis _axis;
+            private readonly string _stringFormat;
+            private bool _expectingTitle;
+            private object _expectedTitle;
+
+            /// <summary>Whether a title set by something else has released the binding.</summary>
+            public bool IsReleased { get; private set; }
+
+            /// <summary>Creates the binding's converter for an axis.</summary>
+            /// <param name="axis">The bound axis.</param>
+            /// <param name="stringFormat">The format of the title, or null for the label itself.</param>
+            public TitleBinding(Axis axis, string stringFormat)
+            {
+                _axis = axis;
+                _stringFormat = stringFormat;
+            }
+
+            /// <summary>Starts watching the axis's title for changes the binding didn't make.</summary>
+            public void Attach()
+            {
+                TitleBindings.AddOrUpdate(_axis, this);
+                // Avalonia's property change event, which the axis's own INotifyPropertyChanged event hides.
+                ((AvaloniaObject)_axis).PropertyChanged += Axis_PropertyChanged;
+            }
+
+            /// <summary>Stops watching the title and forgets the binding, which the caller replaces or clears.</summary>
+            public void Detach()
+            {
+                IsReleased = true;
+                ((AvaloniaObject)_axis).PropertyChanged -= Axis_PropertyChanged;
+                if (TitleBindings.TryGetValue(_axis, out var current) && ReferenceEquals(current, this))
+                    TitleBindings.Remove(_axis);
+            }
+
+            private void Axis_PropertyChanged(object sender, AvaloniaPropertyChangedEventArgs e)
+            {
+                if (e.Property != Axis.TitleProperty) return;
+                if (_expectingTitle && Equals(e.NewValue, _expectedTitle))
+                {
+                    _expectingTitle = false;
+                    return;
+                }
+                IsReleased = true;
+                ((AvaloniaObject)_axis).PropertyChanged -= Axis_PropertyChanged;
+            }
+
+            /// <inheritdoc/>
+            public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+            {
+                if (IsReleased) return BindingOperations.DoNothing;
+                object title = !string.IsNullOrEmpty(_stringFormat) ? string.Format(culture, _stringFormat, value) : value;
+                _expectingTitle = true;
+                _expectedTitle = title;
+                return title;
+            }
+
+            /// <inheritdoc/>
+            public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) =>
+                BindingOperations.DoNothing;
         }
 
         /// <summary>
