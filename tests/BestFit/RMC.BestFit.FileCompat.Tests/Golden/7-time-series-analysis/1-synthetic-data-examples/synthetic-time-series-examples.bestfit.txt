@@ -1,0 +1,134 @@
+bestfit-file-description	1
+file	7-time-series-analysis/1-synthetic-data-examples/synthetic-time-series-examples.bestfit	sha=f8fde2093f624fec	tables=3	cells=682
+pragma	encoding	UTF-8
+pragma	journal_mode	wal
+pragma	user_version	0
+pragma	application_id	0
+pragma	auto_vacuum	0
+table	Project	sha=378e2b0979eae050	sql=bf204117c9f875b1	rows=1
+column	0	Name	TEXT
+column	1	Description	TEXT
+column	2	CreationDate	TEXT
+column	3	LastModified	TEXT
+column	4	FullFileName	TEXT
+column	5	SoftwareVersion	TEXT
+column	6	AvalonDockLayout	TEXT
+column	7	ProjectExplorerLayout	TEXT
+column	8	AvalonDockLayoutPrevious	TEXT
+column	9	ProjectExplorerLayoutPrevious	TEXT
+row	1	t:synthetic-time-series-examples	t#292:47c2990932c4bcd0	t:3/20/2025 7:25:30 PM	t:9/16/2026 4:32:06 PM	p:{dir}\\synthetic-time-series-examples.bestfit	t:2.0.1	t#2113:90798319a88482c7/e0f62427c8d8a179:r	t#2672:a775f8a284d2d230/f800567a1bb34314:r	t#2113:f825124191b56a95/9f5a5567da080af5:r	t#2758:caa1c99b255e7778/f98ad295fd886873:r
+table	Time Series Analysis	sha=e0d8cb9cbe68cec2	sql=a9a9861c0c9bddd6	rows=12
+column	0	Name	TEXT
+column	1	Description	TEXT
+column	2	CreationDate	TEXT
+column	3	LastModified	TEXT
+column	4	TimeSeriesData	TEXT
+column	5	ARMAX	TEXT
+column	6	BayesianAnalysis	TEXT
+column	7	MCMCResults	BLOB
+column	8	UncertaintyAnalysisResults	TEXT
+column	9	TimeSeriesPlotSettings	TEXT
+column	10	ResidualPlotSettings	TEXT
+column	11	ResidualHistogramPlotSettings	TEXT
+column	12	ResidualQQPlotSettings	TEXT
+column	13	ResidualACFPlotSettings	TEXT
+column	14	ResidualPACFPlotSettings	TEXT
+column	15	KernelDensityPlotSettings	TEXT
+column	16	HistogramPlotSettings	TEXT
+column	17	BivariatePlotSettings	TEXT
+column	18	MeanLikelihoodPlotSettings	TEXT
+column	19	AutocorrelationPlotSettings	TEXT
+column	20	MarkovChainTracesPlotSettings	TEXT
+column	21	Covariates	TEXT
+column	22	ARIMAX	TEXT
+column	23	AnalysisResults	TEXT
+column	24	InfluenceDiagnosticsPlotSettings	TEXT
+column	25	MCMCReport	TEXT
+column	26	ForecastingTimeSteps	INT4
+column	27	AnalysisXml	TEXT
+column	28	PreV201Results	BOOLEAN
+row	1	t:Intercept	t#176:e12841aabd708b7a	t:4/24/2026 5:12:17 PM	t:9/16/2026 4:24:57 PM	t:Intercept	n	t#731:2a8f84694cf0b789	b#704117:e399828c21c9b29d>z#2342265:7e6ada883f1d7b6e	n	t#10234:aa71c915d95df7bd/5180c637f52c34de:r	t#6210:fd7d4c64073b4f4c/694dce853fbcbdb1:r	t#6116:e370b037324aacd3/c4feee36af6a94b1:r	t#6217:4cb3ce95fcc3ff2c/fe4aaf32148ea2ff:r	t#6907:923b977f2cab5e2f/6305d26989ebc948:r	t#6947:de29cf24d4bb35a5/aa13013a710ac629:r	t#5677:2a9e1b37f73d659f/06b38e42bfde73d8:r	t#5288:9441b123bf24cc07/482475a4b391b2c4:r	t#7711:a60ff63510896a64/815f1cad28c96a9a:r	t#5539:5a3f6aaf1cd3b0c4/8553b05d14efe043:r	t#6963:0440062de871efac/52b2135d9a975656:r	t#4592:e00b33408b532b25/334d3790af79139f:r	t:	t#899:887f4cd76c5ab115/b465d26fff4ec967:r	t#23975:2bd661e00d808fcc	t#5319:2ca31fc73e41c75e/3067f3008c634549:r	t:	i:0	t#814:d0400dd7a41aa4c5/f5561e2ea11cd620:r	i:0
+row	2	t:Intercept + Linear Trend	t#193:0fa459e4a8e8520d	t:4/24/2026 5:13:04 PM	t:9/16/2026 4:24:57 PM	t:Intercept + Linear Trend	n	t#733:0e63e3c00eda0514	b#1190826:8266373a388a7ff0>z#3602968:7c3c5d893ed0aa2c	n	t#10234:aa71c915d95df7bd/5180c637f52c34de:r	t#6210:fd7d4c64073b4f4c/694dce853fbcbdb1:r	t#6116:e370b037324aacd3/c4feee36af6a94b1:r	t#6217:4cb3ce95fcc3ff2c/fe4aaf32148ea2ff:r	t#6907:923b977f2cab5e2f/6305d26989ebc948:r	t#6947:de29cf24d4bb35a5/aa13013a710ac629:r	t#5677:2a9e1b37f73d659f/06b38e42bfde73d8:r	t#5288:9441b123bf24cc07/482475a4b391b2c4:r	t#7711:3f2752c660b31d4f/0ab60fffc315d08f:r	t#5539:5a3f6aaf1cd3b0c4/8553b05d14efe043:r	t#6962:702d9c04b47b122d/8cc60d41e355bfa9:r	t#4592:e00b33408b532b25/334d3790af79139f:r	t:	t#1132:1b91c23a66a0711e/865225a39b1e589d:r	t#23905:cf78d87abb358367	t#5319:2ca31fc73e41c75e/3067f3008c634549:r	t:	i:0	t#816:f91e5edea5292267/9925e62c84286804:r	i:0
+row	3	t:Intercept + Quadratic Trend	t#199:b26c22f0ef6c0215	t:4/24/2026 5:13:41 PM	t:9/16/2026 4:24:57 PM	t:Intercept + Quadratic Trend	n	t#732:fc90d0a5338f8ee6	b#1828219:132dcaa69e5b59ae>z#5206030:2e711534ba451083	n	t#10234:aa71c915d95df7bd/5180c637f52c34de:r	t#6210:fd7d4c64073b4f4c/694dce853fbcbdb1:r	t#6116:e370b037324aacd3/c4feee36af6a94b1:r	t#6217:4cb3ce95fcc3ff2c/fe4aaf32148ea2ff:r	t#6907:923b977f2cab5e2f/6305d26989ebc948:r	t#6947:de29cf24d4bb35a5/aa13013a710ac629:r	t#5677:2a9e1b37f73d659f/06b38e42bfde73d8:r	t#5288:9441b123bf24cc07/482475a4b391b2c4:r	t#7717:46faff561072a9e3/c2bcdd8a6c94154e:r	t#5539:5a3f6aaf1cd3b0c4/8553b05d14efe043:r	t#6962:702d9c04b47b122d/8cc60d41e355bfa9:r	t#4592:e00b33408b532b25/334d3790af79139f:r	t:	t#1440:e91a2b9f93a16d26/b6b2f484c5b2507e:r	t#23929:cb92ebb3146efa74	t#5319:2ca31fc73e41c75e/3067f3008c634549:r	t:	i:0	t#815:56a684f844ff574e/4116a3e4460b7ccf:r	i:0
+row	4	t:Intercept + Cubic Trend	t#191:2c55c470c2d16dd5	t:4/24/2026 5:14:24 PM	t:9/16/2026 4:24:57 PM	t:Intercept + Cubic Trend	n	t#734:b7ec323c79d029d2	b#2587577:217ddc02c81a5bcc>z#7098143:4fec6f039d64b8ca	n	t#10234:08ae293aaa680aa8/9823448623222946:r	t#6210:fd7d4c64073b4f4c/694dce853fbcbdb1:r	t#6116:e370b037324aacd3/c4feee36af6a94b1:r	t#6217:4cb3ce95fcc3ff2c/fe4aaf32148ea2ff:r	t#6922:0ce0581383c3a78a/d121621eb2622d0e:r	t#6947:acf53f282b01a00c/4db498818034643c:r	t#5677:2a9e1b37f73d659f/06b38e42bfde73d8:r	t#5288:9441b123bf24cc07/482475a4b391b2c4:r	t#7719:7063a1e663c55ae6/001bfc2198474f54:r	t#5539:5a3f6aaf1cd3b0c4/8553b05d14efe043:r	t#6962:702d9c04b47b122d/8cc60d41e355bfa9:r	t#4592:e00b33408b532b25/334d3790af79139f:r	t:	t#1621:84dc59da39e97f67/49a33a4b11a11e6a:r	t#24725:1a36e904246703a5	t#5319:2ca31fc73e41c75e/3067f3008c634549:r	t:	i:0	t#817:4371d22f4e1dd94c/f7b39e17a6f43a32:r	i:0
+row	5	t:AR(1)	t#172:4b8d9a8e320acbce	t:4/24/2026 5:19:53 PM	t:9/16/2026 4:24:58 PM	t:AR(1)	n	t#733:b30d192b2ea2b578	b#1220483:390747012d1a25bd>z#3597547:105b16a60e9630eb	n	t#10234:08ae293aaa680aa8/9823448623222946:r	t#6210:fd7d4c64073b4f4c/694dce853fbcbdb1:r	t#6116:e370b037324aacd3/c4feee36af6a94b1:r	t#6217:4cb3ce95fcc3ff2c/fe4aaf32148ea2ff:r	t#6922:0ce0581383c3a78a/d121621eb2622d0e:r	t#6947:acf53f282b01a00c/4db498818034643c:r	t#5677:2a9e1b37f73d659f/06b38e42bfde73d8:r	t#5288:9441b123bf24cc07/482475a4b391b2c4:r	t#7714:84b0654223b43fdd/fea6c96c805fd046:r	t#5539:5a3f6aaf1cd3b0c4/8553b05d14efe043:r	t#6962:702d9c04b47b122d/8cc60d41e355bfa9:r	t#4592:e00b33408b532b25/334d3790af79139f:r	t:	t#1156:d58663f0e89cfd4a/e1e429f86a79e308:r	t#24456:0067966da8c871b8	t#5319:2ca31fc73e41c75e/3067f3008c634549:r	t:	i:0	t#816:f87728d2e26f3acf/6721bb3286bd7b2b:r	i:0
+row	6	t:AR(3)	t#172:703bf6d00e20576f	t:4/24/2026 5:20:42 PM	t:9/16/2026 4:24:58 PM	t:AR(3)	n	t#734:e0fa9404a9b5093b	b#2608794:40a65954ffa0035f>z#6995548:d38c9a3e86c70684	n	t#10234:08ae293aaa680aa8/9823448623222946:r	t#6210:fd7d4c64073b4f4c/694dce853fbcbdb1:r	t#6116:e370b037324aacd3/c4feee36af6a94b1:r	t#6217:4cb3ce95fcc3ff2c/fe4aaf32148ea2ff:r	t#6922:0ce0581383c3a78a/d121621eb2622d0e:r	t#6947:acf53f282b01a00c/4db498818034643c:r	t#5677:2a9e1b37f73d659f/06b38e42bfde73d8:r	t#5288:9441b123bf24cc07/482475a4b391b2c4:r	t#7711:2309d41717cc6aff/e1f2a1cf6b8ad8d6:r	t#5539:5a3f6aaf1cd3b0c4/8553b05d14efe043:r	t#6963:0440062de871efac/52b2135d9a975656:r	t#4592:e00b33408b532b25/334d3790af79139f:r	t:	t#1608:45a4204c70d3fa35/8b20883942fd3bc4:r	t#24452:7ca5706d3e9b8f2a	t#5319:2ca31fc73e41c75e/3067f3008c634549:r	t:	i:0	t#817:07f274c0cd659ec0/575a8984942f6f77:r	i:0
+row	7	t:MA(1)	t#172:1cc01f0639e2b1d7	t:4/24/2026 5:21:43 PM	t:9/16/2026 4:24:58 PM	t:MA(1)	n	t#734:e3f49ab6e404969b	b#1218106:700a67369c2f7a76>z#3595085:d91cc1a87aaf1340	n	t#10234:08ae293aaa680aa8/9823448623222946:r	t#6210:fd7d4c64073b4f4c/694dce853fbcbdb1:r	t#6116:e370b037324aacd3/c4feee36af6a94b1:r	t#6217:4cb3ce95fcc3ff2c/fe4aaf32148ea2ff:r	t#6922:0ce0581383c3a78a/d121621eb2622d0e:r	t#6962:6b0fe816d3acdd6b/1739920957ec0fe4:r	t#5677:2a9e1b37f73d659f/06b38e42bfde73d8:r	t#5288:9441b123bf24cc07/482475a4b391b2c4:r	t#7714:1707e4448e4f6205/14862f88a7a18742:r	t#5539:5a3f6aaf1cd3b0c4/8553b05d14efe043:r	t#6963:0440062de871efac/52b2135d9a975656:r	t#4592:e00b33408b532b25/334d3790af79139f:r	t:	t#1155:1d234fd8e6d5ab2f/7cb81ac8de28eedc:r	t#24460:51b606c3c0f6cbdb	t#5319:2ca31fc73e41c75e/3067f3008c634549:r	t:	i:0	t#817:fda197cf08589224/cc922a41880450ac:r	i:0
+row	8	t:MA(3)	t#172:fb74864cf16ab1a6	t:4/24/2026 5:22:23 PM	t:9/16/2026 4:24:58 PM	t:MA(3)	n	t#735:cb1aec069450a833	b#2660656:d1a329eb38187968>z#7123542:4b14acc66a1c896d	n	t#10234:08ae293aaa680aa8/9823448623222946:r	t#6210:fd7d4c64073b4f4c/694dce853fbcbdb1:r	t#6116:e370b037324aacd3/c4feee36af6a94b1:r	t#6217:4cb3ce95fcc3ff2c/fe4aaf32148ea2ff:r	t#6922:0ce0581383c3a78a/d121621eb2622d0e:r	t#6962:6b0fe816d3acdd6b/1739920957ec0fe4:r	t#5677:2a9e1b37f73d659f/06b38e42bfde73d8:r	t#5288:9441b123bf24cc07/482475a4b391b2c4:r	t#7715:c149492aa7144369/73f4b0fd4fd84d5f:r	t#5539:5a3f6aaf1cd3b0c4/8553b05d14efe043:r	t#6963:0440062de871efac/52b2135d9a975656:r	t#4592:e00b33408b532b25/334d3790af79139f:r	t:	t#1613:1d09c3d1d08e2c48/d64fc1685c6282a6:r	t#24429:ea28f2c8fdef11af	t#5319:2ca31fc73e41c75e/3067f3008c634549:r	t:	i:0	t#818:63977fb2c738618e/b1cc197398d8232d:r	i:0
+row	9	t:ARMA(1,1)	t#176:8fe6dfb982be3471	t:4/24/2026 5:23:37 PM	t:9/16/2026 4:24:58 PM	t:ARMA(1,1)	n	t#733:4d98d59a3e26a28d	b#1842315:62d07f6936eb1e19>z#5142334:96c15c8e494d26b1	n	t#10234:08ae293aaa680aa8/9823448623222946:r	t#6210:fd7d4c64073b4f4c/694dce853fbcbdb1:r	t#6116:e370b037324aacd3/c4feee36af6a94b1:r	t#6217:4cb3ce95fcc3ff2c/fe4aaf32148ea2ff:r	t#6907:afde398aaa9826ca/51cac0063226e47e:r	t#6947:acf53f282b01a00c/4db498818034643c:r	t#5677:2a9e1b37f73d659f/06b38e42bfde73d8:r	t#5288:9441b123bf24cc07/482475a4b391b2c4:r	t#7713:841ff6a7277d688b/8f285065cebb7d4e:r	t#5539:5a3f6aaf1cd3b0c4/8553b05d14efe043:r	t#6963:0440062de871efac/52b2135d9a975656:r	t#4592:e00b33408b532b25/334d3790af79139f:r	t:	t#1382:2b692874fd98aada/f3595b59ac0ef31a:r	t#24441:4169309d97217261	t#5319:2ca31fc73e41c75e/3067f3008c634549:r	t:	i:0	t#816:5c522975628c74e1/feeb7a24f3f3fcdf:r	i:0
+row	10	t:ARMA(2,2)	t#262:a66c2f42077365ac	t:4/24/2026 5:24:33 PM	t:9/16/2026 4:24:59 PM	t:ARMA(2,2)	n	t#735:0c922b2fbec7ef7b	b#2601913:3572d8b04463c5bb>z#6991603:019e6d7b63c01a47	n	t#10234:08ae293aaa680aa8/9823448623222946:r	t#6210:fd7d4c64073b4f4c/694dce853fbcbdb1:r	t#6116:e370b037324aacd3/c4feee36af6a94b1:r	t#6217:4cb3ce95fcc3ff2c/fe4aaf32148ea2ff:r	t#6907:afde398aaa9826ca/51cac0063226e47e:r	t#6947:acf53f282b01a00c/4db498818034643c:r	t#5677:2a9e1b37f73d659f/06b38e42bfde73d8:r	t#5288:9441b123bf24cc07/482475a4b391b2c4:r	t#7714:18fb5813581d0fd1/9232a5cbdae8b0c0:r	t#5539:5a3f6aaf1cd3b0c4/8553b05d14efe043:r	t#6963:0440062de871efac/52b2135d9a975656:r	t#4592:e00b33408b532b25/334d3790af79139f:r	t:	t#1608:04e8578f9973402f/4290469f3261d1dc:r	t#24476:4d73a4d6eba1e96a	t#5319:2ca31fc73e41c75e/3067f3008c634549:r	t:	i:0	t#818:65c7057bdeeff5bc/2415b11036dad051:r	i:0
+row	11	t:Intercept + Linear Trend + ARMA(1,1)	t#205:aeb54d3be38c66eb	t:4/24/2026 5:25:43 PM	t:9/16/2026 4:29:35 PM	t:Intercept + Linear Trend + ARMA(1,1)	n	t#734:dd25f9a9bd3e701e	b#2552269:a7610523d52fe1e7>z#6939935:05d490462b6bd57c	n	t#10234:db5b31e246c73dc2/9f2999f0917bfdd7:r	t#6210:fd7d4c64073b4f4c/694dce853fbcbdb1:r	t#6116:e370b037324aacd3/c4feee36af6a94b1:r	t#6217:4cb3ce95fcc3ff2c/fe4aaf32148ea2ff:r	t#6907:a29ac6b010a22248/df6b6c40ef00ae3e:r	t#6947:f0c6f4adc14ec9ac/bbbf97cc0b5a5b0e:r	t#5677:2a9e1b37f73d659f/06b38e42bfde73d8:r	t#5288:9441b123bf24cc07/482475a4b391b2c4:r	t#7711:c776c252b98345fa/3602d262edca47b7:r	t#5539:5a3f6aaf1cd3b0c4/8553b05d14efe043:r	t#6962:702d9c04b47b122d/8cc60d41e355bfa9:r	t#4592:e00b33408b532b25/334d3790af79139f:r	t:	t#1585:80adef80b2616de1/97b021b8befea823:r	t#23926:fadab755862daab4	t#5319:2ca31fc73e41c75e/3067f3008c634549:r	t:	i:0	t#817:28f354333536f2d7/25e6c76f7d0b2230:r	i:0
+row	12	t:Intercept + Linear Trend + LogTransform	t#292:30fb29c719205021	t:4/24/2026 5:27:02 PM	t:9/16/2026 4:24:59 PM	t:Intercept + Linear Trend + LogTransform	n	t#732:289044247755a034	b#1817731:5f58dde68d95f767>z#5266032:2d8d087de312b61a	n	t#10234:52584d1e27061634/cc6beed7a17e701f:r	t#6210:fd7d4c64073b4f4c/694dce853fbcbdb1:r	t#6116:e370b037324aacd3/c4feee36af6a94b1:r	t#6217:4cb3ce95fcc3ff2c/fe4aaf32148ea2ff:r	t#6922:59c939556a1b224d/79a38936b77a5f16:r	t#6962:4f4472c8ae53af83/7f477e36e757bf6f:r	t#5677:2a9e1b37f73d659f/06b38e42bfde73d8:r	t#5288:9441b123bf24cc07/482475a4b391b2c4:r	t#7716:3d581180178d82d4/16ec938aff4d42de:r	t#5539:5a3f6aaf1cd3b0c4/8553b05d14efe043:r	t#6963:0440062de871efac/52b2135d9a975656:r	t#4592:e00b33408b532b25/334d3790af79139f:r	t:	t#1402:0da3fddca210a3e3/903987e525acfd68:r	t#23957:8c70f90a5416a2e3	t#5319:2ca31fc73e41c75e/3067f3008c634549:r	t:	i:0	t#815:62efb9a5853184bb/6c9411ce069301a0:r	i:0
+table	Time Series Data	sha=4807e351888880c1	sql=f88acb88f3ac8ca8	rows=12
+column	0	Name	TEXT
+column	1	Description	TEXT
+column	2	CreationDate	TEXT
+column	3	LastModified	TEXT
+column	4	TimeSeries	TEXT
+column	5	UnitLabel	TEXT
+column	6	EntryMethod	TEXT
+column	7	SeriesType	TEXT
+column	8	HECDSSFullFilename	TEXT
+column	9	HECDSSDataPathname	TEXT
+column	10	GHCNSiteNumber	TEXT
+column	11	USGSSiteNumber	TEXT
+column	12	DepthUnit	TEXT
+column	13	TimeInterval	TEXT
+column	14	StartDateTime	TEXT
+column	15	TimeSeriesPlotSettings	TEXT
+column	16	SeasonalityPlotSettings	TEXT
+column	17	DurationPlotSettings	TEXT
+column	18	CHMNSiteNumber	TEXT
+column	19	ABOMSiteNumber	TEXT
+column	20	DischargeUnit	TEXT
+column	21	HeightUnit	TEXT
+column	22	USGSRawText	TEXT
+column	23	ACFPlotSettings	TEXT
+column	24	PACFPlotSettings	TEXT
+column	25	TimeSeriesCompressed	BLOB
+column	26	USGSRawTextCompressed	BLOB
+row	1	t:Intercept	t#276:901d1bec2cf09c08	t:3/20/2025 7:26:01 PM	t:3/20/2025 7:26:24 PM	t:	t:Value	t:Manual	t:DailyDischarge	t:	t:	t:00000000000	t:00000000	t:Inches	t:OneMonth	t:1949-01-01T00:00:00.0000000	t#5543:7d641adc48be4738/9cbc57a62401f16a:r	t#4655:12f42fd3ded594be/8889f66cfe695e16:r	t:	t:0000000	t:000000	t:CubicFeetPerSecond	t:Feet	t:	t#5194:1a97dc24e1f2b715/0be99afdfc438ff8:r	t#5225:31bfb1a0b6872000/18c445572bf7e167:r	b#3102:c2451220b294a430>z#24880:b5ebc3d73b4aabcc/8c77c55f60333b01:r	b#0:e3b0c44298fc1c14
+row	2	t:Intercept + Linear Trend	t#276:901d1bec2cf09c08	t:3/20/2025 7:29:39 PM	t:3/20/2025 7:30:42 PM	t:	t:Value	t:Manual	t:DailyDischarge	t:	t:	t:00000000000	t:00000000	t:Inches	t:OneMonth	t:1949-01-01T00:00:00.0000000	t#5546:91a244bfcdce3f84/1f64c7d1b123d6dd:r	t#4655:12f42fd3ded594be/8889f66cfe695e16:r	t:	t:0000000	t:000000	t:CubicFeetPerSecond	t:Feet	t:	t#5194:1a97dc24e1f2b715/0be99afdfc438ff8:r	t#5225:31bfb1a0b6872000/18c445572bf7e167:r	b#3349:f019a87a4b6708c5>z#25294:e1a36985752cb59f/5db89989f2a148dd:r	b#0:e3b0c44298fc1c14
+row	3	t:Intercept + Quadratic Trend	t#276:901d1bec2cf09c08	t:3/20/2025 7:31:58 PM	t:3/20/2025 7:51:42 PM	t:	t:Value	t:Manual	t:DailyDischarge	t:	t:	t:00000000000	t:00000000	t:Inches	t:OneMonth	t:1949-01-01T00:00:00.0000000	t#5546:91a244bfcdce3f84/1f64c7d1b123d6dd:r	t#4655:12f42fd3ded594be/8889f66cfe695e16:r	t:	t:0000000	t:000000	t:CubicFeetPerSecond	t:Feet	t:	t#5194:1a97dc24e1f2b715/0be99afdfc438ff8:r	t#5225:31bfb1a0b6872000/18c445572bf7e167:r	b#3296:e68915770f236b9e>z#25045:a65788202fa5d22c/adbc78c70ba156b0:r	b#0:e3b0c44298fc1c14
+row	4	t:Intercept + Cubic Trend	t#276:901d1bec2cf09c08	t:3/20/2025 7:32:14 PM	t:3/20/2025 7:52:00 PM	t:	t:Value	t:Manual	t:DailyDischarge	t:	t:	t:00000000000	t:00000000	t:Inches	t:OneMonth	t:1949-01-01T00:00:00.0000000	t#5546:91a244bfcdce3f84/1f64c7d1b123d6dd:r	t#4655:12f42fd3ded594be/8889f66cfe695e16:r	t:	t:0000000	t:000000	t:CubicFeetPerSecond	t:Feet	t:	t#5194:1a97dc24e1f2b715/0be99afdfc438ff8:r	t#5225:31bfb1a0b6872000/18c445572bf7e167:r	b#3438:4afe73f4858d8838>z#25344:6a3d756caa0ba088/5b472bc11be6ebea:r	b#0:e3b0c44298fc1c14
+row	5	t:AR(1)	t#276:901d1bec2cf09c08	t:3/21/2025 1:39:43 AM	t:3/21/2025 1:39:54 AM	t:	t:Value	t:Manual	t:DailyDischarge	t:	t:	t:00000000000	t:00000000	t:Inches	t:OneMonth	t:1949-01-01T00:00:00.0000000	t#5546:91a244bfcdce3f84/1f64c7d1b123d6dd:r	t#4655:12f42fd3ded594be/8889f66cfe695e16:r	t:	t:0000000	t:000000	t:CubicFeetPerSecond	t:Feet	t:	t#5194:1a97dc24e1f2b715/0be99afdfc438ff8:r	t#5225:31bfb1a0b6872000/18c445572bf7e167:r	b#3430:3bb993a05c9ea023>z#25174:25b74a61fa68f245/198e056f82b1446f:r	b#0:e3b0c44298fc1c14
+row	6	t:AR(3)	t#276:901d1bec2cf09c08	t:3/21/2025 2:19:38 AM	t:3/21/2025 3:11:27 AM	t:	t:Value	t:Manual	t:DailyDischarge	t:	t:	t:00000000000	t:00000000	t:Inches	t:OneMonth	t:1949-01-01T00:00:00.0000000	t#5546:91a244bfcdce3f84/1f64c7d1b123d6dd:r	t#4655:12f42fd3ded594be/8889f66cfe695e16:r	t:	t:0000000	t:000000	t:CubicFeetPerSecond	t:Feet	t:	t#5194:1a97dc24e1f2b715/0be99afdfc438ff8:r	t#5225:31bfb1a0b6872000/18c445572bf7e167:r	b#3426:58e3237affef0732>z#25151:c3f6abb8d5453dbd/9687fb658405c5b0:r	b#0:e3b0c44298fc1c14
+row	7	t:MA(1)	t#276:901d1bec2cf09c08	t:3/21/2025 3:16:44 AM	t:3/21/2025 3:17:12 AM	t:	t:Value	t:Manual	t:DailyDischarge	t:	t:	t:00000000000	t:00000000	t:Inches	t:OneMonth	t:1949-01-01T00:00:00.0000000	t#5546:91a244bfcdce3f84/1f64c7d1b123d6dd:r	t#4655:12f42fd3ded594be/8889f66cfe695e16:r	t:	t:0000000	t:000000	t:CubicFeetPerSecond	t:Feet	t:	t#5194:1a97dc24e1f2b715/0be99afdfc438ff8:r	t#5225:31bfb1a0b6872000/18c445572bf7e167:r	b#3456:df8d7c08a6f61267>z#25269:f21f84ff1a1f0f87/bc6d3a10794b3d35:r	b#0:e3b0c44298fc1c14
+row	8	t:MA(3)	t#276:901d1bec2cf09c08	t:3/21/2025 3:17:55 AM	t:3/21/2025 3:20:57 AM	t:	t:Value	t:Manual	t:DailyDischarge	t:	t:	t:00000000000	t:00000000	t:Inches	t:OneMonth	t:1949-01-01T00:00:00.0000000	t#5562:c02bb752e987847c/ccec640432d2ab28:r	t#4655:12f42fd3ded594be/8889f66cfe695e16:r	t:	t:0000000	t:000000	t:CubicFeetPerSecond	t:Feet	t:	t#5194:1a97dc24e1f2b715/0be99afdfc438ff8:r	t#5225:31bfb1a0b6872000/18c445572bf7e167:r	b#3454:40c1542027b7cbe7>z#25198:5c281036b259441e/c629fc79773789ef:r	b#0:e3b0c44298fc1c14
+row	9	t:ARMA(1,1)	t#276:901d1bec2cf09c08	t:3/21/2025 3:35:36 AM	t:3/21/2025 3:35:43 AM	t:	t:Value	t:Manual	t:DailyDischarge	t:	t:	t:00000000000	t:00000000	t:Inches	t:OneMonth	t:1949-01-01T00:00:00.0000000	t#5562:c02bb752e987847c/ccec640432d2ab28:r	t#4655:12f42fd3ded594be/8889f66cfe695e16:r	t:	t:0000000	t:000000	t:CubicFeetPerSecond	t:Feet	t:	t#5194:1a97dc24e1f2b715/0be99afdfc438ff8:r	t#5225:31bfb1a0b6872000/18c445572bf7e167:r	b#3430:60622bb211b74cf3>z#25184:53e7ab2a4216aeb6/3c88650d8bb10583:r	b#0:e3b0c44298fc1c14
+row	10	t:ARMA(2,2)	t#276:901d1bec2cf09c08	t:3/21/2025 3:35:52 AM	t:3/21/2025 3:36:01 AM	t:	t:Value	t:Manual	t:DailyDischarge	t:	t:	t:00000000000	t:00000000	t:Inches	t:OneMonth	t:1949-01-01T00:00:00.0000000	t#5562:c02bb752e987847c/ccec640432d2ab28:r	t#4655:12f42fd3ded594be/8889f66cfe695e16:r	t:	t:0000000	t:000000	t:CubicFeetPerSecond	t:Feet	t:	t#5194:1a97dc24e1f2b715/0be99afdfc438ff8:r	t#5225:31bfb1a0b6872000/18c445572bf7e167:r	b#3449:de7844c56faf545b>z#25150:9080e66545d59e62/d8d27d73e5c9aebc:r	b#0:e3b0c44298fc1c14
+row	11	t:Intercept + Linear Trend + ARMA(1,1)	t#276:901d1bec2cf09c08	t:3/21/2025 4:03:52 AM	t:3/21/2025 4:04:02 AM	t:	t:Value	t:Manual	t:DailyDischarge	t:	t:	t:00000000000	t:00000000	t:Inches	t:OneMonth	t:1949-01-01T00:00:00.0000000	t#5562:c02bb752e987847c/ccec640432d2ab28:r	t#4655:12f42fd3ded594be/8889f66cfe695e16:r	t:	t:0000000	t:000000	t:CubicFeetPerSecond	t:Feet	t:	t#5194:1a97dc24e1f2b715/0be99afdfc438ff8:r	t#5225:31bfb1a0b6872000/18c445572bf7e167:r	b#3354:6dd7e89a46121465>z#25191:887e6eebd4ea85e2/4f2109c4a9b859bf:r	b#0:e3b0c44298fc1c14
+row	12	t:Intercept + Linear Trend + LogTransform	t#276:901d1bec2cf09c08	t:3/21/2025 4:54:44 AM	t:3/21/2025 4:54:52 AM	t:	t:Value	t:Manual	t:DailyDischarge	t:	t:	t:00000000000	t:00000000	t:Inches	t:OneMonth	t:1949-01-01T00:00:00.0000000	t#5546:91a244bfcdce3f84/1f64c7d1b123d6dd:r	t#4655:12f42fd3ded594be/8889f66cfe695e16:r	t:	t:0000000	t:000000	t:CubicFeetPerSecond	t:Feet	t:	t#5194:1a97dc24e1f2b715/0be99afdfc438ff8:r	t#5225:31bfb1a0b6872000/18c445572bf7e167:r	b#3367:4e2ab6108f70b2eb>z#25153:a84123bfc0b8a4b5/140ad7257caa4593:r	b#0:e3b0c44298fc1c14
+state	00 Time Series Data	8e065993308a8e6a	66eae0f9e86047a2
+state	00 Time Series Data/00 TimeSeriesElement 'Intercept'	b3707e237aaf4f07	63e1815b9f7696a3
+state	00 Time Series Data/01 TimeSeriesElement 'Intercept + Linear Trend'	c5267bac21f7d8d3	4cd4bac53c123c1f
+state	00 Time Series Data/02 TimeSeriesElement 'Intercept + Quadratic Trend'	be6598c8be1d9b4a	17bf8b68393225d6
+state	00 Time Series Data/03 TimeSeriesElement 'Intercept + Cubic Trend'	876f9ff09e466c8e	cb0e4d96e0699a0a
+state	00 Time Series Data/04 TimeSeriesElement 'AR(1)'	831fa8beb7206afb	53149fbd8e0c7f0a
+state	00 Time Series Data/05 TimeSeriesElement 'AR(3)'	2770aef4537abae2	d6d144c1bcf0f561
+state	00 Time Series Data/06 TimeSeriesElement 'MA(1)'	c59c315897558971	bc79c371605074fb
+state	00 Time Series Data/07 TimeSeriesElement 'MA(3)'	f94e42bca827cd99	f5f0d31141b57db9
+state	00 Time Series Data/08 TimeSeriesElement 'ARMA(1,1)'	d9e2b8bf1d6b1740	cba750740b4464ca
+state	00 Time Series Data/09 TimeSeriesElement 'ARMA(2,2)'	764fb2cdc2c004df	6caf6bebf8289a02
+state	00 Time Series Data/10 TimeSeriesElement 'Intercept + Linear Trend + ARMA(1,1)'	9e185daed5e9cce8	e098810ed96acc91
+state	00 Time Series Data/11 TimeSeriesElement 'Intercept + Linear Trend + LogTransform'	95516709ebedf9f6	0604b8f7eabefe41
+state	01 Input Data	4b47e20068fbbb01	7138759d2d2c7b9f
+state	02 Distribution Fitting Analysis	22c9cdb7873ae49a	4a4ead4bf90c0837
+state	03 Univariate Distribution Analysis	468896e1b6f7e6c8	0e3a3c46961dd428
+state	04 Bivariate Distribution Analysis	2df996a968e4df10	85c24dd973e8dafa
+state	05 Rating Curve Analysis	5b9e46ee16c64e96	771f60dc9817d061
+state	06 Time Series Analysis	909a37dca076a40d	0e6e4ee694390acc
+state	06 Time Series Analysis/00 TimeSeriesAnalysis 'Intercept'	2533015be4c5767b	b8a325e9c50861bb
+state	06 Time Series Analysis/01 TimeSeriesAnalysis 'Intercept + Linear Trend'	c1fab4440cd2b5e3	3531019ee952268b
+state	06 Time Series Analysis/02 TimeSeriesAnalysis 'Intercept + Quadratic Trend'	bded3b2365121c23	f40ce1cf2be02cc5
+state	06 Time Series Analysis/03 TimeSeriesAnalysis 'Intercept + Cubic Trend'	89cf4ca855729983	8ef7e3858589b4c2
+state	06 Time Series Analysis/04 TimeSeriesAnalysis 'AR(1)'	2af858618a1cce27	ed05176cd73712f3
+state	06 Time Series Analysis/05 TimeSeriesAnalysis 'AR(3)'	117a0307d5e07f1d	6cb8623c12a5e08d
+state	06 Time Series Analysis/06 TimeSeriesAnalysis 'MA(1)'	0b6d0ba29a166470	0baca4cdbbc04176
+state	06 Time Series Analysis/07 TimeSeriesAnalysis 'MA(3)'	d754dc2969f32f09	2b13d344ba91e2b8
+state	06 Time Series Analysis/08 TimeSeriesAnalysis 'ARMA(1,1)'	15f6d7912a14f33a	a3b5cca6555064c1
+state	06 Time Series Analysis/09 TimeSeriesAnalysis 'ARMA(2,2)'	cc6495706bcb2c8c	f881f4fe7e770881
+state	06 Time Series Analysis/10 TimeSeriesAnalysis 'Intercept + Linear Trend + ARMA(1,1)'	a8467cbd271f80e3	57cb89ea87b3ce57
+state	06 Time Series Analysis/11 TimeSeriesAnalysis 'Intercept + Linear Trend + LogTransform'	cfb2569820c385cc	a94c0bb8ed3c8af0
+state	Project	78804ed7c979ac93	78804ed7c979ac93
+end

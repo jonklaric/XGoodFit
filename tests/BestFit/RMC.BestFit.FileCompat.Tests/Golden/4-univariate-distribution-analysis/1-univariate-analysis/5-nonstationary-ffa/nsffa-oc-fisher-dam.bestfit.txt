@@ -1,0 +1,142 @@
+bestfit-file-description	1
+file	4-univariate-distribution-analysis/1-univariate-analysis/5-nonstationary-ffa/nsffa-oc-fisher-dam.bestfit	sha=511a307313b060fb	tables=6	cells=179
+pragma	encoding	UTF-8
+pragma	journal_mode	wal
+pragma	user_version	0
+pragma	application_id	0
+pragma	auto_vacuum	0
+table	<Bulletin 17C>	sha=a46cb2f950ccb9b1	sql=2973ee9da03a2084	rows=0
+column	0	Name	TEXT
+column	1	Description	TEXT
+column	2	CreationDate	TEXT
+column	3	LastModified	TEXT
+column	4	InputData	TEXT
+column	5	Bulletin17CDistribution	TEXT
+column	6	BayesianAnalysis	TEXT
+column	7	MCMCResults	BLOB
+column	8	AnalysisResults	TEXT
+column	9	ProbabilityOrdinates	TEXT
+column	10	FrequencyPlotSettings	TEXT
+column	11	KernelDensityPlotSettings	TEXT
+column	12	HistogramPlotSettings	TEXT
+column	13	BivariatePlotSettings	TEXT
+column	14	InfluenceDiagnosticsPlotSettings	TEXT
+column	15	AnalysisXml	TEXT
+column	16	MCMCReport	TEXT
+column	17	GMMReport	TEXT
+table	<Composite Distribution>	sha=74471ebee1b20a80	sql=b683e6959ee0fa0d	rows=1
+column	0	Name	TEXT
+column	1	Description	TEXT
+column	2	CreationDate	TEXT
+column	3	LastModified	TEXT
+column	4	InputData	TEXT
+column	5	BayesianAnalysis	TEXT
+column	6	CompositeDistributionType	TEXT
+column	7	ModelAverageMethod	TEXT
+column	8	Dependency	TEXT
+column	9	IsMaximum	BOOLEAN
+column	10	Analyses	TEXT
+column	11	ProbabilityOrdinates	TEXT
+column	12	FrequencyPlotSettings	TEXT
+column	13	MCMCReport	TEXT
+column	14	AnalysisResults	TEXT
+column	15	CorrelationMatrix	TEXT
+row	1	t:Bayesian Model Average	t#240:54d5ff75a2d7dee2	t:4/18/2026 7:11:14 PM	t:9/17/2026 6:45:50 PM	t:OC Fisher Inflows	t#591:42054cc2ea70b751	t:ModelAverage	t:DIC	t:Independent	i:1	t#346:13ee3c2221dd9dfe/6d5beb882d0eb008:r	t#439:5840f09d7e1a6c45	t#10989:5ff34616f4b53c87/18a2e93f97afc089:r	n	t:	t:
+table	<Univariate Distribution>	sha=223265ff1b34a262	sql=09cbaf58c37595de	rows=5
+column	0	Name	TEXT
+column	1	Description	TEXT
+column	2	CreationDate	TEXT
+column	3	LastModified	TEXT
+column	4	InputData	TEXT
+column	5	UnivariateDistribution	TEXT
+column	6	BayesianAnalysis	TEXT
+column	7	MCMCResults	BLOB
+column	8	AnalysisResults	TEXT
+column	9	ChronologyAnalysisResults	TEXT
+column	10	ProbabilityOrdinates	TEXT
+column	11	FrequencyPlotSettings	TEXT
+column	12	ChronologyPlotSettings	TEXT
+column	13	InfluenceDiagnosticsPlotSettings	TEXT
+column	14	KernelDensityPlotSettings	TEXT
+column	15	HistogramPlotSettings	TEXT
+column	16	BivariatePlotSettings	TEXT
+column	17	MeanLikelihoodPlotSettings	TEXT
+column	18	AutocorrelationPlotSettings	TEXT
+column	19	MarkovChainTracesPlotSettings	TEXT
+column	20	AnalysisXml	TEXT
+column	21	MCMCReport	TEXT
+row	1	t:SFFA	t#249:21344eb86c5e3840	t:4/3/2026 7:38:26 PM	t:9/17/2026 6:45:50 PM	t:OC Fisher Inflows	t#2991:8e00cd9709b79a80/11689262e201a858:r	t#732:38cc36d5ef4e959b	b#1218779:4f8cd9e046aac86a>z#3632095:fb400745a6bba36c	t#2235:e9223b29d9a4cd25/da27d2717b1c098f:r	t:	t#439:5840f09d7e1a6c45	t#9064:16fe913d54a1e1f9/e441dd961705914d:r	t#4608:a4e6498ade33f11d/3943adbb3300cd33:r	t#6004:778479b1cfb67bae/d8e4550859cbdd89:r	t#5685:7b4a20bba2b2f7d5/efb259a35b028e02:r	t#5296:68c7e8c773563d20/e00f92c922f95a26:r	t#7743:03963087e3a1263e/957dede895863498:r	t#5539:5a3f6aaf1cd3b0c4/8553b05d14efe043:r	t#6967:3f0be5809458fb48/08b3043a0d2dd5da:r	t#9907:d3c8f122e42a980b/7a35a03bf3a3d97b:r	t#1286:56ffedc4e23e3945/2f1e895994f52ae3:r	t:
+row	2	t:NSFFA - Constant	t#320:e47988b60f611eb7	t:4/3/2026 7:52:55 PM	t:9/17/2026 6:45:50 PM	t:OC Fisher Inflows	t#3017:66aa6addfefee5c8/57344ec269326ebe:r	t#734:8a1dfd7ae3512b66	b#1218859:1fee4274f9d51145>z#3631715:243156af2baf5805	t#2235:660bfa5787b5c2d8/d6ece2a7a320156c:r	t#13116:732a276f02ee697d/91bb08929f9af228:r	t#439:5840f09d7e1a6c45	t#9064:16fe913d54a1e1f9/e441dd961705914d:r	t#8338:edc3153af42fa80a/cdcda70270ff70be:r	t#6004:778479b1cfb67bae/d8e4550859cbdd89:r	t#5695:7aaeea789d158406/9960f2694f174eec:r	t#5306:41e5a629e4a0ce43/fb15a5bb4ba83890:r	t#7764:6cfe97c2a1d61c88/f03494ee38d908ee:r	t#5539:5a3f6aaf1cd3b0c4/8553b05d14efe043:r	t#6972:ec4112d6cfae2cfb/54dcf30a3c69db47:r	t#9912:8abbd00a674a7f0f/88ca2502b601a1b9:r	t#1288:d54000c20af84717/eafdb913b9a53a96:r	t:
+row	3	t:NSFFA - Linear Trend	t#318:42dfb8b182880ac4	t:4/3/2026 7:54:41 PM	t:9/17/2026 6:45:50 PM	t:OC Fisher Inflows	t#3646:a1079eabda60c0f2/51de306961d46db4:r	t#733:59952d91d6b21988	b#1865089:1c6a56967ad14cec>z#5272264:b03ea6596916dbcd	t#2238:d590a4d6292e785e/a24ecae0cdb58f03:r	t#13021:5d02e5bcb376591e/34749a8f46be18dd:r	t#439:5840f09d7e1a6c45	t#9064:16fe913d54a1e1f9/e441dd961705914d:r	t#8340:2684af1a4953abe9/a641fe4bdc48f5c0:r	t#6004:778479b1cfb67bae/d8e4550859cbdd89:r	t#5695:7aaeea789d158406/9960f2694f174eec:r	t#5306:41e5a629e4a0ce43/fb15a5bb4ba83890:r	t#7763:0de169aacad74805/24cb37e48752260c:r	t#5539:5a3f6aaf1cd3b0c4/8553b05d14efe043:r	t#6971:2fe46ad6619a037e/6648cf07197705e7:r	t#11674:7dd52678f14cd5eb/a053cd60d8b4ab30:r	t#1287:3db55e952af2f5ab/2b778a233417ba9a:r	t:
+row	4	t:NSFFA - Step Function	t#324:b7169847902d3d68	t:4/3/2026 8:09:22 PM	t:7/16/2026 3:04:38 PM	t:OC Fisher Inflows	t#4163:ba83bef72df8653f/1dd77b4455971e46:r	t#736:076e632350d5306e	b#2570108:1e278307d71d7c1a>z#6957495:7a413c1384a7f297	t#2248:93533d9587c9a03b/fd798f4cec32ed8c:r	t#13086:6d992b616b65eeda/3e92ef6f1b406ee2:r	t#439:5840f09d7e1a6c45	t#9064:831ff5294a7f0e4d/74edb70cbae76c43:r	t#8341:3131439d4cdfc4a1/88635ee46a34fb47:r	t#5999:6c43dec84bf3ffb9/57d641a90b9832ee:r	t#5697:b26a1dec8e4b8009/6ec356159b03f886:r	t#5308:1e9475a31a9b4285/3b754ca9c59234d2:r	t#7760:789b157aaf1a0da7/9290eae5297a8a13:r	t#5539:004483ae9d62f197/a6b549c2b16aebff:r	t#6972:3cea21746b2b8156/3c87c5fd311a712d:r	t#13439:0e5e61df574bc861/6139cee4b6e84de8:r	t#1290:71d7aaf9b243b1b5/90a554e4ea174a56:r	t:
+row	5	t:NSFFA - Sinusoidal Trend	t#322:7b5ff8791c733f06	t:4/3/2026 8:11:56 PM	t:7/16/2026 3:04:38 PM	t:OC Fisher Inflows	t#4670:f2f2d2bb824ee06a/ff75cb0d0f2ac06b:r	t#736:902bb89f3109d20a	b#3462586:fb50cde3991810b7>z#9135200:c57742547dfb6ae2	t#2240:53731058f7c336de/93d63bb037995baf:r	t#13019:0d48f73eccf8128f/db6aa7221046394a:r	t#439:5840f09d7e1a6c45	t#9064:831ff5294a7f0e4d/74edb70cbae76c43:r	t#8344:7814ecaa7288b756/bb623bdb4404579a:r	t#5314:085567b25b97b9ec/93059f09d993770c:r	t#5695:359534af5224d2dd/669f75777d6a3ac2:r	t#5306:fcbe5ec237af6f9a/9fb53ec24a1f6d69:r	t#7759:009c0fa66bd70e42/0dd89010ae11aea0:r	t#5539:004483ae9d62f197/a6b549c2b16aebff:r	t#6972:dbd6ad75d6d3cf48/c35ad38226152b8e:r	t#15204:0313a49c210b0ed5/8dcf909d3d7d4792:r	t#1290:1d95771cc8127d53/d963a910ba13b2ad:r	t:
+table	Input Data	sha=1e50a5fa9218986d	sql=d536de5c86337186	rows=1
+column	0	Name	TEXT
+column	1	Description	TEXT
+column	2	CreationDate	TEXT
+column	3	LastModified	TEXT
+column	4	ExactDataMethod	TEXT
+column	5	DataFrame	TEXT
+column	6	UnitLabel	TEXT
+column	7	IndexLabel	TEXT
+column	8	USGSSiteNumber	TEXT
+column	9	UseMultipleGrubbsBeckTest	BOOLEAN
+column	10	TimeSeriesElement	TEXT
+column	11	BlockFunction	TEXT
+column	12	TimeBlock	TEXT
+column	13	StartMonth	INT4
+column	14	EndMonth	INT4
+column	15	SmoothingFunction	TEXT
+column	16	Period	INT4
+column	17	Threshold	DOUBLE
+column	18	MinStepsBetweenPeaks	INT4
+column	19	IsProcessed	BOOLEAN
+column	20	ChronologyPlotSettings	TEXT
+column	21	FrequencyPlotSettings	TEXT
+column	22	SeasonalityPlotSettings	TEXT
+column	23	DensityPlotSettings	TEXT
+column	24	HistogramPlotSettings	TEXT
+column	25	QQPlotSettings	TEXT
+column	26	ACFPlotSettings	TEXT
+column	27	PACFPlotSettings	TEXT
+column	28	MRLPlotSettings	TEXT
+column	29	ModifiedScalePlotSettings	TEXT
+column	30	ShapePlotSettings	TEXT
+row	1	t:OC Fisher Inflows	t#243:1a7dd7c6a026ee19	t:4/3/2026 7:35:28 PM	t:4/24/2026 6:56:23 PM	t:Manual	t#16839:95255af1d73788b3/a1f44ede40b04d8b:r	t:Flow (cms)	t:Year	t:00000000	i:1	t:	t:Maximum	t:CalendarYear	i:10	i:9	t:None	i:1	r:0	i:1	i:0	t#7112:c895a7e5493cf5f8/06f1524f015c3c57:r	t#5457:d3ac2167e63739e6/3810eb508e0f8b2d:r	t#4651:c69f293ae8feaabf/64d7a37581b5e36c:r	t#4626:0a6ad9dfc8bdae3d/984133216aaf8ff5:r	t#4628:4c04ec98229e95d2/e82ed94b2d536338:r	t#4654:9df042de46262872/ee0daf1d0401826e:r	t#4626:5844ea7d446d631a/91726202283ff2a8:r	t#4642:f56f2e4cbfa451c5/90f7224311d5852a:r	t#4604:db5954d49b525445/998fe72607e6f84c:r	t#4617:bd1cbff8840b0fa4/5d57c1cc278b81f5:r	t#4599:33ad547799c64842/08cc3d7ab5fc47fa:r
+table	Project	sha=42d4b51180808a7b	sql=bf204117c9f875b1	rows=1
+column	0	Name	TEXT
+column	1	Description	TEXT
+column	2	CreationDate	TEXT
+column	3	LastModified	TEXT
+column	4	FullFileName	TEXT
+column	5	SoftwareVersion	TEXT
+column	6	AvalonDockLayout	TEXT
+column	7	ProjectExplorerLayout	TEXT
+column	8	AvalonDockLayoutPrevious	TEXT
+column	9	ProjectExplorerLayoutPrevious	TEXT
+row	1	t:nsffa-oc-fisher-dam	t#296:cde8acfc5319c9e9	t:4/3/2026 7:35:15 PM	t:9/17/2026 6:45:50 PM	p:{dir}\\nsffa-oc-fisher-dam.bestfit	t:2.0.1	t#2317:611e2be053ee54db/a9360b5c3aeceebb:r	t#1322:53b2204c1513bb0d/04b310ce902e07fd:r	t#2320:c04092d298157361/574b74c115afd407:r	t#1400:faf6f682a39515b5/1ef78c84e0519394:r
+table	Univariate Distribution Analysis	sha=6b024ac37c172e91	sql=63dff5382d17bd53	rows=6
+column	0	Name	TEXT
+column	1	Type	TEXT
+row	1	t:SFFA	t:RMC.BestFit.UI.UnivariateAnalysis
+row	2	t:NSFFA - Constant	t:RMC.BestFit.UI.UnivariateAnalysis
+row	3	t:NSFFA - Linear Trend	t:RMC.BestFit.UI.UnivariateAnalysis
+row	4	t:NSFFA - Step Function	t:RMC.BestFit.UI.UnivariateAnalysis
+row	5	t:NSFFA - Sinusoidal Trend	t:RMC.BestFit.UI.UnivariateAnalysis
+row	6	t:Bayesian Model Average	t:RMC.BestFit.UI.CompositeAnalysis
+state	00 Time Series Data	7c890208af994c26	66eae0f9e86047a2
+state	01 Input Data	c45e74c546527ca2	7138759d2d2c7b9f
+state	01 Input Data/00 InputData 'OC Fisher Inflows'	28acadcaf2f693f9	308a8d0020899790
+state	02 Distribution Fitting Analysis	22c9cdb7873ae49a	4a4ead4bf90c0837
+state	03 Univariate Distribution Analysis	089a864d64be65ef	0e3a3c46961dd428
+state	03 Univariate Distribution Analysis/00 UnivariateAnalysis 'SFFA'	06cf1903e2d62069	7b82eca40ddc6f37
+state	03 Univariate Distribution Analysis/01 UnivariateAnalysis 'NSFFA - Constant'	f00487c9ee923db2	41e4c0f949763696
+state	03 Univariate Distribution Analysis/02 UnivariateAnalysis 'NSFFA - Linear Trend'	abd3dda81d10541f	157e906781355aff
+state	03 Univariate Distribution Analysis/03 UnivariateAnalysis 'NSFFA - Step Function'	db2d3a4c9ee3fad6	859f8b46967d6eaa
+state	03 Univariate Distribution Analysis/04 UnivariateAnalysis 'NSFFA - Sinusoidal Trend'	981a8251bb486e37	fe788997a49b9402
+state	03 Univariate Distribution Analysis/05 CompositeAnalysis 'Bayesian Model Average'	3ba1af3485a3f43c	da69f22b9b4816cd
+state	04 Bivariate Distribution Analysis	2df996a968e4df10	85c24dd973e8dafa
+state	05 Rating Curve Analysis	5b9e46ee16c64e96	771f60dc9817d061
+state	06 Time Series Analysis	2f4a1830d606047e	0e6e4ee694390acc
+state	Project	41e4c987f5004c7a	41e4c987f5004c7a
+end

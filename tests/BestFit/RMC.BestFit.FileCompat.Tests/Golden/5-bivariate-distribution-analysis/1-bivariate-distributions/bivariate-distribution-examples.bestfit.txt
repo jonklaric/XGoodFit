@@ -1,0 +1,239 @@
+bestfit-file-description	1
+file	5-bivariate-distribution-analysis/1-bivariate-distributions/bivariate-distribution-examples.bestfit	sha=1e94780625d39091	tables=9	cells=808
+pragma	encoding	UTF-8
+pragma	journal_mode	wal
+pragma	user_version	0
+pragma	application_id	0
+pragma	auto_vacuum	0
+table	<Bivariate Distribution>	sha=c4cac06cde0c3856	sql=43c4483f32a71a3f	rows=6
+column	0	Name	TEXT
+column	1	Description	TEXT
+column	2	CreationDate	TEXT
+column	3	LastModified	TEXT
+column	4	MarginalX	TEXT
+column	5	MarginalY	TEXT
+column	6	XYOrdinates	TEXT
+column	7	BivariateDistribution	TEXT
+column	8	BayesianAnalysis	TEXT
+column	9	MCMCResults	BLOB
+column	10	AnalysisResults	TEXT
+column	11	CopulaPlotSettings	TEXT
+column	12	KernelDensityPlotSettings	TEXT
+column	13	HistogramPlotSettings	TEXT
+column	14	BivariatePlotSettings	TEXT
+column	15	MeanLikelihoodPlotSettings	TEXT
+column	16	AutocorrelationPlotSettings	TEXT
+column	17	MarkovChainTracesPlotSettings	TEXT
+column	18	InfluenceDiagnosticsPlotSettings	TEXT
+column	19	MCMCReport	TEXT
+column	20	AnalysisXml	TEXT
+row	1	t:AMH Copula	t#261:90090e48bf89bcff	t:4/19/2026 8:13:44 PM	t:9/17/2026 3:59:37 PM	t:AMH - Marginal X	t:AMH - Marginal Y	t#345:ab5fcfa55090a168/28cf434e3544d9ff:r	t#486:50d802e3eb09caf3/a8dc129cdd9f2d84:r	t#735:f2d373842bbe8f0e	b#493952:8837839096bfce89>z#1809724:c52fe55d50717330	t#269:10abfece36ce60cb	t#6244:80b4d425608257b4/cadb3ba1ba69dff1:r	t#5679:b9d0b0e0e7ac46ea/89a08b46ddc4eaa5:r	t#5290:ecb3035275729e6d/c62b84ad22faf9b2:r	t#6280:542e7148ca408659/b4be260df3c66797:r	t#5539:58cf19e3c6b9497a/690a0f446f199b2c:r	t#6964:3e39d0cde135a60b/f1135888fa0f74ab:r	t#7251:5770b179432a3853/a7b597f44155b681:r	t#5319:793e349f1de140af/e82e5bb6c48ac31e:r	t:	t#1160:f0007a5b8c0ea1ac/4d792b77967d9b75:r
+row	2	t:Clayton Copula	t#263:885fd317b6321eb3	t:4/19/2026 8:23:48 PM	t:9/17/2026 3:59:37 PM	t:Clayton - Marginal X	t:Clayton - Marginal Y	t#345:ab5fcfa55090a168/28cf434e3544d9ff:r	t#411:43a3d5fff2970a87/582b7cb7a9190084:r	t#735:bb208d56e96bdb3e	b#489787:5c7c42af48a9d88e>z#1821177:0a2311cd43da4e35	t#267:b80d7648f6c41dcc	t#6244:80b4d425608257b4/cadb3ba1ba69dff1:r	t#5679:b9d0b0e0e7ac46ea/89a08b46ddc4eaa5:r	t#5290:ecb3035275729e6d/c62b84ad22faf9b2:r	t#6280:542e7148ca408659/b4be260df3c66797:r	t#5539:58cf19e3c6b9497a/690a0f446f199b2c:r	t#6964:3e39d0cde135a60b/f1135888fa0f74ab:r	t#7251:5770b179432a3853/a7b597f44155b681:r	t#5319:793e349f1de140af/e82e5bb6c48ac31e:r	t:	t#1160:55388a80a3f2bd8c/d9cfc934a76fa776:r
+row	3	t:Frank Copula	t#257:19a1f239abd655c5	t:4/19/2026 8:46:11 PM	t:9/17/2026 3:59:37 PM	t:Frank - Marginal X	t:Frank - Marginal Y	t#345:ab5fcfa55090a168/28cf434e3544d9ff:r	t#415:4a09aa96dcd7986a/d723ba898b12a436:r	t#737:98426a498d1168cb	b#486631:3fe323faf2656a55>z#1791979:2fb3e9ddbc42c733	t#269:f5436ca59df132c7	t#6244:80b4d425608257b4/cadb3ba1ba69dff1:r	t#5679:8f334020035fd82d/e3cbd2b1abaadc51:r	t#5290:4480053f85fca40f/4750be6c89d74cf7:r	t#6280:542e7148ca408659/b4be260df3c66797:r	t#5539:004483ae9d62f197/a6b549c2b16aebff:r	t#6964:80aac0d591b180df/926c70320d1e212e:r	t#7251:5770b179432a3853/a7b597f44155b681:r	t#5314:085567b25b97b9ec/93059f09d993770c:r	t:	t#1162:0beebc12bc949249/30d45ba48d661e14:r
+row	4	t:Gumbel Copula	t#260:6280d489f8633ad4	t:4/19/2026 8:49:22 PM	t:9/17/2026 3:59:37 PM	t:Gumbel - Marginal X	t:Gumbel - Marginal Y	t#345:ab5fcfa55090a168/28cf434e3544d9ff:r	t#408:4f7ef722e7442fce/323815094d7918cb:r	t#734:60fc9fc40d7f0982	b#489673:3aa4bddd430a1ffe>z#1819549:321fdd8a55e45a02	t#267:1594c6d1070e4b6a	t#6244:80b4d425608257b4/cadb3ba1ba69dff1:r	t#5679:b9d0b0e0e7ac46ea/89a08b46ddc4eaa5:r	t#5290:ecb3035275729e6d/c62b84ad22faf9b2:r	t#6280:542e7148ca408659/b4be260df3c66797:r	t#5539:58cf19e3c6b9497a/690a0f446f199b2c:r	t#6964:3e39d0cde135a60b/f1135888fa0f74ab:r	t#7251:5770b179432a3853/a7b597f44155b681:r	t#5319:793e349f1de140af/e82e5bb6c48ac31e:r	t:	t#1159:ac5cd08469b105ed/45511c771799c26f:r
+row	5	t:Joe Copula	t#251:6e1b5f6c4c249d4d	t:4/19/2026 8:52:17 PM	t:9/17/2026 3:59:37 PM	t:Joe - Marginal X	t:Joe - Marginal Y	t#345:ab5fcfa55090a168/28cf434e3544d9ff:r	t#405:f09d79715f0afea2/063fbde3aa1b5de4:r	t#735:d9f9e3392f44d2da	b#484473:5b66d8e86feb949f>z#1804802:3c2b32805232914c	t#269:468065d5b93f2f8e	t#6244:80b4d425608257b4/cadb3ba1ba69dff1:r	t#5679:8f334020035fd82d/e3cbd2b1abaadc51:r	t#5290:4480053f85fca40f/4750be6c89d74cf7:r	t#6280:542e7148ca408659/b4be260df3c66797:r	t#5539:004483ae9d62f197/a6b549c2b16aebff:r	t#6963:bef9a434c3580e67/9b568d2a8e465aa4:r	t#7251:5770b179432a3853/a7b597f44155b681:r	t#5314:085567b25b97b9ec/93059f09d993770c:r	t:	t#1160:c2ba9204398bf987/1811b54fea45f5e1:r
+row	6	t:Normal Copula	t#260:b496bb3d56069ca6	t:4/19/2026 8:54:56 PM	t:9/17/2026 3:59:37 PM	t:Normal - Marginal X	t:Normal - Marginal Y	t#345:ab5fcfa55090a168/28cf434e3544d9ff:r	t#479:55c88f577ad58e41/c5af5991773a99bd:r	t#737:8460cef85f6d268c	b#478045:1c59c17c5825cb87>z#1813033:b675edf95c80ed81	t#269:14fb1b82d96698ec	t#6244:a6a612957d6a5120/7c6e32196fd0e2d5:r	t#5679:0871dcd09fc1ca93/2e4b2f003603bc9a:r	t#5290:9b97f60937b3ffe2/ebed9996d43f675a:r	t#6280:542e7148ca408659/b4be260df3c66797:r	t#5539:5a3f6aaf1cd3b0c4/8553b05d14efe043:r	t#6964:40319ef9746fbd65/b695e419a2cfe0de:r	t#4607:5a2481824c650df2/b7f88c1d8f81f49c:r	t#5319:2ca31fc73e41c75e/3067f3008c634549:r	t:	t#1162:85f699ac6ab41a99/5ea4a3b633fb3939:r
+table	<Bulletin 17C>	sha=a46cb2f950ccb9b1	sql=2973ee9da03a2084	rows=0
+column	0	Name	TEXT
+column	1	Description	TEXT
+column	2	CreationDate	TEXT
+column	3	LastModified	TEXT
+column	4	InputData	TEXT
+column	5	Bulletin17CDistribution	TEXT
+column	6	BayesianAnalysis	TEXT
+column	7	MCMCResults	BLOB
+column	8	AnalysisResults	TEXT
+column	9	ProbabilityOrdinates	TEXT
+column	10	FrequencyPlotSettings	TEXT
+column	11	KernelDensityPlotSettings	TEXT
+column	12	HistogramPlotSettings	TEXT
+column	13	BivariatePlotSettings	TEXT
+column	14	InfluenceDiagnosticsPlotSettings	TEXT
+column	15	AnalysisXml	TEXT
+column	16	MCMCReport	TEXT
+column	17	GMMReport	TEXT
+table	<Coincident Frequency>	sha=8d1b1e0b3980eedb	sql=9aa6cc89cccf95d4	rows=0
+column	0	Name	TEXT
+column	1	Description	TEXT
+column	2	CreationDate	TEXT
+column	3	LastModified	TEXT
+column	4	BivariateAnalysis	TEXT
+column	5	InputData	TEXT
+column	6	XValues	TEXT
+column	7	YValues	TEXT
+column	8	BivariateResponse	TEXT
+column	9	NumberOfBins	TEXT
+column	10	BayesianAnalysis	TEXT
+column	11	AnalysisResults	TEXT
+column	12	ZOutputValues	TEXT
+column	13	FrequencyPlotSettings	TEXT
+table	<Composite Distribution>	sha=15097a331e0fc131	sql=25aafb74b49389b5	rows=0
+column	0	Name	TEXT
+column	1	Description	TEXT
+column	2	CreationDate	TEXT
+column	3	LastModified	TEXT
+column	4	InputData	TEXT
+column	5	BayesianAnalysis	TEXT
+column	6	CompositeDistributionType	TEXT
+column	7	ModelAverageMethod	TEXT
+column	8	Dependency	TEXT
+column	9	IsMaximum	BOOLEAN
+column	10	Analyses	TEXT
+column	11	ProbabilityOrdinates	TEXT
+column	12	AnalysisResults	TEXT
+column	13	FrequencyPlotSettings	TEXT
+column	14	MCMCReport	TEXT
+table	<Univariate Distribution>	sha=ab1d6f4e9720e22a	sql=192652ba4c99d235	rows=12
+column	0	Name	TEXT
+column	1	Description	TEXT
+column	2	CreationDate	TEXT
+column	3	LastModified	TEXT
+column	4	InputData	TEXT
+column	5	UnivariateDistribution	TEXT
+column	6	BayesianAnalysis	TEXT
+column	7	MCMCResults	BLOB
+column	8	AnalysisResults	TEXT
+column	9	ChronologyAnalysisResults	TEXT
+column	10	ProbabilityOrdinates	TEXT
+column	11	FrequencyPlotSettings	TEXT
+column	12	ChronologyPlotSettings	TEXT
+column	13	InfluenceDiagnosticsPlotSettings	TEXT
+column	14	KernelDensityPlotSettings	TEXT
+column	15	HistogramPlotSettings	TEXT
+column	16	BivariatePlotSettings	TEXT
+column	17	MeanLikelihoodPlotSettings	TEXT
+column	18	AutocorrelationPlotSettings	TEXT
+column	19	MarkovChainTracesPlotSettings	TEXT
+column	20	AnalysisXml	TEXT
+column	21	MCMCReport	TEXT
+row	1	t:AMH - Marginal X	t#134:e558856e041fad02	t:4/19/2026 8:12:56 PM	t:9/17/2026 3:59:36 PM	t:AMH - X Data	t#1757:b4e8d7c0528601a5/3de3672adfaf0741:r	t#733:63a6b877da7ccdef	b#906579:34b05e833e346817>z#2960575:e781970458345f57	t#2192:53fc49b7a49c6eec/39eb69626d266d69:r	t:	t#439:5840f09d7e1a6c45	t#8252:73666dd7e6a7fdf0/357ff45f065cb6bd:r	t#4603:3f73bc5eb31f89b9/6729c719f3c0d7fc:r	t#5272:cb09f4a4ef1dd280/2a208a5db06da600:r	t#5619:c2bdcec8e9fb8de2/44ec9acb3638b0f1:r	t#5228:87df242faba084aa/29b535710c1d64c2:r	t#7643:708e77402f087c64/8db47e3049533dc8:r	t#5539:9f14449f2e18aa98/7729d6e84e8efe17:r	t#6920:5ee064dad28e188b/c46a15ad3bd595d9:r	t#9898:700f5b1b47e32699/690fb33940858477:r	t#1287:eae0713e7c6f97f0/df0c28c5d999848c:r	t:
+row	2	t:AMH - Marginal Y	t#134:6a023e1738c64fde	t:4/19/2026 8:13:24 PM	t:9/17/2026 3:59:36 PM	t:AMH - Y Data	t#1756:1e9125f0b3f06536/2c6cee152c81d8d6:r	t#732:e93d7847568e4816	b#717690:75f21db7e0b7351a>z#2311436:2effb2a22910d25c	t#2187:14107a03d101ce63/c798d013aafc9439:r	t:	t#439:5840f09d7e1a6c45	t#8252:73666dd7e6a7fdf0/357ff45f065cb6bd:r	t#4603:3f73bc5eb31f89b9/6729c719f3c0d7fc:r	t#5272:cb09f4a4ef1dd280/2a208a5db06da600:r	t#5619:c2bdcec8e9fb8de2/44ec9acb3638b0f1:r	t#5228:87df242faba084aa/29b535710c1d64c2:r	t#7643:7a67224d346458e9/a25483856a659a95:r	t#5539:9f14449f2e18aa98/7729d6e84e8efe17:r	t#6920:cbaa759aa2f4ba95/98d42f051077c407:r	t#8136:a1014d557353d40b/622fccf2a2df0817:r	t#1286:8eb69d25d599f56d/ccbfb85ea6087745:r	t:
+row	3	t:Clayton - Marginal X	t#138:b3f5719210476076	t:4/19/2026 8:23:02 PM	t:9/17/2026 3:59:36 PM	t:Clayton - X Data	t#1750:82a968211451e50b/556fc265b0b3ebc8:r	t#731:ab103db3dfe8648a	b#716452:3d0771aa7d830477>z#2327323:0cbce3f561745bb3	t#2184:0aabe089a4aa9b14/c9b3a7ae584093da:r	t:	t#439:5840f09d7e1a6c45	t#8252:73666dd7e6a7fdf0/357ff45f065cb6bd:r	t#4603:3f73bc5eb31f89b9/6729c719f3c0d7fc:r	t#5272:cb09f4a4ef1dd280/2a208a5db06da600:r	t#5619:c2bdcec8e9fb8de2/44ec9acb3638b0f1:r	t#5228:87df242faba084aa/29b535710c1d64c2:r	t#7642:877fe345f8a49b83/29c4b3039701d98a:r	t#5539:9f14449f2e18aa98/7729d6e84e8efe17:r	t#6921:378866aa2468b650/4b2636251a9e9bfa:r	t#8136:a1014d557353d40b/622fccf2a2df0817:r	t#1285:005466b21dcfa40b/e47d81b45185c75b:r	t:
+row	4	t:Clayton - Marginal Y	t#138:8200e6ee2a25e86a	t:4/19/2026 8:23:13 PM	t:9/17/2026 3:59:36 PM	t:Clayton - Y Data	t#1756:e362f2d5bc7261fe/edc42e5732012843:r	t#732:e7c233f739849aa1	b#718348:f24766cf8ce6c77e>z#2311695:c64e124b3cca39e1	t#2184:27694f692baa77e3/1510165362e4432f:r	t:	t#439:5840f09d7e1a6c45	t#8252:73666dd7e6a7fdf0/357ff45f065cb6bd:r	t#4603:3f73bc5eb31f89b9/6729c719f3c0d7fc:r	t#5272:cb09f4a4ef1dd280/2a208a5db06da600:r	t#5619:c2bdcec8e9fb8de2/44ec9acb3638b0f1:r	t#5228:87df242faba084aa/29b535710c1d64c2:r	t#7641:2e2a2be0cfd947e8/2844b190f8deea9c:r	t#5539:9f14449f2e18aa98/7729d6e84e8efe17:r	t#6921:378866aa2468b650/4b2636251a9e9bfa:r	t#8136:a1014d557353d40b/622fccf2a2df0817:r	t#1286:016ec39e2941fa70/52b8ac1f756e7970:r	t:
+row	5	t:Frank - Marginal X	t#136:88c2b0323594791c	t:4/19/2026 8:45:33 PM	t:9/17/2026 3:59:37 PM	t:Frank - X Data	t#1764:29ca06ef14933842/de158bf7bf556ce1:r	t#732:5f9589a3a96ccdc7	b#714212:1112f479b0d94cf3>z#2328002:bd9e960c007fe6b7	t#2188:74ca78932eee4e8d/73aaf15f16552c30:r	t:	t#439:5840f09d7e1a6c45	t#8252:73666dd7e6a7fdf0/357ff45f065cb6bd:r	t#4603:3f73bc5eb31f89b9/6729c719f3c0d7fc:r	t#5272:cb09f4a4ef1dd280/2a208a5db06da600:r	t#5619:c2bdcec8e9fb8de2/44ec9acb3638b0f1:r	t#5228:87df242faba084aa/29b535710c1d64c2:r	t#7642:2bf9939172b75e7c/4e807a5be993f8fa:r	t#5539:9f14449f2e18aa98/7729d6e84e8efe17:r	t#6921:378866aa2468b650/4b2636251a9e9bfa:r	t#8136:a1014d557353d40b/622fccf2a2df0817:r	t#1286:52fcf22bc5ac2761/c2f662ed2d027a63:r	t:
+row	6	t:Frank - Marginal Y	t#136:cfd7410d385c25fe	t:4/19/2026 8:45:52 PM	t:9/17/2026 3:59:37 PM	t:Frank - Y Data	t#1756:8f3f17bfc0165672/bb7cc30f3b0eafc9:r	t#732:a678909f5614c369	b#720110:647beb288f789c67>z#2311317:48d08f74702d1db4	t#2191:0ca798e7e7fec9fc/bb909d8dd1cb8189:r	t:	t#439:5840f09d7e1a6c45	t#8252:73666dd7e6a7fdf0/357ff45f065cb6bd:r	t#4603:3f73bc5eb31f89b9/6729c719f3c0d7fc:r	t#5272:cb09f4a4ef1dd280/2a208a5db06da600:r	t#5619:c2bdcec8e9fb8de2/44ec9acb3638b0f1:r	t#5228:87df242faba084aa/29b535710c1d64c2:r	t#7643:b9a3c5cfe27d8218/790e842789c9db33:r	t#5539:9f14449f2e18aa98/7729d6e84e8efe17:r	t#6921:378866aa2468b650/4b2636251a9e9bfa:r	t#8136:a1014d557353d40b/622fccf2a2df0817:r	t#1286:2272729d48df5563/241a6e4e38a62733:r	t:
+row	7	t:Gumbel - Marginal X	t#137:f1a96d5c0b6143da	t:4/19/2026 8:48:14 PM	t:9/17/2026 3:59:37 PM	t:Gumbel - X Data	t#1764:9eb6c482d3b15ec0/6fd2a923dd17c3b8:r	t#731:9d2c5dfc95920724	b#713525:b56273c15b6c9c8c>z#2327970:c7545486621ffc21	t#2186:6267a49be1e6bdd7/2875356c73d5b72b:r	t:	t#439:5840f09d7e1a6c45	t#8252:73666dd7e6a7fdf0/357ff45f065cb6bd:r	t#4603:3f73bc5eb31f89b9/6729c719f3c0d7fc:r	t#5272:cb09f4a4ef1dd280/2a208a5db06da600:r	t#5619:c2bdcec8e9fb8de2/44ec9acb3638b0f1:r	t#5228:87df242faba084aa/29b535710c1d64c2:r	t#7642:6016b558b8de36b0/59db8edd0cd0a4c0:r	t#5539:9f14449f2e18aa98/7729d6e84e8efe17:r	t#6921:378866aa2468b650/4b2636251a9e9bfa:r	t#8136:a1014d557353d40b/622fccf2a2df0817:r	t#1285:afee1b9da3fcd477/792007856329a067:r	t:
+row	8	t:Gumbel - Marginal Y	t#137:e242f26ad700ec38	t:4/19/2026 8:48:24 PM	t:9/17/2026 3:59:37 PM	t:Gumbel - Y Data	t#1753:c550fa621237504a/6e22623cc40dce5b:r	t#730:fc09020e93fee28d	b#717780:46c0371e2104d065>z#2311590:3c658314e565ab33	t#2182:f80de29b0a1a8e48/e0599d88105fc532:r	t:	t#439:5840f09d7e1a6c45	t#8252:73666dd7e6a7fdf0/357ff45f065cb6bd:r	t#4603:3f73bc5eb31f89b9/6729c719f3c0d7fc:r	t#5272:cb09f4a4ef1dd280/2a208a5db06da600:r	t#5619:c2bdcec8e9fb8de2/44ec9acb3638b0f1:r	t#5228:87df242faba084aa/29b535710c1d64c2:r	t#7643:53b7916563b6f322/43c737a419afe97b:r	t#5539:9f14449f2e18aa98/7729d6e84e8efe17:r	t#6921:378866aa2468b650/4b2636251a9e9bfa:r	t#8136:a1014d557353d40b/622fccf2a2df0817:r	t#1284:8094b58e5b556cbc/611c4af99a4e9901:r	t:
+row	9	t:Joe - Marginal X	t#134:5316d573860d0b2c	t:4/19/2026 8:51:12 PM	t:9/17/2026 3:59:37 PM	t:Joe - X Data	t#1764:f4a9c3b3b73fdc93/1404fddaea11e4db:r	t#732:08b7371cd41a0009	b#713532:c6125a368508d7f2>z#2327464:4dfd30cd2494a406	t#2192:1d9794fcfef85200/b3f40981a9ba4446:r	t:	t#439:5840f09d7e1a6c45	t#5441:264ed8fb4118ceb8/59c2b8392d8ed04e:r	t#4603:3f73bc5eb31f89b9/6729c719f3c0d7fc:r	t#4570:fc82cfcdfb07572b/915b2b271653fabf:r	t#4575:1663181c6d34afa5/04c8e1e6db9663c5:r	t#4575:1663181c6d34afa5/04c8e1e6db9663c5:r	t#6301:7489895b46ca9d5a/c2ce2ac4da881348:r	t#4633:32cd63008b433b5c/d490167e0b096248:r	t#4618:eac9d996246e9aca/a9d2ca4d2fb9f2f6:r	t#4601:51eeb96fe392878c/3017a9f8a838dcf9:r	t#1286:395951a11a6d1cde/116c18baef008f84:r	t:
+row	10	t:Joe - Marginal Y	t#134:07bec0183722ac02	t:4/19/2026 8:51:26 PM	t:9/17/2026 3:59:37 PM	t:Joe - Y Data	t#1756:a815bb2a18dc15f9/d65ab9de2dff9518:r	t#731:c4c7baf062a72464	b#718043:54aa0921a3a941aa>z#2311284:d63443e08446fe3c	t#2188:32293158ec00218e/61cb4aab7b9c2814:r	t:	t#439:5840f09d7e1a6c45	t#8252:73666dd7e6a7fdf0/357ff45f065cb6bd:r	t#4603:3f73bc5eb31f89b9/6729c719f3c0d7fc:r	t#5272:cb09f4a4ef1dd280/2a208a5db06da600:r	t#5619:c2bdcec8e9fb8de2/44ec9acb3638b0f1:r	t#5228:87df242faba084aa/29b535710c1d64c2:r	t#7641:3201b7163dd2a3aa/da77b0a090182708:r	t#5539:9f14449f2e18aa98/7729d6e84e8efe17:r	t#6921:378866aa2468b650/4b2636251a9e9bfa:r	t#8136:a1014d557353d40b/622fccf2a2df0817:r	t#1285:9f47708514f75a72/5a58e281caf3d8ba:r	t:
+row	11	t:Normal - Marginal X	t#137:fd63d9312ffe5420	t:4/19/2026 8:53:59 PM	t:9/17/2026 3:59:37 PM	t:Normal - X Data	t#1756:f8ce5f948e9a77dc/e937bde12539ab62:r	t#731:77532c9b2d33b90a	b#717392:a717853aa0a16e06>z#2327882:cd0936314f9b2449	t#2195:fb905cd0d5afcbe7/b7c65c5b0b2e8e6e:r	t:	t#439:5840f09d7e1a6c45	t#8252:73666dd7e6a7fdf0/357ff45f065cb6bd:r	t#4603:3f73bc5eb31f89b9/6729c719f3c0d7fc:r	t#5314:c64a0a0d9703d309/612dcdc241c4f4c9:r	t#5667:a55d2c9a8f066241/0cab7095937086c0:r	t#5278:911f10430840047a/754e9e62c45240ca:r	t#7705:6f874c510ed31f70/d83ac0f06de64bbd:r	t#5539:9f14449f2e18aa98/7729d6e84e8efe17:r	t#6958:1d738d0fe35eb399/2965e4b61c053dda:r	t#8136:a1014d557353d40b/622fccf2a2df0817:r	t#1285:d15b1aa6f639b09e/95570088c6f97dfb:r	t:
+row	12	t:Normal - Marginal Y	t#137:06bc6534808b5c1d	t:4/19/2026 8:54:30 PM	t:9/17/2026 3:59:37 PM	t:Normal - Y Data	t#1753:2ef65e6674a662c1/1796a6ddd535e39b:r	t#732:b3fdfa79385cac68	b#717855:89806bbf0e1e4be2>z#2311590:9473c7b07117fcb2	t#2191:1cef043f3ab9ab4f/81c9558b16cb9fb2:r	t:	t#439:5840f09d7e1a6c45	t#8252:c3218e0ee0a3b3d1/44175951f66b5eac:r	t#4603:fb74d1b5bcb0b361/50905fe27b36b3ac:r	t#5314:085567b25b97b9ec/93059f09d993770c:r	t#5667:5c8149e7120040c0/2acd455fd06efdb1:r	t#5278:c81256b242c74a09/483b6633dca17ec9:r	t#7705:1723cea1de7a2b62/22a7014f4c0d1410:r	t#5539:004483ae9d62f197/a6b549c2b16aebff:r	t#6958:0d4f1ed58e76c7a0/8236c73564630bda:r	t#8136:f9a3630de7e48bef/b6b788c904aaf0a2:r	t#1286:b04ca18a0d98a2e8/71a1272ea2f2424e:r	t:
+table	Bivariate Distribution Analysis	sha=c96ef5a58596cd45	sql=ba810e1b5ec29928	rows=6
+column	0	Name	TEXT
+column	1	Type	TEXT
+row	1	t:AMH Copula	t:RMC.BestFit.UI.BivariateAnalysis
+row	2	t:Clayton Copula	t:RMC.BestFit.UI.BivariateAnalysis
+row	3	t:Frank Copula	t:RMC.BestFit.UI.BivariateAnalysis
+row	4	t:Gumbel Copula	t:RMC.BestFit.UI.BivariateAnalysis
+row	5	t:Joe Copula	t:RMC.BestFit.UI.BivariateAnalysis
+row	6	t:Normal Copula	t:RMC.BestFit.UI.BivariateAnalysis
+table	Input Data	sha=8ecec634a4cf92a3	sql=d536de5c86337186	rows=12
+column	0	Name	TEXT
+column	1	Description	TEXT
+column	2	CreationDate	TEXT
+column	3	LastModified	TEXT
+column	4	ExactDataMethod	TEXT
+column	5	DataFrame	TEXT
+column	6	UnitLabel	TEXT
+column	7	IndexLabel	TEXT
+column	8	USGSSiteNumber	TEXT
+column	9	UseMultipleGrubbsBeckTest	BOOLEAN
+column	10	TimeSeriesElement	TEXT
+column	11	BlockFunction	TEXT
+column	12	TimeBlock	TEXT
+column	13	StartMonth	INT4
+column	14	EndMonth	INT4
+column	15	SmoothingFunction	TEXT
+column	16	Period	INT4
+column	17	Threshold	DOUBLE
+column	18	MinStepsBetweenPeaks	INT4
+column	19	IsProcessed	BOOLEAN
+column	20	ChronologyPlotSettings	TEXT
+column	21	FrequencyPlotSettings	TEXT
+column	22	SeasonalityPlotSettings	TEXT
+column	23	DensityPlotSettings	TEXT
+column	24	HistogramPlotSettings	TEXT
+column	25	QQPlotSettings	TEXT
+column	26	ACFPlotSettings	TEXT
+column	27	PACFPlotSettings	TEXT
+column	28	MRLPlotSettings	TEXT
+column	29	ModifiedScalePlotSettings	TEXT
+column	30	ShapePlotSettings	TEXT
+row	1	t:AMH - X Data	t#233:80cbcee95d7c45a7	t:4/19/2026 8:11:36 PM	t:4/19/2026 8:11:58 PM	t:Manual	t#15517:b70cecbd6f859f41/adba9e118e24ef7d:r	t:Value	t:Year	t:00000000	i:1	t:	t:Maximum	t:CalendarYear	i:10	i:9	t:None	i:1	r:0	i:1	i:0	t#5387:62b982352713dc1f/14ead8f1276fba78:r	t#5452:6a669c5a902441e0/39700d488859b3b5:r	t#4651:485ae51e9908be90/f627168d1629fdf1:r	t#4621:d27d469e9b06a1b8/ec66c0b28fab1600:r	t#4623:83891b7f491765ec/00f6f15ffc09fb66:r	t#4654:31c65fb9ffdab673/449d12bb4c4970dd:r	t#4626:eb221798a6e69160/309239f5bed5f95b:r	t#4642:271a1a0cca6b7cd0/94db91231448007e:r	t#4604:72fceb0feba00e36/f54686f1451d6bfb:r	t#4617:bd1cbff8840b0fa4/5d57c1cc278b81f5:r	t#4599:33ad547799c64842/08cc3d7ab5fc47fa:r
+row	2	t:AMH - Y Data	t#233:80cbcee95d7c45a7	t:4/19/2026 8:12:06 PM	t:4/19/2026 8:12:29 PM	t:Manual	t#15623:30fa1fb0c41f6bb2/d62f516dd13018ee:r	t:Value	t:Year	t:00000000	i:1	t:	t:Maximum	t:CalendarYear	i:10	i:9	t:None	i:1	r:0	i:1	i:0	t#5387:62b982352713dc1f/14ead8f1276fba78:r	t#5452:6a669c5a902441e0/39700d488859b3b5:r	t#4651:485ae51e9908be90/f627168d1629fdf1:r	t#4621:d27d469e9b06a1b8/ec66c0b28fab1600:r	t#4623:83891b7f491765ec/00f6f15ffc09fb66:r	t#4654:31c65fb9ffdab673/449d12bb4c4970dd:r	t#4626:eb221798a6e69160/309239f5bed5f95b:r	t#4642:271a1a0cca6b7cd0/94db91231448007e:r	t#4604:72fceb0feba00e36/f54686f1451d6bfb:r	t#4617:bd1cbff8840b0fa4/5d57c1cc278b81f5:r	t#4599:33ad547799c64842/08cc3d7ab5fc47fa:r
+row	3	t:Clayton - X Data	t#233:80cbcee95d7c45a7	t:4/19/2026 8:22:09 PM	t:4/19/2026 8:22:50 PM	t:Manual	t#15566:a2cd5c5c641e9ffe/483d5a5e8b99942f:r	t:Value	t:Year	t:00000000	i:1	t:	t:Maximum	t:CalendarYear	i:10	i:9	t:None	i:1	r:0	i:1	i:0	t#5387:62b982352713dc1f/14ead8f1276fba78:r	t#5452:6a669c5a902441e0/39700d488859b3b5:r	t#4651:485ae51e9908be90/f627168d1629fdf1:r	t#4621:d27d469e9b06a1b8/ec66c0b28fab1600:r	t#4623:83891b7f491765ec/00f6f15ffc09fb66:r	t#4654:31c65fb9ffdab673/449d12bb4c4970dd:r	t#4626:eb221798a6e69160/309239f5bed5f95b:r	t#4642:271a1a0cca6b7cd0/94db91231448007e:r	t#4604:72fceb0feba00e36/f54686f1451d6bfb:r	t#4617:bd1cbff8840b0fa4/5d57c1cc278b81f5:r	t#4599:33ad547799c64842/08cc3d7ab5fc47fa:r
+row	4	t:Clayton - Y Data	t#233:80cbcee95d7c45a7	t:4/19/2026 8:22:21 PM	t:4/19/2026 8:22:50 PM	t:Manual	t#15639:b65c7b719b518d07/42b95ae24decd474:r	t:Value	t:Year	t:00000000	i:1	t:	t:Maximum	t:CalendarYear	i:10	i:9	t:None	i:1	r:0	i:1	i:0	t#5387:62b982352713dc1f/14ead8f1276fba78:r	t#5452:6a669c5a902441e0/39700d488859b3b5:r	t#4651:485ae51e9908be90/f627168d1629fdf1:r	t#4621:d27d469e9b06a1b8/ec66c0b28fab1600:r	t#4623:83891b7f491765ec/00f6f15ffc09fb66:r	t#4654:31c65fb9ffdab673/449d12bb4c4970dd:r	t#4626:eb221798a6e69160/309239f5bed5f95b:r	t#4642:271a1a0cca6b7cd0/94db91231448007e:r	t#4604:72fceb0feba00e36/f54686f1451d6bfb:r	t#4617:bd1cbff8840b0fa4/5d57c1cc278b81f5:r	t#4599:33ad547799c64842/08cc3d7ab5fc47fa:r
+row	5	t:Frank - X Data	t#233:80cbcee95d7c45a7	t:4/19/2026 8:44:17 PM	t:4/19/2026 8:48:00 PM	t:Manual	t#15545:61f96c696799ddb5/1c859a6755ed2732:r	t:Value	t:Year	t:00000000	i:1	t:	t:Maximum	t:CalendarYear	i:10	i:9	t:None	i:1	r:0	i:1	i:0	t#5387:62b982352713dc1f/14ead8f1276fba78:r	t#5452:6a669c5a902441e0/39700d488859b3b5:r	t#4651:485ae51e9908be90/f627168d1629fdf1:r	t#4621:d27d469e9b06a1b8/ec66c0b28fab1600:r	t#4623:83891b7f491765ec/00f6f15ffc09fb66:r	t#4654:31c65fb9ffdab673/449d12bb4c4970dd:r	t#4626:eb221798a6e69160/309239f5bed5f95b:r	t#4642:271a1a0cca6b7cd0/94db91231448007e:r	t#4604:72fceb0feba00e36/f54686f1451d6bfb:r	t#4617:bd1cbff8840b0fa4/5d57c1cc278b81f5:r	t#4599:33ad547799c64842/08cc3d7ab5fc47fa:r
+row	6	t:Frank - Y Data	t#233:80cbcee95d7c45a7	t:4/19/2026 8:44:28 PM	t:4/19/2026 8:48:00 PM	t:Manual	t#15675:eed235b486c05a85/d7cf6c60a6d5c441:r	t:Value	t:Year	t:00000000	i:1	t:	t:Maximum	t:CalendarYear	i:10	i:9	t:None	i:1	r:0	i:1	i:0	t#5387:62b982352713dc1f/14ead8f1276fba78:r	t#5452:6a669c5a902441e0/39700d488859b3b5:r	t#4651:485ae51e9908be90/f627168d1629fdf1:r	t#4621:d27d469e9b06a1b8/ec66c0b28fab1600:r	t#4623:83891b7f491765ec/00f6f15ffc09fb66:r	t#4654:31c65fb9ffdab673/449d12bb4c4970dd:r	t#4626:eb221798a6e69160/309239f5bed5f95b:r	t#4642:271a1a0cca6b7cd0/94db91231448007e:r	t#4604:72fceb0feba00e36/f54686f1451d6bfb:r	t#4617:bd1cbff8840b0fa4/5d57c1cc278b81f5:r	t#4599:33ad547799c64842/08cc3d7ab5fc47fa:r
+row	7	t:Gumbel - X Data	t#233:80cbcee95d7c45a7	t:4/19/2026 8:46:41 PM	t:4/19/2026 8:47:31 PM	t:Manual	t#15543:592691694f77967e/b60cecf82a59c26d:r	t:Value	t:Year	t:00000000	i:1	t:	t:Maximum	t:CalendarYear	i:10	i:9	t:None	i:1	r:0	i:1	i:0	t#5387:62b982352713dc1f/14ead8f1276fba78:r	t#5452:6a669c5a902441e0/39700d488859b3b5:r	t#4651:485ae51e9908be90/f627168d1629fdf1:r	t#4621:d27d469e9b06a1b8/ec66c0b28fab1600:r	t#4623:83891b7f491765ec/00f6f15ffc09fb66:r	t#4654:31c65fb9ffdab673/449d12bb4c4970dd:r	t#4626:eb221798a6e69160/309239f5bed5f95b:r	t#4642:271a1a0cca6b7cd0/94db91231448007e:r	t#4604:72fceb0feba00e36/f54686f1451d6bfb:r	t#4617:bd1cbff8840b0fa4/5d57c1cc278b81f5:r	t#4599:33ad547799c64842/08cc3d7ab5fc47fa:r
+row	8	t:Gumbel - Y Data	t#233:80cbcee95d7c45a7	t:4/19/2026 8:46:57 PM	t:4/19/2026 8:47:31 PM	t:Manual	t#15637:77924cdcc0e0916a/d2490cb59c6e986c:r	t:Value	t:Year	t:00000000	i:1	t:	t:Maximum	t:CalendarYear	i:10	i:9	t:None	i:1	r:0	i:1	i:0	t#5387:62b982352713dc1f/14ead8f1276fba78:r	t#5452:6a669c5a902441e0/39700d488859b3b5:r	t#4651:485ae51e9908be90/f627168d1629fdf1:r	t#4621:d27d469e9b06a1b8/ec66c0b28fab1600:r	t#4623:83891b7f491765ec/00f6f15ffc09fb66:r	t#4654:31c65fb9ffdab673/449d12bb4c4970dd:r	t#4626:eb221798a6e69160/309239f5bed5f95b:r	t#4642:271a1a0cca6b7cd0/94db91231448007e:r	t#4604:72fceb0feba00e36/f54686f1451d6bfb:r	t#4617:bd1cbff8840b0fa4/5d57c1cc278b81f5:r	t#4599:33ad547799c64842/08cc3d7ab5fc47fa:r
+row	9	t:Joe - X Data	t#233:80cbcee95d7c45a7	t:4/19/2026 8:50:25 PM	t:4/19/2026 8:51:02 PM	t:Manual	t#15571:147c1bf0f1cabcbe/c7e7ca62273a6462:r	t:Value	t:Year	t:00000000	i:1	t:	t:Maximum	t:CalendarYear	i:10	i:9	t:None	i:1	r:0	i:1	i:0	t#5387:62b982352713dc1f/14ead8f1276fba78:r	t#5452:6a669c5a902441e0/39700d488859b3b5:r	t#4651:485ae51e9908be90/f627168d1629fdf1:r	t#4621:d27d469e9b06a1b8/ec66c0b28fab1600:r	t#4623:83891b7f491765ec/00f6f15ffc09fb66:r	t#4654:31c65fb9ffdab673/449d12bb4c4970dd:r	t#4626:eb221798a6e69160/309239f5bed5f95b:r	t#4642:271a1a0cca6b7cd0/94db91231448007e:r	t#4604:72fceb0feba00e36/f54686f1451d6bfb:r	t#4617:bd1cbff8840b0fa4/5d57c1cc278b81f5:r	t#4599:33ad547799c64842/08cc3d7ab5fc47fa:r
+row	10	t:Joe - Y Data	t#233:80cbcee95d7c45a7	t:4/19/2026 8:50:34 PM	t:4/19/2026 8:51:02 PM	t:Manual	t#15666:79d745026050666a/bf5de14164a16dc8:r	t:Value	t:Year	t:00000000	i:1	t:	t:Maximum	t:CalendarYear	i:10	i:9	t:None	i:1	r:0	i:1	i:0	t#5387:62b982352713dc1f/14ead8f1276fba78:r	t#5452:6a669c5a902441e0/39700d488859b3b5:r	t#4651:485ae51e9908be90/f627168d1629fdf1:r	t#4621:d27d469e9b06a1b8/ec66c0b28fab1600:r	t#4623:83891b7f491765ec/00f6f15ffc09fb66:r	t#4654:31c65fb9ffdab673/449d12bb4c4970dd:r	t#4626:eb221798a6e69160/309239f5bed5f95b:r	t#4642:271a1a0cca6b7cd0/94db91231448007e:r	t#4604:72fceb0feba00e36/f54686f1451d6bfb:r	t#4617:bd1cbff8840b0fa4/5d57c1cc278b81f5:r	t#4599:33ad547799c64842/08cc3d7ab5fc47fa:r
+row	11	t:Normal - X Data	t#233:80cbcee95d7c45a7	t:4/19/2026 8:53:02 PM	t:4/19/2026 8:53:27 PM	t:Manual	t#15561:fece24cbdc053e9f/be7ab368761becd5:r	t:Value	t:Year	t:00000000	i:1	t:	t:Maximum	t:CalendarYear	i:10	i:9	t:None	i:1	r:0	i:1	i:0	t#5387:62b982352713dc1f/14ead8f1276fba78:r	t#5452:6a669c5a902441e0/39700d488859b3b5:r	t#4651:485ae51e9908be90/f627168d1629fdf1:r	t#4621:d27d469e9b06a1b8/ec66c0b28fab1600:r	t#4623:83891b7f491765ec/00f6f15ffc09fb66:r	t#4654:31c65fb9ffdab673/449d12bb4c4970dd:r	t#4626:eb221798a6e69160/309239f5bed5f95b:r	t#4642:271a1a0cca6b7cd0/94db91231448007e:r	t#4604:72fceb0feba00e36/f54686f1451d6bfb:r	t#4617:bd1cbff8840b0fa4/5d57c1cc278b81f5:r	t#4599:33ad547799c64842/08cc3d7ab5fc47fa:r
+row	12	t:Normal - Y Data	t#233:80cbcee95d7c45a7	t:4/19/2026 8:53:11 PM	t:4/19/2026 8:54:19 PM	t:Manual	t#15714:73a5dbe14f4de678/62b633d94f82cc92:r	t:Value	t:Year	t:00000000	i:1	t:	t:Maximum	t:CalendarYear	i:10	i:9	t:None	i:1	r:0	i:1	i:0	t#5387:62b982352713dc1f/14ead8f1276fba78:r	t#5452:6a669c5a902441e0/39700d488859b3b5:r	t#4651:485ae51e9908be90/f627168d1629fdf1:r	t#4621:d27d469e9b06a1b8/ec66c0b28fab1600:r	t#4623:83891b7f491765ec/00f6f15ffc09fb66:r	t#4654:31c65fb9ffdab673/449d12bb4c4970dd:r	t#4626:eb221798a6e69160/309239f5bed5f95b:r	t#4642:271a1a0cca6b7cd0/94db91231448007e:r	t#4604:72fceb0feba00e36/f54686f1451d6bfb:r	t#4617:bd1cbff8840b0fa4/5d57c1cc278b81f5:r	t#4599:33ad547799c64842/08cc3d7ab5fc47fa:r
+table	Project	sha=b2b138fa1bfae0fc	sql=bf204117c9f875b1	rows=1
+column	0	Name	TEXT
+column	1	Description	TEXT
+column	2	CreationDate	TEXT
+column	3	LastModified	TEXT
+column	4	FullFileName	TEXT
+column	5	SoftwareVersion	TEXT
+column	6	AvalonDockLayout	TEXT
+column	7	ProjectExplorerLayout	TEXT
+column	8	AvalonDockLayoutPrevious	TEXT
+column	9	ProjectExplorerLayoutPrevious	TEXT
+row	1	t:bivariate-distribution-examples	t#296:456da7c5720db463	t:4/19/2026 8:10:34 PM	t:9/17/2026 3:59:36 PM	p:{dir}\\bivariate-distribution-examples.bestfit	t:2.0.1	t#1620:4ede0c9e45136c51/10e6d575b98e9012:r	t#3125:b4980b6309c13c28/04e4679a773f0810:r	t#3648:21316bfd714463c8/00598eaa0cbdf32c:r	t#3124:3887a4d04db45722/0e97036eac8cc1a6:r
+table	Univariate Distribution Analysis	sha=9a21a390f3a94ebe	sql=63dff5382d17bd53	rows=12
+column	0	Name	TEXT
+column	1	Type	TEXT
+row	1	t:AMH - Marginal X	t:RMC.BestFit.UI.UnivariateAnalysis
+row	2	t:AMH - Marginal Y	t:RMC.BestFit.UI.UnivariateAnalysis
+row	3	t:Clayton - Marginal X	t:RMC.BestFit.UI.UnivariateAnalysis
+row	4	t:Clayton - Marginal Y	t:RMC.BestFit.UI.UnivariateAnalysis
+row	5	t:Frank - Marginal X	t:RMC.BestFit.UI.UnivariateAnalysis
+row	6	t:Frank - Marginal Y	t:RMC.BestFit.UI.UnivariateAnalysis
+row	7	t:Gumbel - Marginal X	t:RMC.BestFit.UI.UnivariateAnalysis
+row	8	t:Gumbel - Marginal Y	t:RMC.BestFit.UI.UnivariateAnalysis
+row	9	t:Joe - Marginal X	t:RMC.BestFit.UI.UnivariateAnalysis
+row	10	t:Joe - Marginal Y	t:RMC.BestFit.UI.UnivariateAnalysis
+row	11	t:Normal - Marginal X	t:RMC.BestFit.UI.UnivariateAnalysis
+row	12	t:Normal - Marginal Y	t:RMC.BestFit.UI.UnivariateAnalysis
+state	00 Time Series Data	7c890208af994c26	66eae0f9e86047a2
+state	01 Input Data	f052c7edc93ac431	7138759d2d2c7b9f
+state	01 Input Data/00 InputData 'AMH - X Data'	35e51e54fdabe6cf	dfcfd48c63b15c95
+state	01 Input Data/01 InputData 'AMH - Y Data'	f448245a7278e4c3	7503f11dfe7fa903
+state	01 Input Data/02 InputData 'Clayton - X Data'	4e2ea6f762a1e89e	1ca72ad5d95e0bf4
+state	01 Input Data/03 InputData 'Clayton - Y Data'	32bbc42cc13257a4	b34cc31f3f0b2689
+state	01 Input Data/04 InputData 'Frank - X Data'	9da84bf0c91aedfe	9067273fb5b977d1
+state	01 Input Data/05 InputData 'Frank - Y Data'	910ccc991f9206a1	e5c0ff266b7f8884
+state	01 Input Data/06 InputData 'Gumbel - X Data'	422b29befda028ee	0816d625e94e7aef
+state	01 Input Data/07 InputData 'Gumbel - Y Data'	f5ac816bce90281d	5d2a48b49e92cb15
+state	01 Input Data/08 InputData 'Joe - X Data'	cd556de1507edc86	8710103a095d485c
+state	01 Input Data/09 InputData 'Joe - Y Data'	24f432b76804e9cf	002d5b17e1b4c4ec
+state	01 Input Data/10 InputData 'Normal - X Data'	848f54c19ca6dfa8	bc1c072a2d0f83d9
+state	01 Input Data/11 InputData 'Normal - Y Data'	c072b2a7112fbff6	c159bd4939b39450
+state	02 Distribution Fitting Analysis	22c9cdb7873ae49a	4a4ead4bf90c0837
+state	03 Univariate Distribution Analysis	81cfc92c7f982318	0e3a3c46961dd428
+state	03 Univariate Distribution Analysis/00 UnivariateAnalysis 'AMH - Marginal X'	5cf5627ecf9a3323	28a0d34a3051ce55
+state	03 Univariate Distribution Analysis/01 UnivariateAnalysis 'AMH - Marginal Y'	3c586e0e5a622d22	05128cb87de73f99
+state	03 Univariate Distribution Analysis/02 UnivariateAnalysis 'Clayton - Marginal X'	34efd525f9773a16	36d2887f17c75e43
+state	03 Univariate Distribution Analysis/03 UnivariateAnalysis 'Clayton - Marginal Y'	0627111b5b7ce37a	35f09763cd177781
+state	03 Univariate Distribution Analysis/04 UnivariateAnalysis 'Frank - Marginal X'	49ea3782d84c8209	c5293a85271f4427
+state	03 Univariate Distribution Analysis/05 UnivariateAnalysis 'Frank - Marginal Y'	eb47cf6c91b5e4c4	6d04a4b023c9d219
+state	03 Univariate Distribution Analysis/06 UnivariateAnalysis 'Gumbel - Marginal X'	d11ed063fde82f11	e0425aefe969278f
+state	03 Univariate Distribution Analysis/07 UnivariateAnalysis 'Gumbel - Marginal Y'	266651fd9f6e5795	39cc5dcf95041d84
+state	03 Univariate Distribution Analysis/08 UnivariateAnalysis 'Joe - Marginal X'	b52f3157134510f5	d54f9350c5966155
+state	03 Univariate Distribution Analysis/09 UnivariateAnalysis 'Joe - Marginal Y'	3e12b73f1b2c0617	c41638ae4bfdb3cd
+state	03 Univariate Distribution Analysis/10 UnivariateAnalysis 'Normal - Marginal X'	a4b874b208075084	6184682214fdafea
+state	03 Univariate Distribution Analysis/11 UnivariateAnalysis 'Normal - Marginal Y'	2461f9d56cbfd11c	1f74d434e23f1ec6
+state	04 Bivariate Distribution Analysis	856f7722c17d1d3d	85c24dd973e8dafa
+state	04 Bivariate Distribution Analysis/00 BivariateAnalysis 'AMH Copula'	142848afa7a1308a	2256cc306667cff1
+state	04 Bivariate Distribution Analysis/01 BivariateAnalysis 'Clayton Copula'	ecb14a7a145b22ff	aeaec2228d1fb5f4
+state	04 Bivariate Distribution Analysis/02 BivariateAnalysis 'Frank Copula'	a7fae9a689a345e1	dae480e8bae221e1
+state	04 Bivariate Distribution Analysis/03 BivariateAnalysis 'Gumbel Copula'	cb764e7b49202ddc	b43963b4d1fe3870
+state	04 Bivariate Distribution Analysis/04 BivariateAnalysis 'Joe Copula'	4f1eea1e211062ad	5f8b02c1e2181ea8
+state	04 Bivariate Distribution Analysis/05 BivariateAnalysis 'Normal Copula'	717b1a13e191c9fb	2b5be82059ac96a3
+state	05 Rating Curve Analysis	5b9e46ee16c64e96	771f60dc9817d061
+state	06 Time Series Analysis	2f4a1830d606047e	0e6e4ee694390acc
+state	Project	d0e7298b943e915c	d0e7298b943e915c
+end

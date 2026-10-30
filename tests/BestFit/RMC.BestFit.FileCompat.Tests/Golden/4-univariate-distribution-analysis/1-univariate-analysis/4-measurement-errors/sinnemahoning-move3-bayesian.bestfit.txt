@@ -1,0 +1,101 @@
+bestfit-file-description	1
+file	4-univariate-distribution-analysis/1-univariate-analysis/4-measurement-errors/sinnemahoning-move3-bayesian.bestfit	sha=7aec29f7915539fd	tables=4	cells=175
+pragma	encoding	UTF-8
+pragma	journal_mode	wal
+pragma	user_version	0
+pragma	application_id	0
+pragma	auto_vacuum	0
+table	<Univariate Distribution>	sha=5edf07c18f3466cb	sql=09cbaf58c37595de	rows=3
+column	0	Name	TEXT
+column	1	Description	TEXT
+column	2	CreationDate	TEXT
+column	3	LastModified	TEXT
+column	4	InputData	TEXT
+column	5	UnivariateDistribution	TEXT
+column	6	BayesianAnalysis	TEXT
+column	7	MCMCResults	BLOB
+column	8	AnalysisResults	TEXT
+column	9	ChronologyAnalysisResults	TEXT
+column	10	ProbabilityOrdinates	TEXT
+column	11	FrequencyPlotSettings	TEXT
+column	12	ChronologyPlotSettings	TEXT
+column	13	InfluenceDiagnosticsPlotSettings	TEXT
+column	14	KernelDensityPlotSettings	TEXT
+column	15	HistogramPlotSettings	TEXT
+column	16	BivariatePlotSettings	TEXT
+column	17	MeanLikelihoodPlotSettings	TEXT
+column	18	AutocorrelationPlotSettings	TEXT
+column	19	MarkovChainTracesPlotSettings	TEXT
+column	20	AnalysisXml	TEXT
+column	21	MCMCReport	TEXT
+row	1	t:LPIII - No Extension	t#200:717c20044d135ce6	t:4/3/2026 2:55:55 PM	t:4/3/2026 2:58:21 PM	t:Sinnemahoning - No Extension	t#2536:335a12dd05987b63/728caec12be28993:r	t#732:0f40ef5c44710f80	b#1195718:728a735a6f9d6706>z#3606347:3bad73a87dc9c35d	t#2226:c74f0804df1fcd82/5b5d00286d26b7cb:r	t:	t#439:5840f09d7e1a6c45	t#8235:a207dcdc3a3fd2a3/8fe6b6e9d92a16c7:r	t#4576:d38cbe170cc2007d/4825ec41c7241a1d:r	t#5271:a2aed5fd44a6ea5e/e4e0ee898d1fc917:r	t#5628:497cc7e14c465ecc/1ee0ccda41833a76:r	t#5237:3ecb08ea85be9b42/0c11b6724fcff7dc:r	t#7662:afe28fc52a041be6/a7b7d85c3722058d:r	t#5539:98bb0f8a8dfdcafa/27c1139353ee8fc9:r	t#6921:32dabea247708663/afc5277bbfcbd896:r	t#9907:2ea06d63678306ca/550f56bc9ba5d57a:r	t#1286:ad3bc8f4b2256076/cca09977947849e9:r	t:
+row	2	t:LPIII - No Errors	t#206:4182bd4e9bf98626	t:4/3/2026 2:56:28 PM	t:4/3/2026 2:58:21 PM	t:Sinnemahoning - MOVE.3 - No Errors	t#2545:aed7d6601a9c08d6/8ad93fd1615cbffe:r	t#733:2d65af0318d2db8c	b#1194440:2c2e48cfb3186584>z#3640439:7f9ab5e61093dc73	t#2228:2228f55ace9b0bc0/9c9c9e2715aa4745:r	t:	t#439:5840f09d7e1a6c45	t#8235:a207dcdc3a3fd2a3/8fe6b6e9d92a16c7:r	t#4576:d38cbe170cc2007d/4825ec41c7241a1d:r	t#5271:a2aed5fd44a6ea5e/e4e0ee898d1fc917:r	t#5628:497cc7e14c465ecc/1ee0ccda41833a76:r	t#5237:3ecb08ea85be9b42/0c11b6724fcff7dc:r	t#7663:a8969f4731e01085/22ac06ce145ef4d9:r	t#5539:98bb0f8a8dfdcafa/27c1139353ee8fc9:r	t#6921:32dabea247708663/afc5277bbfcbd896:r	t#9907:2ea06d63678306ca/550f56bc9ba5d57a:r	t#1287:0858885b77cdc0eb/bca246e1f7b7c739:r	t:
+row	3	t:LPIII - With Errors	t#208:a9cede19ab14d9ab	t:4/3/2026 2:57:00 PM	t:7/15/2026 10:02:32 PM	t:Sinnemahoning - MOVE.3 - With Errors	t#2542:a67ccef6a5f6c449/522e4a41389db0df:r	t#733:1da502fe4fa1462c	b#1191574:75c75d0da48851df>z#3638629:83faab5bb4cceb60	t#2231:eeca88d05a6ecaa9/6d92ed8566672b14:r	t:	t#439:5840f09d7e1a6c45	t#9065:757cdb6782559406/fbb25435a337c0d6:r	t#4608:2882b71b62e44dcb/dea31b3a4510c52d:r	t#5314:085567b25b97b9ec/93059f09d993770c:r	t#5685:8ae6ade5d2f03e04/d8b5efafc87e0dc6:r	t#5296:22c4f5b67ae1c7a8/09791a58776e8681:r	t#7743:29fbd37435c9c703/fb4d344b3bb2158a:r	t#5539:004483ae9d62f197/a6b549c2b16aebff:r	t#6967:725b77c696243407/36f41321fb9d5560:r	t#9907:9a49342edbd09878/6780607066eb1074:r	t#1287:8c95c1912d75b225/c349965e02378c55:r	t:
+table	Input Data	sha=bd8627776ad6ace3	sql=d536de5c86337186	rows=3
+column	0	Name	TEXT
+column	1	Description	TEXT
+column	2	CreationDate	TEXT
+column	3	LastModified	TEXT
+column	4	ExactDataMethod	TEXT
+column	5	DataFrame	TEXT
+column	6	UnitLabel	TEXT
+column	7	IndexLabel	TEXT
+column	8	USGSSiteNumber	TEXT
+column	9	UseMultipleGrubbsBeckTest	BOOLEAN
+column	10	TimeSeriesElement	TEXT
+column	11	BlockFunction	TEXT
+column	12	TimeBlock	TEXT
+column	13	StartMonth	INT4
+column	14	EndMonth	INT4
+column	15	SmoothingFunction	TEXT
+column	16	Period	INT4
+column	17	Threshold	DOUBLE
+column	18	MinStepsBetweenPeaks	INT4
+column	19	IsProcessed	BOOLEAN
+column	20	ChronologyPlotSettings	TEXT
+column	21	FrequencyPlotSettings	TEXT
+column	22	SeasonalityPlotSettings	TEXT
+column	23	DensityPlotSettings	TEXT
+column	24	HistogramPlotSettings	TEXT
+column	25	QQPlotSettings	TEXT
+column	26	ACFPlotSettings	TEXT
+column	27	PACFPlotSettings	TEXT
+column	28	MRLPlotSettings	TEXT
+column	29	ModifiedScalePlotSettings	TEXT
+column	30	ShapePlotSettings	TEXT
+row	1	t:Sinnemahoning - MOVE.3 - No Errors	t#112:ce22bcc475f82a63	t:4/3/2026 2:44:45 PM	t:4/3/2026 2:45:16 PM	t:Manual	t#15281:fe3084d9873af839/6306bac54cd6da18:r	t:Flow (cfs)	t:Year	t:00000000	i:1	t:	t:Maximum	t:CalendarYear	i:10	i:9	t:None	i:1	r:0	i:1	i:0	t#5392:34f491181610bd8b/1f137d6cd1219653:r	t#5457:7aa548d288ff447d/57e11f1aea113a47:r	t#4651:6b85ebc41a421f57/09c96393592dae26:r	t#4626:f1c94001ee7f5128/374f7797bd7aa560:r	t#4628:fed98168bcf4946b/c8c69b120e3f8899:r	t#4654:8747814e5cd90813/2092f1d101270365:r	t#4626:280270ea276ead65/c091de4343c99a05:r	t#4642:26b02815c4734bda/09e13cba1cc75f1c:r	t#4604:2ba13a6f72b992d3/00e4bd00c9c834b7:r	t#4617:bd1cbff8840b0fa4/5d57c1cc278b81f5:r	t#4599:33ad547799c64842/08cc3d7ab5fc47fa:r
+row	2	t:Sinnemahoning - MOVE.3 - With Errors	t#130:85f7ea2149d9053b	t:4/3/2026 2:46:03 PM	t:4/3/2026 2:54:43 PM	t:Manual	t#16355:08211834042a8cf5/99c76b6af6efe772:r	t:Flow (cfs)	t:Year	t:00000000	i:1	t:	t:Maximum	t:CalendarYear	i:10	i:9	t:None	i:1	r:0	i:1	i:0	t#6193:648c7c5a4b145197/fe5bb48322393534:r	t#6268:e06229cdacf5b205/3886b966aad61354:r	t#4651:6b85ebc41a421f57/09c96393592dae26:r	t#4626:f1c94001ee7f5128/374f7797bd7aa560:r	t#4628:fed98168bcf4946b/c8c69b120e3f8899:r	t#4654:8747814e5cd90813/2092f1d101270365:r	t#4626:280270ea276ead65/c091de4343c99a05:r	t#4642:26b02815c4734bda/09e13cba1cc75f1c:r	t#4604:2ba13a6f72b992d3/00e4bd00c9c834b7:r	t#4617:bd1cbff8840b0fa4/5d57c1cc278b81f5:r	t#4599:33ad547799c64842/08cc3d7ab5fc47fa:r
+row	3	t:Sinnemahoning - No Extension	t:79 systematic peaks for 1939\u20132017, flow in cfs.	t:4/3/2026 2:55:11 PM	t:4/3/2026 2:55:34 PM	t:Manual	t#11446:67897cd797188b99/71483a7b9e85664c:r	t:Flow (cfs)	t:Year	t:00000000	i:1	t:	t:Maximum	t:CalendarYear	i:10	i:9	t:None	i:1	r:0	i:1	i:0	t#5392:34f491181610bd8b/1f137d6cd1219653:r	t#5457:7aa548d288ff447d/57e11f1aea113a47:r	t#4651:6b85ebc41a421f57/09c96393592dae26:r	t#4626:f1c94001ee7f5128/374f7797bd7aa560:r	t#4628:fed98168bcf4946b/c8c69b120e3f8899:r	t#4654:8747814e5cd90813/2092f1d101270365:r	t#4626:280270ea276ead65/c091de4343c99a05:r	t#4642:26b02815c4734bda/09e13cba1cc75f1c:r	t#4604:2ba13a6f72b992d3/00e4bd00c9c834b7:r	t#4617:bd1cbff8840b0fa4/5d57c1cc278b81f5:r	t#4599:33ad547799c64842/08cc3d7ab5fc47fa:r
+table	Project	sha=a1e860e4cf0e4d10	sql=bf204117c9f875b1	rows=1
+column	0	Name	TEXT
+column	1	Description	TEXT
+column	2	CreationDate	TEXT
+column	3	LastModified	TEXT
+column	4	FullFileName	TEXT
+column	5	SoftwareVersion	TEXT
+column	6	AvalonDockLayout	TEXT
+column	7	ProjectExplorerLayout	TEXT
+column	8	AvalonDockLayoutPrevious	TEXT
+column	9	ProjectExplorerLayoutPrevious	TEXT
+row	1	t:sinnemahoning-move3-bayesian	t#307:d9ef85a395c6f251	t:4/3/2026 2:44:14 PM	t:7/15/2026 10:02:32 PM	p:{dir}\\sinnemahoning-move3-bayesian.bestfit	t:2.0.1	t#2020:aa93d23059254d66/4599cecb4f94c563:r	t#1298:5df134aaf0db5a2b/fd2067e0035e48f3:r	t#1620:f3a785fc9a2841f7/492c941d8e96578e:r	t:
+table	Univariate Distribution Analysis	sha=00d68017049f967d	sql=63dff5382d17bd53	rows=3
+column	0	Name	TEXT
+column	1	Type	TEXT
+row	1	t:LPIII - No Extension	t:RMC.BestFit.UI.UnivariateAnalysis
+row	2	t:LPIII - No Errors	t:RMC.BestFit.UI.UnivariateAnalysis
+row	3	t:LPIII - With Errors	t:RMC.BestFit.UI.UnivariateAnalysis
+state	00 Time Series Data	7c890208af994c26	66eae0f9e86047a2
+state	01 Input Data	80ad9cc59ef724d7	7138759d2d2c7b9f
+state	01 Input Data/00 InputData 'Sinnemahoning - MOVE.3 - No Errors'	530860dc69063c04	4491e7aee72570bf
+state	01 Input Data/01 InputData 'Sinnemahoning - MOVE.3 - With Errors'	ccaa2e3a37307d9a	e16b3a1505723d53
+state	01 Input Data/02 InputData 'Sinnemahoning - No Extension'	270b1186d8561a4b	3f4eaf41da9d2486
+state	02 Distribution Fitting Analysis	22c9cdb7873ae49a	4a4ead4bf90c0837
+state	03 Univariate Distribution Analysis	fd314459a6167603	0e3a3c46961dd428
+state	03 Univariate Distribution Analysis/00 UnivariateAnalysis 'LPIII - No Extension'	9b747d7bf2d02099	64d4fb0e5582a510
+state	03 Univariate Distribution Analysis/01 UnivariateAnalysis 'LPIII - No Errors'	ee7acbf1e361e563	498b23533b7821d8
+state	03 Univariate Distribution Analysis/02 UnivariateAnalysis 'LPIII - With Errors'	9aca3b78fba8a56b	53ccdd30f09e71c9
+state	04 Bivariate Distribution Analysis	2df996a968e4df10	85c24dd973e8dafa
+state	05 Rating Curve Analysis	5b9e46ee16c64e96	771f60dc9817d061
+state	06 Time Series Analysis	2f4a1830d606047e	0e6e4ee694390acc
+state	Project	bbcbe8adc82ef31f	bbcbe8adc82ef31f
+end

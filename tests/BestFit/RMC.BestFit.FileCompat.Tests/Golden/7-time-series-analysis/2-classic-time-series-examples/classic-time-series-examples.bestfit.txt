@@ -1,0 +1,127 @@
+bestfit-file-description	1
+file	7-time-series-analysis/2-classic-time-series-examples/classic-time-series-examples.bestfit	sha=09771a3302abe74e	tables=4	cells=169
+pragma	encoding	UTF-8
+pragma	journal_mode	wal
+pragma	user_version	0
+pragma	application_id	0
+pragma	auto_vacuum	0
+table	Input Data	sha=b7ba6015ef784fbc	sql=d536de5c86337186	rows=0
+column	0	Name	TEXT
+column	1	Description	TEXT
+column	2	CreationDate	TEXT
+column	3	LastModified	TEXT
+column	4	ExactDataMethod	TEXT
+column	5	DataFrame	TEXT
+column	6	UnitLabel	TEXT
+column	7	IndexLabel	TEXT
+column	8	USGSSiteNumber	TEXT
+column	9	UseMultipleGrubbsBeckTest	BOOLEAN
+column	10	TimeSeriesElement	TEXT
+column	11	BlockFunction	TEXT
+column	12	TimeBlock	TEXT
+column	13	StartMonth	INT4
+column	14	EndMonth	INT4
+column	15	SmoothingFunction	TEXT
+column	16	Period	INT4
+column	17	Threshold	DOUBLE
+column	18	MinStepsBetweenPeaks	INT4
+column	19	IsProcessed	BOOLEAN
+column	20	ChronologyPlotSettings	TEXT
+column	21	FrequencyPlotSettings	TEXT
+column	22	SeasonalityPlotSettings	TEXT
+column	23	DensityPlotSettings	TEXT
+column	24	HistogramPlotSettings	TEXT
+column	25	QQPlotSettings	TEXT
+column	26	ACFPlotSettings	TEXT
+column	27	PACFPlotSettings	TEXT
+column	28	MRLPlotSettings	TEXT
+column	29	ModifiedScalePlotSettings	TEXT
+column	30	ShapePlotSettings	TEXT
+table	Project	sha=e288c6e32e50966c	sql=bf204117c9f875b1	rows=1
+column	0	Name	TEXT
+column	1	Description	TEXT
+column	2	CreationDate	TEXT
+column	3	LastModified	TEXT
+column	4	FullFileName	TEXT
+column	5	SoftwareVersion	TEXT
+column	6	AvalonDockLayout	TEXT
+column	7	ProjectExplorerLayout	TEXT
+column	8	AvalonDockLayoutPrevious	TEXT
+column	9	ProjectExplorerLayoutPrevious	TEXT
+row	1	t:classic-time-series-examples	t#277:91d1d94e24074d58	t:2/20/2026 7:23:54 PM	t:10/8/2026 10:58:09 AM	p:{dir}\\classic-time-series-examples.bestfit	t:2.0.1	t#2144:fd083140e2b42a87/2b3e23831e68071c:r	t#1252:2561c17a61062f94/4b76f39ba2d78906:r	t#2382:ca54e10d290c2823/0719e88972ac93b2:r	t#1337:6058914fc0524cb4/4b431b7cacace624:r
+table	Time Series Analysis	sha=f81d200cee4edff9	sql=b1f8e44fa408e5d9	rows=3
+column	0	Name	TEXT
+column	1	Description	TEXT
+column	2	CreationDate	TEXT
+column	3	LastModified	TEXT
+column	4	TimeSeriesData	TEXT
+column	5	Covariates	TEXT
+column	6	ARIMAX	TEXT
+column	7	BayesianAnalysis	TEXT
+column	8	MCMCResults	BLOB
+column	9	AnalysisResults	TEXT
+column	10	TimeSeriesPlotSettings	TEXT
+column	11	ResidualPlotSettings	TEXT
+column	12	ResidualHistogramPlotSettings	TEXT
+column	13	ResidualQQPlotSettings	TEXT
+column	14	ResidualACFPlotSettings	TEXT
+column	15	ResidualPACFPlotSettings	TEXT
+column	16	KernelDensityPlotSettings	TEXT
+column	17	HistogramPlotSettings	TEXT
+column	18	BivariatePlotSettings	TEXT
+column	19	MeanLikelihoodPlotSettings	TEXT
+column	20	AutocorrelationPlotSettings	TEXT
+column	21	MarkovChainTracesPlotSettings	TEXT
+column	22	InfluenceDiagnosticsPlotSettings	TEXT
+column	23	MCMCReport	TEXT
+column	24	ForecastingTimeSteps	INT4
+column	25	AnalysisXml	TEXT
+column	26	PreV201Results	BOOLEAN
+row	1	t:Airline Passengers - TSA	t#316:346089e793cbcb07	t:4/24/2026 4:57:56 PM	t:10/8/2026 10:58:09 AM	t:Airline Passengers	t:	t#1382:21b77bb3afb65c13/4248b12b424f11c0:r	t#731:db5767f75022ad51	b#1823115:dabcf0d140782ec3>z#5145941:3af3dc52488274d6	t#11411:7a47846d029e967c	t#10251:cc366abb626d2512/164ea2c10e6e2ab5:r	t#6227:b581bd245addba3d/76df79b3bc8021a5:r	t#6116:29aab91c718a27f1/4fc70b74cf2814ae:r	t#6217:1f541dac4e0b7cf3/4ebb4fa9739361ba:r	t#6922:6eae49715adac67b/45e19477f98755d9:r	t#6946:278d89b811403c5f/567284a64f504e4c:r	t#5677:fb3199dd06a68f4e/63858fbf948fff15:r	t#5288:4e698e5ba0a605a9/9ab0ed0960066a70:r	t#7715:30b823a4e531bea7/0e0319ec035554a1:r	t#5539:004483ae9d62f197/a6b549c2b16aebff:r	t#6963:d2232c33b119d752/b876aba2b7af4982:r	t#4592:5a6e4301769d2b63/b27fe2dab86849af:r	t#5319:baac1d50689970a7/4bfdcae103dde999:r	t:	i:0	t#814:2628b8de5c83a55b/19e876a1e0073566:r	i:0
+row	2	t:Nile River Flows - TSA	t#304:b43a8db1e0a3f4c0	t:4/24/2026 4:58:53 PM	t:9/16/2026 4:34:10 PM	t:Nile River Flows	t:	t#1161:49a7a6617976072a/6ee780f360e12f1c:r	t#718:9c5f7ecf22c7ff2b	b#1253629:382b8bddb5d19c89>z#3654592:c9686d32bb454862	t#7922:216768cd19743448	t#10269:09179f4d91450cdf/55e3631375c7667e:r	t#6221:f61e79cd00e02ec1/eeac34d409a0c688:r	t#6116:e370b037324aacd3/c4feee36af6a94b1:r	t#6217:4cb3ce95fcc3ff2c/fe4aaf32148ea2ff:r	t#6922:77e053c7daa35f9c/8cb19c98193dcc82:r	t#6962:32df057b4893c45b/617101b4a35aefd2:r	t#5677:2a9e1b37f73d659f/06b38e42bfde73d8:r	t#5288:9441b123bf24cc07/482475a4b391b2c4:r	t#7717:bb6286385d4a36a5/6e165db97f97f9fa:r	t#5539:5a3f6aaf1cd3b0c4/8553b05d14efe043:r	t#6962:702d9c04b47b122d/8cc60d41e355bfa9:r	t#4592:e00b33408b532b25/334d3790af79139f:r	t#5319:2ca31fc73e41c75e/3067f3008c634549:r	t:	i:0	t#801:490839f5a176939b/764c621a95a2fe79:r	i:0
+row	3	t:Mauna Loa - CO2	t#184:c1b79303826ac401	t:4/24/2026 5:02:04 PM	t:9/16/2026 4:38:14 PM	t:Mauna Loa CO2	t:	t#1898:8ae10e91f619bad1/542a1ad7db4f26cc:r	t#735:5c1b3c24e40dbec9	b#3344075:0284141cc5a15d3a>z#9120494:834dd1da0d8a70ca	t#62913:7618a5e13618ee31	t#10238:3602f58375da64b6/a071de06f58aa121:r	t#6214:5fd12853574eabf2/bb7189c8d911a64c:r	t#6116:e370b037324aacd3/c4feee36af6a94b1:r	t#6217:4cb3ce95fcc3ff2c/fe4aaf32148ea2ff:r	t#6924:2c12bb90abab8042/286afe601eba8e0a:r	t#6964:efb369e84010706e/171fe3ee1c7968fe:r	t#5677:2a9e1b37f73d659f/06b38e42bfde73d8:r	t#5288:9441b123bf24cc07/482475a4b391b2c4:r	t#7737:89b26223f09834b1/a3f6664949814459:r	t#5539:5a3f6aaf1cd3b0c4/8553b05d14efe043:r	t#6963:0440062de871efac/52b2135d9a975656:r	t#4592:e00b33408b532b25/334d3790af79139f:r	t#5319:2ca31fc73e41c75e/3067f3008c634549:r	t:	i:0	t#818:fc20745d0c433c21/3ed636da553d75bc:r	i:0
+table	Time Series Data	sha=595dc18e3b8e4c3f	sql=70ca8b7ae0eb0d0a	rows=3
+column	0	Name	TEXT
+column	1	Description	TEXT
+column	2	CreationDate	TEXT
+column	3	LastModified	TEXT
+column	4	TimeSeries	TEXT
+column	5	UnitLabel	TEXT
+column	6	EntryMethod	TEXT
+column	7	SeriesType	TEXT
+column	8	HECDSSFullFilename	TEXT
+column	9	HECDSSDataPathname	TEXT
+column	10	GHCNSiteNumber	TEXT
+column	11	USGSSiteNumber	TEXT
+column	12	CHMNSiteNumber	TEXT
+column	13	ABOMSiteNumber	TEXT
+column	14	DepthUnit	TEXT
+column	15	DischargeUnit	TEXT
+column	16	HeightUnit	TEXT
+column	17	TimeInterval	TEXT
+column	18	StartDateTime	TEXT
+column	19	USGSRawText	TEXT
+column	20	TimeSeriesPlotSettings	TEXT
+column	21	SeasonalityPlotSettings	TEXT
+column	22	ACFPlotSettings	TEXT
+column	23	PACFPlotSettings	TEXT
+column	24	TimeSeriesCompressed	BLOB
+column	25	USGSRawTextCompressed	BLOB
+row	1	t:Airline Passengers	t#287:1b9bc18583c82fd3	t:2/20/2026 8:31:10 PM	t:4/24/2026 8:11:24 PM	t:	t:Passengers (thousands)	t:Manual	t:DailyDischarge	t:	t:	t:00000000000	t:00000000	t:0000000	t:000000	t:Inches	t:CubicFeetPerSecond	t:Feet	t:OneMonth	t:1949-01-01T00:00:00.0000000	t:	t#5533:064df52b6cd94c36/f8655233f48e3fe7:r	t#4680:9adc71e5103ebf8f/8e0224bf55ffc49d:r	t#6283:8d96414166d3b577/78014172cc688277:r	t#6315:fe4977b1bea610c7/746e080b34a572c0:r	b#856:189fe757eb3f41e8>z#10131:022162c6859e88bb/6ccc9eacde41b512:r	b#0:e3b0c44298fc1c14
+row	2	t:Nile River Flows	t#345:301469ffc23b80af	t:2/20/2026 8:33:31 PM	t:3/26/2026 8:20:31 PM	t:	t:Flow (10\u2078 m\u00B3)	t:Manual	t:DailyDischarge	t:	t:	t:00000000000	t:00000000	t:0000000	t:000000	t:Inches	t:CubicFeetPerSecond	t:Feet	t:OneYear	t:1897-01-01T00:00:00.0000000	t:	t#5527:c069541128a6d0a0/49720ad986f4b26c:r	t#10398:b241a35f0cd77dee/51b3295f12852b19:r	t#6941:d49c3c5931df1f2b/bdfb516dbfa88d43:r	t#6988:3598a2680784abbd/66110dd67350e207:r	b#625:2d5b94f896933ff0>z#7080:49a6bef6c797dc03/112cce007b62750d:r	b#0:e3b0c44298fc1c14
+row	3	t:Mauna Loa CO2	t#239:549238c9741b0b92	t:2/20/2026 8:36:37 PM	t:2/20/2026 8:37:17 PM	t:	t:CO2 (ppm)	t:Manual	t:DailyDischarge	t:	t:	t:00000000000	t:00000000	t:0000000	t:000000	t:Inches	t:CubicFeetPerSecond	t:Feet	t:OneMonth	t:1958-03-01T00:00:00.0000000	t:	t#5552:a78d80a62ed68a4b/937ff46d381f4faa:r	t#4661:f264546e771059a7/9443ee5977706b34:r	t#6300:0617dffcf27873e7/a86b6a212dea95af:r	t#6331:9092d13499994e14/5f5685b22e4c640b:r	b#5177:270b828418fff645>z#65420:f2611ad9bb638b96/d5586e38adb9b14d:r	b#0:e3b0c44298fc1c14
+state	00 Time Series Data	5e26e6903c3b6480	66eae0f9e86047a2
+state	00 Time Series Data/00 TimeSeriesElement 'Airline Passengers'	215fa07f23c75614	01fab7e647cc4252
+state	00 Time Series Data/01 TimeSeriesElement 'Nile River Flows'	b42271975dd7e3fe	e76190721233307a
+state	00 Time Series Data/02 TimeSeriesElement 'Mauna Loa CO2'	fe620d12c5f223b8	8c6d1878972b6534
+state	01 Input Data	4b47e20068fbbb01	7138759d2d2c7b9f
+state	02 Distribution Fitting Analysis	22c9cdb7873ae49a	4a4ead4bf90c0837
+state	03 Univariate Distribution Analysis	468896e1b6f7e6c8	0e3a3c46961dd428
+state	04 Bivariate Distribution Analysis	2df996a968e4df10	85c24dd973e8dafa
+state	05 Rating Curve Analysis	5b9e46ee16c64e96	771f60dc9817d061
+state	06 Time Series Analysis	90cb1742b3e2ea4e	0e6e4ee694390acc
+state	06 Time Series Analysis/00 TimeSeriesAnalysis 'Airline Passengers - TSA'	87c116c4e633f604	c798ec4a27aa3b9c
+state	06 Time Series Analysis/01 TimeSeriesAnalysis 'Nile River Flows - TSA'	e52ed499602b1cc1	a2a7737e12ca477a
+state	06 Time Series Analysis/02 TimeSeriesAnalysis 'Mauna Loa - CO2'	db9bb982dff44fdb	81e8ed9fc6c4f75e
+state	Project	eb2c6e02818d3912	eb2c6e02818d3912
+end

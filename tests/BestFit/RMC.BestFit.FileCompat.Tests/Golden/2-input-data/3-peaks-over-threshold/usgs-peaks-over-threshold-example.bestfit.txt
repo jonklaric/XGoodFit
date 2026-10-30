@@ -1,0 +1,91 @@
+bestfit-file-description	1
+file	2-input-data/3-peaks-over-threshold/usgs-peaks-over-threshold-example.bestfit	sha=4f6a16a943f5646b	tables=3	cells=67
+pragma	encoding	UTF-8
+pragma	journal_mode	wal
+pragma	user_version	0
+pragma	application_id	0
+pragma	auto_vacuum	0
+table	Input Data	sha=8b39389c8190a3be	sql=d536de5c86337186	rows=1
+column	0	Name	TEXT
+column	1	Description	TEXT
+column	2	CreationDate	TEXT
+column	3	LastModified	TEXT
+column	4	ExactDataMethod	TEXT
+column	5	DataFrame	TEXT
+column	6	UnitLabel	TEXT
+column	7	IndexLabel	TEXT
+column	8	USGSSiteNumber	TEXT
+column	9	UseMultipleGrubbsBeckTest	BOOLEAN
+column	10	TimeSeriesElement	TEXT
+column	11	BlockFunction	TEXT
+column	12	TimeBlock	TEXT
+column	13	StartMonth	INT4
+column	14	EndMonth	INT4
+column	15	SmoothingFunction	TEXT
+column	16	Period	INT4
+column	17	Threshold	DOUBLE
+column	18	MinStepsBetweenPeaks	INT4
+column	19	IsProcessed	BOOLEAN
+column	20	ChronologyPlotSettings	TEXT
+column	21	FrequencyPlotSettings	TEXT
+column	22	SeasonalityPlotSettings	TEXT
+column	23	DensityPlotSettings	TEXT
+column	24	HistogramPlotSettings	TEXT
+column	25	QQPlotSettings	TEXT
+column	26	ACFPlotSettings	TEXT
+column	27	PACFPlotSettings	TEXT
+column	28	MRLPlotSettings	TEXT
+column	29	ModifiedScalePlotSettings	TEXT
+column	30	ShapePlotSettings	TEXT
+row	1	t:USGS - 11274500 - Peaks-Over-Threshold	t#452:3e9cc52a4952fb09	t:3/26/2026 9:38:42 PM	t:9/29/2026 10:15:51 PM	t:PeaksOverThresholdSeries	t#11476:1230c30a0e13ff76/f458fb1460a43bae:r	t:Flow (cfs)	t:Year	t:00000000	i:1	t:USGS - 11274500 - Daily Discharge	t:Maximum	t:CalendarYear	i:10	i:9	t:None	i:1	r:650	i:5	i:1	t#5392:cd33786026994798/b9f9c2fe40ddd480:r	t#5457:928b066adbc4c723/a893a902bed3ddaa:r	t#4655:926394c2eab5e02b/83c68d5d967db4aa:r	t#4626:ba1081571a14499d/f39a140e2da2c20b:r	t#4628:5235c1ed744bda20/d5ada93ce91de76e:r	t#4654:a3bcbf503cf36eb5/de85fd59c932b4ef:r	t#4643:eba7cc826625f39f/31bc75f6dc29cf83:r	t#4675:8821abda6b1941b1/661a88ee3675d487:r	t#7324:256eb32c468b1bc1/c1f0d2f77c2635aa:r	t#7353:9587b87454731d91/7f3ef4663fd9f52e:r	t#7310:540c067227c6c41e/08da7df5edb41134:r
+table	Project	sha=90ebc1455e8451a2	sql=bf204117c9f875b1	rows=1
+column	0	Name	TEXT
+column	1	Description	TEXT
+column	2	CreationDate	TEXT
+column	3	LastModified	TEXT
+column	4	FullFileName	TEXT
+column	5	SoftwareVersion	TEXT
+column	6	AvalonDockLayout	TEXT
+column	7	ProjectExplorerLayout	TEXT
+column	8	AvalonDockLayoutPrevious	TEXT
+column	9	ProjectExplorerLayoutPrevious	TEXT
+row	1	t:usgs-peaks-over-threshold-example	t#343:4797e17a7696bba3	t:3/26/2026 9:36:49 PM	t:9/29/2026 10:15:51 PM	p:{dir}\\usgs-peaks-over-threshold-example.bestfit	t:2.0.1	t#1783:03c816cb3763aee3/0ec9081c12f3d039:r	t#968:22f52661a4e6bf5a/fd92f4f75adca1ef:r	t#1784:a30a6ffa90d81ad5/d51fb3d463053a5c:r	t#1074:7091620567bf1647/437d0d6324eaa368:r
+table	Time Series Data	sha=7e91dc67a9c594d0	sql=70ca8b7ae0eb0d0a	rows=1
+column	0	Name	TEXT
+column	1	Description	TEXT
+column	2	CreationDate	TEXT
+column	3	LastModified	TEXT
+column	4	TimeSeries	TEXT
+column	5	UnitLabel	TEXT
+column	6	EntryMethod	TEXT
+column	7	SeriesType	TEXT
+column	8	HECDSSFullFilename	TEXT
+column	9	HECDSSDataPathname	TEXT
+column	10	GHCNSiteNumber	TEXT
+column	11	USGSSiteNumber	TEXT
+column	12	CHMNSiteNumber	TEXT
+column	13	ABOMSiteNumber	TEXT
+column	14	DepthUnit	TEXT
+column	15	DischargeUnit	TEXT
+column	16	HeightUnit	TEXT
+column	17	TimeInterval	TEXT
+column	18	StartDateTime	TEXT
+column	19	USGSRawText	TEXT
+column	20	TimeSeriesPlotSettings	TEXT
+column	21	SeasonalityPlotSettings	TEXT
+column	22	ACFPlotSettings	TEXT
+column	23	PACFPlotSettings	TEXT
+column	24	TimeSeriesCompressed	BLOB
+column	25	USGSRawTextCompressed	BLOB
+row	1	t:USGS - 11274500 - Daily Discharge	t#243:01d87cd37768a945	t:3/26/2026 9:37:25 PM	t:7/15/2026 9:37:32 PM	t:	t:Flow (cfs)	t:USGS	t:DailyDischarge	t:	t:	t:00000000000	t:11274500	t:0000000	t:000000	t:Inches	t:CubicFeetPerSecond	t:Feet	t:OneDay	t:1932-04-01T00:00:00.0000000	t:	t#5521:c110dc0e13f625a0/2f132f5746f45940:r	t#10272:069b0daba1c91ac1/df4221b6ce7e161a:r	t#6943:e4cb2d51d3c6ce9c/db13d674ddbc274a:r	t#6975:31d4253b8b4c7f24/cbb828739be686cb:r	b#125619:0cefe13b963c498b>z#2416835:e4fcc242492b7f9f/070fca4d82373fee:r	b#105489:a5a46f8693a3deef>z#1103166:73e95bc16b0f4e4b
+state	00 Time Series Data	ec42931c8fdb11dd	66eae0f9e86047a2
+state	00 Time Series Data/00 TimeSeriesElement 'USGS - 11274500 - Daily Discharge'	4a8dd65be1e2cbfe	8cd76773d8178272
+state	01 Input Data	c45e74c546527ca2	7138759d2d2c7b9f
+state	01 Input Data/00 InputData 'USGS - 11274500 - Peaks-Over-Threshold'	e30ccd0197cf690b	61eb414a80cb0242
+state	02 Distribution Fitting Analysis	22c9cdb7873ae49a	4a4ead4bf90c0837
+state	03 Univariate Distribution Analysis	468896e1b6f7e6c8	0e3a3c46961dd428
+state	04 Bivariate Distribution Analysis	2df996a968e4df10	85c24dd973e8dafa
+state	05 Rating Curve Analysis	5b9e46ee16c64e96	771f60dc9817d061
+state	06 Time Series Analysis	2f4a1830d606047e	0e6e4ee694390acc
+state	Project	247468bfcb65845d	247468bfcb65845d
+end

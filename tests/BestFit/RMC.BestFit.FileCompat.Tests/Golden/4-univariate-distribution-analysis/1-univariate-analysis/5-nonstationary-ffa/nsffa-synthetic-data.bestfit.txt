@@ -1,0 +1,131 @@
+bestfit-file-description	1
+file	4-univariate-distribution-analysis/1-univariate-analysis/5-nonstationary-ffa/nsffa-synthetic-data.bestfit	sha=a6df084b4d683698	tables=4	cells=505
+pragma	encoding	UTF-8
+pragma	journal_mode	wal
+pragma	user_version	0
+pragma	application_id	0
+pragma	auto_vacuum	0
+table	<Univariate Distribution>	sha=d728de2b20b74d3e	sql=09cbaf58c37595de	rows=9
+column	0	Name	TEXT
+column	1	Description	TEXT
+column	2	CreationDate	TEXT
+column	3	LastModified	TEXT
+column	4	InputData	TEXT
+column	5	UnivariateDistribution	TEXT
+column	6	BayesianAnalysis	TEXT
+column	7	MCMCResults	BLOB
+column	8	AnalysisResults	TEXT
+column	9	ChronologyAnalysisResults	TEXT
+column	10	ProbabilityOrdinates	TEXT
+column	11	FrequencyPlotSettings	TEXT
+column	12	ChronologyPlotSettings	TEXT
+column	13	InfluenceDiagnosticsPlotSettings	TEXT
+column	14	KernelDensityPlotSettings	TEXT
+column	15	HistogramPlotSettings	TEXT
+column	16	BivariatePlotSettings	TEXT
+column	17	MeanLikelihoodPlotSettings	TEXT
+column	18	AutocorrelationPlotSettings	TEXT
+column	19	MarkovChainTracesPlotSettings	TEXT
+column	20	AnalysisXml	TEXT
+column	21	MCMCReport	TEXT
+row	1	t:NSFFA - Constant Trend	t#293:42aa15a1e48169e4	t:4/3/2026 5:14:22 PM	t:7/16/2026 3:08:20 PM	t:Constant Trend Data	t#1769:71ea1a04b64b2983/132f2110ed5d9dee:r	t#733:687f0a16e0fae192	b#715187:82aa673a0ba8e004>z#2323941:b898076f6b0dc869	t#2181:3e8f5eb7c84de878/3b71514906ed26b6:r	t#7730:db6f5294b742c9f7/1dded33de16c0cca:r	t#439:5840f09d7e1a6c45	t#8252:c3218e0ee0a3b3d1/44175951f66b5eac:r	t#7298:ab4bcd359ee28143/e5b9bc2b9613a00a:r	t#5314:085567b25b97b9ec/93059f09d993770c:r	t#5677:0410be5134135d49/1f6b5746477f4d73:r	t#5288:38744b8071c4f103/a038b2293388795f:r	t#7724:5e1797415afe1328/6351f54c4c943f1a:r	t#5539:004483ae9d62f197/a6b549c2b16aebff:r	t#6962:f3f65fbf8d9e424e/fbd1b8fad1c614a1:r	t#9907:9a49342edbd09878/6780607066eb1074:r	t#1287:54ef3793e026d113/255634ce718e00c9:r	t:
+row	2	t:NSFFA - Cubic Trend	t#287:fde304a600043ed9	t:4/3/2026 7:16:17 PM	t:9/30/2026 6:39:02 PM	t:Cubic Trend Data	t#3373:efe5ac798731bf7e/01c6589e5e350e20:r	t#735:1b1c8de6afa344f0	b#2691631:b851821334ad199f>z#7253492:9a55569ea9be8190	t#2190:436d9cd37c375400/0b6a379a69e98107:r	t#7778:4d446c2fb3a3ae73/2b970ce3e9eb69dc:r	t#439:5840f09d7e1a6c45	t#8252:b5d517637e305f38/81990406b9befbc1:r	t#7298:d712043b39e67c5c/5f0043a4a9d58538:r	t#5319:2ca31fc73e41c75e/3067f3008c634549:r	t#5677:f8f714f35144f4c9/7ace960634ce41c3:r	t#5288:56ab276204a50fc4/5ca0352dde622c02:r	t#7720:8e524df8f9762865/7339a528e905de80:r	t#5539:5a3f6aaf1cd3b0c4/8553b05d14efe043:r	t#6963:3293e53973dd8724/6bade02c6f61b165:r	t#13429:43ecc316dd0354f3/46f8274bad35ec91:r	t#1289:294e2fe932c73466/a3018441d2f5f6ba:r	t:
+row	3	t:NSFFA - Exponential Trend	t#299:c32f3c213e547ddc	t:4/3/2026 7:17:02 PM	t:7/16/2026 3:08:21 PM	t:Exponential Trend Data	t#2407:5367f026c4b3838c/619b0533db1036b5:r	t#733:551e429c5d70257b	b#1213266:72ab8c89ed426d7f>z#3639343:32134cfbf91155c7	t#2192:3e419dceade4f16f/93daba2bec21860f:r	t#7781:df11ca5cf62828be/bcdd0edbf85cc1e0:r	t#439:5840f09d7e1a6c45	t#8252:c3218e0ee0a3b3d1/44175951f66b5eac:r	t#7298:ab4bcd359ee28143/e5b9bc2b9613a00a:r	t#5314:085567b25b97b9ec/93059f09d993770c:r	t#5677:0410be5134135d49/1f6b5746477f4d73:r	t#5288:38744b8071c4f103/a038b2293388795f:r	t#7722:fb8a9bd4486909ca/7f251811173534d2:r	t#5539:004483ae9d62f197/a6b549c2b16aebff:r	t#6963:c2d99b4f078cf092/c7bdb530d1f26c78:r	t#9903:237866c9fd25deb2/eaf86494e5822afd:r	t#1287:8887e1a3108ad6d2/a1d727b62e0d4d77:r	t:
+row	4	t:NSFFA - Linear Trend	t#289:1fe5c9ea25e85f97	t:4/3/2026 7:17:48 PM	t:7/16/2026 3:08:21 PM	t:Linear Trend Data	t#2272:d4bbf22a63e26bc9/4f08f631ac49cab2:r	t#734:7384b6ef20ee7c9e	b#1213634:7387eb6f1122524d>z#3583156:df0536105f4b6792	t#2189:5baace86cf17db62/d1f73f4061685323:r	t#7792:d1f24be12bf08a7f/fd089331a954fffb:r	t#439:5840f09d7e1a6c45	t#8252:c3218e0ee0a3b3d1/44175951f66b5eac:r	t#7298:ab4bcd359ee28143/e5b9bc2b9613a00a:r	t#5314:085567b25b97b9ec/93059f09d993770c:r	t#5677:0410be5134135d49/1f6b5746477f4d73:r	t#5288:38744b8071c4f103/a038b2293388795f:r	t#7721:7af3a6d2072783c2/a2290029b00c20a6:r	t#5539:004483ae9d62f197/a6b549c2b16aebff:r	t#6962:f3f65fbf8d9e424e/fbd1b8fad1c614a1:r	t#9903:237866c9fd25deb2/eaf86494e5822afd:r	t#1288:8338b220962fa9b4/330a1d7061f15af9:r	t:
+row	5	t:NSFFA - Logistic Trend	t#293:5d4bef42b9a84636	t:4/3/2026 7:18:25 PM	t:7/16/2026 3:08:21 PM	t:Logistic Trend Data	t#2396:728136568ff44fa7/7061e0d46bc7ca63:r	t#733:bc36a43f3f189745	b#1219599:6d230e7af4de2b1e>z#3629952:0f84894b58ea3140	t#2191:d329edfae826a4b5/5db67203bc6d602b:r	t#7784:9931af3a77818f23/97e0b562391cc975:r	t#439:5840f09d7e1a6c45	t#8252:c3218e0ee0a3b3d1/44175951f66b5eac:r	t#7298:ab4bcd359ee28143/e5b9bc2b9613a00a:r	t#5314:085567b25b97b9ec/93059f09d993770c:r	t#5677:0410be5134135d49/1f6b5746477f4d73:r	t#5288:38744b8071c4f103/a038b2293388795f:r	t#7723:eab24ea47e90b41f/11aef397a9d0e1ef:r	t#5539:004483ae9d62f197/a6b549c2b16aebff:r	t#6962:f3f65fbf8d9e424e/fbd1b8fad1c614a1:r	t#9903:237866c9fd25deb2/eaf86494e5822afd:r	t#1287:d05ed1af46c49d90/fa1d20b3c835930e:r	t:
+row	6	t:NSFFA - Power Trend	t#287:15fb43a1808ff8ae	t:4/3/2026 7:19:02 PM	t:7/16/2026 3:08:21 PM	t:Power Trend Data	t#2247:92c83da2c561d01b/2a8593f26a1108cc:r	t#734:6edeb97a3c2613ad	b#1219348:1d7e4c23fb61ecac>z#3621019:fafa1ff0628a8235	t#2195:7a19e9225540c88f/45f5ea4e739afbb4:r	t#7718:41540a5df0aba106/182dca9a12c51093:r	t#439:5840f09d7e1a6c45	t#8252:c3218e0ee0a3b3d1/44175951f66b5eac:r	t#7298:ab4bcd359ee28143/e5b9bc2b9613a00a:r	t#5314:085567b25b97b9ec/93059f09d993770c:r	t#5677:0410be5134135d49/1f6b5746477f4d73:r	t#5288:38744b8071c4f103/a038b2293388795f:r	t#7721:59758ea450ac0ecd/d4c949f213428991:r	t#5539:004483ae9d62f197/a6b549c2b16aebff:r	t#6963:c2d99b4f078cf092/c7bdb530d1f26c78:r	t#9903:237866c9fd25deb2/eaf86494e5822afd:r	t#1288:3f6a66aaf8360f57/0ea8e9796cd5c6c8:r	t:
+row	7	t:NSFFA - Quadratic Trend	t#295:796fb61e3f163b1a	t:4/3/2026 7:19:41 PM	t:7/16/2026 3:08:22 PM	t:Quadratic Trend Data	t#2755:dd797a0353430081/c1e464feca9646e2:r	t#733:12e32ac061c0bcfe	b#1880607:e3030b9f69e7e8a1>z#5234133:53c0f6f2548c0d21	t#2190:2f6c2a2816ba9c18/c43fcac3a858d216:r	t#7790:cf7a26744a7ac2d0/a1862a07f06c4080:r	t#439:5840f09d7e1a6c45	t#8252:c3218e0ee0a3b3d1/44175951f66b5eac:r	t#7298:ab4bcd359ee28143/e5b9bc2b9613a00a:r	t#5314:085567b25b97b9ec/93059f09d993770c:r	t#5677:0410be5134135d49/1f6b5746477f4d73:r	t#5288:38744b8071c4f103/a038b2293388795f:r	t#7721:02d0a0af9d3b3811/7a496536ac9836ba:r	t#5539:004483ae9d62f197/a6b549c2b16aebff:r	t#6962:f3f65fbf8d9e424e/fbd1b8fad1c614a1:r	t#11665:d9bcc9306f0ada09/ca3d1357e7af3699:r	t#1287:1eb2e55696ddb57c/24e560ddb10f3542:r	t:
+row	8	t:NSFFA - Sinusoidal Trend	t#297:c0a69a4a1ed1fd9f	t:4/3/2026 7:20:26 PM	t:7/16/2026 3:08:22 PM	t:Sinusoidal Trend Data	t#3290:52e60022650a53cf/63acd58a44eff593:r	t#733:a6fef76d077b485c	b#2565560:298da9b321c58073>z#6962085:cc1d3304022f88cb	t#2188:14aac3266212eb13/98e67643306340eb:r	t#7791:b9e34d93a9eca1c8/3d9f750f3c2722a9:r	t#439:5840f09d7e1a6c45	t#8252:c3218e0ee0a3b3d1/44175951f66b5eac:r	t#7298:ab4bcd359ee28143/e5b9bc2b9613a00a:r	t#5314:085567b25b97b9ec/93059f09d993770c:r	t#5677:0410be5134135d49/1f6b5746477f4d73:r	t#5288:38744b8071c4f103/a038b2293388795f:r	t#7717:8fa1c30ec004eebe/4318623dbdf69613:r	t#5539:004483ae9d62f197/a6b549c2b16aebff:r	t#6963:c2d99b4f078cf092/c7bdb530d1f26c78:r	t#13429:4ff8e24cca093f05/5753e2b364ec31c3:r	t#1287:ada1646fb65b167b/8aed51951357919b:r	t:
+row	9	t:NSFFA - Step Function	t#296:3d048d7df827aff3	t:4/3/2026 7:30:40 PM	t:7/16/2026 3:08:22 PM	t:Step Function Data	t#2769:b1d1eec6c52db051/de236280eab70bce:r	t#733:0a445306b4a1c6cf	b#1796211:c870d88ffc0d1948>z#5080471:58ab3e2dd701a1e3	t#2189:03b9baba6db15bee/f9c233b32de49035:r	t#7786:6e27fa2dc6f758a9/a5f656645a53ff86:r	t#439:5840f09d7e1a6c45	t#8252:c3218e0ee0a3b3d1/44175951f66b5eac:r	t#7298:ab4bcd359ee28143/e5b9bc2b9613a00a:r	t#5314:085567b25b97b9ec/93059f09d993770c:r	t#5683:d0920ca59f3a418a/0d666095b9fec2af:r	t#5294:2605a55ec5221fc3/bf0fd578d4806a41:r	t#7731:a3229ab35892a5ac/eb28f5915f0f70c5:r	t#5539:004483ae9d62f197/a6b549c2b16aebff:r	t#6966:681ed34960c435c6/f2e1771dca808239:r	t#11666:08648bdc40329187/2d3d201e2a2149f3:r	t#1287:ae1b8cf1af3f54df/39f2be03f39473f1:r	t:
+table	Input Data	sha=0a37f06b7779240d	sql=d536de5c86337186	rows=9
+column	0	Name	TEXT
+column	1	Description	TEXT
+column	2	CreationDate	TEXT
+column	3	LastModified	TEXT
+column	4	ExactDataMethod	TEXT
+column	5	DataFrame	TEXT
+column	6	UnitLabel	TEXT
+column	7	IndexLabel	TEXT
+column	8	USGSSiteNumber	TEXT
+column	9	UseMultipleGrubbsBeckTest	BOOLEAN
+column	10	TimeSeriesElement	TEXT
+column	11	BlockFunction	TEXT
+column	12	TimeBlock	TEXT
+column	13	StartMonth	INT4
+column	14	EndMonth	INT4
+column	15	SmoothingFunction	TEXT
+column	16	Period	INT4
+column	17	Threshold	DOUBLE
+column	18	MinStepsBetweenPeaks	INT4
+column	19	IsProcessed	BOOLEAN
+column	20	ChronologyPlotSettings	TEXT
+column	21	FrequencyPlotSettings	TEXT
+column	22	SeasonalityPlotSettings	TEXT
+column	23	DensityPlotSettings	TEXT
+column	24	HistogramPlotSettings	TEXT
+column	25	QQPlotSettings	TEXT
+column	26	ACFPlotSettings	TEXT
+column	27	PACFPlotSettings	TEXT
+column	28	MRLPlotSettings	TEXT
+column	29	ModifiedScalePlotSettings	TEXT
+column	30	ShapePlotSettings	TEXT
+row	1	t:Constant Trend Data	t#273:9559ba4aca2ea243	t:4/3/2026 5:09:31 PM	t:4/3/2026 5:15:03 PM	t:Manual	t#15588:ad5c683108ddaa0b/2b1dd7cbf89642f7:r	t:Value	t:Year	t:00000000	i:1	t:	t:Maximum	t:CalendarYear	i:10	i:9	t:None	i:1	r:0	i:1	i:0	t#5387:436fdde72312e3a7/3457c83205de86e1:r	t#5452:6a669c5a902441e0/39700d488859b3b5:r	t#4651:6b85ebc41a421f57/09c96393592dae26:r	t#4621:75a43d16df22bcdb/6f0776cad02d3149:r	t#4623:5a4213bb891db92a/ee11ceb1cdda8db2:r	t#4654:8747814e5cd90813/2092f1d101270365:r	t#4626:280270ea276ead65/c091de4343c99a05:r	t#4642:26b02815c4734bda/09e13cba1cc75f1c:r	t#4604:2ba13a6f72b992d3/00e4bd00c9c834b7:r	t#4617:bd1cbff8840b0fa4/5d57c1cc278b81f5:r	t#4599:33ad547799c64842/08cc3d7ab5fc47fa:r
+row	2	t:Cubic Trend Data	t#270:56271c1ac53dd5d4	t:4/3/2026 5:10:07 PM	t:4/3/2026 5:10:53 PM	t:Manual	t#15523:dc604b7d97e96b19/a4ef0fe184af9d33:r	t:Value	t:Year	t:00000000	i:1	t:	t:Maximum	t:CalendarYear	i:10	i:9	t:None	i:1	r:0	i:1	i:0	t#5387:436fdde72312e3a7/3457c83205de86e1:r	t#5452:6a669c5a902441e0/39700d488859b3b5:r	t#4651:6b85ebc41a421f57/09c96393592dae26:r	t#4621:75a43d16df22bcdb/6f0776cad02d3149:r	t#4623:5a4213bb891db92a/ee11ceb1cdda8db2:r	t#4654:8747814e5cd90813/2092f1d101270365:r	t#4626:280270ea276ead65/c091de4343c99a05:r	t#4642:26b02815c4734bda/09e13cba1cc75f1c:r	t#4604:2ba13a6f72b992d3/00e4bd00c9c834b7:r	t#4617:bd1cbff8840b0fa4/5d57c1cc278b81f5:r	t#4599:33ad547799c64842/08cc3d7ab5fc47fa:r
+row	3	t:Exponential Trend Data	t#276:a3b9d181abdb8005	t:4/3/2026 5:10:43 PM	t:4/3/2026 5:10:53 PM	t:Manual	t#15647:8c60f2df9029ae12/3950ddeae6ab6b52:r	t:Value	t:Year	t:00000000	i:1	t:	t:Maximum	t:CalendarYear	i:10	i:9	t:None	i:1	r:0	i:1	i:0	t#5387:436fdde72312e3a7/3457c83205de86e1:r	t#5452:6a669c5a902441e0/39700d488859b3b5:r	t#4651:6b85ebc41a421f57/09c96393592dae26:r	t#4621:75a43d16df22bcdb/6f0776cad02d3149:r	t#4623:5a4213bb891db92a/ee11ceb1cdda8db2:r	t#4654:8747814e5cd90813/2092f1d101270365:r	t#4626:280270ea276ead65/c091de4343c99a05:r	t#4642:26b02815c4734bda/09e13cba1cc75f1c:r	t#4604:2ba13a6f72b992d3/00e4bd00c9c834b7:r	t#4617:bd1cbff8840b0fa4/5d57c1cc278b81f5:r	t#4599:33ad547799c64842/08cc3d7ab5fc47fa:r
+row	4	t:Linear Trend Data	t#271:7672cbc8e4cd5e92	t:4/3/2026 5:11:14 PM	t:4/3/2026 5:11:27 PM	t:Manual	t#15554:65011ecb57fa4614/18df99344381ce67:r	t:Value	t:Year	t:00000000	i:1	t:	t:Maximum	t:CalendarYear	i:10	i:9	t:None	i:1	r:0	i:1	i:0	t#5387:436fdde72312e3a7/3457c83205de86e1:r	t#5452:6a669c5a902441e0/39700d488859b3b5:r	t#4651:6b85ebc41a421f57/09c96393592dae26:r	t#4621:75a43d16df22bcdb/6f0776cad02d3149:r	t#4623:5a4213bb891db92a/ee11ceb1cdda8db2:r	t#4654:8747814e5cd90813/2092f1d101270365:r	t#4626:280270ea276ead65/c091de4343c99a05:r	t#4642:26b02815c4734bda/09e13cba1cc75f1c:r	t#4604:2ba13a6f72b992d3/00e4bd00c9c834b7:r	t#4617:bd1cbff8840b0fa4/5d57c1cc278b81f5:r	t#4599:33ad547799c64842/08cc3d7ab5fc47fa:r
+row	5	t:Logistic Trend Data	t#273:8b4733e4e1a1d551	t:4/3/2026 5:11:37 PM	t:4/3/2026 5:11:51 PM	t:Manual	t#15685:d5bf1d168fd1f542/69ef46629c0f89a1:r	t:Value	t:Year	t:00000000	i:1	t:	t:Maximum	t:CalendarYear	i:10	i:9	t:None	i:1	r:0	i:1	i:0	t#5387:436fdde72312e3a7/3457c83205de86e1:r	t#5452:6a669c5a902441e0/39700d488859b3b5:r	t#4651:6b85ebc41a421f57/09c96393592dae26:r	t#4621:75a43d16df22bcdb/6f0776cad02d3149:r	t#4623:5a4213bb891db92a/ee11ceb1cdda8db2:r	t#4654:8747814e5cd90813/2092f1d101270365:r	t#4626:280270ea276ead65/c091de4343c99a05:r	t#4642:26b02815c4734bda/09e13cba1cc75f1c:r	t#4604:2ba13a6f72b992d3/00e4bd00c9c834b7:r	t#4617:bd1cbff8840b0fa4/5d57c1cc278b81f5:r	t#4599:33ad547799c64842/08cc3d7ab5fc47fa:r
+row	6	t:Power Trend Data	t#270:3053b0d75ac5b1ae	t:4/3/2026 5:11:59 PM	t:4/3/2026 5:12:11 PM	t:Manual	t#15552:5d0fb5f3541c0a14/76e9397018666258:r	t:Value	t:Year	t:00000000	i:1	t:	t:Maximum	t:CalendarYear	i:10	i:9	t:None	i:1	r:0	i:1	i:0	t#5387:436fdde72312e3a7/3457c83205de86e1:r	t#5452:6a669c5a902441e0/39700d488859b3b5:r	t#4651:6b85ebc41a421f57/09c96393592dae26:r	t#4621:75a43d16df22bcdb/6f0776cad02d3149:r	t#4623:5a4213bb891db92a/ee11ceb1cdda8db2:r	t#4654:8747814e5cd90813/2092f1d101270365:r	t#4626:280270ea276ead65/c091de4343c99a05:r	t#4642:26b02815c4734bda/09e13cba1cc75f1c:r	t#4604:2ba13a6f72b992d3/00e4bd00c9c834b7:r	t#4617:bd1cbff8840b0fa4/5d57c1cc278b81f5:r	t#4599:33ad547799c64842/08cc3d7ab5fc47fa:r
+row	7	t:Quadratic Trend Data	t#274:a248027a07b10cb5	t:4/3/2026 5:12:22 PM	t:4/3/2026 5:12:34 PM	t:Manual	t#15496:e4e9ce82fc8cea72/cdbecc415d92b180:r	t:Value	t:Year	t:00000000	i:1	t:	t:Maximum	t:CalendarYear	i:10	i:9	t:None	i:1	r:0	i:1	i:0	t#5387:436fdde72312e3a7/3457c83205de86e1:r	t#5452:6a669c5a902441e0/39700d488859b3b5:r	t#4651:6b85ebc41a421f57/09c96393592dae26:r	t#4621:75a43d16df22bcdb/6f0776cad02d3149:r	t#4623:5a4213bb891db92a/ee11ceb1cdda8db2:r	t#4654:8747814e5cd90813/2092f1d101270365:r	t#4626:280270ea276ead65/c091de4343c99a05:r	t#4642:26b02815c4734bda/09e13cba1cc75f1c:r	t#4604:2ba13a6f72b992d3/00e4bd00c9c834b7:r	t#4617:bd1cbff8840b0fa4/5d57c1cc278b81f5:r	t#4599:33ad547799c64842/08cc3d7ab5fc47fa:r
+row	8	t:Sinusoidal Trend Data	t#275:f6cdd5c6407ac406	t:4/3/2026 5:12:43 PM	t:4/3/2026 5:12:57 PM	t:Manual	t#15639:bc28f513358863fa/118b5b7d74752925:r	t:Value	t:Year	t:00000000	i:1	t:	t:Maximum	t:CalendarYear	i:10	i:9	t:None	i:1	r:0	i:1	i:0	t#5387:436fdde72312e3a7/3457c83205de86e1:r	t#5452:6a669c5a902441e0/39700d488859b3b5:r	t#4651:6b85ebc41a421f57/09c96393592dae26:r	t#4621:75a43d16df22bcdb/6f0776cad02d3149:r	t#4623:5a4213bb891db92a/ee11ceb1cdda8db2:r	t#4654:8747814e5cd90813/2092f1d101270365:r	t#4626:280270ea276ead65/c091de4343c99a05:r	t#4642:26b02815c4734bda/09e13cba1cc75f1c:r	t#4604:2ba13a6f72b992d3/00e4bd00c9c834b7:r	t#4617:bd1cbff8840b0fa4/5d57c1cc278b81f5:r	t#4599:33ad547799c64842/08cc3d7ab5fc47fa:r
+row	9	t:Step Function Data	t#267:574afb55ad698791	t:4/3/2026 5:13:06 PM	t:4/3/2026 5:13:19 PM	t:Manual	t#15596:130ae36e9c61a3ff/617c6f62d9546db2:r	t:Value	t:Year	t:00000000	i:1	t:	t:Maximum	t:CalendarYear	i:10	i:9	t:None	i:1	r:0	i:1	i:0	t#5387:436fdde72312e3a7/3457c83205de86e1:r	t#5452:6a669c5a902441e0/39700d488859b3b5:r	t#4651:6b85ebc41a421f57/09c96393592dae26:r	t#4621:75a43d16df22bcdb/6f0776cad02d3149:r	t#4623:5a4213bb891db92a/ee11ceb1cdda8db2:r	t#4654:8747814e5cd90813/2092f1d101270365:r	t#4626:280270ea276ead65/c091de4343c99a05:r	t#4642:26b02815c4734bda/09e13cba1cc75f1c:r	t#4604:2ba13a6f72b992d3/00e4bd00c9c834b7:r	t#4617:bd1cbff8840b0fa4/5d57c1cc278b81f5:r	t#4599:33ad547799c64842/08cc3d7ab5fc47fa:r
+table	Project	sha=612ec42b87586007	sql=bf204117c9f875b1	rows=1
+column	0	Name	TEXT
+column	1	Description	TEXT
+column	2	CreationDate	TEXT
+column	3	LastModified	TEXT
+column	4	FullFileName	TEXT
+column	5	SoftwareVersion	TEXT
+column	6	AvalonDockLayout	TEXT
+column	7	ProjectExplorerLayout	TEXT
+column	8	AvalonDockLayoutPrevious	TEXT
+column	9	ProjectExplorerLayoutPrevious	TEXT
+row	1	t:nsffa-synthetic-data	t#284:27d32f3c729d9315	t:4/3/2026 5:07:10 PM	t:9/30/2026 6:39:02 PM	p:{dir}\\nsffa-synthetic-data.bestfit	t:2.0.1	t#1786:68f202adeca7c4d1/b41d5a54d14ed624:r	t#2255:e1a38786fd7f5d00/cbf997a75a89c912:r	t#1787:d11172f860cd0fe9/3f96f09c7673e110:r	t#2340:d306094545e90506/c21bbab81d72c9f7:r
+table	Univariate Distribution Analysis	sha=6d323a21a18d8098	sql=63dff5382d17bd53	rows=9
+column	0	Name	TEXT
+column	1	Type	TEXT
+row	1	t:NSFFA - Constant Trend	t:RMC.BestFit.UI.UnivariateAnalysis
+row	2	t:NSFFA - Cubic Trend	t:RMC.BestFit.UI.UnivariateAnalysis
+row	3	t:NSFFA - Exponential Trend	t:RMC.BestFit.UI.UnivariateAnalysis
+row	4	t:NSFFA - Linear Trend	t:RMC.BestFit.UI.UnivariateAnalysis
+row	5	t:NSFFA - Logistic Trend	t:RMC.BestFit.UI.UnivariateAnalysis
+row	6	t:NSFFA - Power Trend	t:RMC.BestFit.UI.UnivariateAnalysis
+row	7	t:NSFFA - Quadratic Trend	t:RMC.BestFit.UI.UnivariateAnalysis
+row	8	t:NSFFA - Sinusoidal Trend	t:RMC.BestFit.UI.UnivariateAnalysis
+row	9	t:NSFFA - Step Function	t:RMC.BestFit.UI.UnivariateAnalysis
+state	00 Time Series Data	7c890208af994c26	66eae0f9e86047a2
+state	01 Input Data	beed2f16ea1a70ce	7138759d2d2c7b9f
+state	01 Input Data/00 InputData 'Constant Trend Data'	4775190d6a687d3a	331e838b83b0cce1
+state	01 Input Data/01 InputData 'Cubic Trend Data'	dc2603bcfb2b55b7	aa319b714c26f9db
+state	01 Input Data/02 InputData 'Exponential Trend Data'	dab3413b93aec020	b98be1562c00a814
+state	01 Input Data/03 InputData 'Linear Trend Data'	cd72db4417d8c1fc	2d09849dd618be60
+state	01 Input Data/04 InputData 'Logistic Trend Data'	94f41871c1a640e8	e2f0b1aa52587448
+state	01 Input Data/05 InputData 'Power Trend Data'	23da3b05281681de	48745499ee8af257
+state	01 Input Data/06 InputData 'Quadratic Trend Data'	42c46493899c4498	a9047f877982da1d
+state	01 Input Data/07 InputData 'Sinusoidal Trend Data'	95b5a580a6705f30	a8995819e27c54ff
+state	01 Input Data/08 InputData 'Step Function Data'	767d15d3064568dc	2c5ddcb41f236d1f
+state	02 Distribution Fitting Analysis	22c9cdb7873ae49a	4a4ead4bf90c0837
+state	03 Univariate Distribution Analysis	3d67eac2404f88e1	0e3a3c46961dd428
+state	03 Univariate Distribution Analysis/00 UnivariateAnalysis 'NSFFA - Constant Trend'	7a3b0f203122f1e7	bbaa4f26f38b703c
+state	03 Univariate Distribution Analysis/01 UnivariateAnalysis 'NSFFA - Cubic Trend'	b620ebcebd71b9d3	ee183e66a29c8300
+state	03 Univariate Distribution Analysis/02 UnivariateAnalysis 'NSFFA - Exponential Trend'	6f68d4251de089b5	109e7ba756fd648d
+state	03 Univariate Distribution Analysis/03 UnivariateAnalysis 'NSFFA - Linear Trend'	f6c567ce6cef018f	06e5725444cb7e9f
+state	03 Univariate Distribution Analysis/04 UnivariateAnalysis 'NSFFA - Logistic Trend'	351068cff4e8877f	7a33c265c4e29a2d
+state	03 Univariate Distribution Analysis/05 UnivariateAnalysis 'NSFFA - Power Trend'	337df90d1cd7e6db	37d03321cdcbe2d9
+state	03 Univariate Distribution Analysis/06 UnivariateAnalysis 'NSFFA - Quadratic Trend'	2a0e185cf3cb1d5d	ea59b50389a5539a
+state	03 Univariate Distribution Analysis/07 UnivariateAnalysis 'NSFFA - Sinusoidal Trend'	002b649d9d14f34d	b3cf396bf1b0bbd8
+state	03 Univariate Distribution Analysis/08 UnivariateAnalysis 'NSFFA - Step Function'	2728b80c15298c80	39c4741a706f2ec3
+state	04 Bivariate Distribution Analysis	2df996a968e4df10	85c24dd973e8dafa
+state	05 Rating Curve Analysis	5b9e46ee16c64e96	771f60dc9817d061
+state	06 Time Series Analysis	2f4a1830d606047e	0e6e4ee694390acc
+state	Project	3ff9956cb44cb0f9	3ff9956cb44cb0f9
+end

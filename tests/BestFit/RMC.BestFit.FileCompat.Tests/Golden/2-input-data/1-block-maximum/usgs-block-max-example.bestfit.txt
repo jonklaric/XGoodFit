@@ -1,0 +1,116 @@
+bestfit-file-description	1
+file	2-input-data/1-block-maximum/usgs-block-max-example.bestfit	sha=181887b4afbb848c	tables=5	cells=98
+pragma	encoding	UTF-8
+pragma	journal_mode	wal
+pragma	user_version	0
+pragma	application_id	0
+pragma	auto_vacuum	0
+table	<Bulletin 17C>	sha=b772ae8c839310bc	sql=468d8a92eff816cc	rows=0
+column	0	Name	TEXT
+column	1	Description	TEXT
+column	2	CreationDate	TEXT
+column	3	LastModified	TEXT
+column	4	InputData	TEXT
+column	5	Bulletin17CDistribution	TEXT
+column	6	BayesianAnalysis	TEXT
+column	7	MCMCResults	BLOB
+column	8	AnalysisResults	TEXT
+column	9	ProbabilityOrdinates	TEXT
+column	10	UncertaintyMethod	TEXT
+column	11	FrequencyPlotSettings	TEXT
+column	12	KernelDensityPlotSettings	TEXT
+column	13	HistogramPlotSettings	TEXT
+column	14	BivariatePlotSettings	TEXT
+column	15	AnalysisXml	TEXT
+column	16	InfluenceDiagnosticsPlotSettings	TEXT
+column	17	MCMCReport	TEXT
+column	18	GMMReport	TEXT
+table	Input Data	sha=71ec56486af03a53	sql=d536de5c86337186	rows=2
+column	0	Name	TEXT
+column	1	Description	TEXT
+column	2	CreationDate	TEXT
+column	3	LastModified	TEXT
+column	4	ExactDataMethod	TEXT
+column	5	DataFrame	TEXT
+column	6	UnitLabel	TEXT
+column	7	IndexLabel	TEXT
+column	8	USGSSiteNumber	TEXT
+column	9	UseMultipleGrubbsBeckTest	BOOLEAN
+column	10	TimeSeriesElement	TEXT
+column	11	BlockFunction	TEXT
+column	12	TimeBlock	TEXT
+column	13	StartMonth	INT4
+column	14	EndMonth	INT4
+column	15	SmoothingFunction	TEXT
+column	16	Period	INT4
+column	17	Threshold	DOUBLE
+column	18	MinStepsBetweenPeaks	INT4
+column	19	IsProcessed	BOOLEAN
+column	20	ChronologyPlotSettings	TEXT
+column	21	FrequencyPlotSettings	TEXT
+column	22	SeasonalityPlotSettings	TEXT
+column	23	DensityPlotSettings	TEXT
+column	24	HistogramPlotSettings	TEXT
+column	25	QQPlotSettings	TEXT
+column	26	ACFPlotSettings	TEXT
+column	27	PACFPlotSettings	TEXT
+column	28	MRLPlotSettings	TEXT
+column	29	ModifiedScalePlotSettings	TEXT
+column	30	ShapePlotSettings	TEXT
+row	1	t:USGS - 01134500 - Block Max - Calendar Year	t#267:f0997d215f742d1d	t:2/23/2026 11:26:03 AM	t:7/15/2026 9:35:31 PM	t:BlockSeries	t#11739:d5dac5404d6454a9/71cb05c62e164fbf:r	t:Flow (cfs)	t:Year	t:00000000	i:1	t:USGS - 01134500 - Daily Discharge	t:Maximum	t:CalendarYear	i:10	i:9	t:None	i:1	r:0	i:1	i:1	t#5392:008f00ac811bb41f/17d41c3c35d24bd5:r	t#5457:80c2fb48291048e0/3c26d3f18e70757e:r	t#5295:378232565b50e132/ebdda8839e15e1ea:r	t#5656:afb1d5a717ce0993/bf0854c04356ddba:r	t#5274:71d3d1497d2c1b03/f70e5a8b27465ceb:r	t#6289:d314716018d62bb9/41d7cb448557f866:r	t#6943:27bda905a24bfa5d/f7b0bbbfd07e0c62:r	t#6990:f6a44e249254d2fe/45a7261abf636e83:r	t#4604:4ab1f9eb7290e741/29ed7c87ea1c32b7:r	t#4617:bd1cbff8840b0fa4/5d57c1cc278b81f5:r	t#4599:33ad547799c64842/08cc3d7ab5fc47fa:r
+row	2	t:USGS - 01134500 - Block Max - Water Year	t#261:6cda3087700b9e36	t:2/23/2026 11:28:14 AM	t:7/15/2026 9:35:31 PM	t:BlockSeries	t#11740:7bfe4bc1c0f29315/0dfc0f0f304ce509:r	t:Flow (cfs)	t:Year	t:00000000	i:1	t:USGS - 01134500 - Daily Discharge	t:Maximum	t:WaterYear	i:10	i:9	t:None	i:1	r:0	i:1	i:1	t#5392:008f00ac811bb41f/17d41c3c35d24bd5:r	t#5457:80c2fb48291048e0/3c26d3f18e70757e:r	t#5295:378232565b50e132/ebdda8839e15e1ea:r	t#5656:afb1d5a717ce0993/bf0854c04356ddba:r	t#5274:71d3d1497d2c1b03/f70e5a8b27465ceb:r	t#6289:d314716018d62bb9/41d7cb448557f866:r	t#6943:8143712660746f7f/6a3af03cf5f08b28:r	t#6990:7f62a86843a822aa/0af0aca0920186cd:r	t#4604:4ab1f9eb7290e741/29ed7c87ea1c32b7:r	t#4617:bd1cbff8840b0fa4/5d57c1cc278b81f5:r	t#4599:33ad547799c64842/08cc3d7ab5fc47fa:r
+table	Project	sha=0aac553edf67b16c	sql=bf204117c9f875b1	rows=1
+column	0	Name	TEXT
+column	1	Description	TEXT
+column	2	CreationDate	TEXT
+column	3	LastModified	TEXT
+column	4	FullFileName	TEXT
+column	5	SoftwareVersion	TEXT
+column	6	AvalonDockLayout	TEXT
+column	7	ProjectExplorerLayout	TEXT
+column	8	AvalonDockLayoutPrevious	TEXT
+column	9	ProjectExplorerLayoutPrevious	TEXT
+row	1	t:usgs-block-max-example	t#269:202f02b50b4e6e9f	t:2/23/2026 11:20:19 AM	t:7/15/2026 9:35:31 PM	p:{dir}\\usgs-block-max-example.bestfit	t:2.0.1	t#1541:4b4fc0fc4b0c65a3/e4c5f08a31d2bb91:r	t#1065:a7c6f3c463280e9d/9342bdf21201c8cc:r	t#1541:530391401c220d65/2bb19ac5174d08d1:r	t#1176:ee97d8dc000e8ddc/20d30e446391df3f:r
+table	Time Series Data	sha=913b05cdeb9af0ab	sql=70ca8b7ae0eb0d0a	rows=1
+column	0	Name	TEXT
+column	1	Description	TEXT
+column	2	CreationDate	TEXT
+column	3	LastModified	TEXT
+column	4	TimeSeries	TEXT
+column	5	UnitLabel	TEXT
+column	6	EntryMethod	TEXT
+column	7	SeriesType	TEXT
+column	8	HECDSSFullFilename	TEXT
+column	9	HECDSSDataPathname	TEXT
+column	10	GHCNSiteNumber	TEXT
+column	11	USGSSiteNumber	TEXT
+column	12	CHMNSiteNumber	TEXT
+column	13	ABOMSiteNumber	TEXT
+column	14	DepthUnit	TEXT
+column	15	DischargeUnit	TEXT
+column	16	HeightUnit	TEXT
+column	17	TimeInterval	TEXT
+column	18	StartDateTime	TEXT
+column	19	USGSRawText	TEXT
+column	20	TimeSeriesPlotSettings	TEXT
+column	21	SeasonalityPlotSettings	TEXT
+column	22	ACFPlotSettings	TEXT
+column	23	PACFPlotSettings	TEXT
+column	24	TimeSeriesCompressed	BLOB
+column	25	USGSRawTextCompressed	BLOB
+row	1	t:USGS - 01134500 - Daily Discharge	t#232:74406e23f4477de9	t:2/23/2026 11:23:54 AM	t:7/15/2026 9:35:31 PM	t:	t:Flow (cfs)	t:USGS	t:DailyDischarge	t:	t:	t:00000000000	t:01134500	t:0000000	t:000000	t:Inches	t:CubicFeetPerSecond	t:Feet	t:OneDay	t:1947-01-01T00:00:00.0000000	t:	t#5521:c110dc0e13f625a0/2f132f5746f45940:r	t#10496:39e9f6bb4e27d953/5382de8ff5cad2b8:r	t#5194:6eac49f21f1b0780/1da52c640a77d0a3:r	t#5225:70ae3a7ec1c006c7/7ac43dabbc118b1f:r	b#147200:c452a7e41a617631>z#2076065:a8ecab2ed8603e42/d5ca57d89c6cf563:r	b#130098:253e4fd7b72e170c>z#927676:de7f7f175a6a2e73
+table	Univariate Distribution Analysis	sha=d4bd21ce7aca0131	sql=63dff5382d17bd53	rows=0
+column	0	Name	TEXT
+column	1	Type	TEXT
+state	00 Time Series Data	ec42931c8fdb11dd	66eae0f9e86047a2
+state	00 Time Series Data/00 TimeSeriesElement 'USGS - 01134500 - Daily Discharge'	6b43af4a848a699d	2d2fa09d9a1d1bf3
+state	01 Input Data	2982c0c52ea384e5	7138759d2d2c7b9f
+state	01 Input Data/00 InputData 'USGS - 01134500 - Block Max - Calendar Year'	e797b448e49e5131	bbcd211f3f765a16
+state	01 Input Data/01 InputData 'USGS - 01134500 - Block Max - Water Year'	bc7d817ba20d06c7	f995cdb764aba4f0
+state	02 Distribution Fitting Analysis	22c9cdb7873ae49a	4a4ead4bf90c0837
+state	03 Univariate Distribution Analysis	468896e1b6f7e6c8	0e3a3c46961dd428
+state	04 Bivariate Distribution Analysis	2df996a968e4df10	85c24dd973e8dafa
+state	05 Rating Curve Analysis	5b9e46ee16c64e96	771f60dc9817d061
+state	06 Time Series Analysis	2f4a1830d606047e	0e6e4ee694390acc
+state	Project	653d91e8561ff55a	653d91e8561ff55a
+end

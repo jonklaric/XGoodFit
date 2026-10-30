@@ -1,0 +1,100 @@
+bestfit-file-description	1
+file	7-time-series-analysis/3-time-series-regression-example/time-series-regression-example.bestfit	sha=9c533f6906628693	tables=3	cells=203
+pragma	encoding	UTF-8
+pragma	journal_mode	wal
+pragma	user_version	0
+pragma	application_id	0
+pragma	auto_vacuum	0
+table	Project	sha=0181300abd1be2a6	sql=bf204117c9f875b1	rows=1
+column	0	Name	TEXT
+column	1	Description	TEXT
+column	2	CreationDate	TEXT
+column	3	LastModified	TEXT
+column	4	FullFileName	TEXT
+column	5	SoftwareVersion	TEXT
+column	6	AvalonDockLayout	TEXT
+column	7	ProjectExplorerLayout	TEXT
+column	8	AvalonDockLayoutPrevious	TEXT
+column	9	ProjectExplorerLayoutPrevious	TEXT
+row	1	t:time-series-regression-example	t#308:d8e8263195a58e6e	t:3/27/2025 8:21:14 PM	t:9/16/2026 4:40:22 PM	p:{dir}\\time-series-regression-example.bestfit	t:2.0.1	t#2162:8e642520f69055d4/c9d5bb71b96a8f7f:r	t#1305:385adadf70193b62/096c5b9e9b32194a:r	t#2563:5d02ffb5b64eab91/c001659c58f0d9c4:r	t#1216:67dfe371a04db562/c966fd9510ad0829:r
+table	Time Series Analysis	sha=ca7954682509c3ba	sql=edb195da20e95e7b	rows=2
+column	0	Name	TEXT
+column	1	Description	TEXT
+column	2	CreationDate	TEXT
+column	3	LastModified	TEXT
+column	4	TimeSeriesData	TEXT
+column	5	Covariates	TEXT
+column	6	ARMAX	TEXT
+column	7	BayesianAnalysis	TEXT
+column	8	MCMCResults	BLOB
+column	9	UncertaintyAnalysisResults	TEXT
+column	10	TimeSeriesPlotSettings	TEXT
+column	11	ResidualPlotSettings	TEXT
+column	12	ResidualHistogramPlotSettings	TEXT
+column	13	ResidualQQPlotSettings	TEXT
+column	14	ResidualACFPlotSettings	TEXT
+column	15	ResidualPACFPlotSettings	TEXT
+column	16	KernelDensityPlotSettings	TEXT
+column	17	HistogramPlotSettings	TEXT
+column	18	BivariatePlotSettings	TEXT
+column	19	MeanLikelihoodPlotSettings	TEXT
+column	20	AutocorrelationPlotSettings	TEXT
+column	21	MarkovChainTracesPlotSettings	TEXT
+column	22	ARIMAX	TEXT
+column	23	AnalysisResults	TEXT
+column	24	InfluenceDiagnosticsPlotSettings	TEXT
+column	25	MCMCReport	TEXT
+column	26	ForecastingTimeSteps	INT4
+column	27	AnalysisXml	TEXT
+column	28	PreV201Results	BOOLEAN
+row	1	t:Simple Linear Regression	t#376:2d09fded2fef9271	t:4/24/2026 5:35:32 PM	t:9/16/2026 4:39:50 PM	t:Consumption	t:Income	n	t#732:faeb60274f5e774f	b#1215725:db995cd5b5f719de>z#3636994:bd2b1e2e6b813210	n	t#10252:15d3bd77777bc14c/17f4a0f773955bdc:r	t#6228:11f4a1d502a7ae72/1e7f453c9d3ac16f:r	t#6116:e370b037324aacd3/c4feee36af6a94b1:r	t#6217:4cb3ce95fcc3ff2c/fe4aaf32148ea2ff:r	t#6907:5cf3c0806eb81696/3fa1d738a9912db0:r	t#6947:667092ca9e1f8965/a683351bd152c5c7:r	t#5677:2a9e1b37f73d659f/06b38e42bfde73d8:r	t#5288:9441b123bf24cc07/482475a4b391b2c4:r	t#7728:3a2353d759e66e90/f9b50e028fc21142:r	t#5539:5a3f6aaf1cd3b0c4/8553b05d14efe043:r	t#6963:0440062de871efac/52b2135d9a975656:r	t#4592:e00b33408b532b25/334d3790af79139f:r	t#1131:a102531a19125e18/96850f88cafe86c6:r	t#18144:e8501e1d3b7650a9	t#5319:2ca31fc73e41c75e/3067f3008c634549:r	t:	i:30	t#816:ef046790df856e2e/88ee73cb6418a265:r	i:0
+row	2	t:Multiple Linear Regression	t#418:16e189f26cd49394	t:4/24/2026 5:36:20 PM	t:9/16/2026 4:40:22 PM	t:Consumption	t:Income|Production|Savings|Unemployment	n	t#734:71e35da168d00fb7	b#3529782:2d2179fac36148d4>z#9315899:8541a3c61fa806d9	n	t#10252:15d3bd77777bc14c/17f4a0f773955bdc:r	t#6228:11f4a1d502a7ae72/1e7f453c9d3ac16f:r	t#6116:e370b037324aacd3/c4feee36af6a94b1:r	t#6217:4cb3ce95fcc3ff2c/fe4aaf32148ea2ff:r	t#6922:d32dd6a43e858505/fc352aee6305ae95:r	t#6947:d79ea1149807e88a/410c3b828f30b171:r	t#5677:2a9e1b37f73d659f/06b38e42bfde73d8:r	t#5288:9441b123bf24cc07/482475a4b391b2c4:r	t#7729:bd62992b591c34c1/3791cc68a85a530a:r	t#5539:5a3f6aaf1cd3b0c4/8553b05d14efe043:r	t#6962:702d9c04b47b122d/8cc60d41e355bfa9:r	t#4592:e00b33408b532b25/334d3790af79139f:r	t#1846:fc237f98f7e78cb1/3c144ed2c25b0e76:r	t#18046:ff7a4c90d8c06861	t#5319:2ca31fc73e41c75e/3067f3008c634549:r	t:	i:30	t#818:591094bb5d0323a6/40eff1c7f37d11d9:r	i:0
+table	Time Series Data	sha=37a26050dedc611d	sql=f88acb88f3ac8ca8	rows=5
+column	0	Name	TEXT
+column	1	Description	TEXT
+column	2	CreationDate	TEXT
+column	3	LastModified	TEXT
+column	4	TimeSeries	TEXT
+column	5	UnitLabel	TEXT
+column	6	EntryMethod	TEXT
+column	7	SeriesType	TEXT
+column	8	HECDSSFullFilename	TEXT
+column	9	HECDSSDataPathname	TEXT
+column	10	GHCNSiteNumber	TEXT
+column	11	USGSSiteNumber	TEXT
+column	12	DepthUnit	TEXT
+column	13	TimeInterval	TEXT
+column	14	StartDateTime	TEXT
+column	15	TimeSeriesPlotSettings	TEXT
+column	16	SeasonalityPlotSettings	TEXT
+column	17	DurationPlotSettings	TEXT
+column	18	CHMNSiteNumber	TEXT
+column	19	ABOMSiteNumber	TEXT
+column	20	DischargeUnit	TEXT
+column	21	HeightUnit	TEXT
+column	22	USGSRawText	TEXT
+column	23	ACFPlotSettings	TEXT
+column	24	PACFPlotSettings	TEXT
+column	25	TimeSeriesCompressed	BLOB
+column	26	USGSRawTextCompressed	BLOB
+row	1	t:Consumption	t#273:710be6436ebb12f0	t:3/27/2025 8:22:24 PM	t:3/27/2025 8:24:41 PM	t:	t:% Change in Consumption	t:Manual	t:DailyDischarge	t:	t:	t:00000000000	t:00000000	t:Inches	t:OneQuarter	t:1970-01-01T00:00:00.0000000	t#5561:4dde6fb044262b7d/b5c821fa01b417e7:r	t#4673:dd56dda1ab417c33/6c7af5deedb9ef1d:r	t:	t:	t:	t:CubicFeetPerSecond	t:Feet	t:	t#5194:1a97dc24e1f2b715/0be99afdfc438ff8:r	t#5225:31bfb1a0b6872000/18c445572bf7e167:r	b#1914:1f34d37c0eb7a3c8>z#15652:2207b28d7761790c/cc81637a66278883:r	b#0:e3b0c44298fc1c14
+row	2	t:Income	t#263:d0ef0b08f567d280	t:3/27/2025 8:23:01 PM	t:3/27/2025 8:24:51 PM	t:	t:% Change in Income	t:Manual	t:DailyDischarge	t:	t:	t:00000000000	t:00000000	t:Inches	t:OneQuarter	t:1970-01-01T00:00:00.0000000	t#5559:5b97fa5bbe75ee71/0980a60725152851:r	t#4668:f4ca21c8bd9126c1/2e35ceece8495c17:r	t:	t:	t:	t:CubicFeetPerSecond	t:Feet	t:	t#5194:1a97dc24e1f2b715/0be99afdfc438ff8:r	t#5225:31bfb1a0b6872000/18c445572bf7e167:r	b#1981:09084e0892b5ff2c>z#15749:25d835220cbc0792/2f364b887e39c84a:r	b#0:e3b0c44298fc1c14
+row	3	t:Production	t#271:d98fa344e29e9c3d	t:3/27/2025 8:23:21 PM	t:3/27/2025 8:25:13 PM	t:	t:% Change in Production	t:Manual	t:DailyDischarge	t:	t:	t:00000000000	t:00000000	t:Inches	t:OneQuarter	t:1970-01-01T00:00:00.0000000	t#5563:893a0d566edd8e23/a4b8def65ed68021:r	t#4672:f055ced36140c81e/8c5ba1562a36f9a1:r	t:	t:	t:	t:CubicFeetPerSecond	t:Feet	t:	t#5194:1a97dc24e1f2b715/0be99afdfc438ff8:r	t#5225:31bfb1a0b6872000/18c445572bf7e167:r	b#2008:2e4d67bb536ea47f>z#15753:77a673e1cbeef20b/d310c968766ae786:r	b#0:e3b0c44298fc1c14
+row	4	t:Savings	t#265:8bc182b2b43bc0d0	t:3/27/2025 8:23:29 PM	t:3/27/2025 8:26:23 PM	t:	t:% Change in Savings	t:Manual	t:DailyDischarge	t:	t:	t:00000000000	t:00000000	t:Inches	t:OneQuarter	t:1970-01-01T00:00:00.0000000	t#5560:2b6df8146f8b76a9/6237c5f1cf9a3018:r	t#4669:c4ce3d160697ae85/163563222327c19f:r	t:	t:	t:	t:CubicFeetPerSecond	t:Feet	t:	t#5194:1a97dc24e1f2b715/0be99afdfc438ff8:r	t#5225:31bfb1a0b6872000/18c445572bf7e167:r	b#2103:712fb99c676e2c67>z#15663:a267b2bf6b49fcf8/4591e8a9658f477f:r	b#0:e3b0c44298fc1c14
+row	5	t:Unemployment	t#329:a7d92f93cbab6524	t:3/27/2025 8:23:40 PM	t:3/27/2025 8:26:23 PM	t:	t:% Change in Unemployment	t:Manual	t:DailyDischarge	t:	t:	t:00000000000	t:00000000	t:Inches	t:OneQuarter	t:1970-01-01T00:00:00.0000000	t#5565:f639875279f1fe3c/3757cbd50d5de46a:r	t#4674:baaa8bf5fb9225bb/0c1a23e657fc2208:r	t:	t:	t:	t:CubicFeetPerSecond	t:Feet	t:	t#5194:1a97dc24e1f2b715/0be99afdfc438ff8:r	t#5225:31bfb1a0b6872000/18c445572bf7e167:r	b#943:da1fb2bab0c20dc3>z#15376:09f61edacafaa75b/5ab12cb5d5ee0c0e:r	b#0:e3b0c44298fc1c14
+state	00 Time Series Data	ede5eda9cf82bee3	66eae0f9e86047a2
+state	00 Time Series Data/00 TimeSeriesElement 'Consumption'	272d3032e518db12	95bf82d35dc8a3d9
+state	00 Time Series Data/01 TimeSeriesElement 'Income'	bb5bbe26e6eb8eb7	eeed8497d7109624
+state	00 Time Series Data/02 TimeSeriesElement 'Production'	10ab1877a341f252	2f355b49c34fd77d
+state	00 Time Series Data/03 TimeSeriesElement 'Savings'	ddfaa43745cf229a	988768cbf5e5b247
+state	00 Time Series Data/04 TimeSeriesElement 'Unemployment'	952611a8226bd0b7	860a9b87d620afbe
+state	01 Input Data	4b47e20068fbbb01	7138759d2d2c7b9f
+state	02 Distribution Fitting Analysis	22c9cdb7873ae49a	4a4ead4bf90c0837
+state	03 Univariate Distribution Analysis	468896e1b6f7e6c8	0e3a3c46961dd428
+state	04 Bivariate Distribution Analysis	2df996a968e4df10	85c24dd973e8dafa
+state	05 Rating Curve Analysis	5b9e46ee16c64e96	771f60dc9817d061
+state	06 Time Series Analysis	8a90b0f46ff94254	0e6e4ee694390acc
+state	06 Time Series Analysis/00 TimeSeriesAnalysis 'Simple Linear Regression'	d64a13f29921e415	629c03635c8b3286
+state	06 Time Series Analysis/01 TimeSeriesAnalysis 'Multiple Linear Regression'	53984e84c9d3ead6	cd9c9c9c91a255dd
+state	Project	43ca8e59e615eedf	43ca8e59e615eedf
+end

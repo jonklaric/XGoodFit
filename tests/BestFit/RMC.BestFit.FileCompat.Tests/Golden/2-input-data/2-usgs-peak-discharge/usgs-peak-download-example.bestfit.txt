@@ -1,0 +1,64 @@
+bestfit-file-description	1
+file	2-input-data/2-usgs-peak-discharge/usgs-peak-download-example.bestfit	sha=43dec3de92d6d89b	tables=2	cells=72
+pragma	encoding	UTF-8
+pragma	journal_mode	wal
+pragma	user_version	0
+pragma	application_id	0
+pragma	auto_vacuum	0
+table	Input Data	sha=1481bc147790132a	sql=d536de5c86337186	rows=2
+column	0	Name	TEXT
+column	1	Description	TEXT
+column	2	CreationDate	TEXT
+column	3	LastModified	TEXT
+column	4	ExactDataMethod	TEXT
+column	5	DataFrame	TEXT
+column	6	UnitLabel	TEXT
+column	7	IndexLabel	TEXT
+column	8	USGSSiteNumber	TEXT
+column	9	UseMultipleGrubbsBeckTest	BOOLEAN
+column	10	TimeSeriesElement	TEXT
+column	11	BlockFunction	TEXT
+column	12	TimeBlock	TEXT
+column	13	StartMonth	INT4
+column	14	EndMonth	INT4
+column	15	SmoothingFunction	TEXT
+column	16	Period	INT4
+column	17	Threshold	DOUBLE
+column	18	MinStepsBetweenPeaks	INT4
+column	19	IsProcessed	BOOLEAN
+column	20	ChronologyPlotSettings	TEXT
+column	21	FrequencyPlotSettings	TEXT
+column	22	SeasonalityPlotSettings	TEXT
+column	23	DensityPlotSettings	TEXT
+column	24	HistogramPlotSettings	TEXT
+column	25	QQPlotSettings	TEXT
+column	26	ACFPlotSettings	TEXT
+column	27	PACFPlotSettings	TEXT
+column	28	MRLPlotSettings	TEXT
+column	29	ModifiedScalePlotSettings	TEXT
+column	30	ShapePlotSettings	TEXT
+row	1	t:USGS - 01134500 - Peak Discharge	t#258:4b2bfa29edc5fa26	t:3/26/2026 9:08:53 PM	t:7/15/2026 9:36:28 PM	t:USGSPeakDischarge	t#23703:8e37f176d2714009/fbe65ff280bda7d0:r	t:Value	t:Year	t:01134500	i:1	t:	t:Maximum	t:CalendarYear	i:10	i:9	t:None	i:1	r:0	i:1	i:1	t#5387:35bb45167aa4f05f/3077f09254c2aa5b:r	t#5452:6a669c5a902441e0/39700d488859b3b5:r	t#4651:ef8fad523f9e2bf1/85bddb834d4fe391:r	t#4621:a8fc8a180f50c533/76b3f1433fa11376:r	t#4623:c8de8c69a2457362/4b10be0f6c1def19:r	t#4654:5051fb27987c80fe/b55ca01541870420:r	t#4626:d530c9f5f360a3e6/9e8a65fa663f4252:r	t#4642:48c2a235117c79b8/43384cf4f968499a:r	t#4604:4ab1f9eb7290e741/29ed7c87ea1c32b7:r	t#4617:bd1cbff8840b0fa4/5d57c1cc278b81f5:r	t#4599:33ad547799c64842/08cc3d7ab5fc47fa:r
+row	2	t:USGS - 11274500 - Peak Discharge	t#262:c8ac925b8ca25d2d	t:3/26/2026 9:12:13 PM	t:7/15/2026 9:36:28 PM	t:USGSPeakDischarge	t#27337:c7fcec30e9462064/278ae08611b8f1a9:r	t:Value	t:Year	t:11274500	i:1	t:	t:Maximum	t:CalendarYear	i:10	i:9	t:None	i:1	r:0	i:1	i:1	t#6169:3ef88637226767b0/488f7c1348b7c573:r	t#6244:0ee6d5eafdf74874/f387b572033362b1:r	t#5295:378232565b50e132/ebdda8839e15e1ea:r	t#5651:8907a696f5aa9b86/30331f7b45b64f1f:r	t#5269:7afec8f9df7eab51/3647e3d826ab4089:r	t#7198:88cf1a9a94d88e43/8a65ab55c7340c41:r	t#6943:18562eaea3048308/8e6e2422bccb5829:r	t#6990:c61a0d7a73873042/7d4c423f6f52d285:r	t#4604:4ab1f9eb7290e741/29ed7c87ea1c32b7:r	t#4617:bd1cbff8840b0fa4/5d57c1cc278b81f5:r	t#4599:33ad547799c64842/08cc3d7ab5fc47fa:r
+table	Project	sha=7d3ada538914a42e	sql=bf204117c9f875b1	rows=1
+column	0	Name	TEXT
+column	1	Description	TEXT
+column	2	CreationDate	TEXT
+column	3	LastModified	TEXT
+column	4	FullFileName	TEXT
+column	5	SoftwareVersion	TEXT
+column	6	AvalonDockLayout	TEXT
+column	7	ProjectExplorerLayout	TEXT
+column	8	AvalonDockLayoutPrevious	TEXT
+column	9	ProjectExplorerLayoutPrevious	TEXT
+row	1	t:usgs-peak-download-example	t#296:c16b386777da6413	t:3/26/2026 9:08:42 PM	t:7/15/2026 9:36:28 PM	p:{dir}\\usgs-peak-download-example.bestfit	t:2.0.1	t#1541:b49e513cbf3bf22e/06f0d8df3b3010f5:r	t#945:5f8b9a599d335dd4/d3bd5f4879226a59:r	t#1937:4e74e63a9cb7d15a/0545f838bce3e7ef:r	t:
+state	00 Time Series Data	7c890208af994c26	66eae0f9e86047a2
+state	01 Input Data	2982c0c52ea384e5	7138759d2d2c7b9f
+state	01 Input Data/00 InputData 'USGS - 01134500 - Peak Discharge'	b77ab5d631e6c72c	7ca526b8f23a4432
+state	01 Input Data/01 InputData 'USGS - 11274500 - Peak Discharge'	803424c501668159	3ab0fd5f1ad66b95
+state	02 Distribution Fitting Analysis	22c9cdb7873ae49a	4a4ead4bf90c0837
+state	03 Univariate Distribution Analysis	468896e1b6f7e6c8	0e3a3c46961dd428
+state	04 Bivariate Distribution Analysis	2df996a968e4df10	85c24dd973e8dafa
+state	05 Rating Curve Analysis	5b9e46ee16c64e96	771f60dc9817d061
+state	06 Time Series Analysis	2f4a1830d606047e	0e6e4ee694390acc
+state	Project	1d185000f522da92	1d185000f522da92
+end

@@ -1,0 +1,176 @@
+bestfit-file-description	1
+file	4-univariate-distribution-analysis/2-bulletin-17C-analysis/1-bulletin17C-examples/bulletin-17c-examples.bestfit	sha=1dff4fc7bcef283f	tables=6	cells=507
+pragma	encoding	UTF-8
+pragma	journal_mode	wal
+pragma	user_version	0
+pragma	application_id	0
+pragma	auto_vacuum	0
+table	<Bulletin 17C>	sha=e39d84eb5cab9723	sql=2973ee9da03a2084	rows=14
+column	0	Name	TEXT
+column	1	Description	TEXT
+column	2	CreationDate	TEXT
+column	3	LastModified	TEXT
+column	4	InputData	TEXT
+column	5	Bulletin17CDistribution	TEXT
+column	6	BayesianAnalysis	TEXT
+column	7	MCMCResults	BLOB
+column	8	AnalysisResults	TEXT
+column	9	ProbabilityOrdinates	TEXT
+column	10	FrequencyPlotSettings	TEXT
+column	11	KernelDensityPlotSettings	TEXT
+column	12	HistogramPlotSettings	TEXT
+column	13	BivariatePlotSettings	TEXT
+column	14	InfluenceDiagnosticsPlotSettings	TEXT
+column	15	AnalysisXml	TEXT
+column	16	MCMCReport	TEXT
+column	17	GMMReport	TEXT
+row	1	t:Example #1	t#335:b91e3e31f713f54f	t:4/14/2026 2:50:44 PM	t:9/29/2026 10:18:04 PM	t:Example #1 - Data	t#1603:0aeae9e358394549/e6794cdadc0805f6:r	t#602:0c27532671ee7eee	b#331270:4d2d6866fb627c43>z#1062530:aa711f0b8f69c5da	t#2237:c10396f3eac7fe81/cda65b6d88c4bb5a:r	t#439:5840f09d7e1a6c45	t#8364:af5d84bd22d69b39/13e853a06ffc881c:r	t#5675:f39ef603bcd20feb/c2871cecfd2caa50:r	t#5286:3da510af084de73a/d23064bdb646d17c:r	t#7734:d5a8adae77a1d9f3/70c8f754ae566f9a:r	t#6007:75d4651638b8f9ac/c3898afdf85908a4:r	t#2360:5b410e2662525097/b127fb8bfa11108e:r	t:	t#5025:f1b92924b1dfe088/df6f915f9915714f:r
+row	2	t:Example #2	t#258:2663c86deb010426	t:4/14/2026 2:58:00 PM	t:9/30/2026 9:03:04 PM	t:Example #2 - Data	t#1565:8cf107c8751574d3/b2eff7869cbf4200:r	t#602:0c27532671ee7eee	b#336830:92f4a0a8f2001edb>z#1061174:040f2c2e488ab24e	t#2235:ec0fc1c9a47c01a9/f8d271b4f3c417a2:r	t#439:5840f09d7e1a6c45	t#9205:bec8face005191cf/29d0b811ea839099:r	t#5675:f39ef603bcd20feb/c2871cecfd2caa50:r	t#5286:3da510af084de73a/d23064bdb646d17c:r	t#7732:02ffc9965165f578/5cebfdc5952169d5:r	t#5319:2ca31fc73e41c75e/3067f3008c634549:r	t#2343:1e1af6746f26131c/f0694e5d3cbf0208:r	t:	t#3723:2357f8cfa23a54e6/4c996f49aa3abcc9:r
+row	3	t:Example #3	t#264:42a8994b2fca0b0d	t:4/14/2026 3:05:00 PM	t:9/29/2026 10:18:04 PM	t:Example #3 - Data	t#1510:74f9819e5354f543/a942348b16357fe3:r	t#602:0c27532671ee7eee	b#335600:59f4f781a13ec564>z#1067100:df743b03cf0d3ab0	t#2231:f3a24a56f8bd1ff5/6711e4cdb0cf60a1:r	t#439:5840f09d7e1a6c45	t#9205:bdb0748f2635f503/dc774b02754eb810:r	t#5675:4d7d92237acb03c4/6960d6449983e1b5:r	t#5286:e76f3948991988dc/6bd71a9946617e58:r	t#7733:9aabb3b5347af84f/1b7526941ad7e274:r	t#5314:085567b25b97b9ec/93059f09d993770c:r	t#2361:6974c6e13fdb5ff2/3d83a8ea832ef9d5:r	t:	t#3730:8ab680b94a21e606/912791ff08eede80:r
+row	4	t:Example #4	t#264:301a5bfe409346b1	t:4/14/2026 3:06:27 PM	t:9/29/2026 10:18:04 PM	t:Example #4 - Data	t#1510:7f319ea7578b69ca/a37486746687537f:r	t#602:0c27532671ee7eee	b#331021:0fe92f03701d0509>z#1056056:104bc4a1c3d27b7b	t#2234:8fe844ddceceb2e8/0848fe4dcbc7e231:r	t#439:5840f09d7e1a6c45	t#9172:8b145ec2c2e6e7e3/39f5584cf8f40f56:r	t#5675:f39ef603bcd20feb/c2871cecfd2caa50:r	t#5286:3da510af084de73a/d23064bdb646d17c:r	t#7733:b3ba1494cd7c635f/025e262a582419cb:r	t#5319:2ca31fc73e41c75e/3067f3008c634549:r	t#2362:f826593c0fdfac5d/20744851c17269b8:r	t:	t#3729:da61af9adcf942a8/c0ef97b3d1c26c14:r
+row	5	t:Example #5	t#264:706c09b71306c96f	t:4/14/2026 3:07:39 PM	t:9/29/2026 10:18:04 PM	t:Example #5 - Data	t#1512:2544a056b927502d/ad5fb50b8f2e2f4e:r	t#602:0c27532671ee7eee	b#336401:9c843e042370d790>z#1067857:6cedabb9316bfad1	t#2229:326333b85d20a52d/781a77064d1ffd07:r	t#439:5840f09d7e1a6c45	t#9205:bec8face005191cf/29d0b811ea839099:r	t#5675:4ff5d1b8e47c215e/bc883557f65929b4:r	t#5286:aee82327e619a414/f715311ef46e5a27:r	t#7733:59028278182dbc62/8f1e66467bc3effc:r	t#5319:2ca31fc73e41c75e/3067f3008c634549:r	t#2366:a4fac56c1914b40d/dacc962895b97d33:r	t:	t#3730:7fec519c04dccfcf/c6201fb516a84b1d:r
+row	6	t:Example #6	t#264:00d8037fc67a4469	t:4/14/2026 3:08:46 PM	t:9/29/2026 10:18:04 PM	t:Example #6 - Data	t#1512:e0845f5dcd5b1897/4d54aa243a9300bf:r	t#602:0c27532671ee7eee	b#336851:c739f46f44894fb5>z#1065916:7c3dc55cf6cf4af4	t#2232:049437a72caf59db/b46924321c8ba068:r	t#439:5840f09d7e1a6c45	t#9205:bec8face005191cf/29d0b811ea839099:r	t#5675:4ff5d1b8e47c215e/bc883557f65929b4:r	t#5286:aee82327e619a414/f715311ef46e5a27:r	t#7733:7a0fee46c528769c/e6edfb21643d023d:r	t#5319:2ca31fc73e41c75e/3067f3008c634549:r	t#2360:fcee32da061633ec/b21ce3f228d0dc7e:r	t:	t#3730:9d3fce4089e92afd/ac42bff87db1f615:r
+row	7	t:Example #7	t#264:dcec9dee04b1e6d4	t:4/14/2026 3:09:20 PM	t:9/29/2026 10:18:04 PM	t:Example #7 - Data	t#1510:137ff567d7796dd4/407ac44e7810caa6:r	t#602:0c27532671ee7eee	b#334489:987409ec112cfbc1>z#1066856:92adfbdaa6dc7201	t#2229:6eb62e3eaf13d1e0/959c7a47efa90273:r	t#439:5840f09d7e1a6c45	t#9172:8b145ec2c2e6e7e3/39f5584cf8f40f56:r	t#5675:f39ef603bcd20feb/c2871cecfd2caa50:r	t#5286:3da510af084de73a/d23064bdb646d17c:r	t#7732:a7ad46d32176e1a7/5b445ab84d37c84f:r	t#5319:2ca31fc73e41c75e/3067f3008c634549:r	t#2365:bd30af3c4583729a/b4326ead6feca065:r	t:	t#3730:3201a4929a01e195/b7e2f131c316feda:r
+row	8	t:Example #1 - BCB	t#343:47e5d9ebd26762a9	t:4/14/2026 3:09:59 PM	t:9/29/2026 10:18:04 PM	t:Example #1 - Data	t#1630:7051badfd4f04e83/0bbd107f127d0424:r	t#601:21eb29dc1fafa7da	b#83162:5d10989b5febe467>z#214605:515ce1e66d05df2b	t#2234:b4366df2624d43aa/f59d51c6867220f0:r	t#439:5840f09d7e1a6c45	t#8364:af5d84bd22d69b39/13e853a06ffc881c:r	t#5685:6bb05fb35dc7e707/5cb31a0dad85638b:r	t#5296:a9d32111feb7c9fe/1010804efdf95abe:r	t#7753:023bd5f1762e385d/e75d48e7038568ce:r	t#6007:75d4651638b8f9ac/c3898afdf85908a4:r	t#2882:6689dadce2625640/f264fe311b23dfda:r	t:	t#6643:7573923ea7b3e384/cd7cdd06686ff75d:r
+row	9	t:Example #2 - BCB	t#261:1404a2f235ad4c60	t:4/14/2026 3:11:05 PM	t:9/30/2026 9:02:44 PM	t:Example #2 - Data	t#1565:da7ddf0a60f6bc43/933fb6fc8db6291e:r	t#602:be98530eed1d1db7	b#0:e3b0c44298fc1c14	t:	t#439:5840f09d7e1a6c45	t#9205:bec8face005191cf/29d0b811ea839099:r	t#5685:6bb05fb35dc7e707/5cb31a0dad85638b:r	t#5296:a9d32111feb7c9fe/1010804efdf95abe:r	t#7752:9566e2d861b24500/d12586c510ceb5d6:r	t#5319:2ca31fc73e41c75e/3067f3008c634549:r	t#1202:f34f022d0db0fb82/15bf72276aa049e1:r	t:	t:
+row	10	t:Example #3 - BCB	t#261:96104ff1f976e4de	t:4/14/2026 3:12:55 PM	t:9/29/2026 10:18:04 PM	t:Example #3 - Data	t#1628:25b2bba3c322ebc1/31cb59eb1cb8dfae:r	t#601:21eb29dc1fafa7da	b#83644:c97663f1889d711d>z#215590:e32658df54558f56	t#2228:cba0c128edf6a950/bb16ffafc14d9186:r	t#439:5840f09d7e1a6c45	t#9205:bec8face005191cf/29d0b811ea839099:r	t#5685:6bb05fb35dc7e707/5cb31a0dad85638b:r	t#5296:a9d32111feb7c9fe/1010804efdf95abe:r	t#7752:650366ef6858134a/2db0dc0e8804d187:r	t#5319:2ca31fc73e41c75e/3067f3008c634549:r	t#2879:2e97297131be95ad/1a66bef8c227ba8c:r	t:	t#5376:02f8bc0e16d0ea70/817abbb11a3ecafb:r
+row	11	t:Example #4 - BCB	t#261:e532fb1a3058675d	t:4/14/2026 3:14:17 PM	t:9/29/2026 10:18:04 PM	t:Example #4 - Data	t#1628:7fac9f0f5c61ed2f/42c0b3233b096828:r	t#601:21eb29dc1fafa7da	b#82930:751c540caa6bd0c2>z#213576:654a58db2463f74f	t#2229:6ee67e732b5a2685/8913a7bc7471ab21:r	t#439:5840f09d7e1a6c45	t#9172:8b145ec2c2e6e7e3/39f5584cf8f40f56:r	t#5685:6bb05fb35dc7e707/5cb31a0dad85638b:r	t#5296:a9d32111feb7c9fe/1010804efdf95abe:r	t#7752:8eb611165068e46d/e96aedcab4dcefbf:r	t#5319:2ca31fc73e41c75e/3067f3008c634549:r	t#2876:1959ce5cb5d55265/2209dbf945c5be87:r	t:	t#5335:c1254c10d121e11e/ef1839ed09065539:r
+row	12	t:Example #5 - BCB	t#261:4d757787a805d116	t:4/14/2026 3:17:01 PM	t:9/29/2026 10:18:04 PM	t:Example #5 - Data	t#1630:8ba76523311b913b/a6ce287f7c02918a:r	t#601:21eb29dc1fafa7da	b#83748:7a9bf953e967f40f>z#216312:ea02852897a26b9e	t#2232:89f5c470a98b44ec/b22083251d3b8874:r	t#439:5840f09d7e1a6c45	t#9205:bec8face005191cf/29d0b811ea839099:r	t#5685:6bb05fb35dc7e707/5cb31a0dad85638b:r	t#5296:a9d32111feb7c9fe/1010804efdf95abe:r	t#7753:a12d51d880e2dedd/b48ba59dd1cd87cd:r	t#5319:2ca31fc73e41c75e/3067f3008c634549:r	t#2881:3572ba3c756c986f/9d1da0d0a419122a:r	t:	t#5373:43fa1a05ff886e24/fcc77db61f1c92e9:r
+row	13	t:Example #6 - BCB	t#261:46e625049387547c	t:4/14/2026 3:17:40 PM	t:9/29/2026 10:18:04 PM	t:Example #6 - Data	t#1630:933080b6395d50bb/af981bb81dc69d64:r	t#601:21eb29dc1fafa7da	b#83738:d1c0ad3af623c305>z#215423:d29eaa499fafbb51	t#2233:64712807572cf6c1/1b185e83fbddc246:r	t#439:5840f09d7e1a6c45	t#9205:bec8face005191cf/29d0b811ea839099:r	t#5685:6bb05fb35dc7e707/5cb31a0dad85638b:r	t#5296:a9d32111feb7c9fe/1010804efdf95abe:r	t#7753:9cf418e52f7a2505/71cae08c7074f10a:r	t#5319:2ca31fc73e41c75e/3067f3008c634549:r	t#2877:dea5e195713002c4/c4fb5443c408c73c:r	t:	t#5375:1bd4cf67613cf884/cc29428bb09acf7d:r
+row	14	t:Example #7 - BCB	t#261:2619e1d04360ba3f	t:4/14/2026 3:18:30 PM	t:9/29/2026 10:18:04 PM	t:Example #7 - Data	t#1628:b8dbf2d7f4218be7/e37e3b84ca2f209a:r	t#601:21eb29dc1fafa7da	b#83196:16890ecffdcaeaf1>z#215090:2364c928a91f9892	t#2226:1cb6199f1fb73359/ca2b4de5e90d0e72:r	t#439:5840f09d7e1a6c45	t#9172:8b145ec2c2e6e7e3/39f5584cf8f40f56:r	t#5685:6bb05fb35dc7e707/5cb31a0dad85638b:r	t#5296:a9d32111feb7c9fe/1010804efdf95abe:r	t#7753:221811c60fd3c00d/738bd50bf42af83e:r	t#5319:2ca31fc73e41c75e/3067f3008c634549:r	t#2883:e69f0d983ae5e8f4/dbbef0518c2dd023:r	t:	t#5376:c79b29c1d5f68a3f/225f208cf85109a8:r
+table	<Univariate Distribution>	sha=2fd6a4acb8c0ccbf	sql=192652ba4c99d235	rows=0
+column	0	Name	TEXT
+column	1	Description	TEXT
+column	2	CreationDate	TEXT
+column	3	LastModified	TEXT
+column	4	InputData	TEXT
+column	5	UnivariateDistribution	TEXT
+column	6	BayesianAnalysis	TEXT
+column	7	MCMCResults	BLOB
+column	8	AnalysisResults	TEXT
+column	9	ChronologyAnalysisResults	TEXT
+column	10	ProbabilityOrdinates	TEXT
+column	11	FrequencyPlotSettings	TEXT
+column	12	ChronologyPlotSettings	TEXT
+column	13	InfluenceDiagnosticsPlotSettings	TEXT
+column	14	KernelDensityPlotSettings	TEXT
+column	15	HistogramPlotSettings	TEXT
+column	16	BivariatePlotSettings	TEXT
+column	17	MeanLikelihoodPlotSettings	TEXT
+column	18	AutocorrelationPlotSettings	TEXT
+column	19	MarkovChainTracesPlotSettings	TEXT
+column	20	AnalysisXml	TEXT
+column	21	MCMCReport	TEXT
+table	Distribution Fitting Analysis	sha=518c9c0d6013caef	sql=5eca6e5222444246	rows=0
+column	0	Name	TEXT
+column	1	Description	TEXT
+column	2	CreationDate	TEXT
+column	3	LastModified	TEXT
+column	4	InputData	TEXT
+column	5	FittedDistributions	TEXT
+column	6	ProbabilityOrdinates	TEXT
+column	7	IsEstimated	BOOLEAN
+column	8	FrequencyPlotSettings	TEXT
+column	9	PDFPlotSettings	TEXT
+column	10	CDFPlotSettings	TEXT
+column	11	PPPlotSettings	TEXT
+column	12	QQPlotSettings	TEXT
+column	13	AnalysisXml	TEXT
+table	Input Data	sha=7f88bf47ebbfa0f9	sql=d536de5c86337186	rows=7
+column	0	Name	TEXT
+column	1	Description	TEXT
+column	2	CreationDate	TEXT
+column	3	LastModified	TEXT
+column	4	ExactDataMethod	TEXT
+column	5	DataFrame	TEXT
+column	6	UnitLabel	TEXT
+column	7	IndexLabel	TEXT
+column	8	USGSSiteNumber	TEXT
+column	9	UseMultipleGrubbsBeckTest	BOOLEAN
+column	10	TimeSeriesElement	TEXT
+column	11	BlockFunction	TEXT
+column	12	TimeBlock	TEXT
+column	13	StartMonth	INT4
+column	14	EndMonth	INT4
+column	15	SmoothingFunction	TEXT
+column	16	Period	INT4
+column	17	Threshold	DOUBLE
+column	18	MinStepsBetweenPeaks	INT4
+column	19	IsProcessed	BOOLEAN
+column	20	ChronologyPlotSettings	TEXT
+column	21	FrequencyPlotSettings	TEXT
+column	22	SeasonalityPlotSettings	TEXT
+column	23	DensityPlotSettings	TEXT
+column	24	HistogramPlotSettings	TEXT
+column	25	QQPlotSettings	TEXT
+column	26	ACFPlotSettings	TEXT
+column	27	PACFPlotSettings	TEXT
+column	28	MRLPlotSettings	TEXT
+column	29	ModifiedScalePlotSettings	TEXT
+column	30	ShapePlotSettings	TEXT
+row	1	t:Example #1 - Data	t#150:715fb5e61f19cd6e	t:4/14/2026 2:41:47 PM	t:4/14/2026 2:42:24 PM	t:Manual	t#10036:dd89a83f0648eac0/4f5da582c74b1427:r	t:Peak Flow (cfs)	t:Year	t:00000000	i:1	t:	t:Maximum	t:CalendarYear	i:10	i:9	t:None	i:1	r:0	i:1	i:0	t#5397:b66b353aabf6140b/4e63c9c0a39eaf76:r	t#5462:4e9f0919087db0c7/b457bab3631f31f5:r	t#4651:485ae51e9908be90/f627168d1629fdf1:r	t#4631:f1f52f7631d5e013/759f6016d3f177dc:r	t#4633:5878acff720e67ed/3b0ec5b05fe33380:r	t#4654:31c65fb9ffdab673/449d12bb4c4970dd:r	t#4626:eb221798a6e69160/309239f5bed5f95b:r	t#4642:271a1a0cca6b7cd0/94db91231448007e:r	t#4604:72fceb0feba00e36/f54686f1451d6bfb:r	t#4617:bd1cbff8840b0fa4/5d57c1cc278b81f5:r	t#4599:33ad547799c64842/08cc3d7ab5fc47fa:r
+row	2	t:Example #2 - Data	t#164:a2e03c8f60060896	t:4/14/2026 2:42:39 PM	t:9/30/2026 9:02:44 PM	t:Manual	t#11961:d65f676c03030266/4e3c3db4ee93d209:r	t:Peak Flow (cfs)	t:Year	t:00000000	i:1	t:	t:Maximum	t:CalendarYear	i:10	i:9	t:None	i:1	r:0	i:1	i:0	t#6179:11292d38d541c17b/f0591598d4c75ec1:r	t#6254:8af3d518181592a8/762e6b161707e325:r	t#4651:0dd310a4bfc9a708/10cf688a87fdc182:r	t#4631:cef155db76102a95/18e38a4d0eaa19bc:r	t#4633:b2d9007cd3d2f7e3/18a3fad12eb32b39:r	t#4654:a3bcbf503cf36eb5/de85fd59c932b4ef:r	t#4626:6f8b833bc137ffb2/a74f64385c5eea8f:r	t#4642:018b654eabe9f1ed/19b9c9322e7c1af0:r	t#4604:672c8e8e2c3e4ff1/298c609bb1f73831:r	t#4617:bd1cbff8840b0fa4/5d57c1cc278b81f5:r	t#4599:33ad547799c64842/08cc3d7ab5fc47fa:r
+row	3	t:Example #3 - Data	t#403:0c3aa39e444f49c3	t:4/14/2026 2:43:28 PM	t:4/14/2026 2:55:18 PM	t:Manual	t#8732:07abe2aa63ae553e/a1b7c5b10a282b7a:r	t:Peak Flow (cfs)	t:Year	t:00000000	i:0	t:	t:Maximum	t:CalendarYear	i:10	i:9	t:None	i:1	r:0	i:1	i:0	t#9123:ae1091fff2dab6dc/d8b888a0c6104b7a:r	t#6254:539ef95fef59f946/9a2c93b6f9397f0e:r	t#4651:485ae51e9908be90/f627168d1629fdf1:r	t#4631:f1f52f7631d5e013/759f6016d3f177dc:r	t#4633:5878acff720e67ed/3b0ec5b05fe33380:r	t#4654:31c65fb9ffdab673/449d12bb4c4970dd:r	t#4626:eb221798a6e69160/309239f5bed5f95b:r	t#4642:271a1a0cca6b7cd0/94db91231448007e:r	t#4604:72fceb0feba00e36/f54686f1451d6bfb:r	t#4617:bd1cbff8840b0fa4/5d57c1cc278b81f5:r	t#4599:33ad547799c64842/08cc3d7ab5fc47fa:r
+row	4	t:Example #4 - Data	t#177:9a50f5a7b07ac2e6	t:4/14/2026 2:46:07 PM	t:4/14/2026 2:46:44 PM	t:Manual	t#12995:173dafb227efc439/cdbc5fcb9b40dfa5:r	t:Peak Flow (cfs)	t:Year	t:00000000	i:1	t:	t:Maximum	t:CalendarYear	i:10	i:9	t:None	i:1	r:0	i:1	i:0	t#10117:c21c57093c042843/6707d2a4ddf204dc:r	t#6270:b74d1fb75b82728c/8ceefa1d6d141f25:r	t#4651:485ae51e9908be90/f627168d1629fdf1:r	t#4631:f1f52f7631d5e013/759f6016d3f177dc:r	t#4633:5878acff720e67ed/3b0ec5b05fe33380:r	t#4654:31c65fb9ffdab673/449d12bb4c4970dd:r	t#4626:eb221798a6e69160/309239f5bed5f95b:r	t#4642:271a1a0cca6b7cd0/94db91231448007e:r	t#4604:72fceb0feba00e36/f54686f1451d6bfb:r	t#4617:bd1cbff8840b0fa4/5d57c1cc278b81f5:r	t#4599:33ad547799c64842/08cc3d7ab5fc47fa:r
+row	5	t:Example #5 - Data	t#368:321c08a8a17901a8	t:4/14/2026 2:47:20 PM	t:4/14/2026 2:57:50 PM	t:Manual	t#8547:7ada30265e9f8d54/4c80c563ea373e68:r	t:Peak Flow (cfs)	t:Year	t:00000000	i:0	t:	t:Maximum	t:CalendarYear	i:10	i:9	t:None	i:1	r:0	i:1	i:0	t#14991:46094242d749c736/f9737aed4cddfe1c:r	t#6254:a0bf2723e4ae1304/6dd012f149b4c007:r	t#4651:485ae51e9908be90/f627168d1629fdf1:r	t#4631:f1f52f7631d5e013/759f6016d3f177dc:r	t#4633:5878acff720e67ed/3b0ec5b05fe33380:r	t#4654:31c65fb9ffdab673/449d12bb4c4970dd:r	t#4626:eb221798a6e69160/309239f5bed5f95b:r	t#4642:271a1a0cca6b7cd0/94db91231448007e:r	t#4604:72fceb0feba00e36/f54686f1451d6bfb:r	t#4617:bd1cbff8840b0fa4/5d57c1cc278b81f5:r	t#4599:33ad547799c64842/08cc3d7ab5fc47fa:r
+row	6	t:Example #6 - Data	t#168:d2bc97e9df523155	t:4/14/2026 2:49:00 PM	t:4/14/2026 2:49:40 PM	t:Manual	t#9703:3a2f60985e43a4b6/1bb997f90f1b84c0:r	t:Peak Flow (cfs)	t:Year	t:00000000	i:1	t:	t:Maximum	t:CalendarYear	i:10	i:9	t:None	i:1	r:0	i:1	i:0	t#7167:16b646f50a95c90b/ca799f6ba36ceab4:r	t#6254:539ef95fef59f946/9a2c93b6f9397f0e:r	t#4651:485ae51e9908be90/f627168d1629fdf1:r	t#4631:f1f52f7631d5e013/759f6016d3f177dc:r	t#4633:5878acff720e67ed/3b0ec5b05fe33380:r	t#4654:31c65fb9ffdab673/449d12bb4c4970dd:r	t#4626:eb221798a6e69160/309239f5bed5f95b:r	t#4642:271a1a0cca6b7cd0/94db91231448007e:r	t#4604:72fceb0feba00e36/f54686f1451d6bfb:r	t#4617:bd1cbff8840b0fa4/5d57c1cc278b81f5:r	t#4599:33ad547799c64842/08cc3d7ab5fc47fa:r
+row	7	t:Example #7 - Data	t#171:7a9b9cfe85b9f745	t:4/14/2026 2:49:50 PM	t:4/14/2026 2:50:32 PM	t:Manual	t#13381:1867333f97c40916/2812a5a95cf44dde:r	t:Peak Flow (cfs)	t:Year	t:00000000	i:1	t:	t:Maximum	t:CalendarYear	i:10	i:9	t:None	i:1	r:0	i:1	i:0	t#15977:d347ec23ff9414cc/44c2054449f3adad:r	t#6270:b74d1fb75b82728c/8ceefa1d6d141f25:r	t#4651:485ae51e9908be90/f627168d1629fdf1:r	t#4631:f1f52f7631d5e013/759f6016d3f177dc:r	t#4633:5878acff720e67ed/3b0ec5b05fe33380:r	t#4654:31c65fb9ffdab673/449d12bb4c4970dd:r	t#4626:eb221798a6e69160/309239f5bed5f95b:r	t#4642:271a1a0cca6b7cd0/94db91231448007e:r	t#4604:72fceb0feba00e36/f54686f1451d6bfb:r	t#4617:bd1cbff8840b0fa4/5d57c1cc278b81f5:r	t#4599:33ad547799c64842/08cc3d7ab5fc47fa:r
+table	Project	sha=cc461ec8b78dad09	sql=bf204117c9f875b1	rows=1
+column	0	Name	TEXT
+column	1	Description	TEXT
+column	2	CreationDate	TEXT
+column	3	LastModified	TEXT
+column	4	FullFileName	TEXT
+column	5	SoftwareVersion	TEXT
+column	6	AvalonDockLayout	TEXT
+column	7	ProjectExplorerLayout	TEXT
+column	8	AvalonDockLayoutPrevious	TEXT
+column	9	ProjectExplorerLayoutPrevious	TEXT
+row	1	t:bulletin-17c-examples	t#308:d04e95f5bc065673	t:4/14/2026 2:41:35 PM	t:9/30/2026 9:03:04 PM	p:{dir}\\bulletin-17c-examples.bestfit	t:2.0.1	t#1998:e1ef825d398f66be/e01d06788efbd7fc:r	t#2383:a9efc3cc833f9810/2d09d074f2eafa0a:r	t#1999:fe95daa33c580ba4/225e7e289011dbc7:r	t#2462:be39bec108196291/8ff9f8e08bae99af:r
+table	Univariate Distribution Analysis	sha=b4c354dfa4de3601	sql=63dff5382d17bd53	rows=14
+column	0	Name	TEXT
+column	1	Type	TEXT
+row	1	t:Example #1	t:RMC.BestFit.UI.B17CAnalysis
+row	2	t:Example #2	t:RMC.BestFit.UI.B17CAnalysis
+row	3	t:Example #3	t:RMC.BestFit.UI.B17CAnalysis
+row	4	t:Example #4	t:RMC.BestFit.UI.B17CAnalysis
+row	5	t:Example #5	t:RMC.BestFit.UI.B17CAnalysis
+row	6	t:Example #6	t:RMC.BestFit.UI.B17CAnalysis
+row	7	t:Example #7	t:RMC.BestFit.UI.B17CAnalysis
+row	8	t:Example #1 - BCB	t:RMC.BestFit.UI.B17CAnalysis
+row	9	t:Example #2 - BCB	t:RMC.BestFit.UI.B17CAnalysis
+row	10	t:Example #3 - BCB	t:RMC.BestFit.UI.B17CAnalysis
+row	11	t:Example #4 - BCB	t:RMC.BestFit.UI.B17CAnalysis
+row	12	t:Example #5 - BCB	t:RMC.BestFit.UI.B17CAnalysis
+row	13	t:Example #6 - BCB	t:RMC.BestFit.UI.B17CAnalysis
+row	14	t:Example #7 - BCB	t:RMC.BestFit.UI.B17CAnalysis
+state	00 Time Series Data	7c890208af994c26	66eae0f9e86047a2
+state	01 Input Data	2734d7756f66e4a5	7138759d2d2c7b9f
+state	01 Input Data/00 InputData 'Example #1 - Data'	dd103463e0193cd4	1bfd870cc7b99f02
+state	01 Input Data/01 InputData 'Example #2 - Data'	876ec935dcf058c0	4a0bd76fdef4467b
+state	01 Input Data/02 InputData 'Example #3 - Data'	4804551a237c283e	5716734c7b1af171
+state	01 Input Data/03 InputData 'Example #4 - Data'	32adf730fcf932c7	3f0ecbcfd76912ab
+state	01 Input Data/04 InputData 'Example #5 - Data'	9b614a36df0ef8f4	ab711b571cfad1ce
+state	01 Input Data/05 InputData 'Example #6 - Data'	8e68d022cc23d370	d32ccb2b34f6f27b
+state	01 Input Data/06 InputData 'Example #7 - Data'	3a0d653ede1b729a	41d2e17c850c9768
+state	02 Distribution Fitting Analysis	22c9cdb7873ae49a	4a4ead4bf90c0837
+state	03 Univariate Distribution Analysis	069b7114b09523cf	0e3a3c46961dd428
+state	03 Univariate Distribution Analysis/00 B17CAnalysis 'Example #1'	9adc70fe45f24dd6	865100d4888d8d13
+state	03 Univariate Distribution Analysis/01 B17CAnalysis 'Example #2'	58f166a24e607857	ffa2d23aa21860ae
+state	03 Univariate Distribution Analysis/02 B17CAnalysis 'Example #3'	e486f61d4a6fff67	8406d05e3cbef14f
+state	03 Univariate Distribution Analysis/03 B17CAnalysis 'Example #4'	cf40a5b90a05021f	21a6a1a7066784ef
+state	03 Univariate Distribution Analysis/04 B17CAnalysis 'Example #5'	8c01de7384361fa8	4e85fdb564fec675
+state	03 Univariate Distribution Analysis/05 B17CAnalysis 'Example #6'	ccc53a5f96d42ef5	b21520ce7a17c452
+state	03 Univariate Distribution Analysis/06 B17CAnalysis 'Example #7'	ab2e5cf64a825eda	ba7c34da6ec5827d
+state	03 Univariate Distribution Analysis/07 B17CAnalysis 'Example #1 - BCB'	e9a41d1b4d3d64dc	b57d4bd561c4032e
+state	03 Univariate Distribution Analysis/08 B17CAnalysis 'Example #2 - BCB'	fb01a898c096c699	b851a1f4d2ee93d9
+state	03 Univariate Distribution Analysis/09 B17CAnalysis 'Example #3 - BCB'	406af13dee4e50aa	e8ae9722b8cd81b8
+state	03 Univariate Distribution Analysis/10 B17CAnalysis 'Example #4 - BCB'	61e2e812ae361c84	59cc69da94b77a51
+state	03 Univariate Distribution Analysis/11 B17CAnalysis 'Example #5 - BCB'	25647989023b5523	1be477ef86e76bc0
+state	03 Univariate Distribution Analysis/12 B17CAnalysis 'Example #6 - BCB'	de37063308ff96f8	88c72b3ae80aa637
+state	03 Univariate Distribution Analysis/13 B17CAnalysis 'Example #7 - BCB'	c78d5adb7f1bcb1e	fa7b122873a5cf1a
+state	04 Bivariate Distribution Analysis	2df996a968e4df10	85c24dd973e8dafa
+state	05 Rating Curve Analysis	5b9e46ee16c64e96	771f60dc9817d061
+state	06 Time Series Analysis	2f4a1830d606047e	0e6e4ee694390acc
+state	Project	2c7a3d3390903d12	2c7a3d3390903d12
+end

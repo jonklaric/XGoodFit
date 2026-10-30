@@ -1,0 +1,91 @@
+bestfit-file-description	1
+file	2-input-data/3-peaks-over-threshold/ghcn-peaks-over-threshold-example.bestfit	sha=cf92987c46321569	tables=3	cells=67
+pragma	encoding	UTF-8
+pragma	journal_mode	wal
+pragma	user_version	0
+pragma	application_id	0
+pragma	auto_vacuum	0
+table	Input Data	sha=0a059200ac8b9086	sql=d536de5c86337186	rows=1
+column	0	Name	TEXT
+column	1	Description	TEXT
+column	2	CreationDate	TEXT
+column	3	LastModified	TEXT
+column	4	ExactDataMethod	TEXT
+column	5	DataFrame	TEXT
+column	6	UnitLabel	TEXT
+column	7	IndexLabel	TEXT
+column	8	USGSSiteNumber	TEXT
+column	9	UseMultipleGrubbsBeckTest	BOOLEAN
+column	10	TimeSeriesElement	TEXT
+column	11	BlockFunction	TEXT
+column	12	TimeBlock	TEXT
+column	13	StartMonth	INT4
+column	14	EndMonth	INT4
+column	15	SmoothingFunction	TEXT
+column	16	Period	INT4
+column	17	Threshold	DOUBLE
+column	18	MinStepsBetweenPeaks	INT4
+column	19	IsProcessed	BOOLEAN
+column	20	ChronologyPlotSettings	TEXT
+column	21	FrequencyPlotSettings	TEXT
+column	22	SeasonalityPlotSettings	TEXT
+column	23	DensityPlotSettings	TEXT
+column	24	HistogramPlotSettings	TEXT
+column	25	QQPlotSettings	TEXT
+column	26	ACFPlotSettings	TEXT
+column	27	PACFPlotSettings	TEXT
+column	28	MRLPlotSettings	TEXT
+column	29	ModifiedScalePlotSettings	TEXT
+column	30	ShapePlotSettings	TEXT
+row	1	t:GHCN-USC00040741-POT	t#444:f62a9e0a41ea43ac	t:3/26/2026 10:24:14 PM	t:8/19/2026 10:00:26 PM	t:PeaksOverThresholdSeries	t#36963:d72fc5af75d5d293/1bba9e0f8567138e:r	t:depth (in)	t:Year	t:00000000	i:1	t:GHCN-USC00040741-Precipitation	t:Maximum	t:CalendarYear	i:10	i:9	t:None	i:2	r:1	i:5	i:1	t#5392:54b3f8bb46235efb/a693cf6b86484332:r	t#5457:2234eec4fa30fcb0/6bec6ba52ba6eec7:r	t#5295:378232565b50e132/ebdda8839e15e1ea:r	t#5656:51b463786ffee53e/4882ba56d2d9fd08:r	t#5274:757f7cdb0a95e14e/13cdeec856128b8f:r	t#6349:6a1ac34f809aa307/b78953b40c9a659c:r	t#6928:4f56ebb8843c31d4/6d35423503497e7f:r	t#6960:c3301a8768fc50a4/aece440b1d2dbc40:r	t#7322:b60dc7010f3e31db/d50a3ad15a055a7c:r	t#7351:ec9436313810e056/e2a0cdb00205ee35:r	t#7308:0ff3c989262c4a3a/90ae71a63bc777eb:r
+table	Project	sha=204926d916410a19	sql=bf204117c9f875b1	rows=1
+column	0	Name	TEXT
+column	1	Description	TEXT
+column	2	CreationDate	TEXT
+column	3	LastModified	TEXT
+column	4	FullFileName	TEXT
+column	5	SoftwareVersion	TEXT
+column	6	AvalonDockLayout	TEXT
+column	7	ProjectExplorerLayout	TEXT
+column	8	AvalonDockLayoutPrevious	TEXT
+column	9	ProjectExplorerLayoutPrevious	TEXT
+row	1	t:ghcn-peaks-over-threshold-example	t#352:3f773fcc29c645db	t:3/26/2026 10:23:22 PM	t:8/19/2026 10:00:26 PM	p:{dir}\\ghcn-peaks-over-threshold-example.bestfit	t:2.0.1	t#2368:5686ca5e6072d573/5adcb9ae9ebefc78:r	t#947:db3fb2a664ab3d7c/c9cbb2c43219bb2c:r	t#2369:a38c6efc92d1962a/1af6df861a8a3cf5:r	t:
+table	Time Series Data	sha=cd169017897ee59c	sql=70ca8b7ae0eb0d0a	rows=1
+column	0	Name	TEXT
+column	1	Description	TEXT
+column	2	CreationDate	TEXT
+column	3	LastModified	TEXT
+column	4	TimeSeries	TEXT
+column	5	UnitLabel	TEXT
+column	6	EntryMethod	TEXT
+column	7	SeriesType	TEXT
+column	8	HECDSSFullFilename	TEXT
+column	9	HECDSSDataPathname	TEXT
+column	10	GHCNSiteNumber	TEXT
+column	11	USGSSiteNumber	TEXT
+column	12	CHMNSiteNumber	TEXT
+column	13	ABOMSiteNumber	TEXT
+column	14	DepthUnit	TEXT
+column	15	DischargeUnit	TEXT
+column	16	HeightUnit	TEXT
+column	17	TimeInterval	TEXT
+column	18	StartDateTime	TEXT
+column	19	USGSRawText	TEXT
+column	20	TimeSeriesPlotSettings	TEXT
+column	21	SeasonalityPlotSettings	TEXT
+column	22	ACFPlotSettings	TEXT
+column	23	PACFPlotSettings	TEXT
+column	24	TimeSeriesCompressed	BLOB
+column	25	USGSRawTextCompressed	BLOB
+row	1	t:GHCN-USC00040741-Precipitation	t#242:35929f719a909871	t:3/26/2026 10:23:38 PM	t:7/15/2026 9:36:51 PM	t:	t:depth (in)	t:GHCN	t:DailyPrecipitation	t:	t:	t:USC00040741	t:00000000	t:0000000	t:000000	t:Inches	t:CubicFeetPerSecond	t:Feet	t:OneDay	t:1960-07-01T00:00:00.0000000	t:	t#5521:2a94228dea9543af/34527ddd4070fe35:r	t#10496:ca94c57f75379f59/996d2fbd21d00eba:r	t#5194:6eac49f21f1b0780/1da52c640a77d0a3:r	t#5225:70ae3a7ec1c006c7/7ac43dabbc118b1f:r	b#84520:374c1dbe9e5de34f>z#1690389:ea249fc657550f71/4f4721ac388aa8e5:r	b#0:e3b0c44298fc1c14
+state	00 Time Series Data	ec42931c8fdb11dd	66eae0f9e86047a2
+state	00 Time Series Data/00 TimeSeriesElement 'GHCN-USC00040741-Precipitation'	a5c785fbfcaeb60c	1c06e163c6d33acd
+state	01 Input Data	c45e74c546527ca2	7138759d2d2c7b9f
+state	01 Input Data/00 InputData 'GHCN-USC00040741-POT'	040719374a89d929	85c692e1d221b37b
+state	02 Distribution Fitting Analysis	22c9cdb7873ae49a	4a4ead4bf90c0837
+state	03 Univariate Distribution Analysis	468896e1b6f7e6c8	0e3a3c46961dd428
+state	04 Bivariate Distribution Analysis	2df996a968e4df10	85c24dd973e8dafa
+state	05 Rating Curve Analysis	5b9e46ee16c64e96	771f60dc9817d061
+state	06 Time Series Analysis	2f4a1830d606047e	0e6e4ee694390acc
+state	Project	740190f3a6094b91	740190f3a6094b91
+end

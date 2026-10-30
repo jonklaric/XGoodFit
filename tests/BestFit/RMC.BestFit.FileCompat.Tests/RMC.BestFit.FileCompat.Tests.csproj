@@ -1,0 +1,45 @@
+<Project Sdk="MSTest.Sdk/3.6.4">
+
+  <!--
+    The file-compatibility suite (docs/migration-plan.md, Phase 6). Each test opens and saves one of
+    RMC-BestFit's example projects with the port (src/BestFit/RMC.BestFit.UI), as RMC-BestFit does, and
+    compares the saved file, table by table and cell by cell, with what upstream's WPF RMC-BestFit saves
+    from the same file: Golden/, written by tools/BestFitFileCompat.Wpf on Windows (Golden/README.md).
+    It also checks that the example opens to the in-memory state it opens to in WPF, and that the saved
+    file opens again to that state, with the same differences as in WPF.
+
+    The steps, the description and the comparison are Shared/*.cs, which the WPF tool compiles too. The
+    tests are in category FileCompat and need the example projects (scripts/fetch-sample-data.sh
+    RMC-BestFit). Without them every test is reported as skipped, unless XGOODFIT_REQUIRE_HECDSS=1, as in
+    CI, makes that a failure. Each test writes the port's description to artifacts/filecompat/<rid>/.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <!--
+      Without the example projects every test is skipped, and a run in which no test ran exits with code 8
+      ("zero tests ran"), which dotnet test would report as a failure. A fresh clone without the sample
+      data should see skipped tests instead, so dotnet test ignores that exit code here.
+    -->
+    <TestingPlatformCommandLineArguments>$(TestingPlatformCommandLineArguments) --ignore-exit-code 8</TestingPlatformCommandLineArguments>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia.HarfBuzz" />
+    <PackageReference Include="Avalonia.Headless" />
+    <PackageReference Include="Avalonia.Skia" />
+    <PackageReference Include="Avalonia.Themes.Simple" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../../src/BestFit/RMC.BestFit.UI/RMC.BestFit.UI.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Golden/**/*.txt" CopyToOutputDirectory="PreserveNewest" />
+    <AssemblyMetadata Include="BestFitExamplesDir" Value="$(RepositoryRoot)sample-data/RMC-BestFit/examples/" />
+    <AssemblyMetadata Include="FileCompatOutputDir" Value="$(RepositoryRoot)artifacts/filecompat/" />
+  </ItemGroup>
+
+</Project>
