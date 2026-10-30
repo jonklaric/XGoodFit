@@ -13,6 +13,8 @@
     <UpstreamBestFitSrc>$(UpstreamRoot)RMC-BestFit/src/</UpstreamBestFitSrc>
     <LangVersion>latest</LangVersion>
     <Deterministic>true</Deterministic>
+    <!-- `dotnet test` shows each failed test's name and message (MSTest.Sdk hides them otherwise), so CI logs say what failed. -->
+    <TestingPlatformShowTestsFailure>true</TestingPlatformShowTestsFailure>
   </PropertyGroup>
 
   <!--

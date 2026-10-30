@@ -32,6 +32,9 @@ compared with its upstream original.
   on Avalonia's UI thread.
 - `scripts/porting/xgf_port.py` ports a file by exact, checked replacements: it copies the upstream
   file and fails if a replacement doesn't match, so everything else stays as upstream wrote it.
+- Native libraries are build outputs (`native/build-hecdss.sh` writes `artifacts/native`), never
+  committed. The project that wraps one ships it as `runtimes/<rid>/native` assets, which reach every
+  project that references it (see `src/Hec.Dss`).
 
 ## 2. Every ported file
 
@@ -133,7 +136,7 @@ Templates and themes:
 | `Window.ResizeMode` | `WpfWindow.ResizeMode` (WpfCompat). Metro windows have it as a property |
 | `Brush`, `Color`, `ImageSource` | `IBrush`, `Color`, `IImage`. Solid colour brushes are `ISolidColorBrush`: `Brushes.*` and brushes parsed from text are immutable ones, not `SolidColorBrush` |
 | `Color.AreClose(a, b)` | `a == b` (the same for colours made of bytes) |
-| `FontFamily.Source` | `ToString()` |
+| `FontFamily.Source` | `WpfCompat.Media.FontFamilyConverter.ToString(family)`, WPF's text form. Not `ToString()`, which adds the font collection's key to some families (`fonts:SystemFonts#Segoe UI`) |
 | `FindResource(k)` / `TryFindResource(k)` | `this.FindResource(k)` (Avalonia's, returns `UnsetValue` where WPF throws) / `this.TryFindResource(k)` (WpfCompat's) |
 | `control.ToolTip = …` | unchanged, with `using WpfCompat;` |
 | `TextBox.CaretIndex` (reading it with a selection) | `Math.Min(SelectionStart, SelectionEnd)`: WPF's is the selection's start. `SelectionLength` is WpfCompat's |
@@ -184,7 +187,9 @@ XML. Code that uses it changes only where Avalonia's types differ:
 ## 5. Defaults that differ
 
 Already handled for every ported control (Themes' `ThemeService.Initialize`):
-- **Font:** Segoe UI 12, falling back to Selawik (`Defaults.axaml`).
+- **Font:** Segoe UI 12, falling back to Selawik (`Defaults.axaml`). Every application's builder, the
+  test sessions' and tools' included, also calls `.UseThemeFonts()` (`Themes.ThemeFonts`): outside
+  Windows, upstream's Segoe UI, Consolas, Cambria and Calibri then draw in their embedded substitutes.
 - **Shape stroke:** WPF shapes draw a 1-pixel stroke by default (`WpfDefaults`).
 - **Menu separators:** they get WPF's menu style (`Defaults.axaml`).
 - **System values:** WPF's colours and sizes, as resources (`Merged.axaml`).
@@ -250,6 +255,10 @@ Watch for others when porting:
 
 ## 7. Tests and checks
 
+- **Tests that need natives or downloads** (the DSS suites, the example projects) skip when they're
+  missing, so a plain `dotnet test` passes on a fresh clone, and fail instead under an environment
+  variable that CI sets (`XGOODFIT_REQUIRE_HECDSS=1`). To compare with an upstream release, load its
+  binaries in their own `AssemblyLoadContext` (see `tests/Hec.Dss.Tests`).
 - **Tests:** each ported project gets a headless MSTest project in `tests/`, copying
   `HeadlessSession.cs` from an existing one. Test what a screenshot can't show: commands, state, layout
   rules.

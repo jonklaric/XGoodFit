@@ -4,3 +4,6 @@
 # `* text=auto` would otherwise rewrite.
 /zlib/win32/zlib.def -text
 /Selawik/** -text
+/CascadiaCode/** -text
+/Caladea/** -text
+/Carlito/** -text

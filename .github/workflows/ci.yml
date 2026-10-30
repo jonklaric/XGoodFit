@@ -27,9 +27,10 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { name: windows-x64, os: windows-latest }
-          - { name: macos-arm64, os: macos-latest }
-          - { name: linux-x64, os: ubuntu-latest }
+          # rids: the HEC-DSS natives built on this runner (osx-x64 is cross-built on Apple silicon).
+          - { name: windows-x64, os: windows-latest, rids: win-x64 }
+          - { name: macos-arm64, os: macos-latest, rids: osx-arm64 osx-x64 }
+          - { name: linux-x64, os: ubuntu-latest, rids: linux-x64 }
     steps:
       - uses: actions/checkout@v7
 
@@ -37,22 +38,32 @@ jobs:
         with:
           dotnet-version: '10.0.x'
 
+      # BestFit's example projects, and HEC's sample DSS files for the HEC-DSS tests.
+      - name: Fetch sample data
+        shell: bash
+        run: bash scripts/fetch-sample-data.sh RMC-BestFit dss-test-data
+
+      # The native hecdss library from upstream/hec-dss (CMake, C only, no downloads), then HEC's C
+      # tests with CTest. The osx-x64 tests run under Rosetta 2 when the runner has it.
+      - name: Build HEC-DSS natives and run HEC's C tests
+        shell: bash
+        run: bash native/build-hecdss.sh --test ${{ matrix.rids }}
+
       # Everything needed to build is in the repository: no downloads besides NuGet packages.
       - name: Build from a fresh checkout
         run: dotnet build XGoodFit.slnx -c Release
 
-      # The ported UI's own tests, run headlessly.
+      # The ported UI's own tests, run headlessly, and the HEC-DSS wrapper's tests, which must find
+      # the natives and the sample data here.
       - name: XGoodFit tests
         run: dotnet test XGoodFit.slnx -c Release --no-build
+        env:
+          XGOODFIT_REQUIRE_HECDSS: '1'
 
       # Exclusions and per-OS limits are documented in the script.
       - name: Upstream portable test suites
         shell: bash
         run: bash scripts/run-upstream-tests.sh
-
-      - name: Fetch sample data
-        shell: bash
-        run: bash scripts/fetch-sample-data.sh RMC-BestFit
 
       - name: Probe example projects
         shell: bash
@@ -66,6 +77,12 @@ jobs:
           name: probe-${{ matrix.name }}
           path: probe-${{ matrix.name }}.txt
           if-no-files-found: ignore
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: hecdss-${{ matrix.name }}
+          path: artifacts/native/runtimes/
+          if-no-files-found: error
 
       - uses: actions/upload-artifact@v7
         if: failure()

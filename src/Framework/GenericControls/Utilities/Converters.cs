@@ -1032,8 +1032,11 @@ namespace GenericControls
         {
             if (value == null)
                 return value;
-            // XGoodFit port: Avalonia's FontFamily has no Source; ToString() gives the same family names.
-            return ((FontFamily)value).ToString();
+            // XGoodFit port: Avalonia's FontFamily has no Source. WpfCompat's FontFamilyConverter gives
+            // its WPF text form; ToString() would add the font collection's key to some families
+            // ("fonts:SystemFonts#Segoe UI" for a family fontconfig substitutes on Linux), which would
+            // then be saved where WPF saves "Segoe UI".
+            return WpfCompat.Media.FontFamilyConverter.ToString((FontFamily)value);
         }
     }
 
@@ -1067,8 +1070,11 @@ namespace GenericControls
         {
             if (value == null)
                 return value;
-            // XGoodFit port: Avalonia's FontFamily has no Source; ToString() gives the same family names.
-            return ((FontFamily)value).ToString();
+            // XGoodFit port: Avalonia's FontFamily has no Source. WpfCompat's FontFamilyConverter gives
+            // its WPF text form; ToString() would add the font collection's key to some families
+            // ("fonts:SystemFonts#Segoe UI" for a family fontconfig substitutes on Linux), which would
+            // then be saved where WPF saves "Segoe UI".
+            return WpfCompat.Media.FontFamilyConverter.ToString((FontFamily)value);
         }
 
         /// <summary>

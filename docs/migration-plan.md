@@ -254,7 +254,7 @@ The portable upstream projects compile **directly from `upstream/` via `ProjectR
 | Tests | `Avalonia.Headless` (+ `Verify.Avalonia` optional) | 12.1.4 | MSTest via a manual `HeadlessUnitTestSession` |
 | SQLite | `System.Data.SQLite` + `SourceGear.sqlite3` | 2.0.x / 3.50.x | Same as upstream; fallback `Microsoft.Data.Sqlite` |
 | DSS import | HEC `hec-dss` (C) + `Hec.Dss` wrapper (C#), from pinned source; zlib | 7-JA-7 / 2.0.3; 1.3.1 | Natives built per RID in CI (§9.2). The wrapper has no licence file and is treated as MIT for now (R17) |
-| Fonts | Selawik (OFL) · Cascadia Mono (OFL) | — | Fallbacks for Segoe UI and Consolas off Windows |
+| Fonts | Selawik · Cascadia Mono · Caladea · Carlito (all OFL) | 1.01 · 2407.24 · Google Fonts `6157dfa` | Substitutes for Segoe UI, Consolas, Cambria and Calibri off Windows (`Themes.ThemeFonts`) |
 | Packaging/updates | `Velopack` (D7) | 1.2.x | Setup/MSI, `.app`/`.pkg`, AppImage; GitHub Releases; deltas; signing and notarization |
 
 Rejected or avoided:
@@ -352,7 +352,7 @@ For 1.0, every OS gets the same VS2013 look, including the in-window menu bar (D
 1. **Palettes 1:1.** Port `LightColors`/`DarkColors`/`BlueColors.xaml` (~460 resources each) and `ColorKeys.cs` verbatim. Only the XML namespace changes.
 2. **Control templates.** Port each of the ~31 theme XAML files (Button … DataGrid, Calendar, Menu, TabControl, TreeView, ScrollBar, Expander, MetroWindowStyle) to `ControlTheme`s that reproduce the WPF visual tree: borders, padding, glyph paths, sizes. Then port the FrameworkUI-, OxyPlotControls- and App-level styles (`BestFitStyles.xaml`, `IconDictionary.xaml`).
 3. **Docking chrome.** Build a VS2013-style Dock theme (pane headers with the dotted grip, pin/close glyphs, document tab strip and overflow) in all 3 variants. *Done (2026-10-30): `FrameworkUI/Themes/VS2013/Dock`, XGoodFit's own theme from upstream's colours and key names; against upstream's screenshots, pane edges, captions and tabs match within a pixel and colours within JPEG noise.*
-4. **Typography.** WPF defaults are Segoe UI at 12 DIP. Use real Segoe UI/Consolas on Windows. Elsewhere, use embedded **Selawik** (Segoe UI metric fallback; check its shorter line height) and **Cascadia Mono**. Turn on subpixel antialiasing on Windows to match ClearType.
+4. **Typography.** WPF defaults are Segoe UI at 12 DIP. Use real Segoe UI/Consolas on Windows. Elsewhere, use embedded **Selawik** (Segoe UI metric fallback; check its shorter line height) and **Cascadia Mono**. Turn on subpixel antialiasing on Windows to match ClearType. *Done (2026-10-30):* `Themes.ThemeFonts.UseThemeFonts()` embeds Selawik, Cascadia Mono, and Caladea and Carlito (metric-compatible with Cambria and Calibri, which upstream names for its f(x) icon glyphs and one expander header). Outside Windows it maps each Windows font to its substitute and makes Selawik the default family; every application builder calls it (the App too). Before it, a named Windows font fell back to the platform's default, which differs per OS and is missing on GitHub's Linux runner.
 5. **Geometry.** Both frameworks use 96-DIP units, so sizes, margins and vector icons (~1,000 `Path` geometries) carry over unchanged.
 6. **Window chrome.**
    - Windows: custom caption matching `MetroWindow`.
@@ -394,6 +394,7 @@ Sizes are relative, for one developer with AI-assisted porting: S ≈ ≤2 wk, M
   - Fix the macOS `libz` linkage.
   - Build `Hec.Dss` for `net10.0` and pack it as a local NuGet with `runtimes/<rid>/native`.
   - On every OS, run HEC's C and .NET tests, and read BestFit's example DSS file (`examples/1-time-series-data/5-hec-dss-import/dss-example-data.dss`).
+  - **Done (2026-10-30):** `native/build-hecdss.sh` builds the natives for all four RIDs, and `src/Hec.Dss` is a solution project (it packs too) shipping them as `runtimes/<rid>/native` assets. HEC's C tests and `tests/Hec.Dss.Tests` (126 tests) pass on Windows x64, Linux x64, macOS arm64 and macOS x64 under Rosetta. BestFit's example file reads bit for bit as BestFit 2 saved it, and on Windows it reads identically with BestFit's own 7-IU-6 wrapper and native (findings below). CI builds the natives and runs both suites on each OS.
 
 **Spikes** (each ends in an ADR, go/no-go)
 
@@ -416,7 +417,7 @@ Sizes are relative, for one developer with AI-assisted porting: S ≈ ≤2 wk, M
 | Portable layer on Windows x64 (en-AU), Linux x64 (Ubuntu 26.04 GNOME, en-US) and macOS arm64 (M4 Pro, macOS 26.6), plus GitHub-hosted CI on all three | ✅ Same results everywhere. RMC.BestFit model 3,546/3,546 · DatabaseManager 301/301 · ExpressionParser 240/240 · OxyPlot core 3,276/3,276 runnable on en-US Windows (Windows only, see below) |
 | All 32 example `.bestfit` projects through the upstream SQLite stack (System.Data.SQLite 2.0.2, SQLite 3.50.4) | ✅ They open on all three OSes, and **all 146 tables read identically** on Windows x64, Linux x64 and macOS arm64 (`tools/ProjectProbe` fingerprints) |
 | Standalone repository (D11): upstream code vendored in `upstream/`, byte-identical to the pins; clone and `dotnet build` with no other downloads besides NuGet | ✅ RMC-BestFit, WPF-Framework, Numerics, hec-dss, hec-dss-dotnet and zlib vendored (2026-10-30). RMC.Numerics now builds from source, and RMC.BestFit 3,546/3,546 pass against it. Numerics' own suite: 2,864/2,864 on x64, excluding live-service tests as upstream does; on arm64, 3 bit-for-bit tests are skipped (findings below) |
-| HEC-DSS (D6) | Sources vendored: hec-dss 7-JA-7, zlib 1.3.1, hec-dss-dotnet 2.0.3; HEC's sample data is downloadable. Wrapper 2.0.3 doesn't match any hec-dss release, so it needs corrected declarations (below). Native builds are next |
+| HEC-DSS (D6) | ✅ Natives built from source for win-x64, linux-x64, osx-arm64 and osx-x64 (zlib static, no downloads); `src/Hec.Dss` with a ported `DssNative.cs`; HEC's C tests and the wrapper's tests pass on Windows, Linux and macOS (x64 under Rosetta); BestFit's example DSS file reads bit for bit as BestFit 2 saved it, and as BestFit's own 7-IU-6 build reads it (2026-10-30) |
 | CI (GitHub-hosted Windows, macOS arm64, Linux) | ✅ Green, including a job that fails if any OS reads the example projects differently |
 | Spikes A–F, parity harness | Not started |
 
@@ -447,21 +448,24 @@ Sizes are relative, for one developer with AI-assisted porting: S ≈ ≤2 wk, M
   - The wrapper ships only win-x64 and linux-x64 natives (HEC build 7-IU-6), and its pre-build step (PowerShell + 7-Zip download) only works on Windows.
   - **Approach:**
     1. ✅ Vendor `hec-dss`, `hec-dss-dotnet` and zlib (`upstream.lock`); pin HEC's sample data (`sample-data.lock`).
-    2. Build `hecdss` from source (CMake, C only) in CI for win-x64, linux-x64, osx-arm64 and osx-x64, bundling `libz` on macOS.
-    3. Compile the wrapper's own sources in an XGoodFit project that packs those natives under `runtimes/<rid>/native`, without its Windows-only pre-build, and with a ported `DssNative.cs` that matches 7-JA-7 (below).
-    4. Validate with the wrapper's tests and a sample DSS file on every OS.
+    2. ✅ Build `hecdss` from source (CMake, C only) in CI for win-x64, linux-x64, osx-arm64 and osx-x64. zlib is linked statically everywhere: HEC's own `deps/zlib` aliases its static target to zlib's shared library on Linux and macOS, which is where the unbundled `libz` rpath came from. `native/hecdss/CMakeLists.txt` replaces HEC's top level and builds zlib from a copy, because zlib's CMake renames `zconf.h` in its source folder.
+    3. ✅ Compile the wrapper's own sources in an XGoodFit project that packs those natives under `runtimes/<rid>/native`, without its Windows-only pre-build, and with a ported `DssNative.cs` that matches 7-JA-7 (below).
+    4. ✅ Validate with the wrapper's tests and a sample DSS file on every OS.
   - **Which C library version: release 7-JA-7, with corrected wrapper declarations.** BestFit ships HEC's prebuilt 7-IU-6, which has no source tag.
-    - **No hec-dss release matches wrapper 2.0.3.** In March and April 2025 (HEC PRs #271 and #280), five of the 31 functions it declares gained trailing parameters, and the wrapper was never updated:
+    - **No hec-dss release matches wrapper 2.0.3.** In March and April 2025 (HEC PRs #271 and #280), five of the 31 functions it declares gained trailing parameters, and in November 2025 (#341) a sixth gained one in the middle. The wrapper was never updated:
       - the reads `hec_dss_tsRetrieve` and `hec_dss_pdRetrieve` gained a time-zone output buffer and its length;
-      - the writes `hec_dss_tsStoreRegular`, `hec_dss_tsStoreIregular` and `hec_dss_pdStore` gained a time zone, and the first two a storage flag.
+      - the writes `hec_dss_tsStoreRegular`, `hec_dss_tsStoreIregular` and `hec_dss_pdStore` gained a time zone, and the first two a storage flag;
+      - `hec_dss_gridStore` gained `compressionSize` among its parameters.
     - **Pairing 2.0.3 with any later native is unsafe.** The missing arguments are leftover stack values, and the read functions write the record's time zone through that "buffer" whenever a record has one. BestFit's import uses `hec_dss_tsRetrieve`, and its tests create DSS files with the store functions.
     - **The last matching source isn't practical.** That is `ee6dff5` (February 2025), and its `hecdss` links HEC's Fortran library, so every platform would need a Fortran toolchain, and macOS builds would have to bundle the Fortran runtime.
     - **HEC's `main` can't be followed either.** After 7-JA-7 it also inserts two parameters (`cnotesBuffer`, `cnoteSize`) in the middle of `hec_dss_tsRetrieve`.
-    - **So: 7-JA-7**, the newest release: CMake, C only, no Fortran. HEC's CI builds and tests it on Windows, Linux and macOS. It is paired with a ported `DssNative.cs` that declares the five functions with their current parameters, and keeps the old C# signatures as overloads, so every other wrapper file compiles unmodified. The new `hec_dss_api_version()` lets that file reject a mismatched native at load time.
-    - **The other 23 declared functions match 7-JA-7 parameter for parameter.** Three more no longer exist: `hec_dss_convertToVersion7`, used only by `DssWriter`'s v6 conversion, and two `hec_dss_deprecated_ifltab*` helpers that nothing calls. .NET binds P/Invokes on first call, so they're harmless.
-    - **DSS 6 files aren't a regression.** 7-JA-7 dropped DSS 6 support, but the C API already rejected DSS 6 files before 7-IU-6: `hec_dss_open` returns -700. BestFit can't import them today either.
-    - **Windows parity with 7-IU-6** is checked by reading the same DSS files with both builds.
-  - **Build-time downloads:** hec-dss's CMake build fetches zlib (tag v1.3.1) and HEC's test data (unpinned `master`) while configuring. Instead, the build points CMake (`FETCHCONTENT_SOURCE_DIR_*`) at the vendored zlib and at the pinned test data, or an empty folder when the tests are off, so it needs no network access.
+    - **So: 7-JA-7**, the newest release: CMake, C only, no Fortran. HEC's CI builds and tests it on Windows, Linux and macOS. It is paired with a ported `DssNative.cs` that declares the six functions with their current parameters, and keeps the old C# signatures as overloads that behave like 7-IU-6 (no time zone, passed as `""` because 7-JA-7 calls `strlen` on it; `REPLACE_ALL` and `DELETE_INSERT` storage as at `ee6dff5`; grids not pre-compressed), so every other wrapper file compiles unmodified. The new `hec_dss_api_version()` lets that file reject a mismatched native at load time ("0.3.0" for 7-JA-7), with the `DllNotFoundException` BestFit already handles; the same checked library answers `RMC.BestFit.UI`'s own `DllImport("hecdss")`.
+    - **The other 22 declared functions match 7-JA-7 parameter for parameter** (a test checks every declaration against `hecdss.h`). Three more no longer exist: `hec_dss_convertToVersion7`, used only by `DssWriter`'s v6 conversion, and two `hec_dss_deprecated_ifltab*` helpers that nothing calls. .NET binds P/Invokes on first call, so they're harmless.
+    - **DSS 6 files aren't a regression.** 7-JA-7 dropped DSS 6 support, and BestFit can't import them today either: 7-IU-6's `hec_dss_open` returns -700. 7-JA-7's fails inside `zopen` instead, which would read "Error opening DSS file", so `DssNative.cs` maps it back to -700 and BestFit's "This library only supports DSS version 7 files".
+    - **Windows parity with 7-IU-6:** checked against BestFit 2's own `Hec.Dss.dll` and `hecdss.dll` (byte-identical to HEC's 7-IU-6), loaded side by side when `XGOODFIT_BESTFIT_REFERENCE` names a BestFit install. BestFit's example reads identically (every record, series and block read), and 20 of HEC's files read the same, with two expected differences: HEC's DSS-255 fix gives three series in `CantSaveEdits4.dss` the units and type 7-IU-6 left blank (the values are identical), and some records' quality flags change on every run in both libraries (BestFit doesn't read them).
+    - **Found while building:** HEC's library writes to a fixed `/tmp` on Linux and macOS when squeezing files or sorting catalogues (BestFit's unsorted catalogue never does). Linux natives need the glibc they were built with or later, so release builds should come from an older distribution (Phase 8). The macOS dylibs are only ad-hoc signed, so the app's signing must cover them (Phase 8). BestFit's error message names `hecdss.dll`; the App port should word it for every OS.
+    - **Upstream quirks kept:** the wrapper passes catalogue filters without a terminating null; the quality array isn't trimmed to the values read; `IsDPartARange()` is true for `TS-PATTERN`.
+  - **Build-time downloads:** hec-dss's CMake build fetches zlib (tag v1.3.1) and HEC's test data (unpinned `master`) while configuring. XGoodFit's own top-level CMake file (`native/hecdss`) uses the vendored zlib and the pinned test data instead, so it needs no network access.
   - **Licensing:** the C library (`hec-dss`) is MIT, but the .NET wrapper repo (`hec-dss-dotnet`) has **no licence**: no file, no source headers, no GitHub licence metadata. HEC's sample data (`dss-test-data`) has none either, but it's only used by tests and never redistributed.
     - **Working assumption (2026-10-29): treat the wrapper as MIT, like the C library, for now.** Confirm with HEC before the first public release (R17).
     - Fallback: implement the small read-only API slice BestFit uses (`DssReader`, catalogue, `DssPath`, `TimeSeries`) directly over the MIT C library, verified against the official wrapper on the same DSS files.
@@ -579,7 +583,7 @@ Sizes are relative, for one developer with AI-assisted porting: S ≈ ≤2 wk, M
 
 **Progress (2026-10-30):** `src/BestFit/RMC.BestFit.UI` is ported. 16 of its 38 C# files change: Avalonia's colours, brushes, thicknesses and images, WpfCompat's `ColorConverter` and `Visibility`, Avalonia's binding API for the axis-title defaults, and no Windows-only attribute. The other 22 compile unchanged. Its 13 element icons are an `.axaml` dictionary that follows the theme.
 - `tests/BestFit/RMC.BestFit.UI.Tests` runs upstream's tests unchanged, 1,131 of them with their data rows. Upstream's `[STATestMethod]` tests run on the headless UI thread, and the public API baseline differs only in the image type (`Avalonia.Media.IImage` for WPF's `ImageSource`). Two compatibility tests open example projects from the fetched sample data.
-- On Windows, 1,095 of upstream's tests pass, and XGoodFit's icon test. The other 36 read DSS files and need the HEC-DSS natives (Phase 0). Until XGoodFit's `Hec.Dss` project lands, both projects stay out of `XGoodFit.slnx`.
+- On Windows all 1,131 of upstream's tests pass, the 36 DSS reader tests included (on the 7-JA-7 natives), and XGoodFit's icon test.
 
 ### Phase 7: BestFit App, in vertical slices (XL)
 Each slice includes its XAML and code-behind, its share of `RMC.BestFit.App.Tests` (465 total), parity screenshots in 3 themes, and the matching `examples/` walkthrough executed as a UAT script.
@@ -657,7 +661,7 @@ Each slice includes its XAML and code-behind, its share of `RMC.BestFit.App.Test
 - **File association:** `.bestfit` on all three OSes, including opening files from Finder or a file manager.
 
 ### 9.2 HEC-DSS natives
-- Build `libhecdss` per RID in CI from the pinned `hec-dss` source (7-JA-7) and zlib, and bundle `libz` on macOS.
+- Build `libhecdss` per RID in CI from the pinned `hec-dss` source (7-JA-7) and zlib, linked statically (done: `native/build-hecdss.sh`; the library loads only the OS's C runtime).
 - Ship the natives under `runtimes/<rid>/native/`.
 - If they're missing at runtime, DSS import shows a clear "not available on this platform" message instead of crashing.
 
@@ -718,7 +722,7 @@ USACE is actively developing BestFit (2.0.1 shipped recently).
 | R15 | Unsigned Windows builds (free-only, D5) trigger SmartScreen warnings | H | L–M | Apply to the SignPath Foundation (free signing for OSS); otherwise document "More info → Run anyway" |
 | R16 | Name conflicts with a trademark, or users mistake the port for an official USACE release | L | M | Distinct name plus trademark search; disclaimer in the About box and README (§1.1) |
 | R17 | HEC's .NET wrapper (`hec-dss-dotnet`) has no licence, so it may not be safe to redistribute; DSS import is required at 1.0 (D6) | M | H | Working assumption: treat it as MIT, like the C library (2026-10-29); confirm with HEC before the first public release. Fallback: own read-only wrapper over the MIT C library, verified against the official one |
-| R18 | HEC changes `hecdss` function signatures without updating the .NET wrapper (already happened: 2.0.3 matches no hec-dss release), so a mismatched pair corrupts memory instead of failing | H | H | Ported `DssNative.cs` matching the pinned native; reject a mismatched native at load (`hec_dss_api_version()`); an automated test compares every declaration with `hecdss.h`, parameter for parameter; DSS read tests on every OS (§10) |
+| R18 | HEC changes `hecdss` function signatures without updating the .NET wrapper (already happened: 2.0.3 matches no hec-dss release), so a mismatched pair corrupts memory instead of failing | H | H | Mitigated (2026-10-30): ported `DssNative.cs` matching the pinned native; a mismatched native is rejected at load (`hec_dss_api_version()`); a test compares every declaration with `hecdss.h`, parameter for parameter; DSS read tests on every OS (§10) |
 
 ---
 
