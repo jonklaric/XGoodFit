@@ -44,7 +44,8 @@ namespace RMC_BestFit
     /// XGoodFit port: the dependency property is a styled property with upstream's callback; the command
     /// binding, Visibility and the cursor are WpfCompat's. The grid is a CopyPasteDataGrid standing in for
     /// a plain WPF DataGrid (see the XAML), without context menus. Its SelectAll is ProDataGrid's; WPF's
-    /// UnselectAll is clearing the selected items.
+    /// UnselectAll is clearing the selected item, which, as WPF's, raises SelectionChanged (clearing
+    /// ProDataGrid's SelectedItems doesn't).
     /// </para>
     /// </remarks>
     public partial class BatchRunWindow : MetroWindow
@@ -297,7 +298,7 @@ namespace RMC_BestFit
         /// <param name="e">Routed event arguments.</param>
         private void DeselectButton_Click(object sender, RoutedEventArgs e)
         {
-            MyDataGrid.SelectedItems.Clear();
+            MyDataGrid.SelectedItem = null;
         }
     }
 }
