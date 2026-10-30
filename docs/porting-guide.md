@@ -73,6 +73,9 @@ compared with its upstream original.
 | Combo box items that are numbers | an item template whose binding formats with `FormattingCulture` (D8) |
 | An enum `DataTrigger` | `Classes.x="{Binding P, Converter={x:Static ObjectConverters.Equal}, ConverterParameter={x:Static local:E.V}}"` with styles in the element's `Styles` |
 | A `DataTrigger`'s storyboard | a style animation on that class: it stops when the class goes, as `StopStoryboard` does |
+| A cell's `DataTrigger` setting `IsEnabled` from its row | `<Setter Property="IsEnabled" Value="{Binding Enabled}"/>` in the cell's theme |
+| A `MultiDataTrigger` | a nested style on two property selectors, the second condition bound through NumericControls' `DataTrigger.Binding`: `^[IsEnabled=True][(numcntrls|DataTrigger.Binding)=False]` (see `B17CAnalysisPropertiesControl.axaml`) |
+| An `[Obsolete]` property (`IncludeBounds="True"`) | its same-meaning replacement (`BoundsAreExclusive="False"`): Avalonia's compiler reports AVLN5001, WPF's doesn't |
 | `DataGrid MinRowHeight="24"` | ProDataGrid has none and sets each row's `MinHeight` itself, so a row theme's setter loses: put `MinHeight` in the cells' themes |
 | A format with commas, `StringFormat={}{0:#,##0.####}` | quote it: `StringFormat='{}{0:#,##0.####}'` |
 | A `ToolTip` setter holding a `<ToolTip>` element (cells, column headers) | `<Setter Property="ToolTip.Tip"><Template>…</Template></Setter>`; in code `new Setter(ToolTip.TipProperty, new FuncTemplate<TextBlock>(…))`: one control can't be shared between cells |
@@ -189,7 +192,8 @@ Templates and themes:
 | `column.Binding.StringFormat = …` in code | cast to `ReflectionBinding`; GenericControls' display copy then applies the format |
 | `Application.Current.MainWindow = w` without a desktop lifetime (tests) | WpfCompat keeps it, as WPF's property does |
 | A static brush field (`new SolidColorBrush(c)`, frozen in WPF) | an immutable brush (`ImmutableSolidColorBrush`, `Brushes.*`): a mutable one belongs to the thread that first touches the class |
-| `host.Content = element.Plot`, for a plot several documents show | `host.TakeContent(element.Plot)` (WpfCompat): Avalonia throws while the plot still has a parent |
+| `host.Content = element.Plot`, for every element-owned plot a view shows (also through the shared diagnostic controls' `SetPlot`) | `host.TakeContent(element.Plot)` (WpfCompat): a document opened again finds the closed view still holding the plot, and Avalonia's `Content` throws while it has a parent |
+| `System.Windows.Point` as plot items | Avalonia's `Point` (the same X and Y) |
 
 - Dialogs wait, as in WPF (plan §5.3): `ShowDialog()` and `DialogResult` (WpfCompat's), WpfCompat's
   file and folder dialogs and clipboard, and `GenericControls.MessageBox.Show`. Keep upstream's order
@@ -384,7 +388,15 @@ Watch for others when porting:
   `AvaloniaSynchronizationContext.InstallIfNeeded()`. In tests, set a combo box's `SelectedItem`, not its
   `SelectedValue` (which raises SelectionChanged before the two-way binding writes back).
 - **The examples' native screenshots are factory-reset plot exports:** compare their data (`.json.gz`),
-  not their styling.
+  not their styling. Exports and walkthrough figures can relabel series (their `displayCorrections`):
+  map the labels back. A walkthrough figure can disagree with the saved results that the app shows;
+  the native export is then the reference.
+- **Open each view twice:** upstream's MainProjectNode leaves a closed document's view holding its
+  element, so a document opened again must take the plots from it.
+- **In `WeakReference` leak checks,** a control closed right after a state change stays referenced by the
+  animation clock until a render tick with real time elapsed: sleep and tick before collecting.
+- **A model setter with side effects can record several undos** (`IsNonstationary` also sets
+  `ParameterTimeIndex`): expect upstream's undo steps.
 - **Git Bash's `timeout` doesn't stop a test `.exe`** (hung runs kept going at several GB): stop it by its
   renamed image name.
 

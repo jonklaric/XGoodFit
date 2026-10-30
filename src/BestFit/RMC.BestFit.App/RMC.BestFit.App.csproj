@@ -155,11 +155,23 @@
   <ItemGroup>
   </ItemGroup>
 
-  <!-- Upstream files that compile unchanged: Univariate Distribution Analysis: Univariate, Bulletin 17C, Point Process, Mixture, Composite. -->
+  <!-- Upstream files that compile unchanged: Univariate Distribution Analysis: Univariate, Bulletin 17C. -->
   <ItemGroup>
   </ItemGroup>
 
-  <!-- Upstream files that compile unchanged: Bivariate Distribution Analysis: Bivariate, Coincident Frequency. -->
+  <!-- Upstream files that compile unchanged: Univariate Distribution Analysis: Point Process, Mixture. -->
+  <ItemGroup>
+  </ItemGroup>
+
+  <!-- Upstream files that compile unchanged: Univariate Distribution Analysis: Composite. -->
+  <ItemGroup>
+  </ItemGroup>
+
+  <!-- Upstream files that compile unchanged: Bivariate Distribution Analysis: Bivariate. -->
+  <ItemGroup>
+  </ItemGroup>
+
+  <!-- Upstream files that compile unchanged: Bivariate Distribution Analysis: Coincident Frequency. -->
   <ItemGroup>
   </ItemGroup>
 
