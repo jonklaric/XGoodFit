@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.Headless;
+using Themes;
 using Avalonia.Themes.Simple;
 
 [assembly: DoNotParallelize]
@@ -17,6 +18,7 @@ public sealed class TestApp : Application
         AppBuilder.Configure<TestApp>()
             .UseSkia()
             .UseHarfBuzz()
+            .UseThemeFonts()
             .UseHeadless(new AvaloniaHeadlessPlatformOptions { UseHeadlessDrawing = false });
 }
 

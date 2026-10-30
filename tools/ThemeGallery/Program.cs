@@ -27,7 +27,7 @@ internal static class Program
             return Capture(args[1]);
         }
 
-        AppBuilder.Configure<App>().UsePlatformDetect().LogToTrace().StartWithClassicDesktopLifetime(args);
+        AppBuilder.Configure<App>().UsePlatformDetect().UseThemeFonts().LogToTrace().StartWithClassicDesktopLifetime(args);
         return 0;
     }
 
@@ -36,6 +36,7 @@ internal static class Program
         AppBuilder.Configure<App>()
             .UseSkia()
             .UseHarfBuzz()
+            .UseThemeFonts()
             .UseHeadless(new AvaloniaHeadlessPlatformOptions { UseHeadlessDrawing = false })
             .SetupWithoutStarting();
 

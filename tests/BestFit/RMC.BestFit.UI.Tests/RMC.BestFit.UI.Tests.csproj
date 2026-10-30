@@ -11,6 +11,10 @@
     - CoreInfrastructure/PublicApiBaseline.txt: upstream's public API baseline, with the element and
       project images as Avalonia's IImage instead of WPF's ImageSource, which moves those 13 lines in
       the snapshot's sorted order. Every other member is upstream's.
+    - Elements/BestFitProjectSQLiteLifetimeTests.cs and Elements/ElementSQLiteLifetimeTests.cs are
+      ported copies: the two tests of the file-release probe itself run on Windows only. The probe
+      (FileShare.None) detects an open SQLite connection only there; on macOS and Linux .NET's lock is
+      advisory and doesn't conflict with SQLite's. Every other upstream test file compiles unchanged.
     - Two compatibility tests open example projects, which upstream finds in its checkout's examples/
       folder. Here they come from the fetched sample data (scripts/fetch-sample-data.sh RMC-BestFit) and
       are copied next to the tests, where the same search finds them. Without the sample data those two

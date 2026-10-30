@@ -38,6 +38,25 @@ public sealed class DefaultsTests
     }
 
     [TestMethod]
+    public void ThemeFonts_RegisterSelawik_AndStandItInForSegoeUiOffWindows()
+    {
+        HeadlessSession.Run(() =>
+        {
+            FontManager fonts = FontManager.Current;
+            Assert.IsTrue(fonts.TryGetGlyphTypeface(new Typeface(ThemeFonts.Selawik), out GlyphTypeface? selawik), "the embedded collection is registered");
+            Assert.AreEqual("Selawik", selawik.FamilyName);
+
+            // Outside Windows, upstream's "Segoe UI", and text that names no font, draw in Selawik.
+            if (!OperatingSystem.IsWindows())
+            {
+                Assert.AreEqual("Selawik", fonts.DefaultFontFamily.Name);
+                Assert.IsTrue(fonts.TryGetGlyphTypeface(new Typeface("Segoe UI"), out GlyphTypeface? segoe));
+                Assert.AreEqual("Selawik", segoe.FamilyName);
+            }
+        });
+    }
+
+    [TestMethod]
     public void Shapes_DrawWpfsDefaultStroke_OnlyWhenTheyHaveOne()
     {
         HeadlessSession.Run(() =>
