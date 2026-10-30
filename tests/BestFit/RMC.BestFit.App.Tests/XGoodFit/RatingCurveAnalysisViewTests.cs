@@ -410,6 +410,16 @@ namespace RMC.BestFit.App.Tests.XGoodFit
             Settle();
             Assert.AreSame(data, element.StageData);
             Assert.AreSame(data, stage.SelectedItem);
+
+            // The panel lists a series added to the project; but once it has unloaded (a theme change re-templates the
+            // docked panel, for one) and loaded again, it no longer follows the project's series, as upstream's: only a
+            // new element subscribes it again, where the Time Series panel subscribes again when it loads.
+            var added = AddSeries(project, "Added stage");
+            Assert.IsTrue(properties.TimeSeriesElements.Contains(added));
+            CollectionAssert.Contains(stage.Items.Cast<object>().ToList(), added);
+            Reload(_windows.Last());
+            var later = AddSeries(project, "Later stage");
+            Assert.IsFalse(properties.TimeSeriesElements.Contains(later), "upstream's panel stops following the project's series once unloaded");
             properties.Element = null;
             view.Element = null;
         }

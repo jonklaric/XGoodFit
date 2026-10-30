@@ -6,8 +6,11 @@ using System.Linq;
 using System.Reflection;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using Avalonia.Controls;
+using FrameworkInterfaces;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OxyPlot;
+using RMC.BestFit.UI;
 using Wpf = OxyPlot.Wpf;
 
 namespace RMC.BestFit.App.Tests.XGoodFit
@@ -63,6 +66,51 @@ namespace RMC.BestFit.App.Tests.XGoodFit
 
         /// <summary>Consumption on income, production, savings and unemployment.</summary>
         internal const string MultipleRegression = "Multiple Linear Regression";
+
+        /// <summary>
+        /// Adds a time series to the project's Time Series Data, as opening a project does (nothing is saved), and lets the
+        /// views hear of it.
+        /// </summary>
+        /// <param name="project">The project.</param>
+        /// <param name="name">The new series' name.</param>
+        /// <returns>The series.</returns>
+        internal static TimeSeriesElement AddSeries(BestFitProject project, string name)
+        {
+            var collection = project.ElementCollections.OfType<TimeSeriesCollection>().Single();
+            var data = new Numerics.Data.TimeSeries(Numerics.Data.TimeInterval.OneYear, new DateTime(1960, 1, 1), new DateTime(2019, 1, 1));
+            for (int i = 0; i < data.Count; i++) data[i].Value = 100 + i;
+            var series = new TimeSeriesElement(name, collection) { TimeSeries = data };
+            FieldInfo opening = typeof(ElementCollectionBase).GetField("_opening", BindingFlags.Instance | BindingFlags.NonPublic);
+            bool previous = (bool)opening.GetValue(collection);
+            opening.SetValue(collection, true);
+            try
+            {
+                collection.Add(series);
+            }
+            finally
+            {
+                opening.SetValue(collection, previous);
+            }
+            SharedControlsTesting.Settle();
+            return series;
+        }
+
+        /// <summary>
+        /// Takes a window's content out and puts it back, as a docked panel's theme change does: it unloads and loads
+        /// again.
+        /// </summary>
+        /// <param name="window">A window <see cref="SharedControlsTesting.Show"/> made.</param>
+        internal static void Reload(Window window)
+        {
+            var root = (Border)window.Content;
+            Control content = (Control)root.Child;
+            root.Child = null;
+            SharedControlsTesting.Settle();
+            Assert.IsFalse(content.IsLoaded, "unloaded");
+            root.Child = content;
+            SharedControlsTesting.Settle();
+            Assert.IsTrue(content.IsLoaded, "loaded again");
+        }
 
         /// <summary>
         /// Checks a plot against RMC-BestFit's native export of it (<see cref="UnivariateAnalysisTesting.AssertNative"/>),

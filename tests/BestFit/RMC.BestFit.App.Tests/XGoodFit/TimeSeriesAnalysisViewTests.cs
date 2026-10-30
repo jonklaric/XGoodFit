@@ -461,6 +461,16 @@ namespace RMC.BestFit.App.Tests.XGoodFit
             Settle();
             Assert.AreSame(series, element.TimeSeriesData);
             Assert.AreSame(series, data.SelectedItem);
+
+            // The panel lists a series added to the project, and still does once it has unloaded (a theme change
+            // re-templates the docked panel, for one) and loaded again: upstream's panel subscribes again when it loads.
+            var added = AddSeries(project, "Added series");
+            Assert.IsTrue(properties.TimeSeriesElements.Contains(added));
+            CollectionAssert.Contains(data.Items.Cast<object>().ToList(), added);
+            Reload(_windows.Last());
+            var later = AddSeries(project, "Later series");
+            Assert.IsTrue(properties.TimeSeriesElements.Contains(later), "the panel follows the project's series after a reload");
+            CollectionAssert.Contains(data.Items.Cast<object>().ToList(), later);
             properties.Element = null;
             view.Element = null;
         }
