@@ -1,0 +1,65 @@
+<!--
+    XGoodFit port of upstream's OxyPlotToolbar.xaml:
+    - The icon dictionary is merged with a ResourceInclude. The buttons take Themes' ToolBar themes,
+      whose WPF style keys (ToolBar.ButtonStyleKey, ToolBar.RadioButtonStyleKey) are string keys there,
+      found as dynamic resources (they're in the application's resources).
+    - ToolTip is ToolTip.Tip.
+-->
+<UserControl x:Class="OxyPlotControls.OxyPlotToolbar" x:Name="OxyToolBar"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="using:OxyPlotControls"
+             mc:Ignorable="d"
+             d:DesignHeight="450" d:DesignWidth="80">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceInclude Source="avares://OxyPlotControls/Resources/IconDictionary.axaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <StackPanel Background="Transparent" Orientation="{Binding ElementName=OxyToolBar, Path=ToolBarOrientation, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}">
+        <RadioButton x:Name="PointerButton" Theme="{DynamicResource ToolBar.RadioButtonStyleKey}" Margin="1,1,1,2" Padding="0" ToolTip.Tip="Track Data" Click="PointerButton_Click" IsChecked="True">
+            <Viewbox Width="{Binding ElementName=OxyToolBar, Path=IconSize}" Height="{Binding ElementName=OxyToolBar, Path=IconSize}">
+                <ContentControl Padding="0" Content="{StaticResource PointerIcon}"/>
+            </Viewbox>
+        </RadioButton>
+        <RadioButton Name="PanButton" Theme="{DynamicResource ToolBar.RadioButtonStyleKey}" Margin="1,1,1,2" Padding="0" ToolTip.Tip="Pan" Click="PanButton_Click">
+            <Viewbox Width="{Binding ElementName=OxyToolBar, Path=IconSize}" Height="{Binding ElementName=OxyToolBar, Path=IconSize}">
+                <ContentControl Padding="0" Content="{StaticResource PanHandIcon}"/>
+            </Viewbox>
+        </RadioButton>
+        <RadioButton x:Name="ZoomButton" Theme="{DynamicResource ToolBar.RadioButtonStyleKey}" Margin="1,1,1,2" Padding="0" ToolTip.Tip="Zoom In" Click="ZoomButton_Click">
+            <Viewbox Width="{Binding ElementName=OxyToolBar, Path=IconSize}" Height="{Binding ElementName=OxyToolBar, Path=IconSize}">
+                <ContentControl Padding="0" Content="{StaticResource ZoomInIcon}" />
+            </Viewbox>
+        </RadioButton>
+        <Button x:Name="ZoomAllButton" Theme="{DynamicResource ToolBar.ButtonStyleKey}" Margin="1,1,1,2" Padding="0" ToolTip.Tip="Zoom Full Extents" Click="ZoomAllButton_Click">
+            <Viewbox Width="{Binding ElementName=OxyToolBar, Path=IconSize}" Height="{Binding ElementName=OxyToolBar, Path=IconSize}">
+                <ContentControl Padding="0" Content="{StaticResource ZoomAllIcon}" />
+            </Viewbox>
+        </Button>
+        <Button x:Name="AddAnnotationToggleButton" Theme="{DynamicResource ToolBar.ButtonStyleKey}" Margin="1,1,1,2" Padding="0" ToolTip.Tip="Add Annotation" Click="AddAnnotationToggleButton_Click">
+            <Viewbox Width="{Binding ElementName=OxyToolBar, Path=IconSize}" Height="{Binding ElementName=OxyToolBar, Path=IconSize}">
+                <ContentControl Padding="0" Content="{StaticResource PlusIcon}" />
+            </Viewbox>
+        </Button>
+        <Button x:Name="SaveImageButton" Theme="{DynamicResource ToolBar.ButtonStyleKey}" Margin="1,1,1,2" Padding="0" ToolTip.Tip="Save Plot Image" Click="SaveImageButton_Click">
+            <Viewbox Width="{Binding ElementName=OxyToolBar, Path=IconSize}" Height="{Binding ElementName=OxyToolBar, Path=IconSize}">
+                <ContentControl Padding="0" Content="{StaticResource CameraIcon}" />
+            </Viewbox>
+        </Button>
+        <Button x:Name="ExportDataButton" Theme="{DynamicResource ToolBar.ButtonStyleKey}" Margin="1,1,1,2" Padding="0" ToolTip.Tip="Export Series Data" Click="ExportDataButton_Click">
+            <Viewbox Width="{Binding ElementName=OxyToolBar, Path=IconSize}" Height="{Binding ElementName=OxyToolBar, Path=IconSize}">
+                <ContentControl Padding="0" Content="{StaticResource ExportTableIcon}" />
+            </Viewbox>
+        </Button>
+        <Button x:Name="PropertiesButton" Theme="{DynamicResource ToolBar.ButtonStyleKey}" Margin="1,1,1,2" Padding="0" Focusable="False" ToolTip.Tip="Plot Properties" Click="PropertiesButton_Click">
+            <Viewbox Width="{Binding ElementName=OxyToolBar, Path=IconSize}" Height="{Binding ElementName=OxyToolBar, Path=IconSize}">
+                <ContentControl Padding="0" Content="{StaticResource PropertiesIcon}" />
+            </Viewbox>
+        </Button>
+    </StackPanel>
+</UserControl>

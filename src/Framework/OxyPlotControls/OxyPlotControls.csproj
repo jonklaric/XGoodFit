@@ -5,9 +5,15 @@
     annotations, export), the property editors for plots, axes, series, annotations and legends, the
     image export dialog, settings serialization and the plot themes. It works on the ported
     OxyPlot.Wpf (src/Framework/OxyPlot). Nearly every file is WPF code, so the project opts in to
-    upstream files (Directory.Build.targets) and gains them one port at a time.
+    upstream files (Directory.Build.targets): only the ported copies and the upstream files listed in
+    UpstreamCompileInclude compile.
 
-    Ported so far: Theming (OxyPlotTheme compiles unchanged; OxyPlotThemeManager).
+    Everything is ported, apart from:
+    - Properties/AssemblyInfo.cs: the SDK generates the assembly attributes, as for the other ports; its
+      ThemeInfo attribute has no Avalonia equivalent.
+    - Resources/Save_chart_image.ico and Resources/pointer.ico: nothing uses them.
+    - Properties/Resources.resx: its ResXFileRef entries need Windows Forms; Properties/Resources.Designer.cs
+      is ported to read the same cursor files as embedded resources.
   -->
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
@@ -18,6 +24,12 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <UpstreamProjectDir>$(UpstreamFrameworkSrc)OxyPlotControls/</UpstreamProjectDir>
     <UpstreamCompileMode>OptIn</UpstreamCompileMode>
+    <!-- As upstream: the toolbar and the editors use OxyPlot's obsolete mouse events (CS0618). Upstream's
+         CA1416 (Windows-only APIs) has nothing left to suppress. -->
+    <NoWarn>$(NoWarn);CS0618</NoWarn>
+    <!-- SavePlotImageDialog, as upstream, has only a constructor that takes the plot, so Avalonia's
+         runtime XAML loader (which the previewer uses) can't create it; nothing loads it that way. -->
+    <MSBuildWarningsAsMessages>$(MSBuildWarningsAsMessages);AVLN3001</MSBuildWarningsAsMessages>
   </PropertyGroup>
 
   <ItemGroup>
@@ -38,7 +50,13 @@
 
   <ItemGroup>
     <!-- Upstream files that compile unchanged. -->
+    <UpstreamCompileInclude Include="OxyPlotSettingsSerializer.cs" />
     <UpstreamCompileInclude Include="Theming/OxyPlotTheme.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- The toolbar's cursors, read by Properties/Resources.Designer.cs (upstream's resx entries). -->
+    <EmbeddedResource Include="$(UpstreamProjectDir)Resources/*.cur" LogicalName="OxyPlotControls.Resources.%(Filename)%(Extension)" Link="Resources/%(Filename)%(Extension)" />
   </ItemGroup>
 
 </Project>

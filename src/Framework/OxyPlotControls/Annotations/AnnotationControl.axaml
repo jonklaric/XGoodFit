@@ -1,0 +1,475 @@
+<!--
+    XGoodFit port of upstream's Annotations/AnnotationControl.xaml:
+    - The resource dictionary is merged with a ResourceInclude; the expanders' Style bindings are Theme
+      bindings (Avalonia's styles are ControlThemes).
+    - Visibility bindings are WpfCompat's; the hidden dummy property control, which only measures the
+      property column, is Opacity="0" without hit testing, as WPF's Visibility="Hidden".
+    - Bindings to the annotation's IsEnabled read IsEffectivelyEnabled, which includes the parents', as
+      WPF's IsEnabled does.
+    - Avalonia's ComboBox has no ItemStringFormat: the text line positions' item template formats them
+      as percentages (P0), in WpfCompat's FormattingCulture as WPF's bindings do.
+    - Avalonia's bindings have no NotifyOnSourceUpdated; upstream handles no SourceUpdated events.
+    - Converters of two-way bindings are wrapped in WpfCompat's TwoWayConverter, one per binding
+      (x:Shared="False"): Avalonia's bindings write back the value they show, so a converter that
+      shows a default (a NaN font size as 12, an automatic line style as solid) would change the plot.
+-->
+<UserControl x:Class="OxyPlotControls.AnnotationControl" x:Name="AnnotationProperties"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="using:OxyPlotControls"
+             xmlns:wpfd="using:WpfCompat.Data"
+             xmlns:cntrls="using:GenericControls"
+             xmlns:wpf="using:WpfCompat"
+             mc:Ignorable="d"
+             MinWidth="200"
+             MinHeight="100"
+             d:DesignHeight="450" d:DesignWidth="800"
+             DataContext="{Binding RelativeSource={RelativeSource Self}}"
+             >
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceInclude Source="avares://OxyPlotControls/Resources/ResourceDictionary.axaml"/>
+                <ResourceDictionary>
+                    <wpfd:TwoWayConverter x:Key="LineStyleConverter" x:Shared="False">
+                        <local:OxyLineStyleToDashArrayConverter/>
+                    </wpfd:TwoWayConverter>
+                    <wpfd:TwoWayConverter x:Key="OxyAutoColorConverter" x:Shared="False">
+                        <local:OxyAutomaticColorConverter/>
+                    </wpfd:TwoWayConverter>
+                    <wpfd:TwoWayConverter x:Key="FontFamilyToFontConverter" x:Shared="False">
+                        <cntrls:FontFamilyToFontStringConverter/>
+                    </wpfd:TwoWayConverter>
+                    <wpfd:TwoWayConverter x:Key="DataPointConverter" x:Shared="False">
+                        <local:DataPointToPointConverter/>
+                    </wpfd:TwoWayConverter>
+                    <local:ScreenVectorToPointConverter x:Key="ScreenVectorConverter"/>
+                    <cntrls:VectorToPointConverter x:Key="VectorConverter"/>
+                    <local:EmptyStringToNullConverter x:Key="EmptyToNullConverter"/>
+                    <cntrls:AlwaysVisibleConverter x:Key="AlwaysVisibleConverter" />
+                    <wpfd:TwoWayConverter x:Key="ConvertThicknessToDouble" x:Shared="False">
+                        <cntrls:ThicknessToDoubleConverter/>
+                    </wpfd:TwoWayConverter>
+                    <wpfd:TwoWayConverter x:Key="DefaultFontSizeConverter" x:Shared="False">
+                        <local:OxyDefaultFontSizeConverter/>
+                    </wpfd:TwoWayConverter>
+                    <cntrls:DoubleToGridLengthConverter x:Key="ActualToLengthConverter" />
+                    <wpfd:TwoWayConverter x:Key="OxyHorizontalAlignmentConverter" x:Shared="False">
+                        <local:OxyHorizontalAlignmentConverter/>
+                    </wpfd:TwoWayConverter>
+                    <wpfd:TwoWayConverter x:Key="OxyVerticalAlignmentConverter" x:Shared="False">
+                        <local:OxyVerticalAlignmentConverter/>
+                    </wpfd:TwoWayConverter>
+                </ResourceDictionary>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="0"/>
+        </Grid.RowDefinitions>
+
+        <cntrls:ContentPropertyControl
+            Name="DummyPropertyControl"
+            Grid.Row="2"
+            Opacity="0" IsHitTestVisible="False"
+            Title="Horizontal Alignment"
+            Margin="6 0 0 0"/>
+
+        <Expander
+                    x:Name="TextEXP"
+                    Grid.Row="0" Margin="0,0,0,8"
+                    Header="TEXT"
+                    IsExpanded="True"
+                    DockPanel.Dock="Top"
+                    IsVisible="False"
+                    Theme="{Binding ElementName=AnnotationProperties, Path=ExpanderStyle}">
+
+            <DockPanel>
+
+                <!--Text Annotation (TextualAnnotation Only)-->
+                <cntrls:TextPropertyControl
+                            Margin="0 2"
+                            DockPanel.Dock="Top"
+                            MaxPropertyWidth="400"
+                            Title="Text"
+                            Text="{Binding Annotation.Text, ElementName=AnnotationProperties, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                            wpf:WpfElement.Visibility="{Binding ElementName=AnnotationProperties, Path=Annotation.Text, Converter={StaticResource AlwaysVisibleConverter}, FallbackValue=Collapsed}"
+                            IsEnabled="{Binding ElementName=AnnotationProperties, Path=Annotation.IsEffectivelyEnabled}"
+                            PropertyWidth="{Binding ElementName=DummyPropertyControl, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}"/>
+
+                <!--Text Color-->
+                <cntrls:ColorPropertyControl
+                            Margin="0 2"
+                            DockPanel.Dock="Top"
+                            Title="Color"
+                            SelectedColor="{Binding ElementName=AnnotationProperties, Path=Annotation.TextColor, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay, Converter={StaticResource OxyAutoColorConverter}}"
+                            wpf:WpfElement.Visibility="{Binding ElementName=AnnotationProperties, Path=Annotation.TextColor, Converter={StaticResource AlwaysVisibleConverter}, FallbackValue=Collapsed}"
+                            IsEnabled="{Binding ElementName=AnnotationProperties, Path=Annotation.IsEffectivelyEnabled}"/>
+
+                <!--Text Font-->
+                <cntrls:FontSelectorControl
+                            Margin="0 2"
+                            DockPanel.Dock="Top"
+                            MaxPropertyWidth="200"
+                            Title="Font"
+                            FontFamilyString="{Binding Path=Annotation.FontFamily, ElementName=AnnotationProperties, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay, Converter={StaticResource FontFamilyToFontConverter}}"
+                            IsEnabled="{Binding ElementName=AnnotationProperties, Path=Annotation.IsEffectivelyEnabled}"
+                            wpf:WpfElement.Visibility="{Binding ElementName=AnnotationProperties, Path=Annotation.FontFamily, Converter={StaticResource AlwaysVisibleConverter}, FallbackValue=Collapsed}"
+                            PropertyWidth="{Binding ElementName=DummyPropertyControl, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}"/>
+
+                <!--Title Font Size-->
+                <cntrls:NumericPropertySelectorControl
+                            Margin="0 2"
+                            DockPanel.Dock="Top"
+                            MaxPropertyWidth="200"
+                            Title="Font Size"
+                            CanHaveNegative="False"
+                            NumericOptions="{StaticResource FontSizeOptions}"
+                            SelectedNumber="{Binding Annotation.FontSize, ElementName=AnnotationProperties, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay, Converter={StaticResource DefaultFontSizeConverter}}"
+                            wpf:WpfElement.Visibility="{Binding ElementName=AnnotationProperties, Path=Annotation.FontSize, Converter={StaticResource AlwaysVisibleConverter}, FallbackValue=Collapsed}"
+                            IsEnabled="{Binding ElementName=AnnotationProperties, Path=Annotation.IsEffectivelyEnabled}"
+                            PropertyWidth="{Binding ElementName=DummyPropertyControl, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}"/>
+
+                <!--Title Font Weight-->
+                <cntrls:FontWeightSelectorControl
+                            Margin="0 2"
+                            DockPanel.Dock="Top"
+                            MaxPropertyWidth="200"
+                            Title="Font Weight"
+                            SelectedFontWeight="{Binding Path=Annotation.FontWeight, ElementName=AnnotationProperties, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                            wpf:WpfElement.Visibility="{Binding ElementName=AnnotationProperties, Path=Annotation.FontWeight, Converter={StaticResource AlwaysVisibleConverter}, FallbackValue=Collapsed}"
+                            IsEnabled="{Binding ElementName=AnnotationProperties, Path=Annotation.IsEffectivelyEnabled}"
+                            PropertyWidth="{Binding ElementName=DummyPropertyControl, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}"/>
+
+                <!--TextMargin (PointAnnotation and path annotation)-->
+                <cntrls:NumericPropertyControl
+                            Margin="0 2"
+                            DockPanel.Dock="Top"
+                            MaxPropertyWidth="200"
+                            Title="Text Margin"
+                            Number="{Binding ElementName=AnnotationProperties, Path=Annotation.TextMargin, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                            PropertyWidth="{Binding ElementName=DummyPropertyControl, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}"
+                            wpf:WpfElement.Visibility="{Binding ElementName=AnnotationProperties, Path=Annotation.TextMargin, Converter={StaticResource AlwaysVisibleConverter}, FallbackValue=Collapsed}"
+                            IsEnabled="{Binding ElementName=AnnotationProperties, Path=Annotation.IsEffectivelyEnabled}"/>
+
+                <!--Padding {TextAnnotation and more)-->
+                <cntrls:NumericPropertySelectorControl
+                            Margin="0 2"
+                            DockPanel.Dock="Top"
+                            MaxPropertyWidth="200"
+                            Title="Padding"
+                            PropertyWidth="{Binding ElementName=DummyPropertyControl, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}"
+                            NumericOptions="{StaticResource PaddingOptions}"
+                            SelectedNumber="{Binding Path=Annotation.Padding, ElementName=AnnotationProperties, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay, Converter={StaticResource ConvertThicknessToDouble}}"
+                            wpf:WpfElement.Visibility="{Binding ElementName=AnnotationProperties, Path=Annotation.Padding, Converter={StaticResource AlwaysVisibleConverter}, FallbackValue=Collapsed}"
+                            IsEnabled="{Binding ElementName=AnnotationProperties, Path=Annotation.IsEffectivelyEnabled}"/>
+
+                <!--TextOrientation (PathAnnotation Only)-->
+                <cntrls:ContentPropertyControl
+                                    Title="Text Orientation"
+                                    Margin="0 2"
+                                    DockPanel.Dock="Top"
+                                    MaxPropertyWidth="200"
+                                    PropertyWidth="{Binding ElementName=DummyPropertyControl, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}"
+                                    wpf:WpfElement.Visibility="{Binding Annotation.TextOrientation, Converter={StaticResource AlwaysVisibleConverter}, FallbackValue=Collapsed}"
+                                    IsEnabled="{Binding Annotation.IsEffectivelyEnabled}">
+                    <cntrls:ContentPropertyControl.InnerContent>
+                        <ComboBox
+                                    ItemsSource="{Binding AnnotationTextOrientationOptions}"
+                                    SelectedValue="{Binding Path=Annotation.TextOrientation, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"/>
+                    </cntrls:ContentPropertyControl.InnerContent>
+                </cntrls:ContentPropertyControl>
+
+                <!--Text Rotation-->
+                <cntrls:NumericPropertySelectorControl
+                    x:Name="TextAngleControl"
+                            Margin="0 2"
+                            DockPanel.Dock="Top"
+                            MaxPropertyWidth="200"
+                            Title="Angle"
+                            CanHaveNegative="True"
+                            NumericOptions="{StaticResource AngleOptions}"
+                            SelectedNumber="{Binding ElementName=AnnotationProperties, Path=Annotation.TextRotation, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                            wpf:WpfElement.Visibility="{Binding ElementName=AnnotationProperties, Path=Annotation.TextRotation, Converter={StaticResource AlwaysVisibleConverter}, FallbackValue=Collapsed}"
+                            IsEnabled="{Binding ElementName=AnnotationProperties, Path=Annotation.IsEffectivelyEnabled}"
+                            PropertyWidth="{Binding ElementName=DummyPropertyControl, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}"/>
+
+                <!--Text Line Position-->
+                <cntrls:ContentPropertyControl
+                            x:Name="TextLinePositionControl"
+                            Title="Text Line Position"
+                            Margin="0 2"
+                            DockPanel.Dock="Top"
+                            MaxPropertyWidth="200"
+                            PropertyWidth="{Binding ElementName=DummyPropertyControl, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}"
+                            wpf:WpfElement.Visibility="{Binding Annotation.TextLinePosition, Converter={StaticResource AlwaysVisibleConverter}, FallbackValue=Collapsed}"
+                            IsEnabled="{Binding Annotation.IsEffectivelyEnabled}">
+                    <cntrls:ContentPropertyControl.InnerContent>
+                        <ComboBox ItemsSource="{Binding TextLinePositionOptions}"
+                                  SelectedValue="{Binding Path=Annotation.TextLinePosition, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding StringFormat={}{0:P0}, ConverterCulture={x:Static wpf:FormattingCulture.Current}}"/>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                    </cntrls:ContentPropertyControl.InnerContent>
+                </cntrls:ContentPropertyControl>
+
+                <!--Text Horizontal Alignment-->
+                <cntrls:HorizontalAlignmentControl
+                            Margin="0 2"
+                            DockPanel.Dock="Top"
+                            MaxPropertyWidth="200"
+                            ShowStretch="False"
+                            Title="Horizontal Alignment"
+                            Alignment="{Binding ElementName=AnnotationProperties, Path=Annotation.TextHorizontalAlignment, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay, Converter={StaticResource OxyHorizontalAlignmentConverter}, ConverterParameter=Swap}"
+                            wpf:WpfElement.Visibility="{Binding ElementName=AnnotationProperties, Path=Annotation.TextHorizontalAlignment, Converter={StaticResource AlwaysVisibleConverter}, FallbackValue=Collapsed}"
+                            IsEnabled="{Binding ElementName=AnnotationProperties, Path=Annotation.IsEffectivelyEnabled}"
+                            PropertyWidth="{Binding ElementName=DummyPropertyControl, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}"/>
+
+                <!--Text Vertical Alignment-->
+                <cntrls:VerticalAlignmentControl
+                            Margin="0 2"
+                            DockPanel.Dock="Top"
+                            MaxPropertyWidth="200"
+                            ShowStretch="False"
+                            Title="Vertical Alignment"
+                            Alignment="{Binding ElementName=AnnotationProperties, Path=Annotation.TextVerticalAlignment, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay, Converter={StaticResource OxyVerticalAlignmentConverter}, ConverterParameter=Swap}"
+                            wpf:WpfElement.Visibility="{Binding ElementName=AnnotationProperties, Path=Annotation.TextVerticalAlignment, Converter={StaticResource AlwaysVisibleConverter}, FallbackValue=Collapsed}"
+                            IsEnabled="{Binding ElementName=AnnotationProperties, Path=Annotation.IsEffectivelyEnabled}"
+                            PropertyWidth="{Binding ElementName=DummyPropertyControl, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}"/>
+
+            </DockPanel>
+
+        </Expander>
+
+
+        <Expander
+                    x:Name="DisplayOptionsEXP"
+                    Grid.Row="1" Margin="0,0,0,8"
+                    Header="DISPLAY"
+                    IsExpanded="True"
+                    DockPanel.Dock="Top"
+                    IsVisible="False"
+                    Theme="{Binding ElementName=AnnotationProperties, Path=ExpanderStyle}">
+
+            <DockPanel>
+
+                <!--Color (ArrowAnnotation and more PathAnnotation)-->
+                <cntrls:ColorPropertyControl
+                            Margin="0 2"
+                            DockPanel.Dock="Top"
+                            Title="Color"
+                            SelectedColor="{Binding ElementName=AnnotationProperties, Path=Annotation.Color, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay, Converter={StaticResource OxyAutoColorConverter}}"
+                            wpf:WpfElement.Visibility="{Binding ElementName=AnnotationProperties, Path=Annotation.Color, Converter={StaticResource AlwaysVisibleConverter}, FallbackValue=Collapsed}"
+                            IsEnabled="{Binding ElementName=AnnotationProperties, Path=Annotation.IsEffectivelyEnabled}"/>
+
+                <!--Background Color (TextAnnotation Maybe More)-->
+                <cntrls:ColorPropertyControl
+                            Margin="0 2"
+                            DockPanel.Dock="Top"
+                            Title="Background"
+                            SelectedColor="{Binding ElementName=AnnotationProperties, Path=Annotation.Background, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay, Converter={StaticResource OxyAutoColorConverter}}"
+                            wpf:WpfElement.Visibility="{Binding ElementName=AnnotationProperties, Path=Annotation.Background, Converter={StaticResource AlwaysVisibleConverter}, FallbackValue=Collapsed}"
+                            IsEnabled="{Binding ElementName=AnnotationProperties, Path=Annotation.IsEffectivelyEnabled}"/>
+
+                <!--Fill Color (ShapeAnnotation Only)-->
+                <cntrls:ColorPropertyControl
+                            Margin="0 2" DockPanel.Dock="Top"
+                            Title="Fill"
+                            SelectedColor="{Binding ElementName=AnnotationProperties, Path=Annotation.Fill, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay, Converter={StaticResource OxyAutoColorConverter}}"
+                            wpf:WpfElement.Visibility="{Binding ElementName=AnnotationProperties, Path=Annotation.Fill, Converter={StaticResource AlwaysVisibleConverter}, FallbackValue=Collapsed}"
+                            IsEnabled="{Binding ElementName=AnnotationProperties, Path=Annotation.IsEffectivelyEnabled}"/>
+
+                <!--Stroke Color (TextAnnotation and more)-->
+                <cntrls:ColorPropertyControl
+                            Margin="0 2"
+                            DockPanel.Dock="Top"
+                            Title="Stroke Color"
+                            SelectedColor="{Binding ElementName=AnnotationProperties, Path=Annotation.Stroke, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay, Converter={StaticResource OxyAutoColorConverter}}"
+                            wpf:WpfElement.Visibility="{Binding ElementName=AnnotationProperties, Path=Annotation.Stroke, Converter={StaticResource AlwaysVisibleConverter}, FallbackValue=Collapsed}"
+                            IsEnabled="{Binding ElementName=AnnotationProperties, Path=Annotation.IsEffectivelyEnabled}"/>
+
+                <!--Stroke Thickness (TextAnnotation and more)-->
+                <cntrls:LineWidthSelectorControl
+                            Margin="0 2"
+                            DockPanel.Dock="Top"
+                            MaxPropertyWidth="200"
+                            Title="Stroke Thickness"
+                            WidthOptions="{StaticResource LineWidthOptions}" SelectedWidth="{Binding Annotation.StrokeThickness, ElementName=AnnotationProperties, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                            PropertyWidth="{Binding ElementName=DummyPropertyControl, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}"
+                            wpf:WpfElement.Visibility="{Binding ElementName=AnnotationProperties, Path=Annotation.StrokeThickness, Converter={StaticResource AlwaysVisibleConverter}, FallbackValue=Collapsed}"
+                            IsEnabled="{Binding ElementName=AnnotationProperties, Path=Annotation.IsEffectivelyEnabled}"/>
+
+                <!--Line Style-->
+                <cntrls:LineStyleSelectorControl
+                                x:Name="LineStyleControl"
+                                Margin="0 2"
+                                DockPanel.Dock="Top"
+                                MaxPropertyWidth="200"
+                                Title="Line Style"
+                                DashArrayOptions="{Binding ElementName=AnnotationProperties, Path=LineStyleOptions}"
+                                SelectedDashArray="{Binding ElementName=AnnotationProperties, Path=Annotation.LineStyle, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay, Converter={StaticResource LineStyleConverter}}"
+                                PropertyWidth="{Binding ElementName=DummyPropertyControl, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}"
+                                wpf:WpfElement.Visibility="{Binding ElementName=AnnotationProperties, Path=Annotation.LineStyle, Converter={StaticResource AlwaysVisibleConverter}, FallbackValue=Collapsed}"
+                                IsEnabled="{Binding ElementName=AnnotationProperties, Path=Annotation.IsEffectivelyEnabled}"/>
+
+                <cntrls:ContentPropertyControl
+                            Title="Marker Type"
+                            Margin="0 2"
+                            DockPanel.Dock="Top"
+                            MaxPropertyWidth="200"
+                            PropertyWidth="{Binding ElementName=DummyPropertyControl, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}"
+                            wpf:WpfElement.Visibility="{Binding Annotation.Shape, Converter={StaticResource AlwaysVisibleConverter}, FallbackValue=Collapsed}"
+                            IsEnabled="{Binding Annotation.IsEffectivelyEnabled}">
+                            <cntrls:ContentPropertyControl.InnerContent>
+                                <ComboBox ItemsSource="{Binding MarkerTypeOptions}" SelectedValue="{Binding Path=Annotation.Shape, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"/>
+                            </cntrls:ContentPropertyControl.InnerContent>
+                </cntrls:ContentPropertyControl>
+
+                <!--Size (PointAnnotation Only)-->
+                <cntrls:NumericPropertySelectorControl
+                            Margin="0 2"
+                            DockPanel.Dock="Top"
+                            MaxPropertyWidth="200"
+                            Title="Marker Size"
+                            CanHaveNegative="False"
+                            NumericOptions="{StaticResource LineWidthOptions}"
+                            SelectedNumber="{Binding ElementName=AnnotationProperties, Path=Annotation.Size, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                            PropertyWidth="{Binding ElementName=DummyPropertyControl, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}"
+                            wpf:WpfElement.Visibility="{Binding ElementName=AnnotationProperties, Path=Annotation.Size, Converter={StaticResource AlwaysVisibleConverter}, FallbackValue=Collapsed}"
+                            IsEnabled="{Binding ElementName=AnnotationProperties, Path=Annotation.IsEffectivelyEnabled}"/>
+
+                <!--Line Annotation Type-->
+                <cntrls:ContentPropertyControl
+                                    x:Name="LineTypeControl"
+                                    Title="Line Type"
+                                    Margin="0 2"
+                                    DockPanel.Dock="Top"
+                                    MaxPropertyWidth="200"
+                                    PropertyWidth="{Binding ElementName=DummyPropertyControl, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}"
+                                    wpf:WpfElement.Visibility="{Binding Annotation.Type, Converter={StaticResource AlwaysVisibleConverter}, FallbackValue=Collapsed}"
+                                    IsEnabled="{Binding Annotation.IsEffectivelyEnabled}">
+                    <cntrls:ContentPropertyControl.InnerContent>
+                        <ComboBox
+                                    ItemsSource="{Binding LineAnnotationTypeOptions}"
+                                    SelectedValue="{Binding Path=Annotation.Type, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                                    SelectionChanged="LineTypeControl_SelectionChanged"/>
+                    </cntrls:ContentPropertyControl.InnerContent>
+                </cntrls:ContentPropertyControl>
+
+                <!--X (EllipseAnnotation and more)-->
+                <cntrls:NumericPropertyControl
+                            x:Name="XValueControl"
+                            Margin="0 2"
+                            DockPanel.Dock="Top"
+                            MaxPropertyWidth="200"
+                            Title="X"
+                            Number="{Binding ElementName=AnnotationProperties, Path=Annotation.X, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                            PropertyWidth="{Binding ElementName=DummyPropertyControl, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}"
+                            wpf:WpfElement.Visibility="{Binding ElementName=AnnotationProperties, Path=Annotation.X, Converter={StaticResource AlwaysVisibleConverter}, FallbackValue=Collapsed}"
+                            IsEnabled="{Binding ElementName=AnnotationProperties, Path=Annotation.IsEffectivelyEnabled}"/>
+
+                <!--Y (EllipseAnnotation and more)-->
+                <cntrls:NumericPropertyControl
+                            x:Name="YValueControl"
+                            Margin="0 2"
+                            DockPanel.Dock="Top"
+                            MaxPropertyWidth="200"
+                            Title="Y"
+                            Number="{Binding ElementName=AnnotationProperties, Path=Annotation.Y, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                            PropertyWidth="{Binding ElementName=DummyPropertyControl, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}"
+                            wpf:WpfElement.Visibility="{Binding ElementName=AnnotationProperties, Path=Annotation.Y, Converter={StaticResource AlwaysVisibleConverter}, FallbackValue=Collapsed}"
+                            IsEnabled="{Binding ElementName=AnnotationProperties, Path=Annotation.IsEffectivelyEnabled}"/>
+
+                <!--Intercept (LineAnnotation only)-->
+                <cntrls:NumericPropertyControl
+                            x:Name="InterceptControl"
+                            Margin="0 2"
+                            DockPanel.Dock="Top"
+                            MaxPropertyWidth="200"
+                            Title="Line Intercept"
+                            Number="{Binding ElementName=AnnotationProperties, Path=Annotation.Intercept, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                            PropertyWidth="{Binding ElementName=DummyPropertyControl, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}"
+                            wpf:WpfElement.Visibility="{Binding ElementName=AnnotationProperties, Path=Annotation.Intercept, Converter={StaticResource AlwaysVisibleConverter}, FallbackValue=Collapsed}"
+                            IsEnabled="{Binding ElementName=AnnotationProperties, Path=Annotation.IsEffectivelyEnabled}"/>
+
+                <!--Slope (LineAnnotation only)-->
+                <cntrls:NumericPropertyControl
+                            x:Name="SlopeControl"
+                            Margin="0 2"
+                            DockPanel.Dock="Top"
+                            MaxPropertyWidth="200"
+                            Title="Line Slope"
+                            Number="{Binding ElementName=AnnotationProperties, Path=Annotation.Slope, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                            PropertyWidth="{Binding ElementName=DummyPropertyControl, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}"
+                            wpf:WpfElement.Visibility="{Binding ElementName=AnnotationProperties, Path=Annotation.Slope, Converter={StaticResource AlwaysVisibleConverter}, FallbackValue=Collapsed}"
+                            IsEnabled="{Binding ElementName=AnnotationProperties, Path=Annotation.IsEffectivelyEnabled}"/>
+
+                <!--Start Point (ArrowAnnotation Only)-->
+                <cntrls:PointPropertyControl
+                            Margin="0 2"
+                            DockPanel.Dock="Top"
+                            MaxPropertyWidth="200"
+                            Title="Start Point"
+                            DataPoint="{Binding ElementName=AnnotationProperties, Path=Annotation.StartPoint, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay, Converter={StaticResource DataPointConverter}}"
+                            PropertyWidth="{Binding ElementName=DummyPropertyControl, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}"
+                            wpf:WpfElement.Visibility="{Binding ElementName=AnnotationProperties, Path=Annotation.StartPoint, Converter={StaticResource AlwaysVisibleConverter}, FallbackValue=Collapsed}"
+                            IsEnabled="{Binding ElementName=AnnotationProperties, Path=Annotation.IsEffectivelyEnabled}"/>
+
+                <!--End Point (ArrowAnnotation Only)-->
+                <cntrls:PointPropertyControl
+                            Margin="0 2"
+                            DockPanel.Dock="Top"
+                            MaxPropertyWidth="200"
+                            Title="End Point"
+                            DataPoint="{Binding ElementName=AnnotationProperties, Path=Annotation.EndPoint, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay, Converter={StaticResource DataPointConverter}}"
+                            PropertyWidth="{Binding ElementName=DummyPropertyControl, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}"
+                            wpf:WpfElement.Visibility="{Binding ElementName=AnnotationProperties, Path=Annotation.EndPoint, Converter={StaticResource AlwaysVisibleConverter}, FallbackValue=Collapsed}"
+                            IsEnabled="{Binding ElementName=AnnotationProperties, Path=Annotation.IsEffectivelyEnabled}"/>
+
+                <!--Head Length (ArrowAnnotation Only)-->
+                <cntrls:NumericPropertyControl
+                            Margin="0 2"
+                            DockPanel.Dock="Top"
+                            MaxPropertyWidth="200"
+                            Title="Head Length"
+                            Number="{Binding ElementName=AnnotationProperties, Path=Annotation.HeadLength, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                            PropertyWidth="{Binding ElementName=DummyPropertyControl, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}"
+                            wpf:WpfElement.Visibility="{Binding ElementName=AnnotationProperties, Path=Annotation.HeadLength, Converter={StaticResource AlwaysVisibleConverter}, FallbackValue=Collapsed}"
+                            IsEnabled="{Binding ElementName=AnnotationProperties, Path=Annotation.IsEffectivelyEnabled}"/>
+
+                <!--Head Width (ArrowAnnotation Only)-->
+                <cntrls:NumericPropertyControl
+                            Margin="0 2"
+                            DockPanel.Dock="Top"
+                            MaxPropertyWidth="200"
+                            Title="Head Width"
+                            Number="{Binding ElementName=AnnotationProperties, Path=Annotation.HeadWidth, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                            PropertyWidth="{Binding ElementName=DummyPropertyControl, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}"
+                            wpf:WpfElement.Visibility="{Binding ElementName=AnnotationProperties, Path=Annotation.HeadWidth, Converter={StaticResource AlwaysVisibleConverter}, FallbackValue=Collapsed}"
+                            IsEnabled="{Binding ElementName=AnnotationProperties, Path=Annotation.IsEffectivelyEnabled}"/>
+
+                <!--Veeness (Arrow Inner Angle) (Arrow Annotation Only)-->
+                <cntrls:NumericPropertyControl
+                            Margin="0 2"
+                            DockPanel.Dock="Top"
+                            MaxPropertyWidth="200"
+                            Title="Barb Length"
+                            Number="{Binding ElementName=AnnotationProperties, Path=Annotation.Veeness, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                            PropertyWidth="{Binding ElementName=DummyPropertyControl, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}"
+                            wpf:WpfElement.Visibility="{Binding ElementName=AnnotationProperties, Path=Annotation.Veeness, Converter={StaticResource AlwaysVisibleConverter}, FallbackValue=Collapsed}"
+                            IsEnabled="{Binding ElementName=AnnotationProperties, Path=Annotation.IsEffectivelyEnabled}"/>
+
+            </DockPanel>
+
+        </Expander>
+
+    </Grid>
+</UserControl>

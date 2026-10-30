@@ -1,0 +1,221 @@
+<!--
+    XGoodFit port of upstream's Series/BoxPlotSeriesControl.xaml:
+    - The resource dictionary is merged with a ResourceInclude; the expanders' Style bindings are Theme
+      bindings (Avalonia's styles are ControlThemes).
+    - Visibility bindings are WpfCompat's; the hidden dummy property control, which only measures the
+      property column, is Opacity="0" without hit testing, as WPF's Visibility="Hidden".
+    - The two-way MultiBindings are WpfCompat's (Avalonia's is one-way).
+    - Avalonia's bindings have no NotifyOnSourceUpdated; upstream handles no SourceUpdated events.
+    - Converters of two-way bindings are wrapped in WpfCompat's TwoWayConverter, one per binding
+      (x:Shared="False"): Avalonia's bindings write back the value they show, so a converter that
+      shows a default (a NaN font size as 12, an automatic line style as solid) would change the plot.
+-->
+<UserControl x:Class="OxyPlotControls.BoxPlotSeriesControl" x:Name="BoxPlotSeriesProperties"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="using:OxyPlotControls"
+             xmlns:cntrls="using:GenericControls"
+             xmlns:wpf="using:WpfCompat"
+             xmlns:wpfd="using:WpfCompat.Data"
+             mc:Ignorable="d"
+             d:DesignHeight="450" d:DesignWidth="800"
+             DataContext="{Binding RelativeSource={RelativeSource Self}}"
+             >
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceInclude Source="avares://OxyPlotControls/Resources/ResourceDictionary.axaml"/>
+                <ResourceDictionary>
+                    <cntrls:FontFamilyToFontStringConverter x:Key="FontFamilyToFontConverter"/>
+                    <wpfd:TwoWayConverter x:Key="OxyAutoColorConverter" x:Shared="False">
+                        <local:OxyAutomaticColorConverter/>
+                    </wpfd:TwoWayConverter>
+                    <local:BoxPlotSeriesFillConverter x:Key="BoxPlotFillConverter"/>
+                    <wpfd:TwoWayConverter x:Key="LineStyleConverter" x:Shared="False">
+                        <local:OxyLineStyleToDashArrayConverter/>
+                    </wpfd:TwoWayConverter>
+                    <local:OxyDefaultFontSizeConverter x:Key="DefaultFontSizeConverter"/>
+                    <cntrls:DoubleToGridLengthConverter x:Key="ActualToLengthConverter" />
+                    <wpfd:TwoWayConverter x:Key="VisibilityToBoolConverter" x:Shared="False">
+                        <cntrls:VisibilityToBooleanConverter VisibleValue="True" CollapsedValue="False" HiddenValue="False"/>
+                    </wpfd:TwoWayConverter>
+                </ResourceDictionary>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="0"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <cntrls:ContentPropertyControl
+            Name="DummyPropertyControl"
+            Grid.Row="0"
+            Opacity="0" IsHitTestVisible="False"
+            Title="Median Point Size"
+            Padding="6 0 0 0"/>
+
+        <!--Display-->
+        <Expander
+                x:Name="DisplayEXP"
+                Grid.Row="1" Margin="0,0,0,0"
+                Header="DISPLAY"
+                IsExpanded="True"
+                DockPanel.Dock="Top"
+                Theme="{Binding ElementName=BoxPlotSeriesProperties, Path=ExpanderStyle}">
+
+            <DockPanel>
+
+                <!--Title Text-->
+                <cntrls:TextPropertyControl
+                    Margin="0 2"
+                    DockPanel.Dock="Top"
+                    MaxPropertyWidth="400"
+                    Title="Title"
+                    Text="{Binding Series.Title, ElementName=BoxPlotSeriesProperties, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                    PropertyWidth="{Binding ElementName=DummyPropertyControl, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}"/>
+
+                <!--Visibility (DEVELOPER)-->
+                <cntrls:BooleanPropertyControl
+                    Margin="0 2"
+                    DockPanel.Dock="Top"
+                    Title="Is Visible"
+                    IsSelected="{Binding ElementName=BoxPlotSeriesProperties, Path=Series.Visibility, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay, Converter={StaticResource VisibilityToBoolConverter}}"/>
+
+                <!--Render In Legend (DEVELOPER)-->
+                <cntrls:BooleanPropertyControl
+                    Margin="0 2"
+                    DockPanel.Dock="Top"
+                    Title="Show In Legend"
+                    IsSelected="{Binding ElementName=BoxPlotSeriesProperties, Path=Series.RenderInLegend, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"/>
+
+                <!--Fill (BoxPlotSeries Only)-->
+                <cntrls:ColorPropertyControl
+                        Margin="0 2"
+                        DockPanel.Dock="Top"
+                        Title="Fill Color">
+                    <cntrls:ColorPropertyControl.SelectedColor>
+                        <wpfd:MultiBinding
+                                Converter="{StaticResource BoxPlotFillConverter}"
+                                UpdateSourceTrigger="PropertyChanged" Mode="TwoWay">
+                            <Binding
+                                    Path="Series.Fill"
+                                    ElementName="BoxPlotSeriesProperties"
+                                    UpdateSourceTrigger="PropertyChanged"
+                                    Mode="TwoWay"/>
+                            <Binding
+                                    Path="Series"
+                                    ElementName="BoxPlotSeriesProperties"
+                                    UpdateSourceTrigger="PropertyChanged"
+                                    Mode="OneWay"/>
+                        </wpfd:MultiBinding>
+                    </cntrls:ColorPropertyControl.SelectedColor>
+                </cntrls:ColorPropertyControl>
+
+
+                <!--LineStyle (LineSeries and BoxPlotSeries Only)-->
+                <cntrls:LineStyleSelectorControl
+                        Margin="0 2"
+                        DockPanel.Dock="Top"
+                        Title="Line Style"
+                        DashArrayOptions="{Binding ElementName=BoxPlotSeriesProperties, Path=LineStyleOptions}"
+                        SelectedDashArray="{Binding ElementName=BoxPlotSeriesProperties, Path=Series.LineStyle, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay, Converter={StaticResource LineStyleConverter}}"
+                        PropertyWidth="{Binding ElementName=DummyPropertyControl, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}"/>
+
+                <!--Stroke (BoxPlotSeries Only)-->
+                <cntrls:ColorPropertyControl
+                        Margin="0 2"
+                        DockPanel.Dock="Top"
+                        Title="Line Color"
+                        SelectedColor="{Binding ElementName=BoxPlotSeriesProperties, Path=Series.Stroke, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay, Converter={StaticResource OxyAutoColorConverter}}"/>
+
+                <!--StrokeThickness (LineSeries And BoxPlotSeries BarSeries)-->
+                <cntrls:LineWidthSelectorControl
+                        Margin="0 2"
+                        DockPanel.Dock="Top"
+                        Title="Line Thickness"
+                        WidthOptions="{StaticResource LineWidthOptions}" SelectedWidth="{Binding Series.StrokeThickness, ElementName=BoxPlotSeriesProperties, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                        PropertyWidth="{Binding ElementName=DummyPropertyControl, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}"/>
+
+                <!--BoxWidth (BoxPlotSeries Only)-->
+                <cntrls:NumericAutoPropertyControl
+                    Margin="0 2"
+                    DockPanel.Dock="Top"
+                    Title="Box Width"
+                    CanHaveNegative="False"
+                    DefaultNumber=".3"
+                    Number="{Binding ElementName=BoxPlotSeriesProperties, Path=Series.BoxWidth, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                    PropertyWidth="{Binding ElementName=DummyPropertyControl, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}"/>
+
+                <!--ShowMedianAsDot (BoxPlotSeries Only)-->
+                <cntrls:BooleanPropertyControl
+                        Margin="0 2"
+                        DockPanel.Dock="Top"
+                        Title="Median As Dot"
+                        IsSelected="{Binding ElementName=BoxPlotSeriesProperties, Path=Series.ShowMedianAsDot, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"/>
+
+                <!--MedianPointSize (BoxPlotSeries Only)-->
+                <cntrls:NumericPropertySelectorControl
+                        Margin="0 2"
+                        DockPanel.Dock="Top"
+                        Title="Median Point Size"
+                        CanHaveNegative="False"
+                        NumericOptions="{StaticResource LineWidthOptions}" SelectedNumber="{Binding ElementName=BoxPlotSeriesProperties, Path=Series.MedianPointSize, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                        PropertyWidth="{Binding ElementName=DummyPropertyControl, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}"/>
+
+                <!--MedianThickness (BoxPlotSeries Only)-->
+                <cntrls:LineWidthSelectorControl
+                        Margin="0 2"
+                        DockPanel.Dock="Top"
+                        Title="Median Thickness"
+                        WidthOptions="{StaticResource LineWidthOptions}"
+                        SelectedWidth="{Binding Series.MedianThickness, ElementName=BoxPlotSeriesProperties, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                        PropertyWidth="{Binding ElementName=DummyPropertyControl, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}"/>
+
+                <!--OutlierSize (BoxPlotSeries Only)-->
+                <cntrls:NumericPropertySelectorControl
+                        Margin="0 2"
+                        DockPanel.Dock="Top"
+                        Title="Outlier Size"
+                        CanHaveNegative="False"
+                        NumericOptions="{StaticResource LineWidthOptions}"
+                        SelectedNumber="{Binding ElementName=BoxPlotSeriesProperties, Path=Series.OutlierSize, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                        PropertyWidth="{Binding ElementName=DummyPropertyControl, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}"/>
+
+                <!--OutlierType (BoxPlotSeries Only)-->
+                <cntrls:ContentPropertyControl
+                            Title="Outlier Shape"
+                            Margin="0 2"
+                            DockPanel.Dock="Top"
+                            PropertyWidth="{Binding ElementName=DummyPropertyControl, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}">
+                    <cntrls:ContentPropertyControl.InnerContent>
+                        <ComboBox
+                            ItemsSource="{Binding MarkerTypeOptions}"
+                            SelectedValue="{Binding Path=Series.OutlierType, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"/>
+                    </cntrls:ContentPropertyControl.InnerContent>
+                </cntrls:ContentPropertyControl>
+
+                <!--ShowBox (BoxPlotSeries Only)-->
+                <cntrls:BooleanPropertyControl
+                        Margin="0 2"
+                        DockPanel.Dock="Top"
+                        Title="Show Box"
+                        IsSelected="{Binding ElementName=BoxPlotSeriesProperties, Path=Series.ShowBox, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"/>
+
+                <!--WhiskerWidth (BoxPlotSeries Only)-->
+                <cntrls:NumericPropertySelectorControl
+                        Margin="0 2"
+                        DockPanel.Dock="Top"
+                        Title="Whisker Length"
+                        CanHaveNegative="False"
+                        NumericOptions="{StaticResource LineWidthOptions}" SelectedNumber="{Binding Series.WhiskerWidth, ElementName=BoxPlotSeriesProperties, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                        PropertyWidth="{Binding ElementName=DummyPropertyControl, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}"/>
+
+            </DockPanel>
+        </Expander>
+
+    </Grid>
+</UserControl>

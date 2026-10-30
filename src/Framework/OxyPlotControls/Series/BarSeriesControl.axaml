@@ -1,0 +1,146 @@
+<!--
+    XGoodFit port of upstream's Series/BarSeriesControl.xaml:
+    - The resource dictionary is merged with a ResourceInclude; the expanders' Style bindings are Theme
+      bindings (Avalonia's styles are ControlThemes).
+    - Visibility bindings are WpfCompat's; the hidden dummy property control, which only measures the
+      property column, is Opacity="0" without hit testing, as WPF's Visibility="Hidden".
+    - The two-way MultiBindings are WpfCompat's (Avalonia's is one-way).
+    - Avalonia's bindings have no NotifyOnSourceUpdated; upstream handles no SourceUpdated events.
+    - Converters of two-way bindings are wrapped in WpfCompat's TwoWayConverter, one per binding
+      (x:Shared="False"): Avalonia's bindings write back the value they show, so a converter that
+      shows a default (a NaN font size as 12, an automatic line style as solid) would change the plot.
+-->
+<UserControl x:Class="OxyPlotControls.BarSeriesControl" x:Name="BarSeriesProperties"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="using:OxyPlotControls"
+             xmlns:cntrls="using:GenericControls"
+             xmlns:wpf="using:WpfCompat"
+             xmlns:wpfd="using:WpfCompat.Data"
+             mc:Ignorable="d"
+             d:DesignHeight="450" d:DesignWidth="800"
+             DataContext="{Binding RelativeSource={RelativeSource Self}}"
+             >
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceInclude Source="avares://OxyPlotControls/Resources/ResourceDictionary.axaml"/>
+                <ResourceDictionary>
+                    <cntrls:FontFamilyToFontStringConverter x:Key="FontFamilyToFontConverter"/>
+                    <local:BarSeriesFillConverter x:Key="FillColorConverter"/>
+                    <wpfd:TwoWayConverter x:Key="OxyAutoColorConverter" x:Shared="False">
+                        <local:OxyAutomaticColorConverter/>
+                    </wpfd:TwoWayConverter>
+                    <cntrls:AlwaysVisibleConverter x:Key="AlwaysVisibleConverter" />
+                    <local:OxyDefaultFontSizeConverter x:Key="DefaultFontSizeConverter"/>
+                    <cntrls:DoubleToGridLengthConverter x:Key="ActualToLengthConverter" />
+                    <wpfd:TwoWayConverter x:Key="VisibilityToBoolConverter" x:Shared="False">
+                        <cntrls:VisibilityToBooleanConverter VisibleValue="True" CollapsedValue="False" HiddenValue="False"/>
+                    </wpfd:TwoWayConverter>
+                </ResourceDictionary>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="0"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <cntrls:ContentPropertyControl
+            Name="DummyPropertyControl"
+            Grid.Row="0"
+            Opacity="0" IsHitTestVisible="False"
+            Title="Line Thickness"
+            Padding="6 0 0 0"/>
+
+        <!--Display-->
+        <Expander
+            x:Name="DisplayEXP"
+            Grid.Row="1"
+            Margin="0,0,0,0"
+            Header="DISPLAY"
+            IsExpanded="True"
+            DockPanel.Dock="Top"
+            Theme="{Binding ElementName=BarSeriesProperties, Path=ExpanderStyle}">
+
+            <DockPanel>
+
+                <!--Title Text-->
+                <cntrls:TextPropertyControl
+                    Margin="0 2"
+                    DockPanel.Dock="Top"
+                    MaxPropertyWidth="400"
+                    Title="Title"
+                    Text="{Binding Series.Title, ElementName=BarSeriesProperties, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                    PropertyWidth="{Binding ElementName=DummyPropertyControl, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}"/>
+
+                <!--Visibility (DEVELOPER)-->
+                <cntrls:BooleanPropertyControl
+                    Margin="0 2"
+                    DockPanel.Dock="Top"
+                    Title="Is Visible"
+                    IsSelected="{Binding ElementName=BarSeriesProperties, Path=Series.Visibility, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay, Converter={StaticResource VisibilityToBoolConverter}}"/>
+
+                <!--Render In Legend (DEVELOPER)-->
+                <cntrls:BooleanPropertyControl
+                    Margin="0 2"
+                    DockPanel.Dock="Top"
+                    Title="Show In Legend"
+                    IsSelected="{Binding ElementName=BarSeriesProperties, Path=Series.RenderInLegend, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"/>
+
+                <!--FillColor (BarSeries Only)-->
+                <cntrls:ColorPropertyControl
+                        Margin="0 2"
+                        DockPanel.Dock="Top"
+                        Title="Fill">
+                    <cntrls:ColorPropertyControl.SelectedColor>
+                        <wpfd:MultiBinding
+                                Converter="{StaticResource FillColorConverter}"
+                                UpdateSourceTrigger="PropertyChanged" Mode="TwoWay">
+                            <Binding
+                                    Path="Series.FillColor"
+                                    ElementName="BarSeriesProperties"
+                                    UpdateSourceTrigger="PropertyChanged"
+                                    Mode="TwoWay"/>
+                            <Binding
+                                    Path="Series"
+                                    ElementName="BarSeriesProperties"
+                                    UpdateSourceTrigger="PropertyChanged"
+                                    Mode="OneWay"/>
+                        </wpfd:MultiBinding>
+                    </cntrls:ColorPropertyControl.SelectedColor>
+                </cntrls:ColorPropertyControl>
+
+                <!--StrokeColor (BarSeries Only)-->
+                <cntrls:ColorPropertyControl
+                        Margin="0 2"
+                        DockPanel.Dock="Top"
+                        Title="Line Color"
+                        SelectedColor="{Binding ElementName=BarSeriesProperties, Path=Series.StrokeColor, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay, Converter={StaticResource OxyAutoColorConverter}}"/>
+
+                <!--StrokeThickness (LineSeries And BoxPlotSeries BarSeries)-->
+                <cntrls:LineWidthSelectorControl
+                        Margin="0 2"
+                        DockPanel.Dock="Top"
+                        Title="Line Thickness"
+                        WidthOptions="{StaticResource LineWidthOptions}" SelectedWidth="{Binding Series.StrokeThickness, ElementName=BarSeriesProperties, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                        PropertyWidth="{Binding ElementName=DummyPropertyControl, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}"/>
+
+                <!--GapWidth (CategoryAxis property controlling gap between bars/columns)-->
+                <cntrls:NumericPropertySelectorControl
+                        Margin="0 2"
+                        DockPanel.Dock="Top"
+                        Title="Gap Width"
+                        CanHaveNegative="False"
+                        NumericOptions="{StaticResource LineWidthOptions}"
+                        SelectedNumber="{Binding ElementName=BarSeriesProperties, Path=CategoryAxis.GapWidth, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                        PropertyWidth="{Binding ElementName=DummyPropertyControl, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}"
+                        wpf:WpfElement.Visibility="{Binding ElementName=BarSeriesProperties, Path=CategoryAxis.GapWidth, Converter={StaticResource AlwaysVisibleConverter}, FallbackValue=Collapsed}"/>
+            </DockPanel>
+        </Expander>
+
+    </Grid>
+</UserControl>

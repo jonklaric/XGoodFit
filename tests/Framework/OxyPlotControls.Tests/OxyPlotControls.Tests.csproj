@@ -18,4 +18,11 @@
     <ProjectReference Include="../../../src/Framework/OxyPlotControls/OxyPlotControls.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- OxyPlot.Wpf.Tests' plots and the settings the WPF fork wrote for them (its Fixtures/README.md),
+         which OxyPlotSettingsSerializer must write and read alike. -->
+    <Compile Include="../OxyPlot.Wpf.Tests/TestPlots.cs" Link="Fixtures/TestPlots.cs" />
+    <None Include="../OxyPlot.Wpf.Tests/Fixtures/*.wpf.xml" Link="Fixtures/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>
