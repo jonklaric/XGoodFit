@@ -863,6 +863,10 @@ namespace RMC_BestFit
                     stringFormat: "G",
                     updateSourceTrigger: Avalonia.Data.UpdateSourceTrigger.LostFocus,
                     converterCulture: FormattingCulture.Current),
+                // XGoodFit port: editable, as WPF's column is unless the grid is read-only. Unset, ProDataGrid asks
+                // the row type whether the binding's property ("Item") is writable, which DataRowView's three
+                // indexers make ambiguous (an exception).
+                IsReadOnly = false,
                 Width = new DataGridLength(1, DataGridLengthUnitType.Star),
                 MinWidth = 50,
             };

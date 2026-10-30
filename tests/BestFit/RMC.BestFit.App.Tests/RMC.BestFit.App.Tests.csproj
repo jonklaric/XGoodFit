@@ -134,6 +134,7 @@
 
   <!-- Upstream test files: Univariate Distribution Analysis: Composite. -->
   <ItemGroup>
+    <!-- None compile unchanged: GUI/PointEstimatorControlContractTests.cs (a ported copy, above) runs its Composite row. -->
   </ItemGroup>
 
   <!-- Upstream test files: Bivariate Distribution Analysis: Bivariate. -->
@@ -143,6 +144,7 @@
 
   <!-- Upstream test files: Bivariate Distribution Analysis: Coincident Frequency. -->
   <ItemGroup>
+    <!-- GUI/CoincidentFrequencyPointEstimatorControlTests.cs is a ported copy (Avalonia's controls). -->
   </ItemGroup>
 
   <!-- Upstream test files: Rating Curve Analysis. -->
