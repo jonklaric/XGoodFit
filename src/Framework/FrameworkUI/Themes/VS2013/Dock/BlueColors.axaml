@@ -1,0 +1,163 @@
+<!--
+    XGoodFit addition: the Blue colours of the VS2013 dock theme (Generic.axaml). They are the colours
+    of AvalonDock's VS2013 Blue theme, the reference for the dock's look
+    (upstream/WPF-Framework/src/AvalonDock/Xceed.Wpf.AvalonDock.Themes.VS2013/BlueBrushs.xaml), under
+    its names with a Vs2013Dock. prefix: the theme is merged into a docking manager's resources, so its
+    keys must not hide the application's own resources from the panes' content. The last section gives
+    Dock's own resource keys, which Dock's controls under the adapter use, the matching colours.
+-->
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- General -->
+    <SolidColorBrush x:Key="Vs2013Dock.Background" Color="#293955" />
+    <SolidColorBrush x:Key="Vs2013Dock.PanelBorderBrush" Color="#8E9BBC" />
+    <SolidColorBrush x:Key="Vs2013Dock.TabBackground" Color="#FFFFFF" />
+
+    <!-- Tool window caption -->
+    <SolidColorBrush x:Key="Vs2013Dock.ToolWindowCaptionActiveBackground" Color="#FFF29D" />
+    <SolidColorBrush x:Key="Vs2013Dock.ToolWindowCaptionActiveGrip" Color="#FFF29D" />
+    <SolidColorBrush x:Key="Vs2013Dock.ToolWindowCaptionActiveText" Color="#000000" />
+    <SolidColorBrush x:Key="Vs2013Dock.ToolWindowCaptionInactiveBackground" Color="#4D6082" />
+    <SolidColorBrush x:Key="Vs2013Dock.ToolWindowCaptionInactiveGrip" Color="#4D6082" />
+    <SolidColorBrush x:Key="Vs2013Dock.ToolWindowCaptionInactiveText" Color="#FFFFFF" />
+
+    <!-- Tool window caption buttons -->
+    <SolidColorBrush x:Key="Vs2013Dock.ToolWindowCaptionButtonActiveGlyph" Color="#75633D" />
+    <SolidColorBrush x:Key="Vs2013Dock.ToolWindowCaptionButtonActiveHoveredBackground" Color="#FFFCF4" />
+    <SolidColorBrush x:Key="Vs2013Dock.ToolWindowCaptionButtonActiveHoveredBorder" Color="#E5C365" />
+    <SolidColorBrush x:Key="Vs2013Dock.ToolWindowCaptionButtonActiveHoveredGlyph" Color="#000000" />
+    <SolidColorBrush x:Key="Vs2013Dock.ToolWindowCaptionButtonActivePressedBackground" Color="#FFE8A6" />
+    <SolidColorBrush x:Key="Vs2013Dock.ToolWindowCaptionButtonActivePressedBorder" Color="#E5C365" />
+    <SolidColorBrush x:Key="Vs2013Dock.ToolWindowCaptionButtonActivePressedGlyph" Color="#000000" />
+    <SolidColorBrush x:Key="Vs2013Dock.ToolWindowCaptionButtonInactiveGlyph" Color="#CED4DD" />
+    <SolidColorBrush x:Key="Vs2013Dock.ToolWindowCaptionButtonInactiveHoveredBackground" Color="#FFFCF4" />
+    <SolidColorBrush x:Key="Vs2013Dock.ToolWindowCaptionButtonInactiveHoveredBorder" Color="#E5C365" />
+    <SolidColorBrush x:Key="Vs2013Dock.ToolWindowCaptionButtonInactiveHoveredGlyph" Color="#000000" />
+    <SolidColorBrush x:Key="Vs2013Dock.ToolWindowCaptionButtonInactivePressedBackground" Color="#FFE8A6" />
+    <SolidColorBrush x:Key="Vs2013Dock.ToolWindowCaptionButtonInactivePressedBorder" Color="#E5C365" />
+    <SolidColorBrush x:Key="Vs2013Dock.ToolWindowCaptionButtonInactivePressedGlyph" Color="#000000" />
+
+    <!-- Tool window tabs -->
+    <SolidColorBrush x:Key="Vs2013Dock.ToolWindowTabSelectedActiveBackground" Color="#FFFFFF" />
+    <SolidColorBrush x:Key="Vs2013Dock.ToolWindowTabSelectedActiveText" Color="#000000" />
+    <SolidColorBrush x:Key="Vs2013Dock.ToolWindowTabSelectedInactiveBackground" Color="#FFFFFF" />
+    <SolidColorBrush x:Key="Vs2013Dock.ToolWindowTabSelectedInactiveText" Color="#000000" />
+    <SolidColorBrush x:Key="Vs2013Dock.ToolWindowTabUnselectedBackground" Color="#4D6082" />
+    <SolidColorBrush x:Key="Vs2013Dock.ToolWindowTabUnselectedText" Color="#FFFFFF" />
+    <SolidColorBrush x:Key="Vs2013Dock.ToolWindowTabUnselectedHoveredBackground" Color="#4B5C74" />
+    <SolidColorBrush x:Key="Vs2013Dock.ToolWindowTabUnselectedHoveredText" Color="#FFFFFF" />
+
+    <!-- Document tabs -->
+    <SolidColorBrush x:Key="Vs2013Dock.DocumentWellTabSelectedActiveBackground" Color="#FFF29D" />
+    <SolidColorBrush x:Key="Vs2013Dock.DocumentWellTabSelectedActiveText" Color="#000000" />
+    <SolidColorBrush x:Key="Vs2013Dock.DocumentWellTabSelectedInactiveBackground" Color="#4D6082" />
+    <SolidColorBrush x:Key="Vs2013Dock.DocumentWellTabSelectedInactiveText" Color="#FFFFFF" />
+    <SolidColorBrush x:Key="Vs2013Dock.DocumentWellTabUnselectedBackground" Color="#364E6F" />
+    <SolidColorBrush x:Key="Vs2013Dock.DocumentWellTabUnselectedText" Color="#FFFFFF" />
+    <SolidColorBrush x:Key="Vs2013Dock.DocumentWellTabUnselectedHoveredBackground" Color="#5B7199" />
+    <SolidColorBrush x:Key="Vs2013Dock.DocumentWellTabUnselectedHoveredText" Color="#FFFFFF" />
+
+    <!-- Document tab close buttons -->
+    <SolidColorBrush x:Key="Vs2013Dock.DocumentWellTabButtonSelectedActiveGlyph" Color="#75633D" />
+    <SolidColorBrush x:Key="Vs2013Dock.DocumentWellTabButtonSelectedActiveHoveredBackground" Color="#FFFCF4" />
+    <SolidColorBrush x:Key="Vs2013Dock.DocumentWellTabButtonSelectedActiveHoveredBorder" Color="#E5C365" />
+    <SolidColorBrush x:Key="Vs2013Dock.DocumentWellTabButtonSelectedActiveHoveredGlyph" Color="#000000" />
+    <SolidColorBrush x:Key="Vs2013Dock.DocumentWellTabButtonSelectedActivePressedBackground" Color="#FDF4BF" />
+    <SolidColorBrush x:Key="Vs2013Dock.DocumentWellTabButtonSelectedActivePressedBorder" Color="#E5C365" />
+    <SolidColorBrush x:Key="Vs2013Dock.DocumentWellTabButtonSelectedActivePressedGlyph" Color="#000000" />
+    <SolidColorBrush x:Key="Vs2013Dock.DocumentWellTabButtonSelectedInactiveGlyph" Color="#CED4DD" />
+    <SolidColorBrush x:Key="Vs2013Dock.DocumentWellTabButtonSelectedInactiveHoveredBackground" Color="#FFFCF4" />
+    <SolidColorBrush x:Key="Vs2013Dock.DocumentWellTabButtonSelectedInactiveHoveredBorder" Color="#E5C365" />
+    <SolidColorBrush x:Key="Vs2013Dock.DocumentWellTabButtonSelectedInactiveHoveredGlyph" Color="#000000" />
+    <SolidColorBrush x:Key="Vs2013Dock.DocumentWellTabButtonSelectedInactivePressedBackground" Color="#FDF4BF" />
+    <SolidColorBrush x:Key="Vs2013Dock.DocumentWellTabButtonSelectedInactivePressedBorder" Color="#E5C365" />
+    <SolidColorBrush x:Key="Vs2013Dock.DocumentWellTabButtonSelectedInactivePressedGlyph" Color="#000000" />
+    <SolidColorBrush x:Key="Vs2013Dock.DocumentWellTabButtonUnselectedTabHoveredGlyph" Color="#CED4DD" />
+    <SolidColorBrush x:Key="Vs2013Dock.DocumentWellTabButtonUnselectedTabHoveredButtonHoveredBackground" Color="#FFFCF4" />
+    <SolidColorBrush x:Key="Vs2013Dock.DocumentWellTabButtonUnselectedTabHoveredButtonHoveredBorder" Color="#E5C365" />
+    <SolidColorBrush x:Key="Vs2013Dock.DocumentWellTabButtonUnselectedTabHoveredButtonHoveredGlyph" Color="#000000" />
+    <SolidColorBrush x:Key="Vs2013Dock.DocumentWellTabButtonUnselectedTabHoveredButtonPressedBackground" Color="#FDF4BF" />
+    <SolidColorBrush x:Key="Vs2013Dock.DocumentWellTabButtonUnselectedTabHoveredButtonPressedBorder" Color="#E5C365" />
+    <SolidColorBrush x:Key="Vs2013Dock.DocumentWellTabButtonUnselectedTabHoveredButtonPressedGlyph" Color="#000000" />
+
+    <!-- Document well overflow button -->
+    <SolidColorBrush x:Key="Vs2013Dock.DocumentWellOverflowButtonDefaultGlyph" Color="#CED4DD" />
+    <SolidColorBrush x:Key="Vs2013Dock.DocumentWellOverflowButtonHoveredBackground" Color="#FFFCF4" />
+    <SolidColorBrush x:Key="Vs2013Dock.DocumentWellOverflowButtonHoveredBorder" Color="#E5C365" />
+    <SolidColorBrush x:Key="Vs2013Dock.DocumentWellOverflowButtonHoveredGlyph" Color="#000000" />
+    <SolidColorBrush x:Key="Vs2013Dock.DocumentWellOverflowButtonPressedBackground" Color="#FFE8A6" />
+    <SolidColorBrush x:Key="Vs2013Dock.DocumentWellOverflowButtonPressedBorder" Color="#E5C365" />
+    <SolidColorBrush x:Key="Vs2013Dock.DocumentWellOverflowButtonPressedGlyph" Color="#000000" />
+
+    <!-- Auto-hide tabs -->
+    <SolidColorBrush x:Key="Vs2013Dock.AutoHideTabDefaultBackground" Color="#293955" />
+    <SolidColorBrush x:Key="Vs2013Dock.AutoHideTabDefaultBorder" Color="#465A7D" />
+    <SolidColorBrush x:Key="Vs2013Dock.AutoHideTabDefaultText" Color="#FFFFFF" />
+    <SolidColorBrush x:Key="Vs2013Dock.AutoHideTabHoveredBackground" Color="#293955" />
+    <SolidColorBrush x:Key="Vs2013Dock.AutoHideTabHoveredBorder" Color="#9BA7B7" />
+    <SolidColorBrush x:Key="Vs2013Dock.AutoHideTabHoveredText" Color="#FFFFFF" />
+
+    <!-- Floating windows -->
+    <SolidColorBrush x:Key="Vs2013Dock.FloatingDocumentWindowBackground" Color="#293955" />
+    <SolidColorBrush x:Key="Vs2013Dock.FloatingDocumentWindowBorder" Color="#465A7D" />
+    <SolidColorBrush x:Key="Vs2013Dock.FloatingToolWindowBackground" Color="#293955" />
+    <SolidColorBrush x:Key="Vs2013Dock.FloatingToolWindowBorder" Color="#465A7D" />
+
+    <!-- Navigator window -->
+    <SolidColorBrush x:Key="Vs2013Dock.NavigatorWindowBackground" Color="#293955" />
+    <SolidColorBrush x:Key="Vs2013Dock.NavigatorWindowForeground" Color="#808080" />
+    <SolidColorBrush x:Key="Vs2013Dock.NavigatorWindowSelectedBackground" Color="#FFF29D" />
+    <SolidColorBrush x:Key="Vs2013Dock.NavigatorWindowSelectedText" Color="#000000" />
+
+    <!-- Docking targets -->
+    <SolidColorBrush x:Key="Vs2013Dock.Accent" Color="#1BA1E2" />
+    <SolidColorBrush x:Key="Vs2013Dock.DockingButtonBackground" Color="#20000000" />
+    <SolidColorBrush x:Key="Vs2013Dock.DockingButtonForeground" Color="#1BA1E2" />
+    <SolidColorBrush x:Key="Vs2013Dock.DockingButtonForegroundArrow" Color="#000000" />
+    <SolidColorBrush x:Key="Vs2013Dock.DockingButtonStarBorder" Color="#40808080" />
+    <SolidColorBrush x:Key="Vs2013Dock.DockingButtonStarBackground" Color="#20000000" />
+    <SolidColorBrush x:Key="Vs2013Dock.PreviewBoxBorder" Color="#1BA1E2" />
+    <SolidColorBrush x:Key="Vs2013Dock.PreviewBoxBackground" Color="#1BA1E2" Opacity="0.5" />
+
+    <!-- Dock's resource keys (Dock.Avalonia.Themes.Fluent's Accents/Fluent.axaml) -->
+    <StaticResource x:Key="DockThemeBackgroundBrush" ResourceKey="Vs2013Dock.Background" />
+    <StaticResource x:Key="DockThemeBorderLowBrush" ResourceKey="Vs2013Dock.PanelBorderBrush" />
+    <StaticResource x:Key="DockThemeAccentBrush" ResourceKey="Vs2013Dock.ToolWindowCaptionActiveBackground" />
+    <StaticResource x:Key="DockThemeForegroundBrush" ResourceKey="Vs2013Dock.DocumentWellTabUnselectedText" />
+    <StaticResource x:Key="DockThemeControlBackgroundBrush" ResourceKey="Vs2013Dock.TabBackground" />
+    <StaticResource x:Key="DockSurfaceWorkbenchBrush" ResourceKey="Vs2013Dock.Background" />
+    <StaticResource x:Key="DockSurfaceSidebarBrush" ResourceKey="Vs2013Dock.Background" />
+    <StaticResource x:Key="DockSurfaceEditorBrush" ResourceKey="Vs2013Dock.FloatingToolWindowBackground" />
+    <StaticResource x:Key="DockSurfacePanelBrush" ResourceKey="Vs2013Dock.TabBackground" />
+    <StaticResource x:Key="DockSurfaceHeaderBrush" ResourceKey="Vs2013Dock.ToolWindowCaptionInactiveBackground" />
+    <StaticResource x:Key="DockSurfaceHeaderActiveBrush" ResourceKey="Vs2013Dock.ToolWindowCaptionActiveBackground" />
+    <StaticResource x:Key="DockBorderSubtleBrush" ResourceKey="Vs2013Dock.PanelBorderBrush" />
+    <StaticResource x:Key="DockBorderStrongBrush" ResourceKey="Vs2013Dock.PanelBorderBrush" />
+    <StaticResource x:Key="DockSeparatorBrush" ResourceKey="Vs2013Dock.PanelBorderBrush" />
+    <SolidColorBrush x:Key="DockSplitterIdleBrush" Color="Transparent" />
+    <SolidColorBrush x:Key="DockSplitterHoverBrush" Color="Transparent" />
+    <SolidColorBrush x:Key="DockSplitterDragBrush" Color="Transparent" />
+    <StaticResource x:Key="DockTargetIndicatorBrush" ResourceKey="Vs2013Dock.Accent" />
+    <SolidColorBrush x:Key="DockTabBackgroundBrush" Color="Transparent" />
+    <StaticResource x:Key="DockTabHoverBackgroundBrush" ResourceKey="Vs2013Dock.DocumentWellTabUnselectedHoveredBackground" />
+    <StaticResource x:Key="DockTabActiveBackgroundBrush" ResourceKey="Vs2013Dock.DocumentWellTabSelectedActiveBackground" />
+    <StaticResource x:Key="DockTabActiveIndicatorBrush" ResourceKey="Vs2013Dock.DocumentWellTabSelectedActiveBackground" />
+    <StaticResource x:Key="DockTabForegroundBrush" ResourceKey="Vs2013Dock.DocumentWellTabUnselectedText" />
+    <StaticResource x:Key="DockTabSelectedForegroundBrush" ResourceKey="Vs2013Dock.ToolWindowTabSelectedActiveText" />
+    <StaticResource x:Key="DockTabActiveForegroundBrush" ResourceKey="Vs2013Dock.ToolWindowCaptionActiveText" />
+    <StaticResource x:Key="DockTabCloseHoverBackgroundBrush" ResourceKey="Vs2013Dock.DocumentWellTabButtonSelectedActiveHoveredBackground" />
+    <SolidColorBrush x:Key="DockDocumentTabStripBackgroundBrush" Color="Transparent" />
+    <StaticResource x:Key="DockDocumentTabSelectedForegroundBrush" ResourceKey="Vs2013Dock.DocumentWellTabSelectedInactiveText" />
+    <StaticResource x:Key="DockDocumentTabPointerOverForegroundBrush" ResourceKey="Vs2013Dock.DocumentWellTabUnselectedHoveredText" />
+    <StaticResource x:Key="DockDocumentTabCloseSelectedForegroundBrush" ResourceKey="Vs2013Dock.DocumentWellTabButtonSelectedActiveGlyph" />
+    <StaticResource x:Key="DockDocumentTabClosePointerOverForegroundBrush" ResourceKey="Vs2013Dock.DocumentWellTabButtonUnselectedTabHoveredGlyph" />
+    <StaticResource x:Key="DockDocumentContentBorderBrush" ResourceKey="Vs2013Dock.PanelBorderBrush" />
+    <StaticResource x:Key="DockToolChromeIconBrush" ResourceKey="Vs2013Dock.ToolWindowCaptionButtonInactiveGlyph" />
+    <StaticResource x:Key="DockChromeButtonForegroundBrush" ResourceKey="Vs2013Dock.ToolWindowCaptionButtonInactiveGlyph" />
+    <StaticResource x:Key="DockChromeButtonHoverBackgroundBrush" ResourceKey="Vs2013Dock.ToolWindowCaptionButtonInactiveHoveredBackground" />
+    <StaticResource x:Key="DockChromeButtonPressedBackgroundBrush" ResourceKey="Vs2013Dock.ToolWindowCaptionButtonInactivePressedBackground" />
+    <StaticResource x:Key="DockChromeButtonDangerHoverBrush" ResourceKey="Vs2013Dock.ToolWindowCaptionButtonInactiveHoveredBackground" />
+    <SolidColorBrush x:Key="DockChromeGripBrush" Color="Transparent" />
+
+</ResourceDictionary>

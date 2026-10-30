@@ -1,0 +1,10 @@
+<!--
+    XGoodFit addition: the Light VS2013 dock theme, Vs2013DockTheme's dictionary for ThemeColor.Light:
+    the theme's Light colours and its control themes.
+-->
+<ResourceDictionary xmlns="https://github.com/avaloniaui">
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceInclude Source="avares://FrameworkUI/Themes/VS2013/Dock/LightColors.axaml" />
+        <ResourceInclude Source="avares://FrameworkUI/Themes/VS2013/Dock/Generic.axaml" />
+    </ResourceDictionary.MergedDictionaries>
+</ResourceDictionary>
