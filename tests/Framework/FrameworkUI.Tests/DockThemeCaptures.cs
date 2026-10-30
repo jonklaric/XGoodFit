@@ -1,4 +1,5 @@
 using AvalonDock;
+using AvalonDock.Controls;
 using AvalonDock.Layout;
 using AvalonDock.Layout.Serialization;
 using Avalonia;
@@ -6,6 +7,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Headless;
+using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
@@ -134,6 +136,18 @@ public sealed class DockThemeCaptures
                 window.MouseMove(Centre(window, FindTab(window, "Hazard Functions")));
                 Save(window, Path.Combine(folder, $"dock-states-{name}.png"));
 
+                // The pointer on the selected tab's close button, then on the Project Explorer's pin.
+                window.MouseMove(Centre(window, CloseButton(FindTab(window, "Example Hazard"))));
+                Save(window, Path.Combine(folder, $"dock-hover-close-{name}.png"));
+                window.MouseMove(Centre(window, window.GetVisualDescendants().OfType<Button>().First(b => b.Name == "PART_PinButton")));
+                Save(window, Path.Combine(folder, $"dock-hover-pin-{name}.png"));
+
+                // The navigator (Ctrl+Tab).
+                var navigator = new NavigatorWindow(manager);
+                navigator.Show(window);
+                Save(navigator, Path.Combine(folder, $"dock-navigator-{name}.png"));
+                navigator.Close();
+
                 // An auto-hidden tool window shown from its tab.
                 window.MouseMove(new Point(5, 5));
                 LayoutAnchorable properties = manager.Layout.Descendents().OfType<LayoutAnchorable>().First(a => a.ContentId == ShellPublicVariables.PropertiesWindowContentID);
@@ -147,6 +161,20 @@ public sealed class DockThemeCaptures
                 {
                     Save(floating, Path.Combine(folder, $"dock-floating-{name}.png"));
                 }
+                window.Close();
+
+                // The docking targets, while the Properties window is dragged over the documents.
+                window = CreateShell(theme, CaptureLayout, out manager);
+                Grid grip = window.GetVisualDescendants().OfType<Grid>().Last(g => g.Name == "PART_Grip");
+                Point start = grip.TranslatePoint(new Point(150, 10), window)!.Value;
+                window.MouseMove(start);
+                window.MouseDown(start, MouseButton.Left);
+                for (int step = 1; step <= 20; step++)
+                {
+                    window.MouseMove(new Point(start.X - step * 40, start.Y + step * 12), RawInputModifiers.LeftMouseButton);
+                    Dispatcher.UIThread.RunJobs();
+                }
+                Save(window, Path.Combine(folder, $"dock-targets-{name}.png"));
                 window.Close();
             }
             ThemeManager.SetTheme(ThemeColor.Light);
@@ -208,6 +236,10 @@ public sealed class DockThemeCaptures
     private static Dock.Avalonia.Controls.DocumentTabStripItem FindTab(Window window, string title) =>
         window.GetVisualDescendants().OfType<Dock.Avalonia.Controls.DocumentTabStripItem>()
             .First(t => t.GetVisualDescendants().OfType<TextBlock>().Any(b => b.Text == title));
+
+    private static Button CloseButton(Dock.Avalonia.Controls.DocumentTabStripItem tab) =>
+        tab.GetVisualDescendants().OfType<Avalonia.Controls.Presenters.ContentPresenter>().First(p => p.Name == "PART_ClosePresenter")
+            .GetVisualDescendants().OfType<Button>().First();
 
     private static Point Centre(Visual root, Visual visual) =>
         visual.TranslatePoint(new Point(visual.Bounds.Width / 2, visual.Bounds.Height / 2), root) ?? default;

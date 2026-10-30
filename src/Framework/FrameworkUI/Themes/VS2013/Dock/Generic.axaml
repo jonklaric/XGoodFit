@@ -26,6 +26,7 @@
                     xmlns:dock="using:Dock.Avalonia.Controls"
                     xmlns:controls="using:AvalonDock.Controls"
                     xmlns:layout="using:AvalonDock.Layout"
+                    xmlns:settings="using:Dock.Settings"
                     xmlns:local="using:FrameworkUI">
 
     <ResourceDictionary.MergedDictionaries>
@@ -39,6 +40,8 @@
         <ResourceInclude Source="avares://Dock.Avalonia.Themes.Fluent/Controls/DocumentTabStrip.axaml" />
         <ResourceInclude Source="avares://Dock.Avalonia.Themes.Fluent/Controls/DocumentTabStripItem.axaml" />
         <ResourceInclude Source="avares://Dock.Avalonia.Themes.Fluent/Controls/RootDockControl.axaml" />
+        <ResourceInclude Source="avares://Dock.Avalonia.Themes.Fluent/Controls/DockTarget.axaml" />
+        <ResourceInclude Source="avares://Dock.Avalonia.Themes.Fluent/Controls/GlobalDockTarget.axaml" />
     </ResourceDictionary.MergedDictionaries>
 
     <!--
@@ -654,14 +657,416 @@
     </ControlTheme>
 
     <!--
+        The navigator (Ctrl+Tab): the reference theme's NavigatorWindow style and list item style
+        (AvalonDockThemeVs2013NavigatorWindowListBoxItemStyle): a 1-pixel bordered window in the
+        navigator's colours with the selected element's icon and title over the tool window and
+        document lists, whose selected item has the accent colour.
+        Notes:
+        - The template has the reference's layout with the adapter's parts and bindings (Dock's
+          Dock.Avalonia.AvalonDock/Themes/NavigatorWindow.axaml, MIT licence, Copyright (c) Wiesław
+          Šoltés). The adapter's theme can't be this one's base: it is based on the application's
+          Window theme, which this dictionary can't reach. So its setters are repeated here; the
+          navigator has no other use for the Window theme's.
+        - The navigator's text has the navigator's foreground colour throughout.
+    -->
+    <ControlTheme x:Key="Vs2013Dock.NavigatorItem" TargetType="ListBoxItem">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Foreground" Value="{DynamicResource Vs2013Dock.NavigatorWindowForeground}" />
+        <Setter Property="Padding" Value="5,0,5,0" />
+        <Setter Property="HorizontalContentAlignment" Value="Left" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}">
+                    <ContentPresenter x:Name="PART_ContentPresenter"
+                                      Margin="1"
+                                      Padding="{TemplateBinding Padding}"
+                                      Content="{TemplateBinding Content}"
+                                      ContentTemplate="{TemplateBinding ContentTemplate}"
+                                      HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                      VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
+                </Border>
+            </ControlTemplate>
+        </Setter>
+        <Style Selector="^:selected">
+            <Setter Property="Background" Value="{DynamicResource Vs2013Dock.NavigatorWindowSelectedBackground}" />
+            <Setter Property="Foreground" Value="{DynamicResource Vs2013Dock.NavigatorWindowSelectedText}" />
+        </Style>
+        <Style Selector="^:disabled">
+            <Setter Property="Opacity" Value="0.5" />
+        </Style>
+    </ControlTheme>
+
+    <ControlTheme x:Key="{x:Type controls:NavigatorWindow}" TargetType="controls:NavigatorWindow">
+        <Setter Property="CanResize" Value="False" />
+        <Setter Property="Focusable" Value="True" />
+        <Setter Property="WindowDecorations" Value="None" />
+        <Setter Property="SizeToContent" Value="WidthAndHeight" />
+        <Setter Property="Background" Value="{DynamicResource Vs2013Dock.NavigatorWindowBackground}" />
+        <Setter Property="Foreground" Value="{DynamicResource Vs2013Dock.NavigatorWindowForeground}" />
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border Background="{TemplateBinding Background}"
+                        BorderBrush="{DynamicResource Vs2013Dock.PanelBorderBrush}"
+                        BorderThickness="1">
+                    <Grid RowDefinitions="54,*,Auto">
+                        <Grid Margin="5" RowDefinitions="*,*">
+                            <Grid ColumnDefinitions="Auto,*">
+                                <Image Source="{Binding SelectedDocument.IconSource, RelativeSource={RelativeSource TemplatedParent}}"
+                                       Stretch="None" />
+                                <TextBlock Grid.Column="1" Margin="4,0,0,0" VerticalAlignment="Center" FontWeight="Bold"
+                                           TextTrimming="CharacterEllipsis"
+                                           Text="{Binding SelectedDocument.Title, RelativeSource={RelativeSource TemplatedParent}}" />
+                                <TextBlock Grid.Column="1" Margin="4,0,0,0" VerticalAlignment="Center" FontWeight="Bold"
+                                           TextTrimming="CharacterEllipsis"
+                                           Text="{Binding SelectedAnchorable.Title, RelativeSource={RelativeSource TemplatedParent}}"
+                                           IsVisible="{Binding SelectedDocument, RelativeSource={RelativeSource TemplatedParent}, Converter={x:Static ObjectConverters.IsNull}}" />
+                            </Grid>
+                            <TextBlock Grid.Row="1" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
+                                       Text="{Binding SelectedDocument.Description, RelativeSource={RelativeSource TemplatedParent}}" />
+                        </Grid>
+                        <Grid Grid.Row="1" Margin="5" MinHeight="190" ColumnDefinitions="Auto,*">
+                            <Grid Margin="5" RowDefinitions="Auto,*">
+                                <TextBlock Margin="0,3,0,4" FontWeight="Bold" Text="{TemplateBinding LayoutAnchorablesLabel}" />
+                                <ListBox x:Name="PART_AnchorableListBox" Grid.Row="1" MaxHeight="400"
+                                         Background="Transparent" BorderThickness="0" Padding="0" Focusable="True"
+                                         ItemContainerTheme="{StaticResource Vs2013Dock.NavigatorItem}"
+                                         ItemsSource="{TemplateBinding Anchorables}"
+                                         SelectedItem="{Binding SelectedAnchorable, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}">
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <Grid ColumnDefinitions="16,150">
+                                                <Image Source="{Binding IconSource}" Stretch="None" />
+                                                <TextBlock Grid.Column="1" Margin="4,0,0,0" Text="{Binding Title}" TextTrimming="CharacterEllipsis" />
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>
+                            </Grid>
+                            <Grid Grid.Column="1" Margin="5" RowDefinitions="Auto,*">
+                                <TextBlock Margin="0,3,0,4" FontWeight="Bold" Text="{TemplateBinding LayoutDocumentsLabel}" />
+                                <ListBox x:Name="PART_DocumentListBox" Grid.Row="1" MaxHeight="400"
+                                         Background="Transparent" BorderThickness="0" Padding="0" Focusable="True"
+                                         ItemContainerTheme="{StaticResource Vs2013Dock.NavigatorItem}"
+                                         ItemsSource="{TemplateBinding Documents}"
+                                         SelectedItem="{Binding SelectedDocument, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}">
+                                    <ListBox.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <WrapPanel Orientation="Vertical" />
+                                        </ItemsPanelTemplate>
+                                    </ListBox.ItemsPanel>
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <Grid ColumnDefinitions="16,150">
+                                                <Image Source="{Binding IconSource}" Stretch="None" />
+                                                <TextBlock Grid.Column="1" Margin="4,0,0,0" Text="{Binding Title}" TextTrimming="CharacterEllipsis" />
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>
+                            </Grid>
+                        </Grid>
+                        <TextBlock Grid.Row="2" Margin="5" VerticalAlignment="Center"
+                                   Text="{Binding SelectedDocument.(ToolTip.Tip), RelativeSource={RelativeSource TemplatedParent}}" />
+                    </Grid>
+                </Border>
+            </ControlTemplate>
+        </Setter>
+    </ControlTheme>
+
+    <!--
+        The docking targets shown while a tool window or document is dragged: the reference theme's
+        OverlayButtons.xaml and OverlayWindow style, drawn with the theme's colours. A pane's targets
+        (Dock's DockTarget) are a star of 48-pixel buttons: the middle one docks into the pane, the
+        inner ones split it (a window with a dashed line), the outer ones dock beside it as a tool
+        window (a window and an arrow). The dock's edge targets (GlobalDockTarget) dock a tool window
+        at an edge (a translucent button with a docked window and an arrow).
+        Notes:
+        - Each button is a control drawn in a box (60 or 100 pixels) and scaled to its size; turned
+          copies point the other ways.
+        - Dock shows a pane's targets with the theme its root dock gives (DockTarget.TargetTheme), which
+          the root dock's theme below sets to Vs2013Dock.DockTarget, in place of the adapter's.
+        - Dock uses the same targets for tool and document panes, so a tool pane's inner buttons are
+          the document's (the reference theme's tool pane star has docked-window buttons instead).
+        - Dock's drop preview is the accent colour at half opacity, without the reference's 2-pixel
+          accent border.
+    -->
+    <x:Double x:Key="DockTargetSelectorSize">48</x:Double>
+
+    <!-- A document in a window outline (the reference's DockDocumentInside). -->
+    <ControlTheme x:Key="Vs2013Dock.DockDocumentInside" TargetType="ContentControl">
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Viewbox Stretch="Uniform">
+                    <Grid Width="60" Height="60" Background="Transparent">
+                        <Border Width="50" Height="50" Margin="5" VerticalAlignment="Top"
+                                BorderBrush="{DynamicResource Vs2013Dock.DockingButtonForeground}"
+                                BorderThickness="2.5,10,2.5,2.5" CornerRadius="0,0,5,5" />
+                    </Grid>
+                </Viewbox>
+            </ControlTemplate>
+        </Setter>
+    </ControlTheme>
+
+    <!-- The window split by a dashed line: above and below (DockDocumentTop and DockDocumentBottom). -->
+    <ControlTheme x:Key="Vs2013Dock.DockDocumentSplitHorizontal" TargetType="ContentControl">
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Viewbox Stretch="Uniform">
+                    <Grid Width="60" Height="60" Background="Transparent">
+                        <Border Width="50" Height="50" Margin="5" VerticalAlignment="Top"
+                                BorderBrush="{DynamicResource Vs2013Dock.DockingButtonForeground}"
+                                BorderThickness="2.5,10,2.5,2.5" CornerRadius="0,0,5,5" />
+                        <Line StartPoint="5,33.75" EndPoint="55,33.75" StrokeThickness="3" StrokeDashArray="1,2"
+                              Stroke="{DynamicResource Vs2013Dock.DockingButtonForeground}" />
+                    </Grid>
+                </Viewbox>
+            </ControlTemplate>
+        </Setter>
+    </ControlTheme>
+
+    <!-- The window split by a dashed line: left and right (DockDocumentLeft and DockDocumentRight). -->
+    <ControlTheme x:Key="Vs2013Dock.DockDocumentSplitVertical" TargetType="ContentControl">
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Viewbox Stretch="Uniform">
+                    <Grid Width="60" Height="60" Background="Transparent">
+                        <Border Width="50" Height="50" Margin="5" VerticalAlignment="Top"
+                                BorderBrush="{DynamicResource Vs2013Dock.DockingButtonForeground}"
+                                BorderThickness="2.5,10,2.5,2.5" CornerRadius="0,0,5,5" />
+                        <Line StartPoint="30,5" EndPoint="30,55" StrokeThickness="3" StrokeDashArray="1,2"
+                              Stroke="{DynamicResource Vs2013Dock.DockingButtonForeground}" />
+                    </Grid>
+                </Viewbox>
+            </ControlTemplate>
+        </Setter>
+    </ControlTheme>
+
+    <!-- A tool window docked above a document, and an arrow up (DockDocumentAsAnchorableTop); turned for the other sides. -->
+    <ControlTheme x:Key="Vs2013Dock.DockDocumentAsAnchorable" TargetType="ContentControl">
+        <Setter Property="RenderTransformOrigin" Value="50%,50%" />
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Viewbox Stretch="Uniform">
+                    <Grid Width="100" Height="100" Background="Transparent">
+                        <Border Width="90" Height="50" Margin="5" VerticalAlignment="Top"
+                                BorderBrush="{DynamicResource Vs2013Dock.DockingButtonForeground}"
+                                BorderThickness="5,20,5,5" CornerRadius="0,0,5,5" />
+                        <Path Width="25" Height="25" Margin="0,62.5,0,0" HorizontalAlignment="Center" VerticalAlignment="Top"
+                              Stretch="Fill" Data="M1,15L8,1 15,15z"
+                              Fill="{DynamicResource Vs2013Dock.DockingButtonForegroundArrow}" />
+                    </Grid>
+                </Viewbox>
+            </ControlTemplate>
+        </Setter>
+    </ControlTheme>
+
+    <!-- A tool window docked at the left edge, and an arrow left (DockAnchorableLeft); turned for the other edges. -->
+    <ControlTheme x:Key="Vs2013Dock.DockAnchorable" TargetType="ContentControl">
+        <Setter Property="RenderTransformOrigin" Value="50%,50%" />
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Viewbox Stretch="Uniform">
+                    <Grid Width="100" Height="100" Background="{DynamicResource Vs2013Dock.DockingButtonBackground}">
+                        <Border Width="50" Height="90" Margin="5" HorizontalAlignment="Left"
+                                BorderBrush="{DynamicResource Vs2013Dock.DockingButtonForeground}"
+                                BorderThickness="20,5,5,5" CornerRadius="0,5,5,0" />
+                        <Path Width="25" Height="25" Margin="62.5,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Center"
+                              Stretch="Fill" Data="M15,1L1,8 15,15z"
+                              Fill="{DynamicResource Vs2013Dock.DockingButtonForegroundArrow}" />
+                    </Grid>
+                </Viewbox>
+            </ControlTemplate>
+        </Setter>
+    </ControlTheme>
+
+    <!--
+        A pane's targets: the adapter's local target template (Dock.Avalonia.AvalonDock's
+        Themes/LayoutDockTargetsResources.axaml, AvalonDockLocalTargetTheme, MIT licence, Copyright (c)
+        Wiesław Šoltés), with the reference's star of buttons in place of Dock's images.
+    -->
+    <ControlTheme x:Key="Vs2013Dock.DockTarget" TargetType="dock:DockTarget"
+                  BasedOn="{StaticResource {x:Type dock:DockTarget}}">
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Grid>
+                    <Grid Margin="{TemplateBinding TargetMargin}" RowDefinitions="*,*" ColumnDefinitions="*,*">
+                        <Panel x:Name="PART_TopIndicator" IsVisible="{TemplateBinding ShowVerticalTargets}" Grid.Row="0" Grid.Column="0" Grid.RowSpan="1" Grid.ColumnSpan="2" settings:DockProperties.IndicatorDockOperation="Top" />
+                        <Panel x:Name="PART_BottomIndicator" IsVisible="{TemplateBinding ShowVerticalTargets}" Grid.Row="1" Grid.Column="0" Grid.RowSpan="1" Grid.ColumnSpan="2" settings:DockProperties.IndicatorDockOperation="Bottom" />
+                        <Panel x:Name="PART_LeftIndicator" IsVisible="{TemplateBinding ShowHorizontalTargets}" Grid.Row="0" Grid.Column="0" Grid.RowSpan="2" Grid.ColumnSpan="1" settings:DockProperties.IndicatorDockOperation="Left" />
+                        <Panel x:Name="PART_RightIndicator" IsVisible="{TemplateBinding ShowHorizontalTargets}" Grid.Row="0" Grid.Column="1" Grid.RowSpan="2" Grid.ColumnSpan="1" settings:DockProperties.IndicatorDockOperation="Right" />
+                        <Panel x:Name="PART_CenterIndicator" Grid.Row="0" Grid.Column="0" Grid.RowSpan="2" Grid.ColumnSpan="2" settings:DockProperties.IndicatorDockOperation="Fill" />
+                    </Grid>
+                    <Grid RowDefinitions="*,*,*" ColumnDefinitions="*,*,*">
+                        <Panel x:Name="PART_OuterLeftIndicator" IsVisible="{TemplateBinding ShowHorizontalTargets}" Grid.Row="0" Grid.RowSpan="3" Grid.Column="0"
+                               Background="{DynamicResource DockTargetIndicatorBrush}" Opacity="0"
+                               settings:DockProperties.IndicatorDockOperation="OuterLeft" />
+                        <Panel x:Name="PART_OuterTopIndicator" IsVisible="{TemplateBinding ShowVerticalTargets}" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3"
+                               Background="{DynamicResource DockTargetIndicatorBrush}" Opacity="0"
+                               settings:DockProperties.IndicatorDockOperation="OuterTop" />
+                        <Panel x:Name="PART_OuterRightIndicator" IsVisible="{TemplateBinding ShowHorizontalTargets}" Grid.Row="0" Grid.RowSpan="3" Grid.Column="2"
+                               Background="{DynamicResource DockTargetIndicatorBrush}" Opacity="0"
+                               settings:DockProperties.IndicatorDockOperation="OuterRight" />
+                        <Panel x:Name="PART_OuterBottomIndicator" IsVisible="{TemplateBinding ShowVerticalTargets}" Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3"
+                               Background="{DynamicResource DockTargetIndicatorBrush}" Opacity="0"
+                               settings:DockProperties.IndicatorDockOperation="OuterBottom" />
+                    </Grid>
+                    <Panel x:Name="PART_SelectorPanel" Margin="{TemplateBinding TargetMargin}">
+                        <Grid Width="240" Height="240" HorizontalAlignment="Center" VerticalAlignment="Center"
+                              RowDefinitions="*,*,*,*,*" ColumnDefinitions="*,*,*,*,*">
+                            <!-- The star behind the buttons -->
+                            <Border Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" BorderThickness="2,2,0,2"
+                                    Background="{DynamicResource Vs2013Dock.DockingButtonStarBackground}"
+                                    BorderBrush="{DynamicResource Vs2013Dock.DockingButtonStarBorder}"
+                                    IsVisible="{TemplateBinding ShowHorizontalTargets}" />
+                            <Border Grid.Row="2" Grid.Column="3" Grid.ColumnSpan="2" BorderThickness="0,2,2,2"
+                                    Background="{DynamicResource Vs2013Dock.DockingButtonStarBackground}"
+                                    BorderBrush="{DynamicResource Vs2013Dock.DockingButtonStarBorder}"
+                                    IsVisible="{TemplateBinding ShowHorizontalTargets}" />
+                            <Border Grid.Row="0" Grid.RowSpan="2" Grid.Column="2" BorderThickness="2,2,2,0"
+                                    Background="{DynamicResource Vs2013Dock.DockingButtonStarBackground}"
+                                    BorderBrush="{DynamicResource Vs2013Dock.DockingButtonStarBorder}"
+                                    IsVisible="{TemplateBinding ShowVerticalTargets}" />
+                            <Border Grid.Row="3" Grid.RowSpan="2" Grid.Column="2" BorderThickness="2,0,2,2"
+                                    Background="{DynamicResource Vs2013Dock.DockingButtonStarBackground}"
+                                    BorderBrush="{DynamicResource Vs2013Dock.DockingButtonStarBorder}"
+                                    IsVisible="{TemplateBinding ShowVerticalTargets}" />
+                            <Border Grid.Row="2" Grid.Column="2"
+                                    Background="{DynamicResource Vs2013Dock.DockingButtonStarBackground}" />
+
+                            <ContentControl x:Name="PART_LeftSelector" IsVisible="{TemplateBinding ShowHorizontalTargets}" Grid.Row="2" Grid.Column="1" Opacity="0"
+                                            Theme="{StaticResource Vs2013Dock.DockDocumentSplitVertical}"
+                                            settings:DockProperties.IndicatorDockOperation="Left" />
+                            <ContentControl x:Name="PART_TopSelector" IsVisible="{TemplateBinding ShowVerticalTargets}" Grid.Row="1" Grid.Column="2" Opacity="0"
+                                            Theme="{StaticResource Vs2013Dock.DockDocumentSplitHorizontal}"
+                                            settings:DockProperties.IndicatorDockOperation="Top" />
+                            <ContentControl x:Name="PART_RightSelector" IsVisible="{TemplateBinding ShowHorizontalTargets}" Grid.Row="2" Grid.Column="3" Opacity="0"
+                                            Theme="{StaticResource Vs2013Dock.DockDocumentSplitVertical}"
+                                            settings:DockProperties.IndicatorDockOperation="Right" />
+                            <ContentControl x:Name="PART_BottomSelector" IsVisible="{TemplateBinding ShowVerticalTargets}" Grid.Row="3" Grid.Column="2" Opacity="0"
+                                            Theme="{StaticResource Vs2013Dock.DockDocumentSplitHorizontal}"
+                                            settings:DockProperties.IndicatorDockOperation="Bottom" />
+                            <ContentControl x:Name="PART_CenterSelector" Grid.Row="2" Grid.Column="2" Opacity="0"
+                                            Theme="{StaticResource Vs2013Dock.DockDocumentInside}"
+                                            settings:DockProperties.IndicatorDockOperation="Fill" />
+                            <ContentControl x:Name="PART_OuterLeftSelector" IsVisible="{TemplateBinding ShowHorizontalTargets}" Grid.Row="2" Grid.Column="0" Opacity="0"
+                                            Theme="{StaticResource Vs2013Dock.DockDocumentAsAnchorable}" RenderTransform="rotate(270deg)"
+                                            settings:DockProperties.IndicatorDockOperation="OuterLeft" />
+                            <ContentControl x:Name="PART_OuterTopSelector" IsVisible="{TemplateBinding ShowVerticalTargets}" Grid.Row="0" Grid.Column="2" Opacity="0"
+                                            Theme="{StaticResource Vs2013Dock.DockDocumentAsAnchorable}"
+                                            settings:DockProperties.IndicatorDockOperation="OuterTop" />
+                            <ContentControl x:Name="PART_OuterRightSelector" IsVisible="{TemplateBinding ShowHorizontalTargets}" Grid.Row="2" Grid.Column="4" Opacity="0"
+                                            Theme="{StaticResource Vs2013Dock.DockDocumentAsAnchorable}" RenderTransform="rotate(90deg)"
+                                            settings:DockProperties.IndicatorDockOperation="OuterRight" />
+                            <ContentControl x:Name="PART_OuterBottomSelector" IsVisible="{TemplateBinding ShowVerticalTargets}" Grid.Row="4" Grid.Column="2" Opacity="0"
+                                            Theme="{StaticResource Vs2013Dock.DockDocumentAsAnchorable}" RenderTransform="rotate(180deg)"
+                                            settings:DockProperties.IndicatorDockOperation="OuterBottom" />
+                        </Grid>
+                    </Panel>
+                </Grid>
+            </ControlTemplate>
+        </Setter>
+    </ControlTheme>
+
+    <!--
+        The dock's edge targets: Dock's GlobalDockTarget template (Dock.Avalonia.Themes.Fluent's
+        Controls/GlobalDockTarget.axaml, v12.1.0.13, MIT licence, Copyright (c) Wiesław Šoltés), with the
+        reference's edge buttons in place of Dock's images, and Dock's styles for them.
+    -->
+    <ControlTheme x:Key="{x:Type dock:GlobalDockTarget}" TargetType="dock:GlobalDockTarget"
+                  BasedOn="{StaticResource {x:Type dock:GlobalDockTarget}}">
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Panel>
+                    <Panel>
+                        <ProportionalStackPanel Orientation="Horizontal">
+                            <Panel x:Name="PART_LeftIndicator"
+                                   ProportionalStackPanel.Proportion="{x:Static settings:DockSettings.GlobalDockingProportion}"
+                                   settings:DockProperties.IndicatorDockOperation="Left" />
+                            <Border />
+                            <Panel x:Name="PART_RightIndicator"
+                                   ProportionalStackPanel.Proportion="{x:Static settings:DockSettings.GlobalDockingProportion}"
+                                   settings:DockProperties.IndicatorDockOperation="Right" />
+                        </ProportionalStackPanel>
+                        <ProportionalStackPanel Orientation="Vertical">
+                            <Panel x:Name="PART_TopIndicator"
+                                   ProportionalStackPanel.Proportion="{x:Static settings:DockSettings.GlobalDockingProportion}"
+                                   settings:DockProperties.IndicatorDockOperation="Top" />
+                            <Border />
+                            <Panel x:Name="PART_BottomIndicator"
+                                   ProportionalStackPanel.Proportion="{x:Static settings:DockSettings.GlobalDockingProportion}"
+                                   settings:DockProperties.IndicatorDockOperation="Bottom" />
+                        </ProportionalStackPanel>
+
+                        <Grid x:Name="PART_IndicatorGrid" RowDefinitions="*,*" ColumnDefinitions="*,*">
+                            <Panel x:Name="PART_SelectorPanel"
+                                   Grid.Row="0" Grid.RowSpan="2" Grid.ColumnSpan="2" Grid.Column="0">
+                                <ContentControl x:Name="PART_TopSelector" Classes="selector" Opacity="0"
+                                                Theme="{StaticResource Vs2013Dock.DockAnchorable}" RenderTransform="rotate(90deg)"
+                                                HorizontalAlignment="Center" VerticalAlignment="Top"
+                                                settings:DockProperties.IndicatorDockOperation="Top" />
+                                <ContentControl x:Name="PART_BottomSelector" Classes="selector" Opacity="0"
+                                                Theme="{StaticResource Vs2013Dock.DockAnchorable}" RenderTransform="rotate(270deg)"
+                                                HorizontalAlignment="Center" VerticalAlignment="Bottom"
+                                                settings:DockProperties.IndicatorDockOperation="Bottom" />
+                                <ContentControl x:Name="PART_LeftSelector" Classes="selector" Opacity="0"
+                                                Theme="{StaticResource Vs2013Dock.DockAnchorable}"
+                                                HorizontalAlignment="Left" VerticalAlignment="Center"
+                                                settings:DockProperties.IndicatorDockOperation="Left" />
+                                <ContentControl x:Name="PART_RightSelector" Classes="selector" Opacity="0"
+                                                Theme="{StaticResource Vs2013Dock.DockAnchorable}" RenderTransform="rotate(180deg)"
+                                                HorizontalAlignment="Right" VerticalAlignment="Center"
+                                                settings:DockProperties.IndicatorDockOperation="Right" />
+                            </Panel>
+                        </Grid>
+                    </Panel>
+
+                    <Canvas IsHitTestVisible="False">
+                        <Border x:Name="PART_PreviewIndicator" Opacity="0.5"
+                                Canvas.Left="{TemplateBinding PreviewX}" Canvas.Top="{TemplateBinding PreviewY}"
+                                Width="{TemplateBinding PreviewWidth}" Height="{TemplateBinding PreviewHeight}"
+                                Background="{DynamicResource DockTargetIndicatorBrush}" />
+                    </Canvas>
+                </Panel>
+            </ControlTemplate>
+        </Setter>
+
+        <Style Selector="^/template/ ContentControl.selector">
+            <Setter Property="IsVisible" Value="False" />
+            <Setter Property="Width" Value="{DynamicResource DockTargetSelectorSize}" />
+            <Setter Property="Height" Value="{DynamicResource DockTargetSelectorSize}" />
+        </Style>
+        <Style Selector="^:vertical /template/ ContentControl#PART_TopSelector.selector">
+            <Setter Property="IsVisible" Value="True" />
+        </Style>
+        <Style Selector="^:vertical /template/ ContentControl#PART_BottomSelector.selector">
+            <Setter Property="IsVisible" Value="True" />
+        </Style>
+        <Style Selector="^:horizontal /template/ ContentControl#PART_LeftSelector.selector">
+            <Setter Property="IsVisible" Value="True" />
+        </Style>
+        <Style Selector="^:horizontal /template/ ContentControl#PART_RightSelector.selector">
+            <Setter Property="IsVisible" Value="True" />
+        </Style>
+    </ControlTheme>
+
+    <!--
         The dock's background: upstream's DockingManager style sets its Background. The
         adapter's manager template doesn't draw a background, so the root dock's panel does. Upstream's
         auto-hide sides (AnchorSideTemplate) are at least 4 pixels wide, a margin around the panes; Dock
         hides its empty sides, so the panes' panel has the margin (AnchorSideMarginConverter), which a
-        side with auto-hidden tool windows overlaps. Floating windows have no sides.
+        side with auto-hidden tool windows overlaps. Floating windows have no sides. The root dock also
+        gives its panes the theme's docking targets (an inherited property, which the adapter sets on
+        the dock control above it).
     -->
     <ControlTheme x:Key="{x:Type dock:RootDockControl}" TargetType="dock:RootDockControl"
                   BasedOn="{StaticResource {x:Type dock:RootDockControl}}">
+        <Setter Property="dock:DockTarget.TargetTheme" Value="{StaticResource Vs2013Dock.DockTarget}" />
         <Style Selector="^/template/ dock|DockableControl">
             <Setter Property="Background" Value="{DynamicResource Vs2013Dock.Background}" />
         </Style>
