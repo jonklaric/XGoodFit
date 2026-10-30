@@ -1,0 +1,347 @@
+<!-- Ported from upstream/WPF-Framework/src/Themes/Resources/Controls/Calendar.xaml. Conversion rules: Button.axaml. -->
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!--
+    Calendar Control Theme-Aware Styles
+
+    Provides full theming support for WPF Calendar control including:
+    - Calendar (main container)
+    - CalendarItem (month/year view)
+    - CalendarDayButton (individual day cells)
+    - CalendarButton (month/year navigation buttons)
+
+    Uses DynamicResource bindings for automatic theme switching.
+    -->
+
+    <!--
+    XGoodFit port notes:
+    - Avalonia's calendar descends from the same design as WPF's, with the same template part names.
+      Its day and month buttons report their state as pseudo-classes: IsToday :today, IsSelected and
+      HasSelectedDays :selected, IsInactive :inactive, IsBlackedOut :blackout.
+    - Avalonia's CalendarItem shows the month or year grid itself, so the DisplayMode DataTriggers
+      aren't needed. It collapses the other grid, where WPF hides it, so the calendar's height can
+      change when switching views.
+    - The day-title template (CalendarItem.DayTitleTemplateResourceKey) is CalendarItem.DayTitleTemplate.
+    - The CalendarDayButtonStyle, CalendarButtonStyle and CalendarItemStyle setters aren't needed:
+      Avalonia's calendar uses the implicit themes below.
+    -->
+
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+    <!-- CALENDAR DAY BUTTON                                                          -->
+    <!-- Individual day cells in the calendar month view                              -->
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+
+    <ControlTheme x:Key="CalendarDayButtonStyle" TargetType="CalendarDayButton">
+        <Setter Property="MinWidth" Value="24"/>
+        <Setter Property="MinHeight" Value="24"/>
+        <Setter Property="FontSize" Value="11"/>
+        <Setter Property="HorizontalContentAlignment" Value="Center"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
+        <Setter Property="FocusAdorner" Value="{x:Null}"/>
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Grid>
+                    <!-- Background for selection/hover states -->
+                    <Border x:Name="Border"
+                            Background="Transparent"
+                            BorderThickness="1"
+                            BorderBrush="Transparent"
+                            CornerRadius="2"/>
+                    <!-- Today indicator -->
+                    <Border x:Name="TodayBorder"
+                            BorderBrush="{DynamicResource AccentBrush}"
+                            BorderThickness="1"
+                            CornerRadius="2"
+                            IsVisible="False"/>
+                    <!-- Content -->
+                    <ContentPresenter x:Name="Content"
+                                      Content="{TemplateBinding Content}"
+                                      ContentTemplate="{TemplateBinding ContentTemplate}"
+                                      HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                      VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                      Foreground="{DynamicResource EnvironmentWindowText}"/>
+                </Grid>
+            </ControlTemplate>
+        </Setter>
+
+        <!-- Today -->
+        <Style Selector="^:today /template/ Border#TodayBorder">
+            <Setter Property="IsVisible" Value="True"/>
+        </Style>
+        <!-- Selected -->
+        <Style Selector="^:selected">
+            <Style Selector="^ /template/ Border#Border">
+                <Setter Property="Background" Value="{DynamicResource Button.Pressed.Background}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource Button.Pressed.Border}"/>
+            </Style>
+            <Style Selector="^ /template/ ContentPresenter#Content">
+                <Setter Property="Foreground" Value="{DynamicResource Button.Pressed.Foreground}"/>
+            </Style>
+        </Style>
+        <!-- MouseOver -->
+        <Style Selector="^:pointerover /template/ Border#Border">
+            <Setter Property="Background" Value="{DynamicResource Button.MouseOver.Background}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource Button.MouseOver.Border}"/>
+        </Style>
+        <!-- Inactive (days from other months) -->
+        <Style Selector="^:inactive /template/ ContentPresenter#Content">
+            <Setter Property="Foreground" Value="{DynamicResource EnvironmentToolWindowDisabledText}"/>
+        </Style>
+        <!-- Blackout (disabled dates) -->
+        <Style Selector="^:blackout">
+            <Setter Property="IsEnabled" Value="False"/>
+            <Style Selector="^ /template/ ContentPresenter#Content">
+                <Setter Property="Foreground" Value="{DynamicResource EnvironmentToolWindowDisabledText}"/>
+            </Style>
+        </Style>
+        <!-- Disabled -->
+        <Style Selector="^:disabled">
+            <Setter Property="Opacity" Value="0.5"/>
+            <Style Selector="^ /template/ ContentPresenter#Content">
+                <Setter Property="Foreground" Value="{DynamicResource EnvironmentToolWindowDisabledText}"/>
+            </Style>
+        </Style>
+    </ControlTheme>
+
+    <ControlTheme x:Key="{x:Type CalendarDayButton}" TargetType="CalendarDayButton" BasedOn="{StaticResource CalendarDayButtonStyle}"/>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+    <!-- CALENDAR BUTTON                                                              -->
+    <!-- Month and Year selector buttons in decade/year views                         -->
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+
+    <ControlTheme x:Key="CalendarButtonStyle" TargetType="CalendarButton">
+        <Setter Property="MinWidth" Value="28"/>
+        <Setter Property="MinHeight" Value="28"/>
+        <Setter Property="FontSize" Value="11"/>
+        <Setter Property="HorizontalContentAlignment" Value="Center"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
+        <Setter Property="FocusAdorner" Value="{x:Null}"/>
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Grid>
+                    <Border x:Name="Border"
+                            Background="Transparent"
+                            BorderThickness="1"
+                            BorderBrush="Transparent"
+                            CornerRadius="2"/>
+                    <ContentPresenter x:Name="Content"
+                                      Content="{TemplateBinding Content}"
+                                      ContentTemplate="{TemplateBinding ContentTemplate}"
+                                      HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                      VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                      Foreground="{DynamicResource EnvironmentWindowText}"/>
+                </Grid>
+            </ControlTemplate>
+        </Setter>
+
+        <!-- Has Selected Days (current month/year contains selection) -->
+        <Style Selector="^:selected">
+            <Style Selector="^ /template/ Border#Border">
+                <Setter Property="Background" Value="{DynamicResource Button.Pressed.Background}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource Button.Pressed.Border}"/>
+            </Style>
+            <Style Selector="^ /template/ ContentPresenter#Content">
+                <Setter Property="Foreground" Value="{DynamicResource Button.Pressed.Foreground}"/>
+            </Style>
+        </Style>
+        <!-- MouseOver -->
+        <Style Selector="^:pointerover /template/ Border#Border">
+            <Setter Property="Background" Value="{DynamicResource Button.MouseOver.Background}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource Button.MouseOver.Border}"/>
+        </Style>
+        <!-- Inactive -->
+        <Style Selector="^:inactive /template/ ContentPresenter#Content">
+            <Setter Property="Foreground" Value="{DynamicResource EnvironmentToolWindowDisabledText}"/>
+        </Style>
+        <!-- Disabled -->
+        <Style Selector="^:disabled">
+            <Setter Property="Opacity" Value="0.5"/>
+            <Style Selector="^ /template/ ContentPresenter#Content">
+                <Setter Property="Foreground" Value="{DynamicResource EnvironmentToolWindowDisabledText}"/>
+            </Style>
+        </Style>
+    </ControlTheme>
+
+    <ControlTheme x:Key="{x:Type CalendarButton}" TargetType="CalendarButton" BasedOn="{StaticResource CalendarButtonStyle}"/>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+    <!-- CALENDAR ITEM                                                                -->
+    <!-- The main content area showing month grid with navigation                     -->
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+
+    <!-- Navigation button style for previous/next month arrows -->
+    <ControlTheme x:Key="CalendarNavigationButtonStyle" TargetType="Button">
+        <Setter Property="Focusable" Value="False"/>
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="HorizontalContentAlignment" Value="Center"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border x:Name="Border"
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="2"
+                        Padding="4">
+                    <ContentPresenter x:Name="PART_ContentPresenter"
+                                      Content="{TemplateBinding Content}"
+                                      ContentTemplate="{TemplateBinding ContentTemplate}"
+                                      HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                      VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                </Border>
+            </ControlTemplate>
+        </Setter>
+
+        <Style Selector="^:pointerover /template/ Border#Border">
+            <Setter Property="Background" Value="{DynamicResource Button.MouseOver.Background}"/>
+        </Style>
+        <Style Selector="^:pressed /template/ Border#Border">
+            <Setter Property="Background" Value="{DynamicResource Button.Pressed.Background}"/>
+        </Style>
+        <Style Selector="^:disabled">
+            <Setter Property="Opacity" Value="0.5"/>
+        </Style>
+    </ControlTheme>
+
+    <!-- Header button style for month/year text -->
+    <ControlTheme x:Key="CalendarHeaderButtonStyle" TargetType="Button">
+        <Setter Property="Focusable" Value="False"/>
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="FontSize" Value="11"/>
+        <Setter Property="Foreground" Value="{DynamicResource EnvironmentWindowText}"/>
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border x:Name="Border"
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="2"
+                        Padding="8,4">
+                    <ContentPresenter x:Name="PART_ContentPresenter"
+                                      Content="{TemplateBinding Content}"
+                                      ContentTemplate="{TemplateBinding ContentTemplate}"
+                                      HorizontalAlignment="Center"
+                                      VerticalAlignment="Center"/>
+                </Border>
+            </ControlTemplate>
+        </Setter>
+
+        <Style Selector="^:pointerover /template/ Border#Border">
+            <Setter Property="Background" Value="{DynamicResource Button.MouseOver.Background}"/>
+        </Style>
+        <Style Selector="^:pressed /template/ Border#Border">
+            <Setter Property="Background" Value="{DynamicResource Button.Pressed.Background}"/>
+        </Style>
+        <Style Selector="^:disabled">
+            <Setter Property="Opacity" Value="0.5"/>
+        </Style>
+    </ControlTheme>
+
+    <ControlTheme x:Key="CalendarItemStyle" TargetType="CalendarItem">
+        <!-- Day name header style (Su, Mo, Tu, etc.) -->
+        <Setter Property="DayTitleTemplate">
+            <Template x:DataType="x:String">
+                <TextBlock Text="{Binding}"
+                           FontWeight="SemiBold"
+                           FontSize="10"
+                           Foreground="{DynamicResource EnvironmentWindowText}"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"
+                           Margin="0,4"/>
+            </Template>
+        </Setter>
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Grid x:Name="PART_Root">
+                    <Border Background="{DynamicResource EnvironmentWindowBackground}"
+                            BorderBrush="{DynamicResource Button.Static.Border}"
+                            BorderThickness="1">
+                        <Grid RowDefinitions="Auto,*">
+
+                            <!-- Header with navigation -->
+                            <Grid Grid.Row="0" Margin="4" ColumnDefinitions="Auto,*,Auto">
+
+                                <!-- Previous button -->
+                                <Button x:Name="PART_PreviousButton"
+                                        Grid.Column="0"
+                                        Theme="{StaticResource CalendarNavigationButtonStyle}"
+                                        Width="24" Height="24">
+                                    <Path Data="M15,4 L7,12 L15,20"
+                                          Stroke="{DynamicResource EnvironmentWindowText}"
+                                          StrokeThickness="2"
+                                          Width="8" Height="12"
+                                          Stretch="Uniform"/>
+                                </Button>
+
+                                <!-- Month/Year header button -->
+                                <Button x:Name="PART_HeaderButton"
+                                        Grid.Column="1"
+                                        Theme="{StaticResource CalendarHeaderButtonStyle}"
+                                        HorizontalAlignment="Center"/>
+
+                                <!-- Next button -->
+                                <Button x:Name="PART_NextButton"
+                                        Grid.Column="2"
+                                        Theme="{StaticResource CalendarNavigationButtonStyle}"
+                                        Width="24" Height="24">
+                                    <Path Data="M9,4 L17,12 L9,20"
+                                          Stroke="{DynamicResource EnvironmentWindowText}"
+                                          StrokeThickness="2"
+                                          Width="8" Height="12"
+                                          Stretch="Uniform"/>
+                                </Button>
+                            </Grid>
+
+                            <!-- Calendar grid (days/months/years) -->
+                            <Grid x:Name="PART_MonthView"
+                                  Grid.Row="1"
+                                  Margin="4,0,4,4"
+                                  ColumnDefinitions="*,*,*,*,*,*,*"
+                                  RowDefinitions="Auto,*,*,*,*,*,*"/>
+
+                            <!-- Year view grid -->
+                            <Grid x:Name="PART_YearView"
+                                  Grid.Row="1"
+                                  Margin="4,0,4,4"
+                                  IsVisible="False"
+                                  ColumnDefinitions="*,*,*,*"
+                                  RowDefinitions="*,*,*"/>
+                        </Grid>
+                    </Border>
+                </Grid>
+            </ControlTemplate>
+        </Setter>
+    </ControlTheme>
+
+    <ControlTheme x:Key="{x:Type CalendarItem}" TargetType="CalendarItem" BasedOn="{StaticResource CalendarItemStyle}"/>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+    <!-- CALENDAR                                                                     -->
+    <!-- Main Calendar control container                                              -->
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+
+    <ControlTheme x:Key="CalendarStyle" TargetType="Calendar">
+        <Setter Property="Foreground" Value="{DynamicResource EnvironmentWindowText}"/>
+        <Setter Property="Background" Value="{DynamicResource EnvironmentWindowBackground}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource Button.Static.Border}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Template">
+            <ControlTemplate>
+                <StackPanel x:Name="PART_Root" HorizontalAlignment="Center">
+                    <CalendarItem x:Name="PART_CalendarItem"
+                                  Background="{TemplateBinding Background}"
+                                  BorderBrush="{TemplateBinding BorderBrush}"
+                                  BorderThickness="{TemplateBinding BorderThickness}"/>
+                </StackPanel>
+            </ControlTemplate>
+        </Setter>
+    </ControlTheme>
+
+    <ControlTheme x:Key="{x:Type Calendar}" TargetType="Calendar" BasedOn="{StaticResource CalendarStyle}"/>
+
+</ResourceDictionary>

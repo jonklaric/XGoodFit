@@ -82,26 +82,33 @@
     <!-- ═══════════════════════════════════════════════════════════════════════════ -->
     <!-- CONTROL TEMPLATES                                                            -->
     <!-- Ported control themes are merged here as they land, in upstream's order      -->
-    <!-- (docs/migration-plan.md §6, Phase 3).                                        -->
+    <!-- (docs/migration-plan.md §6, Phase 3). Not yet here: DataGrid (with           -->
+    <!-- ProDataGrid), MetroWindowStyle (with the window chrome) and RichTextBox      -->
+    <!-- (with its replacements). StatusBar isn't ported: nothing upstream uses one.  -->
     <!-- ═══════════════════════════════════════════════════════════════════════════ -->
 
     <ResourceDictionary.MergedDictionaries>
         <ResourceInclude Source="avares://Themes/Resources/Controls/Button.axaml"/>
+        <ResourceInclude Source="avares://Themes/Resources/Controls/Calendar.axaml"/>
         <ResourceInclude Source="avares://Themes/Resources/Controls/CheckBox.axaml"/>
         <ResourceInclude Source="avares://Themes/Resources/Controls/RadioButton.axaml"/>
         <ResourceInclude Source="avares://Themes/Resources/Controls/ComboBox.axaml"/>
+        <ResourceInclude Source="avares://Themes/Resources/Controls/Expander.axaml"/>
         <ResourceInclude Source="avares://Themes/Resources/Controls/GridSplitter.axaml"/>
         <ResourceInclude Source="avares://Themes/Resources/Controls/GroupBox.axaml"/>
         <ResourceInclude Source="avares://Themes/Resources/Controls/Label.axaml"/>
         <ResourceInclude Source="avares://Themes/Resources/Controls/ListBox.axaml"/>
         <ResourceInclude Source="avares://Themes/Resources/Controls/ListView.axaml"/>
         <ResourceInclude Source="avares://Themes/Resources/Controls/Menu.axaml"/>
+        <ResourceInclude Source="avares://Themes/Resources/Controls/ProgressBar.axaml"/>
         <ResourceInclude Source="avares://Themes/Resources/Controls/ScrollBar.axaml"/>
         <ResourceInclude Source="avares://Themes/Resources/Controls/Separator.axaml"/>
+        <ResourceInclude Source="avares://Themes/Resources/Controls/Slider.axaml"/>
         <ResourceInclude Source="avares://Themes/Resources/Controls/StackPanel.axaml"/>
         <ResourceInclude Source="avares://Themes/Resources/Controls/TabControl.axaml"/>
         <ResourceInclude Source="avares://Themes/Resources/Controls/TextBlock.axaml"/>
         <ResourceInclude Source="avares://Themes/Resources/Controls/TextBox.axaml"/>
+        <ResourceInclude Source="avares://Themes/Resources/Controls/ToolBar.axaml"/>
         <ResourceInclude Source="avares://Themes/Resources/Controls/ToolTip.axaml"/>
         <ResourceInclude Source="avares://Themes/Resources/Controls/TreeView.axaml"/>
     </ResourceDictionary.MergedDictionaries>

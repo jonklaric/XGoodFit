@@ -1,0 +1,107 @@
+<!-- Ported from upstream/WPF-Framework/src/Themes/Resources/Controls/ProgressBar.xaml. Conversion rules: Button.axaml. -->
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!--
+    ProgressBar Control Template
+
+    Provides themed styling for the WPF ProgressBar control.
+    All colors use DynamicResource bindings for runtime theme switching.
+
+    Required template parts (from ProgressBar):
+      PART_Track     - Border element representing the full track area
+      PART_Indicator - Border element representing the filled progress area
+      PART_GlowRect - Rectangle used for the indeterminate animation glow
+    -->
+
+    <!--
+    XGoodFit port notes:
+    - Avalonia's ProgressBar sizes PART_Indicator itself, as WPF's does; PART_Track and PART_GlowRect
+      have no meaning to it.
+    - The indeterminate glow: WPF's ProgressBar slides PART_GlowRect across the track by code, at
+      200 pixels a second followed by a 1-second pause. Here a style animation slides it from one bar
+      width to the left to one to the right in 2.5 seconds, then waits 1 second, using the offsets
+      Avalonia computes for the bar's width. The root clips the glow to the bar, as the track's
+      comment above intends.
+    -->
+
+    <!-- ProgressBar Style -->
+    <ControlTheme x:Key="{x:Type ProgressBar}" TargetType="ProgressBar">
+        <Setter Property="Background" Value="{DynamicResource ProgressBar.Static.Background}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource ProgressBar.Static.Border}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Foreground" Value="{DynamicResource ProgressBar.Static.Foreground}"/>
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Grid x:Name="TemplateRoot" ClipToBounds="True">
+
+                    <!-- Outer border and background -->
+                    <Border Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"/>
+
+                    <!-- Track (clipping region for the indicator) -->
+                    <Border x:Name="PART_Track"
+                            Margin="1"
+                            BorderThickness="0">
+                        <Grid>
+                            <!-- Decoration layer for clipping -->
+                            <Rectangle x:Name="DecoratorRectangle" Fill="Transparent"/>
+                        </Grid>
+                    </Border>
+
+                    <!-- Progress indicator (filled portion) -->
+                    <Border x:Name="PART_Indicator"
+                            Margin="1"
+                            HorizontalAlignment="Left"
+                            Background="{TemplateBinding Foreground}"
+                            BorderThickness="0"/>
+
+                    <!-- Glow rectangle for indeterminate animation -->
+                    <Rectangle x:Name="PART_GlowRect"
+                               Margin="1"
+                               HorizontalAlignment="Left"
+                               Width="100"
+                               Fill="{TemplateBinding Foreground}"
+                               Opacity="0.7">
+                        <Rectangle.RenderTransform>
+                            <TranslateTransform/>
+                        </Rectangle.RenderTransform>
+                    </Rectangle>
+
+                </Grid>
+            </ControlTemplate>
+        </Setter>
+
+        <!-- Hide glow rect in determinate mode -->
+        <Style Selector="^:not(:indeterminate) /template/ Rectangle#PART_GlowRect">
+            <Setter Property="IsVisible" Value="False"/>
+        </Style>
+        <!-- Hide indicator in indeterminate mode, and slide the glow -->
+        <Style Selector="^:indeterminate /template/ Border#PART_Indicator">
+            <Setter Property="IsVisible" Value="False"/>
+        </Style>
+        <Style Selector="^:indeterminate /template/ Rectangle#PART_GlowRect">
+            <Style.Animations>
+                <Animation Duration="0:0:3.5" IterationCount="INFINITE">
+                    <KeyFrame KeyTime="0:0:0">
+                        <Setter Property="TranslateTransform.X" Value="{Binding $parent[ProgressBar].TemplateSettings.IndeterminateStartingOffset}"/>
+                    </KeyFrame>
+                    <KeyFrame KeyTime="0:0:2.5">
+                        <Setter Property="TranslateTransform.X" Value="{Binding $parent[ProgressBar].TemplateSettings.IndeterminateEndingOffset}"/>
+                    </KeyFrame>
+                    <KeyFrame KeyTime="0:0:3.5">
+                        <Setter Property="TranslateTransform.X" Value="{Binding $parent[ProgressBar].TemplateSettings.IndeterminateEndingOffset}"/>
+                    </KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+        <!-- Disabled state -->
+        <Style Selector="^:disabled">
+            <Setter Property="Background" Value="{DynamicResource ProgressBar.Disabled.Background}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource ProgressBar.Disabled.Border}"/>
+            <Setter Property="Foreground" Value="{DynamicResource ProgressBar.Disabled.Foreground}"/>
+        </Style>
+    </ControlTheme>
+
+</ResourceDictionary>

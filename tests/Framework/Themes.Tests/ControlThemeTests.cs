@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
+using Avalonia.Styling;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 
@@ -25,6 +26,61 @@ public sealed class ControlThemeTests
 
     private static T TemplatePart<T>(TemplatedControl control, string name) where T : Control =>
         control.GetTemplateDescendants().OfType<T>().Single(c => c.Name == name);
+
+    // Every control type the ported themes give an implicit (type-keyed) theme.
+    private static readonly Type[] ImplicitlyThemed =
+    [
+        typeof(Button), typeof(ToggleButton), typeof(CheckBox), typeof(RadioButton), typeof(TextBox),
+        typeof(ComboBox), typeof(ComboBoxItem), typeof(ListBox), typeof(ListBoxItem), typeof(Menu),
+        typeof(MenuItem), typeof(ContextMenu), typeof(ScrollBar), typeof(ScrollViewer), typeof(Separator),
+        typeof(TabControl), typeof(TabItem), typeof(TreeView), typeof(TreeViewItem), typeof(ToolTip),
+        typeof(Label), typeof(GroupBox), typeof(Slider), typeof(ProgressBar), typeof(Calendar),
+        typeof(CalendarItem), typeof(CalendarDayButton), typeof(CalendarButton),
+    ];
+
+    // The template a theme sets, following BasedOn: the implicit themes are mostly based on keyed ones.
+    private static object? TemplateOf(ControlTheme theme)
+    {
+        for (ControlTheme? current = theme; current != null; current = current.BasedOn)
+        {
+            if (current.Setters.OfType<Setter>().FirstOrDefault(s => s.Property == TemplatedControl.TemplateProperty) is { } setter)
+            {
+                return setter.Value;
+            }
+        }
+        return null;
+    }
+
+    [TestMethod]
+    public void ImplicitThemes_AreThePortedOnes_AndTheirTemplatesApply()
+    {
+        HeadlessSession.Run(() =>
+        {
+            var panel = new StackPanel();
+            var window = Show(panel);
+            // The control templates dictionary (Merged.axaml) is the one that defines RepeatButtonTransparent.
+            IResourceProvider ported = Application.Current!.Resources.MergedDictionaries
+                .OfType<ResourceDictionary>()
+                .Single(d => d.ContainsKey("RepeatButtonTransparent"));
+            foreach (Type type in ImplicitlyThemed)
+            {
+                Assert.IsTrue(ported.TryGetResource(type, null, out object? found) && found is ControlTheme,
+                    $"{type.Name} has no ported implicit theme");
+                var theme = (ControlTheme)found!;
+                if (type == typeof(CalendarItem) || type == typeof(CalendarDayButton) || type == typeof(CalendarButton)
+                    || type == typeof(ContextMenu) || type == typeof(ToolTip))
+                {
+                    continue; // created and hosted by their owners
+                }
+                var control = (TemplatedControl)Activator.CreateInstance(type)!;
+                panel.Children.Add(control);
+                Dispatcher.UIThread.RunJobs();
+                Assert.AreSame(TemplateOf(theme), control.Template, $"{type.Name} doesn't use the ported template");
+                Assert.IsTrue(control.GetTemplateDescendants().Any(), $"{type.Name}'s template wasn't applied");
+            }
+            window.Close();
+        });
+    }
 
     [TestMethod]
     public void TreeViewItem_CollapsedWithChildren_ShowsItsExpander()

@@ -155,14 +155,19 @@
                             <StackPanel>
                                 <TextBlock Classes="title" Text="Slider and progress bar"/>
                                 <Slider Minimum="0" Maximum="100" Value="40"/>
-                                <ProgressBar Minimum="0" Maximum="100" Value="65" Height="14"/>
+                                <Slider Minimum="0" Maximum="100" Value="70" TickPlacement="BottomRight" TickFrequency="10" IsEnabled="False"/>
+                                <ProgressBar Minimum="0" Maximum="100" Value="65" Height="16"/>
+                                <ProgressBar IsIndeterminate="True" Height="16"/>
                             </StackPanel>
                         </Border>
                         <Border Classes="card">
                             <StackPanel>
                                 <TextBlock Classes="title" Text="Expander and group box"/>
-                                <Expander Header="Expander" IsExpanded="True">
-                                    <TextBlock Text="Expanded content"/>
+                                <Expander Header="Distribution Properties" IsExpanded="True" Theme="{DynamicResource PropertyExpanderStyle}">
+                                    <TextBlock Text="Property expander style, expanded"/>
+                                </Expander>
+                                <Expander Header="Parameter Priors" Theme="{DynamicResource PropertyExpanderStyle}">
+                                    <TextBlock Text="Collapsed"/>
                                 </Expander>
                                 <GroupBox Header="Group box">
                                     <TextBlock Text="Grouped content"/>
@@ -239,6 +244,25 @@
                                     <Button Theme="{DynamicResource StackPanelButtonStyleBase}" Content="Panel button"/>
                                     <Button Theme="{DynamicResource StackPanelButtonStyleBase}" Content="Disabled" IsEnabled="False"/>
                                 </StackPanel>
+                            </StackPanel>
+                        </Border>
+                        <Border Classes="card">
+                            <StackPanel>
+                                <TextBlock Classes="title" Text="Toolbar styles"/>
+                                <StackPanel Orientation="Horizontal" Height="26" Theme="{DynamicResource StackPanelStyle}">
+                                    <Button Theme="{DynamicResource ToolBar.ButtonStyleKey}" Content="New"/>
+                                    <Button Theme="{DynamicResource ToolBar.ButtonStyleKey}" Content="Open"/>
+                                    <Separator Theme="{DynamicResource ToolBar.SeparatorStyleKey}" Margin="4,2,4,2"/>
+                                    <RadioButton Theme="{DynamicResource ToolBar.RadioButtonStyleKey}" Content="Pointer" GroupName="Tool" IsChecked="True"/>
+                                    <RadioButton Theme="{DynamicResource ToolBar.RadioButtonStyleKey}" Content="Pan" GroupName="Tool"/>
+                                    <ToggleButton Theme="{DynamicResource ToolBar.ToggleButtonStyleKey}" Content="Toggle"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+                        <Border Classes="card">
+                            <StackPanel>
+                                <TextBlock Classes="title" Text="Calendar"/>
+                                <Calendar SelectedDate="2026-10-30" DisplayDate="2026-10-30" HorizontalAlignment="Left"/>
                             </StackPanel>
                         </Border>
                     </WrapPanel>
