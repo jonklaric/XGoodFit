@@ -110,7 +110,8 @@ public sealed class CollectionViewSourceTests
 
             b.Alternative.Name = "z";
             Assert.AreEqual("a,c,z", Names(view));
-            CollectionAssert.AreEqual(new[] { "Move 1->2" }, moves);
+            // The item it passes moves (see LiveSorting_KeepsASelectorsSelection_WhenTheSelectedItemMoves).
+            CollectionAssert.AreEqual(new[] { "Move 2->1" }, moves);
 
             b.Alternative.Name = "0";
             Assert.AreEqual("0,a,c", Names(view));
@@ -120,6 +121,54 @@ public sealed class CollectionViewSourceTests
             Assert.AreEqual("y,a,c", Names(still), "without live sorting the view keeps its order until it's refreshed");
             still.Refresh();
             Assert.AreEqual("a,c,y", Names(still));
+        });
+    }
+
+    // What a two-way binding writes to its source.
+    private sealed class Holder
+    {
+        private object? _value;
+
+        public int Writes { get; set; }
+
+        public object? Value
+        {
+            get => _value;
+            set
+            {
+                _value = value;
+                Writes++;
+            }
+        }
+    }
+
+    [TestMethod]
+    public void LiveSorting_KeepsASelectorsSelection_WhenTheSelectedItemMoves()
+    {
+        HeadlessSession.Run(() =>
+        {
+            var b = new Item(new("b"));
+            var list = new ObservableCollection<Item> { new(new("a")), b, new(new("c")), new(new("d")) };
+            var view = SortedView(list, "Alternative.Name");
+            var holder = new Holder { Value = b };
+            var box = new Avalonia.Controls.ComboBox { ItemsSource = view, DataContext = holder };
+            box.Bind(Avalonia.Controls.Primitives.SelectingItemsControl.SelectedValueProperty,
+                new Avalonia.Data.ReflectionBinding(nameof(Holder.Value)) { Mode = Avalonia.Data.BindingMode.TwoWay });
+            Assert.AreSame(b, box.SelectedItem);
+            holder.Writes = 0;
+
+            // Renamed, the selected item sorts past two items, then back past three: it stays selected and the
+            // binding writes nothing, as in WPF.
+            b.Alternative.Name = "z";
+            Assert.AreEqual("a,c,d,z", Names(view));
+            Assert.AreSame(b, box.SelectedItem);
+            Assert.AreEqual(3, box.SelectedIndex);
+            b.Alternative.Name = "0";
+            Assert.AreEqual("0,a,c,d", Names(view));
+            Assert.AreSame(b, box.SelectedItem);
+            Assert.AreEqual(0, box.SelectedIndex);
+            Assert.AreEqual(0, holder.Writes);
+            Assert.AreSame(b, holder.Value);
         });
     }
 

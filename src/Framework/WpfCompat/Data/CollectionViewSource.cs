@@ -341,19 +341,29 @@ public sealed class ListCollectionView : ICollectionView, IList,
         }
     }
 
-    // Moves an item whose sorted values changed to where they now sort, as WPF's live sorting does.
+    // Moves an item whose sorted values changed to where they now sort, as WPF's live sorting does. It
+    // passes its neighbours one at a time, and the view announces their moves, not its own: Avalonia's
+    // selectors drop a moved item from their selection (a two-way binding then writes null), where WPF's
+    // keep it selected.
     private void Reposition(object item)
     {
         int oldIndex = _items.FindIndex(x => ReferenceEquals(x, item));
         if (oldIndex < 0) return;
         _items.RemoveAt(oldIndex);
         int newIndex = SortedIndex(item, _items.Count);
-        _items.Insert(newIndex, item);
+        _items.Insert(oldIndex, item);
         if (newIndex == oldIndex) return;
         if (_currentPosition == oldIndex) _currentPosition = newIndex;
         else if (_currentPosition > oldIndex && _currentPosition <= newIndex) _currentPosition--;
         else if (_currentPosition < oldIndex && _currentPosition >= newIndex) _currentPosition++;
-        CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Move, item, newIndex, oldIndex));
+        int step = newIndex > oldIndex ? 1 : -1;
+        for (int index = oldIndex; index != newIndex; index += step)
+        {
+            object? passed = _items[index + step];
+            _items[index + step] = item;
+            _items[index] = passed;
+            CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Move, passed, index, index + step));
+        }
     }
 
     // Where an item goes among the first <count> items: after the last one it doesn't sort before, so
