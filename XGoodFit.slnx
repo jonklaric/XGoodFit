@@ -1,6 +1,7 @@
 <Solution>
   <Folder Name="/src/" />
   <Folder Name="/src/Framework/">
+    <Project Path="src/Framework/DatabaseControls/DatabaseControls.csproj" />
     <Project Path="src/Framework/ExpressionParserControls/ExpressionParserControls.csproj" />
     <Project Path="src/Framework/FrameworkInterfaces/FrameworkInterfaces.csproj" />
     <Project Path="src/Framework/FrameworkUI/FrameworkUI.csproj" />

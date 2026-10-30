@@ -1,0 +1,66 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Avalonia port of upstream/WPF-Framework/src/DatabaseControls: the TableViewer, which shows and edits a
+    DatabaseManager table (RMC-BestFit's parameter sets use it), and the windows it opens: find, the field
+    calculator (also its select-by-attribute mode), the column statistics, and the calculator help. Its
+    files are WPF code, so the project opts in to upstream files (Directory.Build.targets): only the ported
+    copies and the upstream files listed in UpstreamCompileInclude compile.
+
+    Not ported (decision D10):
+    - FieldCalculator/ExpressionTextBox.cs, ErrorWindow.xaml(.cs) and ErrorItem.cs: upstream's own project
+      leaves them out of the build (Compile Remove), so upstream's DatabaseControls has none of them.
+      ExpressionTextBox needs the old parser's ParseTreeNode and a QuickHelp namespace that no longer exist.
+    - Resources/*.png and *.ico: only XAML that upstream has commented out uses them.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>DatabaseControls</RootNamespace>
+    <AssemblyName>DatabaseControls</AssemblyName>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <UpstreamProjectDir>$(UpstreamFrameworkSrc)DatabaseControls/</UpstreamProjectDir>
+    <UpstreamCompileMode>OptIn</UpstreamCompileMode>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="DatabaseControls.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Upstream files that compile unchanged. -->
+    <UpstreamCompileInclude Include="Column Stats/Classification.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!--
+      The calculator help pages and their pictures, under upstream's resource names
+      (CalculatorHelpWindow finds them by those names).
+    -->
+    <EmbeddedResource Include="$(UpstreamProjectDir)Resources/Help/FieldCalculator/*"
+                      LogicalName="DatabaseControls.Resources.Help.FieldCalculator.%(Filename)%(Extension)" />
+    <EmbeddedResource Include="$(UpstreamProjectDir)Resources/Help/SelectByAttribute/*"
+                      LogicalName="DatabaseControls.Resources.Help.SelectByAttribute.%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" />
+    <!-- The calculator help pages, which upstream shows in WPF's WebBrowser (CalculatorHelpWindow). -->
+    <PackageReference Include="Avalonia.HtmlRenderer" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="$(UpstreamFrameworkSrc)DatabaseManager/DatabaseManager.csproj" />
+    <ProjectReference Include="$(UpstreamFrameworkSrc)ExpressionParser/ExpressionParser.csproj" />
+    <!-- RMC.Numerics from source, as RMC-BestFit builds it (Directory.Build.rsp). -->
+    <ProjectReference Include="$(UpstreamRoot)Numerics/Numerics/Numerics.csproj" />
+    <ProjectReference Include="../ExpressionParserControls/ExpressionParserControls.csproj" />
+    <ProjectReference Include="../GenericControls/GenericControls.csproj" />
+    <ProjectReference Include="../OxyPlot/OxyPlot.Wpf/OxyPlot.Wpf.csproj" />
+    <ProjectReference Include="../OxyPlotControls/OxyPlotControls.csproj" />
+    <ProjectReference Include="../Themes/Themes.csproj" />
+    <ProjectReference Include="../WpfCompat/WpfCompat.csproj" />
+  </ItemGroup>
+
+</Project>

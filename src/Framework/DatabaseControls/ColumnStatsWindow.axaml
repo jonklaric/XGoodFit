@@ -1,0 +1,41 @@
+<!--
+    XGoodFit port of upstream's ColumnStatsWindow.xaml: the window's Style is its Theme, ContentRendered is
+    Opened, and Visibility="Collapsed" is IsVisible="False" (the code-behind shows the viewers with
+    WpfCompat's Visibility). The check box's Checked and Unchecked handlers are added in the code-behind.
+-->
+<cntrls:MetroWindow x:Class="DatabaseControls.ColumnStatsWindow" x:Name="StatsWindow"
+        xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="using:DatabaseControls"
+        xmlns:cntrls="using:GenericControls"
+        xmlns:oxy="http://oxyplot.org/wpf"
+        xmlns:oxyCntrls="using:OxyPlotControls"
+        Title="Column Statistics" Height="550" Width="1000"
+        WindowStartupLocation="CenterOwner"
+        Theme="{DynamicResource MetroWindowStyle}"
+        Background="{DynamicResource EnvironmentWindowBackground}"
+        Foreground="{DynamicResource EnvironmentWindowText}"
+        Opened="ColumnStatsWindow_ContentRendered"
+        Closing="ColumnStatsWindow_Closing">
+    <Grid>
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <CheckBox
+            Name="SelectedOnlyCheckbox"
+            Content="Selected Rows Only"
+            Margin="5"
+            Grid.Row="0"
+            VerticalAlignment="Top"
+            HorizontalAlignment="Left"
+            IsEnabled="False"/>
+
+        <local:NumericColumnStats x:Name="NumericColumnViewer" IsVisible="False" Grid.Row="1" Margin="5"/>
+        <local:AlphabeticColumnStats x:Name="AlphabeticColumnViewer" IsVisible="False" Grid.Row="1" Margin="5"/>
+
+
+    </Grid>
+</cntrls:MetroWindow>

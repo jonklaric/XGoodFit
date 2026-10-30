@@ -1,0 +1,26 @@
+<!--
+    XGoodFit port of upstream's FieldCalculator/CalculatorHelpWindow.xaml:
+    - The window's Style is its Theme.
+    - WPF's WebBrowser (Internet Explorer) is Avalonia.HtmlRenderer's HtmlPanel, a managed HTML 4 and CSS 2
+      renderer that draws through Avalonia, so the help looks the same on every OS and needs no browser
+      engine. It shows the page as Internet Explorer's defaults did: black Times New Roman 12pt text on a
+      white page, whatever the theme. HtmlRenderer's other defaults are CSS 2's, as Internet Explorer's are.
+-->
+<cntrls:MetroWindow x:Class="DatabaseControls.CalculatorHelpWindow"
+        xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:cntrls="using:GenericControls"
+        xmlns:html="using:TheArtOfDev.HtmlRenderer.Avalonia"
+        mc:Ignorable="d"
+        Title="Calculator Help" Height="550" Width="800"
+        WindowStartupLocation="CenterOwner"
+        Theme="{DynamicResource MetroWindowStyle}"
+        Background="{DynamicResource EnvironmentWindowBackground}"
+        Foreground="{DynamicResource EnvironmentWindowText}">
+    <Grid>
+        <html:HtmlPanel x:Name="HelpBrowser" Margin="5" Background="White"
+                        BaseStylesheet="body { font-family: 'Times New Roman'; font-size: 12pt; color: black }"/>
+    </Grid>
+</cntrls:MetroWindow>
