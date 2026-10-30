@@ -53,9 +53,9 @@ public class PointEstimatorControlContractTests
     [DataRow("Univariate")]
     [DataRow("Nonstationary")]
     // XGoodFit port: add them back with their views.
-    // [DataRow("Mixture")]
-    // [DataRow("PointProcess")]
-    // [DataRow("SeasonalPointProcess")]
+    [DataRow("Mixture")]
+    [DataRow("PointProcess")]
+    [DataRow("SeasonalPointProcess")]
     //
     // [DataRow("Composite")]
     [DataRow("B17C")]
