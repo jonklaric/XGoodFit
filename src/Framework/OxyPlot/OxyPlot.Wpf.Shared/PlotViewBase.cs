@@ -199,6 +199,13 @@ namespace OxyPlot.Wpf
             var mode = this.disableShapeAntiAliasing ? EdgeMode.Aliased : EdgeMode.Unspecified;
             RenderOptions.SetEdgeMode(this.plotPresenter, mode);
 
+            // XGoodFit port: WPF's edge mode leaves text anti-aliased; Avalonia's also aliases text
+            // whose rendering mode is unset. So aliased shapes come with the text rendering mode Avalonia
+            // otherwise chooses.
+            TextOptions.SetTextRenderingMode(
+                this.plotPresenter,
+                this.disableShapeAntiAliasing ? TextRenderingMode.SubpixelAntialias : TextRenderingMode.Unspecified);
+
             // DrawingVisualHost exposes its inner DrawingVisual via a public Visual property.
             // Reflect to avoid a circular reference back to OxyPlot.Wpf.
             // XGoodFit port: the ported host's drawing is not a visual of its own; it is drawn by the

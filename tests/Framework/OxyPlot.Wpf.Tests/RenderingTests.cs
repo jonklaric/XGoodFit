@@ -99,6 +99,35 @@ public sealed class RenderingTests
     }
 
     [TestMethod]
+    public void DisableShapeAntiAliasing_LeavesTextAntiAliased()
+    {
+        HeadlessSession.Run(() =>
+        {
+            var plot = TestPlots.FrequencyPlot();
+            plot.DisableShapeAntiAliasing = true;
+            var (window, frame) = Show(plot);
+
+            // The title is text of one colour on white: anti-aliased, its edges have shades between the
+            // two; aliased, it has just the two colours.
+            var title = plot.ActualModel.TitleArea;
+            using var buffer = frame.Lock();
+            var bytes = new byte[buffer.RowBytes * buffer.Size.Height];
+            System.Runtime.InteropServices.Marshal.Copy(buffer.Address, bytes, 0, bytes.Length);
+            var colors = new HashSet<int>();
+            for (int y = (int)title.Top; y < (int)title.Bottom; y++)
+            {
+                for (int x = (int)title.Left; x < (int)title.Right; x++)
+                {
+                    colors.Add(BitConverter.ToInt32(bytes, (y * buffer.RowBytes) + (x * 4)));
+                }
+            }
+
+            Assert.IsTrue(colors.Count > 10, $"anti-aliased title text: {colors.Count} colours");
+            window.Close();
+        });
+    }
+
+    [TestMethod]
     public void Plot_RendersAgain_WhenItsSizeChanges()
     {
         HeadlessSession.Run(() =>

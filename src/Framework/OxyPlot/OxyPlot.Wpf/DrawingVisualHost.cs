@@ -9,8 +9,6 @@
 
 namespace OxyPlot.Wpf
 {
-    using System;
-    using Avalonia;
     using Avalonia.Controls;
     using Avalonia.Media;
 
@@ -28,8 +26,9 @@ namespace OxyPlot.Wpf
     /// (XGoodFit's stand-in for WPF's) in <see cref="Render"/>, and asks to render whenever the drawing
     /// changes; WPF's visual was its child and redrew by itself. Avalonia has no text formatting modes or
     /// ClearType hints, and no SnapsToDevicePixels, so those settings aren't ported. The edge mode
-    /// (<see cref="DisableShapeAntiAliasing"/>) is the host's own, which its drawing uses. The bitmap
-    /// cache's scale follows the top level's scaling, as WPF's followed the monitor's DPI.
+    /// (<see cref="DisableShapeAntiAliasing"/>) is the host's own, which its drawing uses; text stays
+    /// anti-aliased, as in WPF. The bitmap cache needs no scale of its own, as Avalonia's renders at the
+    /// top level's scaling.
     /// </para>
     /// </remarks>
     public class DrawingVisualHost : Control
@@ -83,6 +82,8 @@ namespace OxyPlot.Wpf
         /// <see cref="BitmapCache.RenderAtScale"/> is set to the current per-monitor DPI scale
         /// to keep the cached bitmap sharp. <see cref="BitmapCache.SnapsToDevicePixels"/> is
         /// enabled to align with the existing pixel-snapping configuration.
+        /// XGoodFit port: Avalonia's cache already renders at the top level's scaling, so
+        /// <see cref="BitmapCache.RenderAtScale"/> stays 1.
         /// </para>
         /// </remarks>
         public bool UseBitmapCache
@@ -92,11 +93,11 @@ namespace OxyPlot.Wpf
             {
                 if (value)
                 {
-                    var pixelsPerDip = TopLevel.GetTopLevel(this)?.RenderScaling ?? 1.0;
-                    var scale = pixelsPerDip > 0 ? pixelsPerDip : 1.0;
+                    // XGoodFit port: Avalonia's cache already renders at the top level's scaling, which
+                    // WPF's needed RenderAtScale for; so the scale here is 1.
                     this.CacheMode = new BitmapCache
                     {
-                        RenderAtScale = scale,
+                        RenderAtScale = 1.0,
                         SnapsToDevicePixels = true,
                         EnableClearType = false,
                     };
@@ -138,6 +139,10 @@ namespace OxyPlot.Wpf
             set
             {
                 RenderOptions.SetEdgeMode(this, value ? EdgeMode.Aliased : EdgeMode.Unspecified);
+
+                // XGoodFit port: Avalonia's edge mode also aliases text whose rendering mode is unset,
+                // which WPF's doesn't (see PlotViewBase.DisableShapeAntiAliasing).
+                TextOptions.SetTextRenderingMode(this, value ? TextRenderingMode.SubpixelAntialias : TextRenderingMode.Unspecified);
             }
         }
 
@@ -157,51 +162,7 @@ namespace OxyPlot.Wpf
             this.visual.Render(context);
         }
 
-        /// <summary>
-        /// The top level whose scaling is followed (see <see cref="OnDpiChanged"/>).
-        /// </summary>
-        private TopLevel scalingSource;
-
-        /// <inheritdoc/>
-        /// <remarks>XGoodFit addition: follows the top level's scaling, as WPF's <c>OnDpiChanged</c> did.</remarks>
-        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
-        {
-            base.OnAttachedToVisualTree(e);
-            this.scalingSource = TopLevel.GetTopLevel(this);
-            if (this.scalingSource != null)
-            {
-                this.scalingSource.ScalingChanged += this.OnDpiChanged;
-            }
-        }
-
-        /// <inheritdoc/>
-        /// <remarks>XGoodFit addition: see <see cref="OnAttachedToVisualTree"/>.</remarks>
-        protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
-        {
-            base.OnDetachedFromVisualTree(e);
-            if (this.scalingSource != null)
-            {
-                this.scalingSource.ScalingChanged -= this.OnDpiChanged;
-                this.scalingSource = null;
-            }
-        }
-
-        /// <summary>
-        /// Re-applies <see cref="BitmapCache.RenderAtScale"/> when the host moves between
-        /// monitors with different DPI scales. Without this, an active <see cref="BitmapCache"/>
-        /// retains the original monitor's <c>PixelsPerDip</c> and renders blurry on the new
-        /// monitor (low-DPI cache scaled up) or unnecessarily oversharp (high-DPI cache scaled
-        /// down) until <see cref="UseBitmapCache"/> is toggled off and on.
-        /// </summary>
-        /// <param name="sender">The top level.</param>
-        /// <param name="e">The event data.</param>
-        private void OnDpiChanged(object sender, EventArgs e)
-        {
-            var pixelsPerDip = this.scalingSource?.RenderScaling ?? 1.0;
-            if (this.CacheMode is BitmapCache bc)
-            {
-                bc.RenderAtScale = pixelsPerDip > 0 ? pixelsPerDip : 1.0;
-            }
-        }
+        // XGoodFit port: WPF's OnDpiChanged override, which set the bitmap cache's RenderAtScale to the
+        // new monitor's scale, isn't needed: Avalonia's cache follows the top level's scaling itself.
     }
 }

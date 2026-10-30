@@ -594,7 +594,8 @@ namespace OxyPlot.Wpf
                 }
 
                 // XGoodFit port: Avalonia gives advances in design units, where WPF gave fractions of
-                // the em size; the line height is the font's line spacing.
+                // the em size; the line height is the ascent plus descent, as WPF's GlyphTypeface.Height
+                // (Avalonia's ascent is negative).
                 var glyph = glyphTypeface.CharacterToGlyphMap[ch];
                 glyphTypeface.TryGetHorizontalGlyphAdvance(glyph, out var advance);
                 var advanceWidth = (double)advance / glyphTypeface.Metrics.DesignEmHeight;
@@ -607,7 +608,7 @@ namespace OxyPlot.Wpf
                 width = lineWidth;
             }
 
-            var height = (double)glyphTypeface.Metrics.LineSpacing / glyphTypeface.Metrics.DesignEmHeight;
+            var height = (double)(glyphTypeface.Metrics.Descent - glyphTypeface.Metrics.Ascent) / glyphTypeface.Metrics.DesignEmHeight;
             return new OxySize(Math.Round(width * sizeInEm, 2), Math.Round(lines * height * sizeInEm, 2));
         }
 
