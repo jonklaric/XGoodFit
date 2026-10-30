@@ -2,11 +2,13 @@ using System.Collections;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using Avalonia.Utilities;
 
 namespace WpfCompat.Data;
 
 /// <summary>
-/// WPF's <c>System.ComponentModel.SortDescription</c>: a property to sort a view by, and the direction.
+/// WPF's <c>System.ComponentModel.SortDescription</c>: a property, or a property path such as
+/// <c>"Alternative.Name"</c>, to sort a view by, and the direction.
 /// </summary>
 public struct SortDescription
 {
@@ -19,7 +21,7 @@ public struct SortDescription
         Direction = direction;
     }
 
-    /// <summary>The property to sort by.</summary>
+    /// <summary>The property, or property path, to sort by.</summary>
     public string PropertyName { get; set; }
 
     /// <summary>The direction.</summary>
@@ -66,18 +68,26 @@ public class CollectionViewSource
 /// </para>
 /// <para>
 /// Values compare as WPF's view compares them without a culture (<see cref="Comparer.DefaultInvariant"/>),
-/// and items that compare equal keep the collection's order. The current position is WPF's: the view
+/// and items that compare equal keep the collection's order. A sort property can be a path, as in WPF
+/// (<c>"Alternative.Name"</c>); a path that doesn't resolve on an item gives null, so such items keep the
+/// collection's order. Live sorting through a path follows the objects along it, through weak events, as
+/// they are usually long-lived (a project's elements) while a view is made each time a list loads. The current position is WPF's: the view
 /// starts at its first item, and <see cref="MoveCurrentToPosition"/> moves it (-1 is before the first).
 /// Avalonia's selectors don't follow it; WPF's combo boxes did, which is why upstream moves it to -1.
 /// </para>
 /// </remarks>
-public sealed class SortedCollectionView : IList, IReadOnlyList<object>, INotifyCollectionChanged
+public sealed class SortedCollectionView : IList, IReadOnlyList<object>, INotifyCollectionChanged, IWeakEventSubscriber<PropertyChangedEventArgs>
 {
     private readonly IEnumerable? _source;
     private readonly SortDescription[] _sortDescriptions;
     private readonly bool _isLiveSorting;
     private readonly List<object> _items = new List<object>();
     private readonly HashSet<INotifyPropertyChanged> _watched = new HashSet<INotifyPropertyChanged>(ReferenceEqualityComparer.Instance);
+
+    // Live sorting through paths: the objects along an item's sort paths (after the item itself), each with the
+    // items it's on the path of, the path, and the property of it the path reads next.
+    private readonly Dictionary<INotifyPropertyChanged, List<(object Item, string Path, string Property)>> _pathOwners =
+        new Dictionary<INotifyPropertyChanged, List<(object Item, string Path, string Property)>>(ReferenceEqualityComparer.Instance);
 
     /// <summary>Creates the view.</summary>
     /// <param name="source">The collection to view, or null for an empty view.</param>
@@ -177,6 +187,11 @@ public sealed class SortedCollectionView : IList, IReadOnlyList<object>, INotify
             item.PropertyChanged -= Item_PropertyChanged;
         }
         _watched.Clear();
+        foreach (INotifyPropertyChanged owner in _pathOwners.Keys)
+        {
+            WeakEvents.ThreadSafePropertyChanged.Unsubscribe(owner, this);
+        }
+        _pathOwners.Clear();
         _items.Clear();
         if (_source == null)
         {
@@ -199,6 +214,7 @@ public sealed class SortedCollectionView : IList, IReadOnlyList<object>, INotify
         {
             changes.PropertyChanged += Item_PropertyChanged;
         }
+        WatchPaths(item);
     }
 
     private void Unwatch(object item)
@@ -206,6 +222,66 @@ public sealed class SortedCollectionView : IList, IReadOnlyList<object>, INotify
         if (item is INotifyPropertyChanged changes && !_items.Contains(item) && _watched.Remove(changes))
         {
             changes.PropertyChanged -= Item_PropertyChanged;
+        }
+        if (!_items.Contains(item))
+        {
+            UnwatchPaths(item);
+        }
+    }
+
+    // Watches the objects along an item's sort paths for the property the path reads next.
+    private void WatchPaths(object item)
+    {
+        if (!_isLiveSorting)
+        {
+            return;
+        }
+        foreach (SortDescription description in _sortDescriptions)
+        {
+            string[] properties = (description.PropertyName ?? string.Empty).Split('.');
+            object? owner = Read(item, properties[0]);
+            for (int i = 1; i < properties.Length && owner != null; i++)
+            {
+                if (owner is INotifyPropertyChanged changes)
+                {
+                    if (!_pathOwners.TryGetValue(changes, out var watches))
+                    {
+                        _pathOwners[changes] = watches = new List<(object, string, string)>();
+                        WeakEvents.ThreadSafePropertyChanged.Subscribe(changes, this);
+                    }
+                    watches.Add((item, description.PropertyName!, properties[i]));
+                }
+                owner = Read(owner, properties[i]);
+            }
+        }
+    }
+
+    private void UnwatchPaths(object item)
+    {
+        foreach (var (owner, watches) in _pathOwners.Where(pair => pair.Value.Any(w => ReferenceEquals(w.Item, item))).ToList())
+        {
+            watches.RemoveAll(w => ReferenceEquals(w.Item, item));
+            if (watches.Count == 0)
+            {
+                _pathOwners.Remove(owner);
+                WeakEvents.ThreadSafePropertyChanged.Unsubscribe(owner, this);
+            }
+        }
+    }
+
+    // Live sorting through a path: an object along it changed the property the path reads next.
+    void IWeakEventSubscriber<PropertyChangedEventArgs>.OnEvent(object? sender, WeakEvent ev, PropertyChangedEventArgs e)
+    {
+        if (sender is not INotifyPropertyChanged owner || !_pathOwners.TryGetValue(owner, out var watches))
+        {
+            return;
+        }
+        foreach (var (item, path, _) in watches.Where(w => string.IsNullOrEmpty(e.PropertyName) || w.Property == e.PropertyName).ToList())
+        {
+            // An object further along the path may have been replaced: follow the path again.
+            UnwatchPaths(item);
+            WatchPaths(item);
+            Item_PropertyChanged(item, new PropertyChangedEventArgs(path));
         }
     }
 
@@ -248,9 +324,15 @@ public sealed class SortedCollectionView : IList, IReadOnlyList<object>, INotify
     private void Item_PropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
         if (sender == null
-            || (!string.IsNullOrEmpty(e.PropertyName) && !_sortDescriptions.Any(d => d.PropertyName == e.PropertyName)))
+            || (!string.IsNullOrEmpty(e.PropertyName) && !_sortDescriptions.Any(d => d.PropertyName == e.PropertyName || StartsPath(d, e.PropertyName))))
         {
             return;
+        }
+        if (string.IsNullOrEmpty(e.PropertyName) || _sortDescriptions.Any(d => StartsPath(d, e.PropertyName)))
+        {
+            // The item replaced the first object along a sort path: follow the path again.
+            UnwatchPaths(sender);
+            WatchPaths(sender);
         }
         int oldIndex = _items.IndexOf(sender);
         if (oldIndex < 0
@@ -309,6 +391,25 @@ public sealed class SortedCollectionView : IList, IReadOnlyList<object>, INotify
         return 0;
     }
 
-    private static object? Value(object? item, string propertyName) =>
-        item == null || string.IsNullOrEmpty(propertyName) ? item : TypeDescriptor.GetProperties(item).Find(propertyName, false)?.GetValue(item);
+    // Whether a sort path goes through the item's property (the path's first part, before a dot).
+    private static bool StartsPath(SortDescription description, string? property) =>
+        !string.IsNullOrEmpty(property) && (description.PropertyName ?? string.Empty).StartsWith(property + ".", StringComparison.Ordinal);
+
+    // A property path's value, as WPF's view reads it: null where the path doesn't resolve.
+    private static object? Value(object? item, string propertyName)
+    {
+        if (string.IsNullOrEmpty(propertyName))
+        {
+            return item;
+        }
+        object? value = item;
+        foreach (string property in propertyName.Split('.'))
+        {
+            value = Read(value, property);
+        }
+        return value;
+    }
+
+    private static object? Read(object? item, string property) =>
+        item == null ? null : TypeDescriptor.GetProperties(item).Find(property, false)?.GetValue(item);
 }
