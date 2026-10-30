@@ -144,6 +144,7 @@ namespace RMC.BestFit.App.Tests.XGoodFit
                 window.Close();
                 view.Element = null;
             }
+            DeleteFolder(folder);
         }
 
         [STATestMethod]

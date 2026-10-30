@@ -110,6 +110,28 @@ namespace RMC.BestFit.App.Tests.XGoodFit
             FrameworkInterfaces.Messaging.Messenger.GetInstance().Clear();
         }
 
+        /// <summary>Deletes a test's temporary folder, retrying while HEC-DSS or SQLite let go of its files.</summary>
+        public static void DeleteFolder(string folder)
+        {
+            for (int attempt = 0; attempt < 10 && System.IO.Directory.Exists(folder); attempt++)
+            {
+                try
+                {
+                    System.IO.Directory.Delete(folder, recursive: true);
+                }
+                catch (System.IO.IOException)
+                {
+                    GC.Collect();
+                    GC.WaitForPendingFinalizers();
+                    System.Threading.Thread.Sleep(100);
+                }
+                catch (UnauthorizedAccessException)
+                {
+                    System.Threading.Thread.Sleep(100);
+                }
+            }
+        }
+
         /// <summary>
         /// Shows the document view on an element in a window, as MainProjectNode makes it, with a tab selected.
         /// </summary>

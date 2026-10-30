@@ -43,6 +43,7 @@ namespace RMC.BestFit.App.Tests.XGoodFit
     {
         private readonly List<BestFitProject> _projects = new List<BestFitProject>();
         private readonly List<Window> _windows = new List<Window>();
+        private readonly List<string> _folders = new List<string>();
         private CultureScope _culture;
 
         // The examples were saved in en-US (see CultureScope).
@@ -56,6 +57,8 @@ namespace RMC.BestFit.App.Tests.XGoodFit
             _windows.Clear();
             foreach (var project in _projects) TimeSeriesDataTesting.CloseProject(project);
             _projects.Clear();
+            foreach (string folder in _folders) DeleteFolder(folder);
+            _folders.Clear();
             ReleaseAppResources();
             _culture?.Dispose();
             _culture = null;
@@ -787,6 +790,7 @@ namespace RMC.BestFit.App.Tests.XGoodFit
         {
             string folder = Path.Combine(Path.GetTempPath(), "XGoodFitTimeSeriesData", Guid.NewGuid().ToString("N").Substring(0, 12));
             Directory.CreateDirectory(folder);
+            _folders.Add(folder);
             string copy = Path.Combine(folder, "dss-example-data.dss");
             File.Copy(Example("1-time-series-data/5-hec-dss-import/dss-example-data.dss"), copy);
             return copy;
