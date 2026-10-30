@@ -28,7 +28,7 @@ public class ColorConverter : TypeConverter
     /// </summary>
     /// <param name="value">The text.</param>
     /// <exception cref="FormatException"><paramref name="value"/> isn't a colour.</exception>
-    public static object? ConvertFromString(string? value) => value is null ? null : Parse(value);
+    public static new object? ConvertFromString(string? value) => value is null ? null : Parse(value);
 
     /// <inheritdoc/>
     public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType) =>
