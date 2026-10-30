@@ -20,24 +20,37 @@ namespace DSSUnitTests
 
     // XGoodFit port: the copies and new files go in one temporary folder per test run, which
     // DeleteTemporaryFiles removes afterwards. Upstream left them in the temporary folder itself.
+    private const string TempFolderPrefix = "xgoodfit-hecdss-tests-";
     private static readonly Lazy<string> TempPath = new Lazy<string>(() =>
-      Directory.CreateTempSubdirectory("xgoodfit-hecdss-tests-").FullName);
+      Directory.CreateTempSubdirectory(TempFolderPrefix).FullName);
 
     /// <summary>XGoodFit port: whether HEC's sample DSS files have been downloaded.</summary>
     internal static bool HasTestData => File.Exists(Path.Combine(BasePath, "sample7.dss"));
 
-    /// <summary>XGoodFit port: removes this run's temporary files, as far as nothing still holds them open.</summary>
+    /// <summary>
+    /// XGoodFit port: removes this run's temporary files, and earlier runs' folders. Some of HEC's tests
+    /// never close their files, which Windows then can't delete until the test process has ended.
+    /// </summary>
     internal static void DeleteTemporaryFiles()
     {
-      if (!TempPath.IsValueCreated)
-        return;
+      if (TempPath.IsValueCreated)
+        TryDeleteFolder(TempPath.Value);
+      foreach (string folder in Directory.GetDirectories(Path.GetTempPath(), TempFolderPrefix + "*"))
+      {
+        // An hour on, a folder can't belong to a run still going.
+        if (Directory.GetLastWriteTimeUtc(folder) < DateTime.UtcNow.AddHours(-1))
+          TryDeleteFolder(folder);
+      }
+    }
+
+    private static void TryDeleteFolder(string folder)
+    {
       try
       {
-        Directory.Delete(TempPath.Value, recursive: true);
+        Directory.Delete(folder, recursive: true);
       }
       catch (IOException)
       {
-        // Some of HEC's tests never close their files; they go when the temporary folder is cleaned.
       }
       catch (UnauthorizedAccessException)
       {
