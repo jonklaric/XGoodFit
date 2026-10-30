@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using AvalonDock;
 using AvalonDock.Layout;
+using FrameworkInterfaces;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
@@ -30,6 +31,8 @@ namespace RMC.BestFit.App.Tests.XGoodFit
     [DoNotParallelize]
     public sealed class BivariateAnalysisShellTests
     {
+        private static readonly ThemeColor[] Themes = { ThemeColor.Light, ThemeColor.Dark, ThemeColor.Blue };
+
         [TestMethod]
         public void TheDocument_ShowsTheAnalysis_ItsPropertiesAndItsPlotsProperties_AndClosingItChangesNothing()
         {
@@ -134,6 +137,39 @@ namespace RMC.BestFit.App.Tests.XGoodFit
                 finally
                 {
                     Application.Current.MainWindow = null;
+                    BestFitShell.Close(window);
+                }
+            });
+        }
+
+        /// <summary>
+        /// Captures the main window with the AMH fit open in the Light, Dark and Blue themes, in
+        /// artifacts/screenshots/bivariate-main-amh-{theme}.png.
+        /// </summary>
+        [TestMethod]
+        [TestCategory("Capture")]
+        public void CaptureTheMainWindow_WithTheAnalysisOpen_InEveryTheme()
+        {
+            HeadlessSession.Run(() =>
+            {
+                BestFitShell.Start();
+                BestFitShell.UseCaptureStyles();
+                MainWindow window = null;
+                try
+                {
+                    (window, MainProjectNode node, BestFitProject project) = BestFitShell.Open(BestFitShell.Example("bivariate-distribution-examples"));
+                    IElement amh = project.ElementCollections.OfType<BivariateAnalysisCollection>().Single().First(e => e.Name == "AMH Copula");
+                    window.DoubleClick(ElementNode.FindElementNode(amh, node).NodeHeader);
+                    foreach (ThemeColor theme in Themes)
+                    {
+                        UserSettings.ColorTheme = theme.ToString();
+                        ThemeManager.SetTheme(theme);
+                        ElementNode.FindElementNode(amh, node).IsSelected = true;
+                        BestFitShell.Capture(window, "bivariate-main-amh-" + theme.ToString().ToLowerInvariant());
+                    }
+                }
+                finally
+                {
                     BestFitShell.Close(window);
                 }
             });
