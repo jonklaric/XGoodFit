@@ -32,6 +32,9 @@ compared with its upstream original.
   on Avalonia's UI thread.
 - `scripts/porting/xgf_port.py` ports a file by exact, checked replacements: it copies the upstream
   file and fails if a replacement doesn't match, so everything else stays as upstream wrote it.
+- Native libraries are build outputs (`native/build-hecdss.sh` writes `artifacts/native`), never
+  committed. The project that wraps one ships it as `runtimes/<rid>/native` assets, which reach every
+  project that references it (see `src/Hec.Dss`).
 
 ## 2. Every ported file
 
@@ -250,6 +253,10 @@ Watch for others when porting:
 
 ## 7. Tests and checks
 
+- **Tests that need natives or downloads** (the DSS suites, the example projects) skip when they're
+  missing, so a plain `dotnet test` passes on a fresh clone, and fail instead under an environment
+  variable that CI sets (`XGOODFIT_REQUIRE_HECDSS=1`). To compare with an upstream release, load its
+  binaries in their own `AssemblyLoadContext` (see `tests/Hec.Dss.Tests`).
 - **Tests:** each ported project gets a headless MSTest project in `tests/`, copying
   `HeadlessSession.cs` from an existing one. Test what a screenshot can't show: commands, state, layout
   rules.
