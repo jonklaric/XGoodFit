@@ -64,6 +64,26 @@ public sealed class MainWindowTests
                 Assert.AreEqual($"{ShellPublicVariables.SoftwareName} 1.0.0  -  {project.FullFileName}", window.Title, "the title names the project's file");
                 CollectionAssert.Contains(window.ProjectMenu.Items.OfType<MenuItem>().Select(m => m.Header).ToArray(), "New Test Element...",
                     "the Project menu has the application's items");
+
+                // As upstream, the project properties' value columns take the Software Version
+                // control's value width (each binds its PropertyWidth to SoftwareVersion's
+                // ActualPropertyWidth), so they line up.
+                var properties = (ProjectPropertiesControl)anchorables[2].Content!;
+                var controls = properties.GetVisualDescendants().OfType<UserControl>().Where(c => c.Name is "NameTextBox" or "Description" or "CreationDate" or "LastModified" or "FileDirectory").ToList();
+                var version = properties.GetVisualDescendants().OfType<TextPropertyControl>().Single(c => c.Name == "SoftwareVersion");
+                Assert.AreEqual(5, controls.Count);
+                Assert.IsTrue(version.ActualPropertyWidth > 0, "the software version's value has a width");
+                foreach (UserControl control in controls)
+                {
+                    GridLength width = control switch
+                    {
+                        NameTextPropertyControl c => c.PropertyWidth,
+                        ResizeableTextPropertyControl c => c.PropertyWidth,
+                        TextPropertyControl c => c.PropertyWidth,
+                        _ => throw new InvalidOperationException(control.Name),
+                    };
+                    Assert.AreEqual(version.ActualPropertyWidth, width.Value, 0.5, $"{control.Name} lines up with the software version");
+                }
             }
             finally
             {

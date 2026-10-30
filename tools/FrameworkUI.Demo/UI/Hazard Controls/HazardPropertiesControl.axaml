@@ -9,8 +9,8 @@
       events in XAML). Avalonia can't name grid columns: the code finds them by position.
     - Visibility="Hidden" is WpfCompat's Visibility, and the button's ToolTip is ToolTip.Tip.
     - The dates format in WPF's binding culture (WpfCompat's FormattingCulture).
-    - As upstream, the property widths bind to ActualPropertyWidth, which the property controls don't
-      have: the bindings fail and the controls keep their default width.
+    - As upstream, the property widths bind to EffectiveRecordLength's ActualPropertyWidth, so the value
+      columns line up.
     - The probability ordinates editor is named (ProbabilityOrdinatesEditor), so the code-behind can add
       its PreviewMouseLeftButtonDown handler.
 -->

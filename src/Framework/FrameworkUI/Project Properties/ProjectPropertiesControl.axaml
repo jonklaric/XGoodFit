@@ -5,8 +5,8 @@
     - The property controls' PreviewMouseLeftButtonDown handlers are added in the code-behind
       (Avalonia has no Preview events in XAML).
     - The dates format in WPF's binding culture, en-US (WpfCompat's FormattingCulture, plan §5.2).
-    - As upstream, the property widths bind to SoftwareVersion's ActualPropertyWidth, which
-      TextPropertyControl doesn't have: the binding fails and the controls keep their default width.
+    - As upstream, the property widths bind to SoftwareVersion's ActualPropertyWidth, so the value
+      columns line up.
 -->
 <UserControl x:Class="FrameworkUI.ProjectPropertiesControl"
              xmlns="https://github.com/avaloniaui"
