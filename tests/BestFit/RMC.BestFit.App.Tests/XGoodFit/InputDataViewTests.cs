@@ -314,6 +314,98 @@ namespace RMC.BestFit.App.Tests.XGoodFit
             }
         }
 
+        /// <summary>
+        /// Manually entered data: the grid is editable; adding rows adds them to the series as one undoable action,
+        /// and an edited value reaches the series, the grid and the plots; undo puts the series back.
+        /// </summary>
+        [STATestMethod]
+        public void ManualEntry_AddsAndEditsRowsUndoably()
+        {
+            using var opened = ViewTesting.Open(BlockMaximum);
+            var collection = opened.Project.ElementCollections.OfType<InputDataCollection>().Single();
+            var element = new InputData("Manual entry", collection);
+            collection.Add(element);
+            var control = new InputDataControl { Element = element };
+            Window window = ViewTesting.Show(control);
+            try
+            {
+                var grid = control.FindControl<GenericControls.ValidationDataGrid>("ExactDataGrid");
+                Assert.IsFalse(grid.IsReadOnly, "manual data is editable");
+                Assert.IsTrue(grid.CanUserAddInsertDeleteRows);
+                CollectionAssert.AreEqual(new[] { "Index", "Value", "Plotting Position", "Low Outlier" }, grid.Columns.Select(c => c.Header?.ToString()).ToArray());
+
+                int undo = element.UndoManager.UndoStack.Count;
+                grid.AddRows(3);
+                ViewTesting.Settle();
+                Assert.AreEqual(3, element.DataFrame.ExactSeries.Count);
+                Assert.AreEqual(3, control.ExactDataOrdinates.Count);
+                Assert.AreEqual(undo + 1, element.UndoManager.UndoStack.Count, "one undoable action for the rows");
+
+                // The first row: upstream's row items find their ordinate by value (IndexOf), so editing another of
+                // several identical new rows edits the first one in the series (an upstream bug, kept).
+                ((ExactDataRowItem)control.ExactDataOrdinates[0]).Value = 1234.5;
+                ViewTesting.Settle();
+                Assert.AreEqual(1, element.DataFrame.ExactSeries.Count(d => d.Value == 1234.5), "the series has the value");
+                int shown = control.ExactDataOrdinates.IndexOf(control.ExactDataOrdinates.Cast<ExactDataRowItem>().Single(r => r.Value == 1234.5));
+                Assert.AreEqual(string.Format(WpfCompat.FormattingCulture.Current, "{0:" + FrameworkUI.UserSettings.ValueStringFormat + "}", 1234.5), CellText(grid, shown, 1));
+                var exact = element.ChronologyPlot.Series.OfType<OxyPlot.Wpf.ScatterPointSeries>().Single(s => s.Name == "ExactData");
+                Assert.IsTrue(exact.ItemsSource.Cast<RMC.BestFit.Models.ExactData>().Any(d => d.Value == 1234.5), "the chronology plots the value");
+
+                while (element.UndoManager.UndoStack.Count > undo)
+                    element.UndoManager.Undo();
+                ViewTesting.Settle();
+                Assert.AreEqual(0, element.DataFrame.ExactSeries.Count);
+                Assert.AreEqual(0, control.ExactDataOrdinates.Count, "the grid follows the undo");
+            }
+            finally
+            {
+                window.Close();
+            }
+        }
+
+        /// <summary>
+        /// An uncertain value's distribution opens in a popup beside its cell, with upstream's ten distributions, and
+        /// the distribution chosen there becomes the row's when the popup closes.
+        /// </summary>
+        [STATestMethod]
+        public void UncertainData_DistributionPopup_EditsTheRowsDistribution()
+        {
+            using var opened = ViewTesting.Open(BlockMaximum);
+            var collection = opened.Project.ElementCollections.OfType<InputDataCollection>().Single();
+            var element = new InputData("Uncertain data", collection);
+            collection.Add(element);
+            element.DataFrame.UncertainSeries.Add(new RMC.BestFit.Models.UncertainData(1990, new Numerics.Distributions.Normal(100, 10)));
+            var control = new InputDataControl { Element = element };
+            Window window = ViewTesting.Show(control);
+            try
+            {
+                control.FindControl<TabControl>("DataTabControl").SelectedIndex = 1;
+                ViewTesting.Settle();
+                var grid = control.FindControl<GenericControls.ValidationDataGrid>("UncertainDataGrid");
+                var toggle = Avalonia.VisualTree.VisualExtensions.GetVisualDescendants(grid.GetCell(0, 1)).OfType<Avalonia.Controls.Primitives.ToggleButton>().Single();
+                var popup = Avalonia.VisualTree.VisualExtensions.GetVisualDescendants(grid.GetCell(0, 1)).OfType<Avalonia.Controls.Primitives.Popup>().Single();
+                Assert.AreEqual(element.DataFrame.UncertainSeries.Cast<RMC.BestFit.Models.UncertainData>().Single().Distribution.DisplayLabel, ((TextBlock)toggle.Content).Text);
+
+                toggle.IsChecked = true;
+                ViewTesting.Settle();
+                Assert.IsTrue(popup.IsOpen);
+                var selector = (NumericControls.Distributions.Univariate.DistributionSelectorControl)((Border)popup.Child).Child;
+                Assert.AreEqual(10, selector.Distributions.Count);
+                Assert.AreEqual(100, selector.SelectedDistribution.Mean, 1E-9, "a copy of the row's distribution");
+
+                selector.SelectedDistribution = new Numerics.Distributions.Uniform(90, 120);
+                toggle.IsChecked = false;
+                ViewTesting.Settle();
+                var row = (UncertainDataRowItem)control.UncertainDataOrdinates[0];
+                Assert.IsInstanceOfType(row.Distribution, typeof(Numerics.Distributions.Uniform));
+                Assert.AreEqual(105, element.DataFrame.UncertainSeries[0].Value, 1E-9, "the series takes the new distribution's mean");
+            }
+            finally
+            {
+                window.Close();
+            }
+        }
+
         /// <summary>The text a grid cell shows.</summary>
         internal static string CellText(GenericControls.CopyPasteDataGrid grid, int row, int column) =>
             ((TextBlock)grid.GetCell(row, column).Content).Text;

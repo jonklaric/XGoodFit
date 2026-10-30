@@ -71,15 +71,24 @@ namespace RMC.BestFit.App.Tests.XGoodFit
             collection.Concat((collection.ElementCollections ?? Enumerable.Empty<IElementCollection>()).SelectMany(ElementsOf));
 
         /// <summary>
-        /// Adds the theme's window defaults (Themes' Resources/Defaults.axaml: Segoe UI 12, WPF's shape strokes) to
-        /// the application's styles, as the application's ThemeService does; the test application has Avalonia's.
+        /// Adds what the application's ThemeService adds and WpfTestHost doesn't: the theme's window defaults
+        /// (Themes' Resources/Defaults.axaml: Segoe UI 12, WPF's shape strokes) to the application's styles, and
+        /// Themes' control templates after the components' themes, which ThemeService merges after App.axaml's
+        /// dictionaries (so Themes' PropertiesTabItemStyle wins over OxyPlotControls', as in the application).
         /// </summary>
         /// <returns>Dispose it to remove them.</returns>
         internal static IDisposable ApplyThemeDefaults()
         {
             var defaults = new StyleInclude(new Uri("avares://Themes/")) { Source = new Uri("avares://Themes/Resources/Defaults.axaml") };
             Application.Current.Styles.Add(defaults);
-            return new Removal(() => Application.Current.Styles.Remove(defaults));
+            var source = new Uri("avares://Themes/Resources/Controls/Merged.axaml");
+            var templates = new ResourceInclude(source) { Source = source };
+            Application.Current.Resources.MergedDictionaries.Add(templates);
+            return new Removal(() =>
+            {
+                Application.Current.Resources.MergedDictionaries.Remove(templates);
+                Application.Current.Styles.Remove(defaults);
+            });
         }
 
         /// <summary>

@@ -6,8 +6,9 @@
       use is a ControlTheme, set with GenericControls' DataGridColumnStyles.ElementStyle.
     - Avalonia can't name grid columns: comments mark upstream's names, and the code finds the columns it
       uses by position.
-    - The hypothesis grid's MinRowHeight, which ProDataGrid lacks, is its row theme's MinHeight. The cell
-      tool tips are templates, built for each cell (a setter can't share one control between cells).
+    - The hypothesis grid's MinRowHeight, which ProDataGrid lacks (it sets each row's MinHeight itself), is
+      its wrapping cells' MinHeight. The cell tool tips are templates, built for each cell (a setter can't
+      share one control between cells).
     - The distribution popup's StaysOpen="False" is IsLightDismissEnabled, and Placement="Right" is
       RightEdgeAlignedTop; PopupAnimation and AllowsTransparency have no Avalonia equivalent.
     - ToolTip is ToolTip.Tip, and a collapsed element's Visibility is IsVisible="False" (the code-behind
@@ -347,11 +348,6 @@
                             AutoGenerateColumns="False" SelectionMode="Extended" SelectionUnit="Cell" IsReadOnly="True"
                             CanUserDeleteRows="False" CanUserAddRows="False" CanUserResizeColumns="True" ShowSortContextMenu="False"
                             CanUserResizeRows="False" CanUserSortColumns="False" CanUserReorderColumns="False" RowHeight="{x:Static sys:Double.NaN}">
-                    <cntrls:CopyPasteDataGrid.RowTheme>
-                        <ControlTheme TargetType="DataGridRow" BasedOn="{StaticResource CopyPasteDataGridRowStyle}">
-                            <Setter Property="MinHeight" Value="24"/>
-                        </ControlTheme>
-                    </cntrls:CopyPasteDataGrid.RowTheme>
                     <cntrls:CopyPasteDataGrid.Columns>
                         <!-- TestNameColumn -->
                         <DataGridTextColumn Header="Hypothesis Test" IsReadOnly="True" MinWidth="50" Width="0.5*" MaxWidth="400" 
@@ -360,6 +356,7 @@
                                     cntrls:DataGridColumnStyles.ElementStyle="{StaticResource WrapTextBlockStyle}">
                             <DataGridTextColumn.CellTheme>
                                 <ControlTheme TargetType="DataGridCell" BasedOn="{StaticResource Left_CellStyle}">
+                                    <Setter Property="MinHeight" Value="24"/>
                                     <Setter Property="ToolTip.Tip">
                                         <Template>
                                                 <TextBlock Text="{Binding Path=Inference}" TextAlignment="Left" TextWrapping="WrapWithOverflow" MaxWidth="300"/>
@@ -384,6 +381,7 @@
                                     HeaderTheme="{DynamicResource Center_ColumnHeaderStyle}" cntrls:DataGridColumnStyles.ElementStyle="{StaticResource WrapTextBlockStyle}">
                             <DataGridTextColumn.CellTheme>
                                 <ControlTheme TargetType="DataGridCell" BasedOn="{StaticResource Left_CellStyle}">
+                                    <Setter Property="MinHeight" Value="24"/>
                                     <Setter Property="ToolTip.Tip">
                                         <Template>
                                                 <TextBlock Text="{Binding Path=Inference}" TextAlignment="Left" TextWrapping="WrapWithOverflow"  MaxWidth="300"/>
