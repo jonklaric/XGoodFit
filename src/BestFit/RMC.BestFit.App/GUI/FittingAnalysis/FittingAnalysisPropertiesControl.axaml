@@ -1,0 +1,153 @@
+<!--
+    XGoodFit port of upstream's GUI/FittingAnalysis/FittingAnalysisPropertiesControl.xaml:
+    - GenericControls' dictionary is merged with a ResourceInclude. The grid's width follows the scroll
+      viewer's viewport (WPF's ViewportWidth is Viewport.Width).
+    - Styles are control themes (the properties tab style is looked up dynamically, from the application);
+      the tab panel's style is a style of the tab control's items presenter (WPF's TabPanel).
+    - The input data combo box's DisplayMemberPath is DisplayMemberBinding.
+    - The PreviewMouseLeftButtonDown handlers are added in the code-behind (Avalonia has no Preview events
+      in XAML), so the probability ordinates editor is named. ToolTip is ToolTip.Tip, and a hidden
+      element's Visibility is WpfCompat's.
+    - The dates format in WPF's binding culture (WpfCompat's FormattingCulture).
+-->
+<UserControl x:Class="RMC_BestFit.FittingAnalysisPropertiesControl" x:Name="FittingAnalysisProperties"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="using:RMC_BestFit"
+             xmlns:cntrls="using:GenericControls"
+             xmlns:wpf="using:WpfCompat"
+             xmlns:numcntrls="using:NumericControls"
+             mc:Ignorable="d"
+             MinWidth="100"
+             MinHeight="100"
+             d:DesignHeight="450" d:DesignWidth="800"
+             Background="{DynamicResource PropertyGrid.Content.Background}"
+             Foreground="{DynamicResource EnvironmentWindowText}"
+             KeyDown="FittingAnalysisProperties_KeyDown"
+             Unloaded="UserControl_Unloaded">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceInclude Source="avares://GenericControls/Resources/ResourceDictionary.axaml"/>
+                <ResourceDictionary>
+                    <cntrls:DoubleToGridLengthConverter x:Key="ActualToLengthConverter" />
+                </ResourceDictionary>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="10000000*" MinHeight="200"/>
+            <RowDefinition Height="*" MinHeight="1"/>
+            <RowDefinition Height="Auto" MinHeight="50" MaxHeight="200" />
+        </Grid.RowDefinitions>
+        <ScrollViewer x:Name="Viewer" Grid.Row="0" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+            <Grid x:Name="MainGrid" Width="{Binding ElementName=Viewer, Path=Viewport.Width}" MinWidth="200">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <TabControl Background="Transparent" DockPanel.Dock="Top" BorderBrush="Transparent" BorderThickness="0" Padding="0" Margin="0,5,0,0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center">
+                    <TabControl.Styles>
+                        <Style Selector="TabControl /template/ ItemsPresenter#PART_ItemsPresenter">
+                            <Setter Property="HorizontalAlignment" Value="Stretch" />
+                        </Style>
+                    </TabControl.Styles>
+                    <TabItem x:Name="General_TabItem" Header="General" Theme="{DynamicResource PropertiesTabItemStyle}">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+
+                            <!--Function Properties-->
+                            <Expander Grid.Row="0"
+                          Margin="0,4,4,8"
+                          Header="FITTING ANALYSIS PROPERTIES"
+                          IsExpanded="True"
+                          Grid.ColumnSpan="2"
+                          Theme="{DynamicResource PropertyExpanderStyle}">
+                                <DockPanel>
+
+                                    <cntrls:NameTextPropertyControl x:Name="ElementName" Margin="0 2" CharacterLimit="50" DockPanel.Dock="Top" Title="Name" MaxPropertyWidth="200"
+                                                        Text="{Binding Element.Name, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                                                        PropertyWidth="{Binding ElementName=LastModified, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}"
+                                                        GotFocus="Name_GotFocus" LostFocus="Name_LostFocus"/>
+
+                                    <cntrls:ResizeableTextPropertyControl x:Name="Description" Margin="0 2" DockPanel.Dock="Top" Title="Description" MaxPropertyWidth="200"
+                                                              Text="{Binding Element.Description, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                                                              PropertyWidth="{Binding ElementName=LastModified, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}"/>
+
+                                    <cntrls:TextPropertyControl x:Name="CreationDate" Margin="0 2" DockPanel.Dock="Top" Title="Created On" MaxPropertyWidth="200" IsReadOnly="True"
+                                                    Text="{Binding Element.CreationDate, UpdateSourceTrigger=PropertyChanged, Mode=OneWay, ConverterCulture={x:Static wpf:FormattingCulture.Current}}"
+                                                    PropertyWidth="{Binding ElementName=LastModified, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}"/>
+
+                                    <cntrls:TextPropertyControl x:Name="LastModified" Margin="0 2" DockPanel.Dock="Top" Title="Last Modified" MaxPropertyWidth="200" IsReadOnly="True"
+                                                    Text="{Binding Element.LastModified, UpdateSourceTrigger=PropertyChanged, Mode=OneWay, ConverterCulture={x:Static wpf:FormattingCulture.Current}}"/>
+
+                                    <!--Input Data-->
+                                    <cntrls:ContentPropertyControl x:Name="InputDataComboBox" Margin="0 2" DockPanel.Dock="Top" Title="Input Data" MaxPropertyWidth="200"
+                                               ToolTip.Tip="Select valid input data."
+                                               PropertyWidth="{Binding ElementName=LastModified, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}">
+                                        <cntrls:ContentPropertyControl.InnerContent>
+                                            <Border BorderBrush="Red" BorderThickness="1" IsVisible="True">
+                                                <ComboBox HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Loaded="ComboBox_Loaded"
+                                            SelectedValue="{Binding Element.InputData, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                                            DisplayMemberBinding="{Binding Name}" SelectionChanged="InputDataComboBox_SelectionChanged">
+                                                </ComboBox>
+                                            </Border>
+                                        </cntrls:ContentPropertyControl.InnerContent>
+                                    </cntrls:ContentPropertyControl>
+
+                                    <!--Fit Distributions Button-->
+                                    <Grid DockPanel.Dock="Top">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <ProgressBar x:Name="ProgressBar" Minimum="0" Maximum="100" Value="0" Height="24" Margin="2,5,4,0" Grid.Column="0" wpf:WpfElement.Visibility="Hidden" Background="{DynamicResource ProgressBar.Static.Background}" Foreground="{DynamicResource ProgressBar.Static.Foreground}" BorderBrush="{DynamicResource ProgressBar.Static.Border}"/>
+                                        <TextBlock x:Name="ProgressTextBlock" Text="0%" FontSize="10" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="2,5,4,0" Grid.Column="0" wpf:WpfElement.Visibility="Hidden" Foreground="{DynamicResource EnvironmentWindowText}"/>
+                                        <Button Name="FitButton" ToolTip.Tip="Click to run the analysis." Grid.Column="1"  VerticalContentAlignment="Center" HorizontalContentAlignment="Center"
+                                                Width="83" Height="24" Margin="0,5,0,0" Cursor="Hand" Click="FitButton_Click">
+                                            <StackPanel Orientation="Horizontal">
+                                                <ContentControl Content="{DynamicResource RunIcon}" Margin="0,0,4,0"/>
+                                                <TextBlock Text="Estimate" />
+                                            </StackPanel>
+                                        </Button>
+                                        <Button Name="CancelButton" ToolTip.Tip="Click to cancel the analysis." Grid.Column="1" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"
+                                                wpf:WpfElement.Visibility="Hidden" Width="83" Height="24" Margin="0,5,0,0" Cursor="Hand" Click="CancelButton_Click">
+                                            <StackPanel Orientation="Horizontal">
+                                                <ContentControl Content="{DynamicResource StopIcon}" Margin="0,0,4,0"/>
+                                                <TextBlock Text="Cancel" />
+                                            </StackPanel>
+                                        </Button>
+                                    </Grid>
+
+                                </DockPanel>
+                            </Expander>
+
+                        </Grid>
+                    </TabItem>
+                    <TabItem x:Name="Options_TabItem" Header="Options" Theme="{DynamicResource PropertiesTabItemStyle}">
+                        <!--Probability Ordinates-->
+                        <Expander Grid.Row="1"
+                            Margin="0,4,4,8"
+                            Header="PROBABILITY ORDINATES"
+                            IsExpanded="True"
+                            Grid.ColumnSpan="2"
+                            Theme="{DynamicResource PropertyExpanderStyle}">
+                            <DockPanel >
+                                <!--Probability Ordinates-->
+                                <numcntrls:ProbabilityOrdinatesControl x:Name="ProbabilityOrdinatesControl" ProbabilityOrdinates="{Binding ElementName=FittingAnalysisProperties, Path=Element.ProbabilityOrdinates, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}"/>
+                            </DockPanel>
+                        </Expander>
+                    </TabItem>
+                </TabControl>
+            </Grid>
+        </ScrollViewer>
+        <!--Property Attributes-->
+        <GridSplitter Grid.Row="1" Height="1" HorizontalAlignment="Stretch" VerticalAlignment="Bottom" Background="{DynamicResource SeparatorBorder}"/>
+        <cntrls:PropertyAttributes x:Name="PropertyAttributes" Grid.Row="2"/>
+    </Grid>
+</UserControl>

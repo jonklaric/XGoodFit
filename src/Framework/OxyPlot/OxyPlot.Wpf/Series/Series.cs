@@ -45,6 +45,8 @@ namespace OxyPlot.Wpf
     /// family with fallbacks, such as XGoodFit's default font.</item>
     /// <item>Avalonia has no <c>OnItemsSourceChanged</c> to override; <see cref="OnPropertyChanged(AvaloniaPropertyChangedEventArgs)"/>
     /// calls this class's own when ItemsSource changes. The weak collection subscription is Avalonia's.</item>
+    /// <item>A collection that notifies changes but isn't a list, which WPF's ItemsControl takes and Avalonia's
+    /// rejects, is the ItemsSource through a live list view of it (<see cref="NotifyingCollectionList"/>).</item>
     /// <item><see cref="PropertyChanged"/> hides Avalonia's own property-changed event of the same name,
     /// and is this class's INotifyPropertyChanged event, as in WPF.</item>
     /// </list>
@@ -170,10 +172,14 @@ namespace OxyPlot.Wpf
             VisibilityProperty.Changed.AddClassHandler<Series>(AppearanceChanged);
             VisibilityProperty.Changed.AddClassHandler<Series>((s, e) => s.IsVisible = s.Visibility == Visibility.Visible);
             IsVisibleProperty.Changed.AddClassHandler<Series>(IsVisibleChanged);
+            // XGoodFit port: WPF's ItemsControl takes any collection; Avalonia's throws for one that notifies
+            // changes but isn't a list (RMC-BestFit's data series), so the series views it as a list.
+            ItemsSourceProperty.OverrideMetadata<Series>(new StyledPropertyMetadata<IEnumerable>(
+                coerce: (_, value) => value is INotifyCollectionChanged && value is not IList ? new NotifyingCollectionList(value) : value));
             BackgroundProperty.OverrideDefaultValue<Series>(null);
             BackgroundProperty.Changed.AddClassHandler<Series>(AppearanceChanged);
             FontFamilyProperty.OverrideDefaultValue<Series>(new FontFamily("Segoe UI"));
-            FontFamilyProperty.Changed.AddClassHandler<Series>(AppearanceChanged);
+            FontFamilyProperty.Changed.AddClassHandler<Series>(FontFamilyChanged);
             FontSizeProperty.Changed.AddClassHandler<Series>(AppearanceChanged);
             FontWeightProperty.Changed.AddClassHandler<Series>(AppearanceChanged);
             ForegroundProperty.Changed.AddClassHandler<Series>(AppearanceChanged);
@@ -334,6 +340,39 @@ namespace OxyPlot.Wpf
             series.OnVisualChanged();
             series.OnPropertyChanged(e.Property.Name);
         }
+
+        /// <summary>
+        /// Handles changes to <c>FontFamily</c>: an appearance change, unless the family is the same font.
+        /// </summary>
+        /// <param name="series">The series.</param>
+        /// <param name="e">The event arguments.</param>
+        /// <remarks>
+        /// XGoodFit addition. WPF's font families are equal when their text is (FontFamily.Equals), and a
+        /// series inherits the system font (Segoe UI) in a window and out of it, so moving a plot in or out of
+        /// a window changes nothing. In Avalonia, a series inherits the theme's family with fallbacks ("Segoe
+        /// UI" with Selawik) in a window, and Avalonia's default family ("$Default") out of it, so detaching a
+        /// view (closing or switching a document) would report a font change, which an element's undo bridge
+        /// records and which marks the element changed. So families with the same WPF text form
+        /// (<see cref="FontFamilyConverter"/>), which the OxyPlot series and saved files use, are the same font,
+        /// and Avalonia's default family is WPF's default, Segoe UI.
+        /// </remarks>
+        private static void FontFamilyChanged(Series series, AvaloniaPropertyChangedEventArgs e)
+        {
+            // The series' value, not the event's: a series that stops inheriting has its type's default, but
+            // Avalonia reports the property's own default.
+            if (e.OldValue is FontFamily oldFamily && series.FontFamily is FontFamily newFamily && WpfFontText(oldFamily) == WpfFontText(newFamily))
+            {
+                return;
+            }
+
+            AppearanceChanged(series, e);
+        }
+
+        /// <summary>The WPF text form of a font family, where Avalonia's default family is WPF's default font.</summary>
+        /// <param name="family">The font family.</param>
+        /// <returns>The text.</returns>
+        private static string WpfFontText(FontFamily family) =>
+            family.Name == FontFamily.Default.Name ? "Segoe UI" : FontFamilyConverter.ToString(family);
 
         /// <summary>
         /// Handles changes to data-related dependency properties.

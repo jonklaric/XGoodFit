@@ -1,0 +1,570 @@
+<!--
+    XGoodFit port of upstream's GUI/InputData/InputDataControl.xaml:
+    - A string format with commas is quoted, as well as escaped with {}.
+    - Styles are control themes (Theme, CellTheme, HeaderTheme); the text block style the wrapping columns
+      use is a ControlTheme, set with GenericControls' DataGridColumnStyles.ElementStyle.
+    - Avalonia can't name grid columns: comments mark upstream's names, and the code finds the columns it
+      uses by position.
+    - The hypothesis grid's MinRowHeight, which ProDataGrid lacks, is its row theme's MinHeight. The cell
+      tool tips are templates, built for each cell (a setter can't share one control between cells).
+    - The distribution popup's StaysOpen="False" is IsLightDismissEnabled, and Placement="Right" is
+      RightEdgeAlignedTop; PopupAnimation and AllowsTransparency have no Avalonia equivalent.
+    - ToolTip is ToolTip.Tip, and a collapsed element's Visibility is IsVisible="False" (the code-behind
+      changes them with WpfCompat's Visibility). The USGS text is WpfCompat's read-only RichTextBox.
+    - PreviewMouseDown, the grids' MouseDown and the radio buttons' and check box's Checked and Unchecked
+      handlers are added in the code-behind (WpfCompat's mouse and toggle button events).
+-->
+<UserControl x:Class="RMC_BestFit.InputDataControl"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="using:RMC_BestFit"
+             xmlns:sys="using:System"
+             xmlns:cntrls="using:GenericControls"
+             xmlns:oxy="http://oxyplot.org/wpf"
+             xmlns:oxyCntrls="using:OxyPlotControls"
+             xmlns:ncntrls="using:NumericControls.Distributions.Univariate"
+             xmlns:wpfc="using:WpfCompat.Controls"
+             mc:Ignorable="d" 
+             d:DesignHeight="600" 
+             d:DesignWidth="1000" 
+             Loaded="UserControl_Loaded"
+             Unloaded="UserControl_Unloaded"
+             LostFocus="UserControl_LostFocus"
+             Background="{DynamicResource EnvironmentWindowBackground}"
+             Foreground="{DynamicResource EnvironmentWindowText}">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary>
+                    <cntrls:DoubleToNAConverter x:Key="NAConverter"/>
+                    <cntrls:ReverseBooleanConverter x:Key="ReverseBoolConverter"/>
+                    <!-- Define a TextBlock style that wraps text -->
+                    <ControlTheme x:Key="WrapTextBlockStyle" TargetType="TextBlock">
+                        <Setter Property="TextWrapping" Value="WrapWithOverflow"/>
+                        <Setter Property="TextAlignment" Value="Left"/>
+                    </ControlTheme>
+                </ResourceDictionary>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <TabControl x:Name="MainTabControl" TabStripPlacement="Left" SelectionChanged="MainTabControl_SelectionChanged">
+        <TabItem x:Name="DataFrameTab" Header="Data Frame" Theme="{DynamicResource VerticalTabItemStyle}" >
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="400" MinWidth="200" MaxWidth="600"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="1*"/>
+                </Grid.ColumnDefinitions>
+                <TabControl x:Name="DataTabControl" TabStripPlacement="Top" Grid.Column="0" Margin="2, 2, 0, 2">
+                    <TabItem Header="Exact Data" Theme="{DynamicResource HorizontalTabItemStyle}" 
+                             ToolTip.Tip="Data collected at regular intervals under a defined protocol. These values are treated as exact in the likelihood function.">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+                            <cntrls:DataGridToolbar Grid.Row="0" Name="ExactDataGridToolBar" DataGrid="{Binding ElementName=ExactDataGrid, Mode=OneTime}" ToolOrientation="Horizontal"/>
+                            <cntrls:ValidationDataGrid Grid.Row="1" Name="ExactDataGrid"
+                                   Theme="{DynamicResource ValidationDataGridStyle}" 
+                                   IsReadOnly="False" 
+                                   AutoGenerateColumns="True" 
+                                   SelectionMode="Extended" 
+                                   SelectionUnit="CellOrRowHeader"  
+                                   ShowSortContextMenu="True"
+                                   CanUserAddInsertDeleteRows="True" 
+                                   CanUserDeleteRows="False" 
+                                   CanUserAddRows="False"
+                                   CanUserResizeRows="False" 
+                                   CanUserResizeColumns="True" 
+                                   CanUserSortColumns="True" 
+                                   CanUserReorderColumns="False" 
+                                   PasteAddsRows="True" 
+                                   AutoGeneratedColumns="ExactDataGrid_AutoGeneratedColumns"
+                                   AutoGeneratingColumn="ExactDataGrid_AutoGeneratingColumn"
+                                   PreviewAddRows="ExactDataGrid_PreviewAddRows"
+                                   PreviewDeleteRows="ExactDataGrid_PreviewDeleteRows"
+                                   PreviewPasteData="ExactDataGrid_PreviewPasteData"
+                                   DataPasted="ExactDataGrid_DataPasted"
+                                   >
+                            </cntrls:ValidationDataGrid>
+                        </Grid>
+                    </TabItem>
+                    <TabItem Header="Uncertain Data" Theme="{DynamicResource HorizontalTabItemStyle}" 
+                             ToolTip.Tip="Data with inherent uncertainty or measurement error. In the likelihood function, these measurements are modeled as uncertain." >
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+                            <cntrls:DataGridToolbar Grid.Row="0" Name="UncertainDataGridToolBar" DataGrid="{Binding ElementName=UncertainDataGrid, Mode=OneTime}" ToolOrientation="Horizontal"/>
+                            <cntrls:ValidationDataGrid Grid.Row="1" Name="UncertainDataGrid"
+                                   Theme="{DynamicResource ValidationDataGridStyle}" 
+                                   IsReadOnly="False" 
+                                   AutoGenerateColumns="False" 
+                                   SelectionMode="Extended" 
+                                   SelectionUnit="CellOrRowHeader"  
+                                   ShowSortContextMenu="True"
+                                   CanUserAddInsertDeleteRows="True" 
+                                   CanUserDeleteRows="False" 
+                                   CanUserAddRows="False"
+                                   CanUserResizeRows="False" 
+                                   CanUserResizeColumns="True" 
+                                   CanUserSortColumns="True" 
+                                   CanUserReorderColumns="False" 
+                                   PasteAddsRows="True" 
+                                   AutoGeneratedColumns="UncertainDataGrid_AutoGeneratedColumns"
+                                   PreviewAddRows="UncertainDataGrid_PreviewAddRows"
+                                   PreviewDeleteRows="UncertainDataGrid_PreviewDeleteRows"
+                                   DataPasted="UncertainDataGrid_DataPasted"
+                                   PreviewPasteData="UncertainDataGrid_PreviewPasteData"
+                                   >
+                                <DataGrid.Resources>
+                                    <DataTemplate x:Key="DistributionSelector">
+                                        <Grid>
+                                            <ToggleButton Name="PopupToggleButton" Margin="1" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" ToolTip.Tip="Click to edit the distribution."
+                                                IsHitTestVisible="{Binding ElementName=DistributionPopup, Path=IsOpen, Converter={StaticResource ReverseBoolConverter}}">
+                                                <TextBlock Name="DistributionTextBlock" Text="{Binding Path=Distribution.DisplayLabel}" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="3,0,0,0"/>
+                                            </ToggleButton>
+
+                                            <Popup Name="DistributionPopup" IsOpen="{Binding ElementName=PopupToggleButton, Path=IsChecked, Mode=TwoWay}" 
+                                                Placement="RightEdgeAlignedTop" PlacementTarget="{Binding ElementName=PopupToggleButton}"
+                                                IsLightDismissEnabled="True"
+                                                Opened="DistributionPopup_Opened"
+                                                Closed="DistributionPopup_Closed">
+                                                <Border Background="{DynamicResource EnvironmentWindowBackground}" BorderBrush="{DynamicResource Button.Static.Border}" BorderThickness="1" >
+                                                    <ncntrls:DistributionSelectorControl x:Name="SelectorControl" Margin="5" Width="300"
+                                                       BackgroundColor="{DynamicResource EnvironmentWindowBackground}" 
+                                                       ShowAxisTitle="True"                                                               
+                                                       ShowTickLines="True"
+                                                       ShowAxisLabel="True"
+                                                       ExpandPlot="False"
+                                                       ShowPlot="True"
+                                                       ShowStatistics="True"
+                                                       DistributionTitle="Uncertain Data Point">
+                                                    </ncntrls:DistributionSelectorControl>
+                                                </Border>
+                                            </Popup>
+                                        </Grid>
+                                    </DataTemplate>
+                                </DataGrid.Resources>
+                                <cntrls:ValidationDataGrid.Columns>
+
+                                    <!-- IndexColumn -->
+                                    <DataGridTextColumn 
+                                            Header="Index" 
+                                            Width="0.33*" 
+                                            MinWidth="10"
+                                            MaxWidth="150"
+                                            Binding="{Binding Path=Index, StringFormat=F0}"
+                                            HeaderTheme="{DynamicResource Center_ColumnHeaderStyle}" 
+                                            CellTheme="{DynamicResource Center_CellStyle}"/>
+
+                                    <!-- DistributionColumn -->
+                                    <DataGridTemplateColumn Header="Distribution" CellTemplate="{StaticResource DistributionSelector}" 
+                                        HeaderTheme="{DynamicResource Center_ColumnHeaderStyle}" SortMemberPath="Distribution.Mean"
+                                        Width="0.33*" 
+                                        MaxWidth="200"
+                                        MinWidth="10"
+                                        IsReadOnly="True"
+                                    />
+
+                                    <!-- PlottingPositionColumn -->
+                                    <DataGridTextColumn
+                                            Header="Plotting Position"
+                                            Width="0.33*"
+                                            MinWidth="10"
+                                            MaxWidth="150"
+                                            IsReadOnly="True"
+                                            Binding="{Binding Path=PlottingPosition, StringFormat=F6, Converter={StaticResource NAConverter}}"
+                                            HeaderTheme="{DynamicResource Center_ColumnHeaderStyle}"
+                                            CellTheme="{DynamicResource Right_ReadOnly_CellStyle}"/>
+
+                                </cntrls:ValidationDataGrid.Columns>
+                            </cntrls:ValidationDataGrid>
+                        </Grid>
+                    </TabItem>
+                    <TabItem Header="Interval Data" Theme="{DynamicResource HorizontalTabItemStyle}" 
+                            ToolTip.Tip="Data with values that are not exact but fall within a specified range. These values are treated as interval-censored in the likelihood function.">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+                            <cntrls:DataGridToolbar Grid.Row="0" Name="IntervalDataGridToolBar" DataGrid="{Binding ElementName=IntervalDataGrid, Mode=OneTime}" ToolOrientation="Horizontal"/>
+                            <cntrls:ValidationDataGrid Grid.Row="1" Name="IntervalDataGrid"
+                                   Theme="{DynamicResource ValidationDataGridStyle}" 
+                                   IsReadOnly="False" 
+                                   AutoGenerateColumns="True" 
+                                   SelectionMode="Extended" 
+                                   SelectionUnit="CellOrRowHeader"  
+                                   ShowSortContextMenu="True"
+                                   CanUserAddInsertDeleteRows="True" 
+                                   CanUserDeleteRows="False" 
+                                   CanUserAddRows="False"
+                                   CanUserResizeRows="False" 
+                                   CanUserResizeColumns="True" 
+                                   CanUserSortColumns="True" 
+                                   CanUserReorderColumns="False" 
+                                   PasteAddsRows="True" 
+                                   AutoGeneratedColumns="IntervalDataGrid_AutoGeneratedColumns"
+                                   AutoGeneratingColumn="IntervalDataGrid_AutoGeneratingColumn"
+                                   PreviewAddRows="IntervalDataGrid_PreviewAddRows"
+                                   PreviewDeleteRows="IntervalDataGrid_PreviewDeleteRows"
+                                   DataPasted="IntervalDataGrid_DataPasted"
+                                   PreviewPasteData="IntervalDataGrid_PreviewPasteData"
+                                   >
+                            </cntrls:ValidationDataGrid>
+                        </Grid>
+                    </TabItem>
+                    <TabItem Header="Threshold Data" Theme="{DynamicResource HorizontalTabItemStyle}" 
+                            ToolTip.Tip="Data points recorded during a period that fall below (or above) a threshold, with an unknown deviation. These values are treated as binomial-censored in the likelihood function." >
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+                            <cntrls:DataGridToolbar Grid.Row="0" Name="ThresholdDataGridToolBar" DataGrid="{Binding ElementName=ThresholdDataGrid, Mode=OneTime}" ToolOrientation="Horizontal"/>
+                            <cntrls:ValidationDataGrid Grid.Row="1" Name="ThresholdDataGrid"
+                                   Theme="{DynamicResource ValidationDataGridStyle}" 
+                                   IsReadOnly="False" 
+                                   AutoGenerateColumns="True" 
+                                   SelectionMode="Extended" 
+                                   SelectionUnit="CellOrRowHeader"  
+                                   ShowSortContextMenu="False"
+                                   CanUserAddInsertDeleteRows="True" 
+                                   CanUserDeleteRows="False" 
+                                   CanUserAddRows="False"
+                                   CanUserResizeRows="False" 
+                                   CanUserResizeColumns="True" 
+                                   CanUserSortColumns="False" 
+                                   CanUserReorderColumns="False" 
+                                   PasteAddsRows="True" 
+                                   AutoGeneratedColumns="ThresholdDataGrid_AutoGeneratedColumns"
+                                   AutoGeneratingColumn="ThresholdDataGrid_AutoGeneratingColumn"
+                                   PreviewAddRows="ThresholdDataGrid_PreviewAddRows"
+                                   PreviewDeleteRows="ThresholdDataGrid_PreviewDeleteRows"
+                                   DataPasted="ThresholdDataGrid_DataPasted"
+                                   PreviewPasteData="ThresholdDataGrid_PreviewPasteData"
+                                   >
+                            </cntrls:ValidationDataGrid>
+                        </Grid>
+                    </TabItem>
+                </TabControl>
+
+                <GridSplitter  Grid.Column="1" ResizeBehavior="PreviousAndNext"  HorizontalAlignment="Left" VerticalAlignment="Stretch" Background="Transparent" Theme="{DynamicResource VerticalGridSplitterStyle}"/>
+
+                <Grid Grid.Column="2">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="24"/>
+                    </Grid.RowDefinitions>
+
+                    <Grid Grid.Row="0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="1*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <ContentControl x:Name="ChronologyPlotHost" Grid.Column="0" Margin="6,2,0,0"/>
+                        <oxyCntrls:OxyPlotToolbar x:Name="PlotToolbar" Grid.Column="1" Margin="0,2,2,0" Background="Transparent" VerticalAlignment="Stretch" ToolBarOrientation="Vertical"/>
+                        <ContentControl x:Name="FrequencyPlotHost" Grid.Column="0" Margin="6,2,0,0" IsVisible="False"/>
+
+                    </Grid>
+                    <Grid Grid.Row="1" Margin="6,0,0,2">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="30"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <RadioButton x:Name="ChronologyPlotRadioButton" Content="Chronology Plot" VerticalAlignment="Center" HorizontalAlignment="Center" Grid.Column="1" IsChecked="True"
+                            ToolTip.Tip="Display data in chronological order (index on X-axis)."/>
+                        <RadioButton x:Name="FrequencyPlotRadioButton" Content="Frequency Plot" VerticalAlignment="Center" HorizontalAlignment="Center" Grid.Column="3" IsChecked="False"
+                            ToolTip.Tip="Display the nonparametric frequency plot."/>
+                    </Grid>
+                </Grid>
+            </Grid>
+        </TabItem>
+        <TabItem x:Name="SummaryStatisticsTab" Header="Summary Statistics" Theme="{DynamicResource VerticalTabItemStyle}" >
+            <Grid Grid.Column="2" Grid.Row="1" Margin="2" >
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <cntrls:CopyPasteDataGrid Name="SummaryStatisticsDataGrid" HeadersVisibility="Column" Theme="{DynamicResource CopyPasteDataGridStyle}"
+                    AutoGenerateColumns="False" SelectionMode="Extended" SelectionUnit="Cell" IsReadOnly="True"
+                    CanUserDeleteRows="False" CanUserAddRows="False" CanUserResizeColumns="True" ShowSortContextMenu="False"
+                    CanUserResizeRows="False" CanUserSortColumns="False" CanUserReorderColumns="False"
+                    LoadingRow="SummaryStatisticsDataGrid_LoadingRow">
+                    <cntrls:CopyPasteDataGrid.Columns>
+                        <!-- StatNameColumn -->
+                        <DataGridTextColumn Header="Measure" IsReadOnly="True" MinWidth="50" Width="0.33*" MaxWidth="300"
+                            Binding="{Binding Path=Name}" 
+                            HeaderTheme="{DynamicResource Left_ColumnHeaderStyle}"
+                            CellTheme="{DynamicResource Left_CellStyle}"/>
+                        <!-- ExactDataColumn -->
+                        <DataGridTextColumn Header="Exact Data Only" IsReadOnly="True"  MinWidth="50" Width="0.33*"
+                            Binding="{Binding Path=Value, StringFormat='{}{0:#,##0.####}', FallbackValue=N/A, TargetNullValue=N/A, Converter={StaticResource NAConverter}}" 
+                            HeaderTheme="{DynamicResource Center_ColumnHeaderStyle}"
+                            CellTheme="{DynamicResource Right_CellStyle}"/>
+                        <!-- NonparametricColumn -->
+                        <DataGridTextColumn Header="Nonparametric" IsReadOnly="True"  MinWidth="50" Width="0.33*" 
+                            Binding="{Binding Path=Value2, StringFormat='{}{0:#,##0.####}', FallbackValue=N/A, TargetNullValue=N/A, Converter={StaticResource NAConverter}}" 
+                            HeaderTheme="{DynamicResource Center_ColumnHeaderStyle}"
+                            CellTheme="{DynamicResource Right_CellStyle}"/>
+                    </cntrls:CopyPasteDataGrid.Columns>
+                </cntrls:CopyPasteDataGrid>
+            </Grid>
+        </TabItem>
+        <TabItem x:Name="HypothesisTestsTab" Header="Hypothesis Tests" Theme="{DynamicResource VerticalTabItemStyle}">
+            <Grid Grid.Column="2" Grid.Row="1" Margin="2,0,2,0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="7.526"/>
+                    <RowDefinition Height="22.474"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <Grid Grid.Row="0" Grid.RowSpan="2">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="Split Index" Margin="4,4,4,0" Grid.Column="0" VerticalAlignment="Center" 
+                               ToolTip.Tip="Select an index to split the exact data into two samples."
+                               Theme="{DynamicResource BasicTextBlockStyle}"/>
+                    <cntrls:NumericSlider x:Name="IndexSlider" Height="22" Margin="4" Width="200" Grid.Row="1" Grid.Column="1" DecimalPlaces="4" ValueChanged="IndexSlider_ValueChanged" ToolTip.Tip="Select an index to split the exact data into two samples."/>
+                    <CheckBox x:Name="UseLogValues" Grid.Column="2" Content="Logarithmic Data" ToolTip.Tip="Check to display data on a log10 scale." IsChecked="True" VerticalContentAlignment="Center"/>
+                </Grid>
+
+                <cntrls:CopyPasteDataGrid Name="HypothesisDataGrid" Grid.Row="2" HeadersVisibility="Column" Theme="{DynamicResource CopyPasteDataGridStyle}"
+                            AutoGenerateColumns="False" SelectionMode="Extended" SelectionUnit="Cell" IsReadOnly="True"
+                            CanUserDeleteRows="False" CanUserAddRows="False" CanUserResizeColumns="True" ShowSortContextMenu="False"
+                            CanUserResizeRows="False" CanUserSortColumns="False" CanUserReorderColumns="False" RowHeight="{x:Static sys:Double.NaN}">
+                    <cntrls:CopyPasteDataGrid.RowTheme>
+                        <ControlTheme TargetType="DataGridRow" BasedOn="{StaticResource CopyPasteDataGridRowStyle}">
+                            <Setter Property="MinHeight" Value="24"/>
+                        </ControlTheme>
+                    </cntrls:CopyPasteDataGrid.RowTheme>
+                    <cntrls:CopyPasteDataGrid.Columns>
+                        <!-- TestNameColumn -->
+                        <DataGridTextColumn Header="Hypothesis Test" IsReadOnly="True" MinWidth="50" Width="0.5*" MaxWidth="400" 
+                                    Binding="{Binding Path=Name}" 
+                                    HeaderTheme="{DynamicResource Left_ColumnHeaderStyle}"
+                                    cntrls:DataGridColumnStyles.ElementStyle="{StaticResource WrapTextBlockStyle}">
+                            <DataGridTextColumn.CellTheme>
+                                <ControlTheme TargetType="DataGridCell" BasedOn="{StaticResource Left_CellStyle}">
+                                    <Setter Property="ToolTip.Tip">
+                                        <Template>
+                                                <TextBlock Text="{Binding Path=Inference}" TextAlignment="Left" TextWrapping="WrapWithOverflow" MaxWidth="300"/>
+                                            </Template>
+                                    </Setter>
+                                </ControlTheme>
+                            </DataGridTextColumn.CellTheme>
+                        </DataGridTextColumn>
+                        <!-- PValueColumn -->
+                        <DataGridTextColumn Header="P-Value" IsReadOnly="True" Width="75"
+                                    Binding="{Binding Path=PValue}" 
+                                    HeaderTheme="{DynamicResource Center_ColumnHeaderStyle}"
+                                    CellTheme="{DynamicResource Center_CellStyle}"/>
+                        <!-- SignificanceColumn -->
+                        <DataGridTextColumn Header="Signif." IsReadOnly="True" Width="50" 
+                                    Binding="{Binding Path=Significance}" 
+                                    HeaderTheme="{DynamicResource Center_ColumnHeaderStyle}"
+                                    CellTheme="{DynamicResource Center_CellStyle}"/>
+                        <!-- InferenceColumn -->
+                        <DataGridTextColumn Header="Inference" IsReadOnly="True" MinWidth="50" Width="0.5*"
+                                    Binding="{Binding Path=Inference}" 
+                                    HeaderTheme="{DynamicResource Center_ColumnHeaderStyle}" cntrls:DataGridColumnStyles.ElementStyle="{StaticResource WrapTextBlockStyle}">
+                            <DataGridTextColumn.CellTheme>
+                                <ControlTheme TargetType="DataGridCell" BasedOn="{StaticResource Left_CellStyle}">
+                                    <Setter Property="ToolTip.Tip">
+                                        <Template>
+                                                <TextBlock Text="{Binding Path=Inference}" TextAlignment="Left" TextWrapping="WrapWithOverflow"  MaxWidth="300"/>
+                                            </Template>
+                                    </Setter>
+                                </ControlTheme>
+                            </DataGridTextColumn.CellTheme>
+                        </DataGridTextColumn>
+                    </cntrls:CopyPasteDataGrid.Columns>
+                </cntrls:CopyPasteDataGrid>
+                <TextBlock Grid.Row="3" Text="Significance codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1" 
+                           TextWrapping ="WrapWithOverflow" Theme="{DynamicResource BasicTextBlockStyle}"/>
+            </Grid>
+        </TabItem>
+        <TabItem x:Name="SeasonalityTab" Header="Seasonality Plot" Theme="{DynamicResource VerticalTabItemStyle}">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <TextBlock x:Name="SeasonalityWarning" Grid.Row="0"
+                           Text="The seasonality plot requires date-time data with at least 10 exact data points."
+                           TextWrapping="Wrap" Foreground="#FFE41400" FontSize="13"
+                           Margin="10,8,10,4" IsVisible="False"/>
+                <Grid Grid.Row="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <ContentControl x:Name="SeasonalityPlotHost" Grid.Column="0"/>
+                    <oxyCntrls:OxyPlotToolbar x:Name="SeasonalityPlotToolbar" Grid.Column="1" IconSize="20" Margin="0,2,2,0" Background="Transparent" VerticalAlignment="Stretch" ToolBarOrientation="Vertical"/>
+                </Grid>
+            </Grid>
+        </TabItem>
+        <TabItem x:Name="DensityTab" Header="Density Plot" Theme="{DynamicResource VerticalTabItemStyle}">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <TextBlock x:Name="DensityWarning" Grid.Row="0"
+                           Text="The density plot requires at least 10 exact data points."
+                           TextWrapping="Wrap" Foreground="#FFE41400" FontSize="13"
+                           Margin="10,8,10,4" IsVisible="False"/>
+                <Grid Grid.Row="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <ContentControl x:Name="DensityPlotHost" Grid.Column="0"/>
+                    <oxyCntrls:OxyPlotToolbar x:Name="DensityPlotToolbar" Grid.Column="1" IconSize="20" Margin="0,2,2,0" Background="Transparent" VerticalAlignment="Stretch" ToolBarOrientation="Vertical"/>
+                </Grid>
+            </Grid>
+        </TabItem>
+        <TabItem x:Name="HistogramTab" Header="Histogram Plot" Theme="{DynamicResource VerticalTabItemStyle}">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <TextBlock x:Name="HistogramWarning" Grid.Row="0"
+                           Text="The histogram plot requires at least 10 exact data points."
+                           TextWrapping="Wrap" Foreground="#FFE41400" FontSize="13"
+                           Margin="10,8,10,4" IsVisible="False"/>
+                <Grid Grid.Row="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <ContentControl x:Name="HistogramPlotHost" Grid.Column="0"/>
+                    <oxyCntrls:OxyPlotToolbar x:Name="HistogramPlotToolbar" Grid.Column="1" IconSize="20" Margin="0,2,2,0" Background="Transparent" VerticalAlignment="Stretch" ToolBarOrientation="Vertical"/>
+                </Grid>
+            </Grid>
+        </TabItem>
+        <TabItem x:Name="QQTab" Header="Normal Q-Q Plot" Theme="{DynamicResource VerticalTabItemStyle}">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="24"/>
+                </Grid.RowDefinitions>
+                <TextBlock x:Name="QQWarning" Grid.Row="0"
+                           Text="The normal Q-Q plot requires at least 10 exact data points."
+                           TextWrapping="Wrap" Foreground="#FFE41400" FontSize="13"
+                           Margin="10,8,10,4" IsVisible="False"/>
+                <Grid Grid.Row="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <ContentControl x:Name="QQPlotHost" Grid.Column="0"/>
+                    <oxyCntrls:OxyPlotToolbar x:Name="QQPlotToolbar" Grid.Column="1" IconSize="20" Margin="0,2,2,0" Background="Transparent" VerticalAlignment="Stretch" ToolBarOrientation="Vertical"/>
+                </Grid>
+                <Grid Grid.Row="2" Margin="0,0,0,4">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="30"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <RadioButton x:Name="RealSpaceRadioButton" Content="Real-Space Data" VerticalAlignment="Center" HorizontalAlignment="Center" Grid.Column="1" IsChecked="False"
+                        ToolTip.Tip="Display data in real space."/>
+                    <RadioButton x:Name="LogSpaceRadioButton" Content="Logarithmic Data" VerticalAlignment="Center" HorizontalAlignment="Center" Grid.Column="3" IsChecked="True"
+                        ToolTip.Tip="Display data in log10 space."/>
+                </Grid>
+            </Grid>
+        </TabItem>
+        <TabItem x:Name="ACFTab" Header="ACF Plot" Theme="{DynamicResource VerticalTabItemStyle}">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <TextBlock x:Name="ACFWarning" Grid.Row="0"
+                           Text="The autocorrelation function (ACF) plot requires at least 10 exact data points."
+                           TextWrapping="Wrap" Foreground="#FFE41400" FontSize="13"
+                           Margin="10,8,10,4" IsVisible="False"/>
+                <Grid Grid.Row="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <ContentControl x:Name="ACFPlotHost" Grid.Column="0"/>
+                    <oxyCntrls:OxyPlotToolbar x:Name="ACFPlotToolbar" Grid.Column="1" IconSize="20" Margin="0,2,2,0" Background="Transparent" VerticalAlignment="Stretch" ToolBarOrientation="Vertical"/>
+                </Grid>
+            </Grid>
+        </TabItem>
+        <TabItem x:Name="PACFTab" Header="PACF Plot" Theme="{DynamicResource VerticalTabItemStyle}">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <TextBlock x:Name="PACFWarning" Grid.Row="0"
+                           Text="The partial autocorrelation function (PACF) plot requires at least 10 exact data points."
+                           TextWrapping="Wrap" Foreground="#FFE41400" FontSize="13"
+                           Margin="10,8,10,4" IsVisible="False"/>
+                <Grid Grid.Row="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <ContentControl x:Name="PACFPlotHost" Grid.Column="0"/>
+                    <oxyCntrls:OxyPlotToolbar x:Name="PACFPlotToolbar" Grid.Column="1" IconSize="20" Margin="0,2,2,0" Background="Transparent" VerticalAlignment="Stretch" ToolBarOrientation="Vertical"/>
+                </Grid>
+            </Grid>
+        </TabItem>
+        <TabItem x:Name="ThresholdDiagnosticsTab" Header="POT Diagnostics" IsVisible="False" Theme="{DynamicResource VerticalTabItemStyle}">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="24"/>
+                </Grid.RowDefinitions>
+                <Grid Grid.Row="0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <!-- MRL Plot (default visible) -->
+                    <ContentControl x:Name="MRLPlotHost" Grid.Column="0"/>
+                    <!-- Modified Scale Plot (collapsed) -->
+                    <ContentControl x:Name="ModifiedScalePlotHost" Grid.Column="0" IsVisible="False"/>
+                    <!-- Shape Plot (collapsed) -->
+                    <ContentControl x:Name="ShapePlotHost" Grid.Column="0" IsVisible="False"/>
+                    <!-- Single toolbar, bound programmatically to visible plot -->
+                    <oxyCntrls:OxyPlotToolbar x:Name="ThresholdDiagnosticsToolbar" Grid.Column="1" IconSize="20" Margin="0,2,2,0" Background="Transparent" VerticalAlignment="Stretch" ToolBarOrientation="Vertical"/>
+                </Grid>
+                <!-- Radio buttons -->
+                <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,4">
+                    <RadioButton x:Name="MRLPlotRadioButton" Content="Mean Residual Life" Margin="10,0" IsChecked="True"
+                        ToolTip.Tip="Mean excess vs. threshold — look for linearity above the true threshold."/>
+                    <RadioButton x:Name="ModifiedScalePlotRadioButton" Content="Modified Scale" Margin="10,0" IsChecked="False"
+                        ToolTip.Tip="GPD modified scale vs. threshold — look for stability above the true threshold."/>
+                    <RadioButton x:Name="ShapePlotRadioButton" Content="Shape" Margin="10,0" IsChecked="False"
+                        ToolTip.Tip="GPD shape parameter vs. threshold — look for stability above the true threshold."/>
+                </StackPanel>
+            </Grid>
+        </TabItem>
+        <TabItem x:Name="USGSTextFileTab" Header="USGS Text File" IsVisible="False" Theme="{DynamicResource VerticalTabItemStyle}">
+            <wpfc:RichTextBox x:Name="USGSRawTextBox" Margin="6" IsReadOnly="True"
+                         VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"
+                         FontFamily="Consolas" FontSize="12"/>
+        </TabItem>
+    </TabControl>
+</UserControl>
