@@ -22,6 +22,12 @@ namespace GenericControls
     /// The display element takes a one-way copy of the column's binding as the cell shows it. A binding that
     /// names an element (ElementName) is left as it is: its name scope can't be copied.
     /// </para>
+    /// <para>
+    /// ProDataGrid gives a column's binding a converter of its own, which makes text of the value, unless the
+    /// binding has a converter or a StringFormat when the column gets it. A StringFormat set later, as upstream's
+    /// code sets the formats it reads from the user's settings, would then format that text and show it as it
+    /// is. WPF's binding has no converter and shows the value formatted, so the copy leaves that converter out.
+    /// </para>
     /// </remarks>
     internal static class DataGridDisplayBinding
     {
@@ -51,7 +57,7 @@ namespace GenericControls
             text.Bind(TextBlock.TextProperty, new ReflectionBinding(binding.Path)
             {
                 Mode = BindingMode.OneWay,
-                Converter = binding.Converter,
+                Converter = FormatsTheValue(binding) ? null : binding.Converter,
                 ConverterCulture = binding.ConverterCulture,
                 ConverterParameter = binding.ConverterParameter,
                 StringFormat = binding.StringFormat,
@@ -64,5 +70,10 @@ namespace GenericControls
                 Delay = binding.Delay,
             });
         }
+
+        // Whether the binding has a StringFormat and the converter ProDataGrid gave it, which it had no format for.
+        private static bool FormatsTheValue(ReflectionBinding binding) =>
+            !string.IsNullOrEmpty(binding.StringFormat)
+            && binding.Converter?.GetType().FullName == "Avalonia.Controls.DataGridValueConverter";
     }
 }
