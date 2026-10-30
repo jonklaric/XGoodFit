@@ -42,6 +42,40 @@ public sealed class RichTextBoxTests
     }
 
     [TestMethod]
+    public void PageWidth_LaysTheTextOutThatWide_AndScrollsItSideways()
+    {
+        HeadlessSession.Run(() =>
+        {
+            // BestFit's MCMC and GMM reports: a monospaced report on a 1200-pixel page, in a narrower box.
+            string line = string.Join(" ", Enumerable.Repeat("column", 40));
+            var document = new FlowDocument { PageWidth = 1200 };
+            document.Blocks.Add(new Documents.Paragraph(new Documents.Run(line + "\n" + line)));
+            var box = new RichTextBox
+            {
+                Width = 400, Height = 200, Document = document, IsReadOnly = true,
+                HorizontalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Auto,
+            };
+            var window = new Window { Content = box };
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+
+            var block = box.GetVisualDescendants().OfType<SelectableTextBlock>().Single();
+            Assert.AreEqual(1200 - 10, block.Bounds.Width, "the text is laid out on the page, inside its padding");
+            Assert.AreEqual(1200, box.ExtentWidth, 0.5, "the page scrolls sideways");
+            Assert.IsTrue(box.ViewportWidth < box.ExtentWidth);
+            var viewer = box.GetVisualDescendants().OfType<ScrollViewer>().First();
+            Assert.AreEqual(Avalonia.Controls.Primitives.ScrollBarVisibility.Auto, viewer.HorizontalScrollBarVisibility, "the box's scroll bar setting applies");
+
+            document.PageWidth = double.NaN;
+            box.Document = new FlowDocument(new Documents.Paragraph(new Documents.Run(line)));
+            Dispatcher.UIThread.RunJobs();
+            block = box.GetVisualDescendants().OfType<SelectableTextBlock>().Single();
+            Assert.IsTrue(block.Bounds.Width <= box.ViewportWidth, "without a page width the text wraps to the box");
+            window.Close();
+        });
+    }
+
+    [TestMethod]
     public void Hyperlink_IsClickable_OnlyWhileTheDocumentIsEnabled()
     {
         HeadlessSession.Run(() =>
