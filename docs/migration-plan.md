@@ -216,7 +216,7 @@ crossplatformrmcbestfit/
 │  ├─ Framework/             # Avalonia port of the WPF-Framework subset (same namespaces)
 │  │  ├─ WpfCompat/          # thin shims: Visibility, dialogs, clipboard, dispatcher, commands, culture
 │  │  ├─ FrameworkInterfaces/  Themes/  GenericControls/  NumericControls/
-│  │  ├─ OxyPlot.Avalonia/   # vendored oxyplot-avalonia, compiled against the fork's core
+│  │  ├─ OxyPlot/            # the fork's OxyPlot.Wpf and OxyPlot.Wpf.Shared, ported (Phase 4)
 │  │  ├─ OxyPlotControls/  DatabaseControls/  ExpressionParserControls/
 │  │  ├─ FrameworkUI/        # shell on Dock.Avalonia
 │  │  └─ SoftwareUpdate/
@@ -531,6 +531,16 @@ Sizes are relative, for one developer with AI-assisted porting: S ≈ ≤2 wk, M
 - `OxyPlotControls`: `OxyPlotToolbar` (pointer, pan, zoom, extents, add annotation, screenshot, export, settings), properties editors (axes, series, annotations), `SavePlotImageDialog`, `OxyPlotThemeManager`.
 
 **Exit:** every plot type BestFit uses has parity, and the serialization fixtures are green on 3 OSes.
+
+**Progress (2026-10-30):** the fork's WPF layer is ported, rather than vendoring OxyPlot.Avalonia (decided 2026-10-30). That keeps the fork's own classes and changes (the declarative `Plot` with dirty-tracked synchronisation, the DrawingVisual backend, the probability axes, `ExtrapolationLineSeries`, `Serialization`), with oxyplot-avalonia as the reference for the Avalonia parts.
+- `src/Framework/OxyPlot/OxyPlot.Wpf.Shared` and `OxyPlot.Wpf` overlay their upstream projects in opt-in mode, and keep the `OxyPlot.Wpf` namespace and every type and member name. The fork's OxyPlot core compiles unchanged from `upstream/`.
+- Dependency properties are styled properties with the same defaults and callbacks; 11 upstream files compile unchanged. A script did the regular conversion, and each file's notes say what else changed.
+- The DrawingVisual backend draws into XGoodFit's `DrawingVisual`, a recording its host replays, because Avalonia's own recorded drawing can't hold bitmaps (heat maps). The Canvas backend fills an Avalonia canvas.
+- Exports: PNG through Avalonia's `RenderTargetBitmap`. The fork's PDF and SVG exports draw text as outlines; Avalonia lays the text out and SkiaSharp gives the glyph outlines. XPS and XAML export aren't ported (BestFit doesn't use them).
+- `Serialization` writes WPF's text forms through new WpfCompat converters (`ColorConverter`, `BrushConverter`, `FontWeightConverter`, `FontFamilyConverter`, `ThicknessConverter`) and keeps WPF's three-state `Visibility` on series.
+- `OxyPlot.Wpf.Tests` (21 tests) renders both backends headlessly, exports PNG, SVG and PDF, and checks property synchronisation. Its golden fixtures come from the WPF fork itself (`tools/OxyPlotFixtures.Wpf`, Windows only), for a frequency plot and for one of every axis, series and annotation type. The port writes the same XML byte for byte and reads it back unchanged.
+- A finding from the fixtures: WPF applies `generic.xaml`'s style to a plot as soon as it's made, even outside a window, so off-screen plots save and draw a white background. The port makes that white the default.
+- Still to do: the legacy-format fallback in `RMC.BestFit.UI` (Phase 6), `OxyPlotControls`, and screenshot parity.
 
 ### Phase 5: Numeric, database & expression controls (L)
 - `NumericControls`: `DistributionSelectorControl`, `ProbabilityOrdinatesControl`, `TimeSeriesTable`, `UncertainOrderedTableEditor`, … (plus their dependencies).
