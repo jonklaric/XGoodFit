@@ -516,6 +516,9 @@ namespace FrameworkInterfaces.Messaging
                 if (removed)
                 {
                     toNotify = new IMessageItem[] { message };
+                    // XGoodFit port: a source without messages is forgotten, so the messenger doesn't keep it
+                    // (an element, and through it its project) alive (IssuesToRaise: Messenger keeps sources).
+                    if (_messagesBySource[message.Source].Count == 0) _messagesBySource.Remove(message.Source);
                 }
             }
 
@@ -571,7 +574,8 @@ namespace FrameworkInterfaces.Messaging
                 if (!_messagesBySource.ContainsKey(source)) { return; }
 
                 toNotify = _messagesBySource[source].Values.ToArray();
-                _messagesBySource[source].Clear();
+                // XGoodFit port: the source is forgotten, not just emptied (see Remove).
+                _messagesBySource.Remove(source);
             }
 
             // Raise event outside the lock to prevent deadlock from re-entrant subscribers
