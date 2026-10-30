@@ -1,0 +1,385 @@
+<!--
+    XGoodFit port of upstream's GUI/TimeSeriesAnalysis/TimeSeriesAnalysisPropertiesControl.xaml, as the
+    Univariate and Composite properties panels (UnivariateAnalysisPropertiesControl.axaml,
+    CompositeAnalysisPropertiesControl.axaml):
+    - GenericControls' resource dictionary is an Avalonia resource include. The grid's width follows the
+      scroll viewer's viewport (WPF's ViewportWidth is Viewport.Width).
+    - Styles are themes; the tab panel's style is a style of the tab control's items panel (WPF's TabPanel).
+      PropertiesTabItemStyle is a dynamic resource: the theme's, in another file. The covariates grid's
+      column's HeaderStyle is its HeaderTheme; Avalonia's XAML can't name a grid column, so CoviariateColumn is
+      unnamed (nothing uses the name).
+    - The PreviewMouseLeftButtonDown handlers are added in the code-behind (Avalonia has no Preview events
+      in XAML). ToolTip is ToolTip.Tip, Visibility="Hidden" is WpfCompat's Visibility, and the time series
+      border's Visibility="Visible" is the default.
+    - The combo boxes' DisplayMemberPath and SelectedValuePath are their DisplayMemberBinding and
+      SelectedValueBinding.
+    - The dates format in WPF's binding culture (WpfCompat's FormattingCulture, plan §5.2).
+    - As upstream, the property widths bind to LastModified's, the Bayesian options' and the covariate
+      extension's ActualPropertyWidth, so the value columns line up, and the name's ExistingNames isn't bound.
+-->
+<UserControl x:Class="RMC_BestFit.TimeSeriesAnalysisPropertiesControl" x:Name="TimeSeriesAnalysisProperties"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="using:RMC_BestFit"
+             xmlns:cntrls="using:GenericControls"
+             xmlns:numcntrls="using:NumericControls"
+             xmlns:sys="using:System"
+             xmlns:wpf="using:WpfCompat"
+             mc:Ignorable="d" 
+             MinWidth="100"
+             MinHeight="100"
+             d:DesignHeight="450" d:DesignWidth="800"
+             KeyDown="Properties_KeyDown"
+             Background="{DynamicResource PropertyGrid.Content.Background}"
+             Foreground="{DynamicResource EnvironmentWindowText}">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceInclude Source="avares://GenericControls/Resources/ResourceDictionary.axaml"/>
+                <ResourceDictionary>
+                    <cntrls:DoubleToGridLengthConverter x:Key="ActualToLengthConverter" />
+                    <cntrls:BooleanToVisibilityConverter x:Key="BoolToVisConverter"/>
+                    <cntrls:ReverseBooleanConverter x:Key="ReverseBoolConverter"/>
+                </ResourceDictionary>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="10000000*" MinHeight="200"/>
+            <RowDefinition Height="*" MinHeight="1"/>
+            <RowDefinition Height="Auto" MinHeight="50" MaxHeight="200" />
+        </Grid.RowDefinitions>
+        <ScrollViewer x:Name="Viewer" Grid.Row="0" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+            <Grid x:Name="MainGrid" Width="{Binding ElementName=Viewer, Path=Viewport.Width}" MinWidth="200" >
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <TabControl Background="Transparent" DockPanel.Dock="Top" BorderBrush="Transparent" BorderThickness="0" Padding="0" Margin="0,5,0,0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center">
+                    <TabControl.Styles>
+                        <Style Selector="TabControl /template/ ItemsPresenter#PART_ItemsPresenter > WrapPanel">
+                            <Setter Property="HorizontalAlignment" Value="Stretch" />
+                        </Style>
+                    </TabControl.Styles>
+                    <TabItem x:Name="General_TabItem" Header="General" Theme="{DynamicResource PropertiesTabItemStyle}">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+
+                            <!--Function Properties-->
+                            <Expander x:Name="PropertiesExpander" Grid.Row="0" 
+                            Margin="0,4,4,8" 
+                            Header="TIME SERIES ANALYSIS PROPERTIES" 
+                            IsExpanded="True" 
+                            Theme="{DynamicResource  PropertyExpanderStyle}">
+                                <DockPanel>
+
+                                    <cntrls:NameTextPropertyControl x:Name="ElementName" Margin="0 2" CharacterLimit="50" DockPanel.Dock="Top" Title="Name" MaxPropertyWidth="200"
+                                                        Text="{Binding Element.Name, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                                                        PropertyWidth="{Binding ElementName=LastModified, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}"
+                                                        GotFocus="Name_GotFocus" LostFocus="Name_LostFocus"/>
+
+                                    <cntrls:ResizeableTextPropertyControl x:Name="Description" Margin="0 2" DockPanel.Dock="Top" Title="Description" MaxPropertyWidth="200" 
+                                                                Text="{Binding Element.Description, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                                                                PropertyWidth="{Binding ElementName=LastModified, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}"/>
+
+                                    <cntrls:TextPropertyControl x:Name="CreationDate" Margin="0 2" DockPanel.Dock="Top" Title="Created On" MaxPropertyWidth="200" IsReadOnly="True"
+                                                    Text="{Binding Element.CreationDate, UpdateSourceTrigger=PropertyChanged, Mode=OneWay, ConverterCulture={x:Static wpf:FormattingCulture.Current}}"
+                                                    PropertyWidth="{Binding ElementName=LastModified, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}"/>
+
+                                    <cntrls:TextPropertyControl x:Name="LastModified" Margin="0 2" DockPanel.Dock="Top" Title="Last Modified" MaxPropertyWidth="200" IsReadOnly="True" 
+                                                    Text="{Binding Element.LastModified, UpdateSourceTrigger=PropertyChanged, Mode=OneWay, ConverterCulture={x:Static wpf:FormattingCulture.Current}}"/>
+
+                                    <!--Time Series Data-->
+                                    <cntrls:ContentPropertyControl x:Name="TimeSeriesDataComboBox" Margin="0 2" DockPanel.Dock="Top" Title="Time Series" MaxPropertyWidth="200"
+                                                ToolTip.Tip="Please select a valid time series."
+                                                PropertyWidth="{Binding ElementName=LastModified, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}">
+                                        <cntrls:ContentPropertyControl.InnerContent>
+                                            <Border BorderBrush="Red" BorderThickness="1">
+                                                <ComboBox HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Loaded="TimeSeriesDataComboBox_Loaded"
+                                                    SelectedValue="{Binding Element.TimeSeriesData, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                                                    DisplayMemberBinding="{Binding Name}" SelectionChanged="TimeSeriesDataComboBox_SelectionChanged">
+                                                </ComboBox>
+                                            </Border>
+                                        </cntrls:ContentPropertyControl.InnerContent>
+                                    </cntrls:ContentPropertyControl>
+
+                                    <!--Transform-->
+                                    <cntrls:ContentPropertyControl x:Name="TransformType" Margin="0 2" DockPanel.Dock="Top" Title="Transform" MaxPropertyWidth="200"
+                                            PropertyWidth="{Binding ElementName=LastModified, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}">
+                                        <cntrls:ContentPropertyControl.InnerContent>
+                                            <ComboBox Grid.Column="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch"
+                                                ItemsSource="{Binding TransformTypeItems, UpdateSourceTrigger=PropertyChanged}"
+                                                SelectedValue="{Binding Element.ARIMAX.TransformType, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                                                DisplayMemberBinding="{Binding DisplayName}" SelectedValueBinding="{Binding Value}">
+                                            </ComboBox>
+                                        </cntrls:ContentPropertyControl.InnerContent>
+                                    </cntrls:ContentPropertyControl>
+
+                                </DockPanel>
+                            </Expander>
+
+                            <!--Parameter Priors-->
+                            <Expander x:Name="ParameterPriorsExpander" Grid.Row="3" 
+                                Margin="0,4,4,8" 
+                                Header="PARAMETER PRIORS" 
+                                IsExpanded="True" 
+                                Theme="{DynamicResource  PropertyExpanderStyle}">
+                                <DockPanel >
+                                    <local:ParameterPriorsControl x:Name="ParameterPriorsControl" DockPanel.Dock="Top" Model="{Binding ElementName=TimeSeriesAnalysisProperties, Path=Element.ARIMAX, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}" 
+                                                        ShowPropertyAttributes="ParameterPriorsControl_ShowPropertyAttributes"/>
+
+                                    <!--Use Jeffreys' Rule-->
+                                    <cntrls:BooleanPropertyControl x:Name="UseJeffreysRule" Margin="0 2" Grid.Row="1" Title="Use Jeffreys' Rule for Scale"
+                                       IsSelected="{Binding Element.ARIMAX.UseJeffreysRuleForScale, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"  />
+
+                                </DockPanel>
+                            </Expander>
+
+                            <!--Estimate Button-->
+                            <Grid Grid.Row="4">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <ProgressBar x:Name="ProgressBar" Minimum="0" Maximum="100" Value="0" Height="24" Margin="2,5,4,0" Grid.Column="0" wpf:WpfElement.Visibility="Hidden" Background="{DynamicResource ProgressBar.Static.Background}" Foreground="{DynamicResource ProgressBar.Static.Foreground}" BorderBrush="{DynamicResource ProgressBar.Static.Border}"/>
+                                <TextBlock x:Name="ProgressTextBlock" Text="0%" FontSize="10" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="2,5,4,0" Grid.Column="0" wpf:WpfElement.Visibility="Hidden" Foreground="{DynamicResource EnvironmentWindowText}"/>
+                                <Button Name="EstimateButton" ToolTip.Tip="Click to run the analysis" Grid.Row="0" Grid.Column="1"  VerticalContentAlignment="Center" HorizontalContentAlignment="Center" 
+                                    Width="83" Height="24" Margin="0,5,5,0" Cursor="Hand" Click="EstimateButton_Click">
+                                    <StackPanel Orientation="Horizontal">
+                                        <ContentControl Content="{DynamicResource RunIcon}" Margin="0,0,4,0"/>
+                                        <TextBlock Text="Estimate" />
+                                    </StackPanel>
+                                </Button>
+                                <Button Name="CancelButton" ToolTip.Tip="Click to cancel the analysis" Grid.Row="0" Grid.Column="1"  VerticalContentAlignment="Center" HorizontalContentAlignment="Center" 
+                                    wpf:WpfElement.Visibility="Hidden" Width="83" Height="24" Margin="0,5,5,0" Cursor="Hand" Click="CancelButton_Click">
+                                    <StackPanel Orientation="Horizontal">
+                                        <ContentControl Content="{DynamicResource StopIcon}" Margin="0,0,4,0"/>
+                                        <TextBlock Text="Cancel" />
+                                    </StackPanel>
+                                </Button>
+                            </Grid>
+
+                        </Grid>
+                    </TabItem>
+                    <TabItem x:Name="Options_TabItem" Header="Options" Theme="{DynamicResource PropertiesTabItemStyle}">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+
+                            <!--Function Properties-->
+                            <Expander x:Name="CovariateExpander" Grid.Row="0" 
+                            Margin="0,4,4,8" 
+                            Header="COVARIATE OPTIONS" 
+                            IsExpanded="True" 
+                            Theme="{DynamicResource  PropertyExpanderStyle}">
+                                <DockPanel>
+
+                                    <!-- Intercept -->
+                                    <cntrls:BooleanPropertyControl x:Name="InlcudeIntercept" Margin="0 2" DockPanel.Dock="Top" Title="Include Intercept"
+                                        IsSelected="{Binding Element.ARIMAX.IncludeIntercept, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"  />
+
+                                    <!-- Seasonality -->
+                                    <cntrls:BooleanPropertyControl x:Name="InlcudeSeasonality" Margin="0 2" DockPanel.Dock="Top" Title="Include Seasonality"
+                                        IsSelected="{Binding Element.ARIMAX.IncludeSeasonality, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"  />
+
+                                    <!--Trend-->
+                                    <cntrls:ContentPropertyControl x:Name="TrendType" Margin="0 2" DockPanel.Dock="Top" Title="Trend Type" MaxPropertyWidth="200"
+                                             PropertyWidth="{Binding ElementName=BayesianOptionsControl, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}" >
+                                        <cntrls:ContentPropertyControl.InnerContent>
+                                            <ComboBox Grid.Column="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch"
+                                                ItemsSource="{Binding TrendTypeItems, UpdateSourceTrigger=PropertyChanged}"
+                                                SelectedValue="{Binding Element.ARIMAX.TrendType, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                                                DisplayMemberBinding="{Binding DisplayName}" SelectedValueBinding="{Binding Value}">
+                                            </ComboBox>
+                                        </cntrls:ContentPropertyControl.InnerContent>
+                                    </cntrls:ContentPropertyControl>
+
+                                    <!-- X Order -->
+                                    <cntrls:ContentPropertyControl x:Name="XOrderB" Margin="0 2" DockPanel.Dock="Top" Title="X Order" MaxPropertyWidth="200"
+                                                PropertyWidth="{Binding ElementName=BayesianOptionsControl, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}" >
+                                        <cntrls:ContentPropertyControl.InnerContent>
+                                            <cntrls:NumericUpDown HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" DecimalPlaces="0" ThousandsSeparator="False"
+                                                Minimum="0" Maximum="50" Value="{Binding Element.ARIMAX.XOrderB, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}">
+                                            </cntrls:NumericUpDown>
+                                        </cntrls:ContentPropertyControl.InnerContent>
+                                    </cntrls:ContentPropertyControl>
+
+                                    <!--Data Grid-->
+                                    <cntrls:DataGridToolbar DockPanel.Dock="Top" Name="DataGridToolBar" DataGrid="{Binding ElementName=CovariateDataGrid, Mode=OneTime}" 
+                                            ToolOrientation="Horizontal"/>
+
+                                    <cntrls:CopyPasteDataGrid 
+                                        DockPanel.Dock="Top" 
+                                        x:Name="CovariateDataGrid" 
+                                        HeadersVisibility="All" 
+                                        Theme="{DynamicResource  CopyPasteDataGridStyle}"
+                                        CanUserAddInsertDeleteRows="True" 
+                                        IsReadOnly="False"
+                                        RowHeight="24"
+                                        SelectionMode="Extended" SelectionUnit="CellOrRowHeader" AutoGenerateColumns="False"
+                                        CanUserDeleteRows="False" CanUserAddRows="False" CanUserResizeColumns="True"
+                                        CanUserResizeRows="False" CanUserSortColumns="False" CanUserReorderColumns="False" 
+                                        ItemsSource="{Binding Element.Covariates}">
+                                        <cntrls:CopyPasteDataGrid.Columns>
+                                            <DataGridTemplateColumn 
+                                                Header="Covariate Time Series Data" 
+                                                Width="*" 
+                                                HeaderTheme="{DynamicResource Center_ColumnHeaderStyle}">
+                                                <DataGridTemplateColumn.CellTemplate>
+                                                    <DataTemplate>
+                                                        <Grid>
+                                                            <ComboBox HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Loaded="TimeSeriesDataComboBox_Loaded"
+                                                            DisplayMemberBinding="{Binding DisplayName}" 
+                                                            SelectedItem="{Binding Path=TimeSeriesElement, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"/>
+                                                        </Grid>
+                                                    </DataTemplate>
+                                                </DataGridTemplateColumn.CellTemplate>
+                                            </DataGridTemplateColumn>
+                                        </cntrls:CopyPasteDataGrid.Columns>
+                                    </cntrls:CopyPasteDataGrid>
+
+                                </DockPanel>
+                            </Expander>
+
+                            <!--ARIMA-->
+                            <Expander x:Name="ARMAExpander" Grid.Row="1" 
+                                Margin="0,4,4,8" 
+                                Header="ARIMA OPTIONS" 
+                                IsExpanded="True" 
+                                Theme="{DynamicResource  PropertyExpanderStyle}">
+                                <DockPanel >
+
+                                    <!-- AR Order -->
+                                    <cntrls:ContentPropertyControl x:Name="AROrderP" Margin="0 2" DockPanel.Dock="Top" Title="AR Order" MaxPropertyWidth="200"
+                                                 PropertyWidth="{Binding ElementName=BayesianOptionsControl, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}">
+                                        <cntrls:ContentPropertyControl.InnerContent>
+                                            <cntrls:NumericUpDown HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" DecimalPlaces="0" ThousandsSeparator="False"
+                                                Minimum="0" Maximum="50" Value="{Binding Element.ARIMAX.AROrderP, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}">
+                                            </cntrls:NumericUpDown>
+                                        </cntrls:ContentPropertyControl.InnerContent>
+                                    </cntrls:ContentPropertyControl>
+
+                                    <!-- Diff Order -->
+                                    <cntrls:ContentPropertyControl x:Name="DiffOrderD" Margin="0 2" DockPanel.Dock="Top" Title="Diff Order" MaxPropertyWidth="200"
+                                                 PropertyWidth="{Binding ElementName=BayesianOptionsControl, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}" >
+                                        <cntrls:ContentPropertyControl.InnerContent>
+                                            <cntrls:NumericUpDown HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" DecimalPlaces="0" ThousandsSeparator="False"
+                                                Minimum="0" Maximum="2" Value="{Binding Element.ARIMAX.DiffOrderD, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}">
+                                            </cntrls:NumericUpDown>
+                                        </cntrls:ContentPropertyControl.InnerContent>
+                                    </cntrls:ContentPropertyControl>
+
+                                    <!-- MA Order -->
+                                    <cntrls:ContentPropertyControl x:Name="MAOrderQ" Margin="0 2" DockPanel.Dock="Top" Title="MA Order" MaxPropertyWidth="200"
+                                                 PropertyWidth="{Binding ElementName=BayesianOptionsControl, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}" >
+                                        <cntrls:ContentPropertyControl.InnerContent>
+                                            <cntrls:NumericUpDown HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" DecimalPlaces="0" ThousandsSeparator="False"
+                                                Minimum="0" Maximum="50" Value="{Binding Element.ARIMAX.MAOrderQ, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}">
+                                            </cntrls:NumericUpDown>
+                                        </cntrls:ContentPropertyControl.InnerContent>
+                                    </cntrls:ContentPropertyControl>
+                                </DockPanel>
+                            </Expander>
+                            
+                            <!--Bayesian Analysis Control-->
+                            <local:BayesianOptionsControl x:Name="BayesianOptionsControl" Grid.Row="2" Analysis="{Binding ElementName=TimeSeriesAnalysisProperties, Path=Element.BayesianAnalysis, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}"
+                                                ShowPropertyAttributes="BayesianOptionsControl_ShowPropertyAttributes"/>
+                        </Grid>
+                    </TabItem>
+                    <TabItem x:Name="Output_TabItem" Header="Output" Theme="{DynamicResource PropertiesTabItemStyle}">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+
+                            <!--Bayesian Output Control-->
+                            <local:BayesianOutputControl x:Name="BayesianOutputControl" Grid.Row="0" Analysis="{Binding ElementName=TimeSeriesAnalysisProperties, Path=Element.BayesianAnalysis, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}"
+                                                ShowPropertyAttributes="BayesianOutputControl_ShowPropertyAttributes"/>
+
+                            <!--Time Series Options-->
+                            <Expander x:Name="TimeSeriesExpander"
+                                Grid.Row="1"
+                                Margin="0,4,4,8"
+                                Header="TIME SERIES OUTPUT"
+                                IsExpanded="True"
+                                Grid.ColumnSpan="2"
+                                Theme="{DynamicResource  PropertyExpanderStyle}">
+                                <DockPanel>
+
+                                    <!-- Covariate Extension (controls how x-series are extended past the observed range for forecasting) -->
+                                    <cntrls:ContentPropertyControl x:Name="CovariateExtension" Margin="0 2" DockPanel.Dock="Top" Title="Covariate Extension" MaxPropertyWidth="200"
+                                                ToolTip.Tip="How to extend covariate time series when forecasting past the observed range. Block Bootstrap (default) preserves temporal autocorrelation; KNN preserves local structure; None requires you to supply extended covariates.">
+                                        <cntrls:ContentPropertyControl.InnerContent>
+                                            <ComboBox HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch"
+                                                ItemsSource="{Binding CovariateExtensionOptions, UpdateSourceTrigger=PropertyChanged}"
+                                                DisplayMemberBinding="{Binding DisplayName}"
+                                                SelectedValueBinding="{Binding Value}"
+                                                SelectedValue="{Binding Element.CovariateExtension, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"/>
+                                        </cntrls:ContentPropertyControl.InnerContent>
+                                    </cntrls:ContentPropertyControl>
+                                    
+                                    <!-- Training Steps -->
+                                    <cntrls:ContentPropertyControl x:Name="TrainingSteps" Margin="0 2" DockPanel.Dock="Top" Title="Training Steps" MaxPropertyWidth="200"
+                                                ToolTip.Tip="Number of initial observations used to fit the model (in-sample training window)."
+                                                PropertyWidth="{Binding ElementName=CovariateExtension, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}">
+                                        <cntrls:ContentPropertyControl.InnerContent>
+                                            <cntrls:NumericUpDown HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" DecimalPlaces="0" ThousandsSeparator="True"
+                                                Minimum="1" Maximum="1000000" Value="{Binding Element.TrainingTimeSteps, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}">
+                                            </cntrls:NumericUpDown>
+                                        </cntrls:ContentPropertyControl.InnerContent>
+                                    </cntrls:ContentPropertyControl>
+
+                                    <!-- Validation Steps (read-only, derived = Total - Training) -->
+                                    <cntrls:ContentPropertyControl x:Name="ValidationSteps" Margin="0 2" DockPanel.Dock="Top" Title="Validation Steps" MaxPropertyWidth="200"
+                                                ToolTip.Tip="In-sample prediction window, computed as Total Observations minus Training Steps."
+                                                PropertyWidth="{Binding ElementName=CovariateExtension, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}">
+                                        <cntrls:ContentPropertyControl.InnerContent>
+                                            <TextBlock VerticalAlignment="Bottom" Padding="4,0,0,0" Text="-" IsEnabled="False"/>
+                                        </cntrls:ContentPropertyControl.InnerContent>
+                                    </cntrls:ContentPropertyControl>
+
+                                    <!-- Forecast Steps (past the end of the observed series) -->
+                                    <cntrls:ContentPropertyControl x:Name="ForecastingSteps" Margin="0 2" DockPanel.Dock="Top" Title="Forecast Steps" MaxPropertyWidth="200"
+                                                ToolTip.Tip="Number of steps to forecast past the end of the observed series (0 to 100)."
+                                                PropertyWidth="{Binding ElementName=CovariateExtension, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}">
+                                        <cntrls:ContentPropertyControl.InnerContent>
+                                            <cntrls:NumericUpDown HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" DecimalPlaces="0" ThousandsSeparator="True"
+                                                Minimum="0" Maximum="100" Value="{Binding Element.ForecastSteps, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}">
+                                            </cntrls:NumericUpDown>
+                                        </cntrls:ContentPropertyControl.InnerContent>
+                                    </cntrls:ContentPropertyControl>
+
+                                    <!-- Reset button — 80% training, zero forecast -->
+                                    <StackPanel Margin="0,6,0,4" DockPanel.Dock="Top" Orientation="Horizontal" HorizontalAlignment="Right">
+                                        <Button x:Name="ResetButton" Content="Reset" Width="83" Height="24" ToolTip.Tip="Reset to Defaults" Click="ResetButton_Click"/>
+                                    </StackPanel>
+
+                                </DockPanel>
+                            </Expander>
+                    
+                        </Grid>
+                    </TabItem>
+                </TabControl>
+            </Grid>
+        </ScrollViewer>
+        <!--Property Attributes-->
+        <GridSplitter Grid.Row="1" Height="1" HorizontalAlignment="Stretch" VerticalAlignment="Bottom" Background="{DynamicResource SeparatorBorder}"/>
+        <cntrls:PropertyAttributes x:Name="PropertyAttributes" Grid.Row="2"/>
+    </Grid>
+</UserControl>
