@@ -319,7 +319,7 @@ Shims are for **high-frequency, semantically equivalent** APIs only. Everything 
    - Keep every explicit `UpdateSourceTrigger`, and add `LostFocus` where WPF's `TextBox` default applied.
    - `RelativeSource FindAncestor` works (or `$parent[T]`).
 7. Dialogs, clipboard and pickers go through `WpfCompat` (see §5.3).
-8. DataGrid → ProDataGrid; `CellStyle` / `ColumnHeaderStyle` → styles/themes with selectors.
+8. DataGrid → ProDataGrid, through `CopyPasteDataGrid`: `CellStyle` / `RowStyle` / `ColumnHeaderStyle` → `CellTheme` / `RowTheme` / `ColumnHeaderTheme`; a column's `ElementStyle` / `EditingElementStyle` → `DataGridColumnStyles`; a header's `ContentTemplate` → `ColumnHeaderContent.Template`; `Selector.IsSelectionActive` → `WpfSelector.IsSelectionActive`; `ContainerFromIndex` → `GetRow`; alternating rows → `:nth-child(2n)` (porting guide §3–4).
 9. Done = it builds without warnings, its ported tests pass, its screenshot parity is within tolerance in all 3 themes, and a behaviour checklist has been run against the WPF app.
 
 ### 5.2 Behavioural gotchas (must not silently change logic)
@@ -351,7 +351,7 @@ For 1.0, every OS gets the same VS2013 look, including the in-window menu bar (D
 
 1. **Palettes 1:1.** Port `LightColors`/`DarkColors`/`BlueColors.xaml` (~460 resources each) and `ColorKeys.cs` verbatim. Only the XML namespace changes.
 2. **Control templates.** Port each of the ~31 theme XAML files (Button … DataGrid, Calendar, Menu, TabControl, TreeView, ScrollBar, Expander, MetroWindowStyle) to `ControlTheme`s that reproduce the WPF visual tree: borders, padding, glyph paths, sizes. Then port the FrameworkUI-, OxyPlotControls- and App-level styles (`BestFitStyles.xaml`, `IconDictionary.xaml`).
-3. **Docking chrome.** Build a VS2013-style Dock theme (pane headers with the dotted grip, pin/close glyphs, document tab strip and overflow) in all 3 variants.
+3. **Docking chrome.** Build a VS2013-style Dock theme (pane headers with the dotted grip, pin/close glyphs, document tab strip and overflow) in all 3 variants. *Done (2026-10-30): `FrameworkUI/Themes/VS2013/Dock`, XGoodFit's own theme from upstream's colours and key names; against upstream's screenshots, pane edges, captions and tabs match within a pixel and colours within JPEG noise.*
 4. **Typography.** WPF defaults are Segoe UI at 12 DIP. Use real Segoe UI/Consolas on Windows. Elsewhere, use embedded **Selawik** (Segoe UI metric fallback; check its shorter line height) and **Cascadia Mono**. Turn on subpixel antialiasing on Windows to match ClearType.
 5. **Geometry.** Both frameworks use 96-DIP units, so sizes, margins and vector icons (~1,000 `Path` geometries) carry over unchanged.
 6. **Window chrome.**
@@ -500,6 +500,7 @@ Sizes are relative, for one developer with AI-assisted porting: S ≈ ≤2 wk, M
 - Docking uses `Dock.Avalonia.AvalonDock`, which keeps AvalonDock's API and its layout XML. A prototype loaded the layout stored in a sample project (pixel and star pane sizes, a pane group, documents) and saved it back byte for byte, apart from the encoding declaration of the string writer used.
 - `FrameworkUI` has started (opt-in overlay): its VS2013 palettes and icons, `ThemeManager`, user settings, utilities and the default dock layout. Settings live in the per-user application data folder on every OS (`WpfCompat.AppPaths`): upstream preferred a folder next to the executable, which Velopack replaces on update and which macOS bundles and AppImages make read-only.
 - `SoftwareUpdate` compiles from upstream unchanged; installing through Velopack comes with packaging.
+- The VS2013 dock theme (Light, Dark, Blue) covers captions, tool and document tabs, auto-hide tabs, floating windows, the navigator and the docking targets. `DockThemeSwitcher.Apply(MainDock, color)` replaces MainWindow's three AvalonDock theme dictionaries in its `ThemeChanged` (drop `_avalonDockThemeDictionary` and the dummy `Vs2013BlueTheme`); `AvalonDockTheme` stays in `Application.Styles`. Left as they are: the auto-hide flyout's caption stays inactive (the adapter doesn't activate its pane), tool panes show the document-style docking targets, and the drop preview has no accent border.
 - Also ported: auto-backup, file compaction and its progress window, and the About and Terms and Conditions windows. Upstream's read-only rich text (the terms, the GMM and MCMC reports, USGS raw text) shows in WpfCompat's `RichTextBox`, a small flow-document viewer (paragraphs, runs, line breaks, links), which Themes styles.
 
 ### Phase 3: Control library (`Themes` templates + `GenericControls`) (XL)
@@ -510,16 +511,21 @@ Sizes are relative, for one developer with AI-assisted porting: S ≈ ≤2 wk, M
 
 **Exit:** each control has a demo page, screenshot parity, and behaviour tests (grid copy/paste and add-row in particular).
 
-**Progress (2026-10-30):** 24 of the 27 `Themes` control theme files are ported: Button, Calendar, CheckBox, ComboBox, Expander, GridSplitter, GroupBox, Label, ListBox, ListView, Menu (with ContextMenu), MetroWindowStyle, ProgressBar, RadioButton, ScrollBar (with ScrollViewer), Separator, Slider, StackPanel, TabControl (with the three keyed TabItem styles BestFit uses), TextBlock, TextBox, ToolBar (the style keys upstream gives ordinary buttons), ToolTip and TreeView.
-- The other three belong with later work:
-  - DataGrid: with ProDataGrid and `CopyPasteDataGrid` (this phase).
-  - RichTextBox: its colours and context menu go to AvaloniaEdit and SelectableTextBlock (Phases 5 and 7).
+**Progress (2026-10-30):** 25 of the 27 `Themes` control theme files are ported: DataGrid (ports of WPF's own grid, row and cell templates, for ProDataGrid) and Button, Calendar, CheckBox, ComboBox, Expander, GridSplitter, GroupBox, Label, ListBox, ListView, Menu (with ContextMenu), MetroWindowStyle, ProgressBar, RadioButton, ScrollBar (with ScrollViewer), Separator, Slider, StackPanel, TabControl (with the three keyed TabItem styles BestFit uses), TextBlock, TextBox, ToolBar (the style keys upstream gives ordinary buttons), ToolTip and TreeView.
+- The other two belong elsewhere:
+  - RichTextBox: its colours and context menu go to AvaloniaEdit and WpfCompat's read-only `RichTextBox` (Phases 2 and 5).
   - StatusBar: not ported, as nothing upstream uses one and Avalonia has no StatusBar control.
 - The window chrome (MetroWindowStyle and MetroDialogStyle) draws the VS2013 title bar in an extended client area:
   - Windows: the title bar has Avalonia's TitleBar role, which gives native dragging, snapping and the system menu.
   - macOS: the native traffic lights stay.
   - Linux: the native title bar stays, and the drawn one hides.
   - Caption buttons run MetroWindow's command handlers through WpfCompat's routed commands, as in WPF.
+- `GenericControls` has everything BestFit uses (187 tests):
+  - The data grids on ProDataGrid: `CopyPasteDataGrid` (WPF's `Items`, `GetRow`/`GetCell`, Excel copy and paste with WpfCompat's clipboard, WPF's cell keyboard navigation, generated columns that keep their themes), `ValidationDataGrid` and `DataGridToolbar`.
+  - The numeric text boxes, up-down and slider, the colour picker and popup, the date and time controls, `ResizableTextBoxControl`, `SeparatorWithHeader`, every property control and `PropertyAttributes`, `InsertionAdorner` and `ComboBoxItemTemplateSelector`, with their gallery pages.
+  - Not ported (D10): ThicknessControl, GridLengthControl, Point3DPropertyControl, CalendarWeekRulePropertyControl, the directory and folder selectors, DragAdorner and RecentFileList.
+  - Gaps: Shift+click after keyboard navigation extends from the last clicked cell (ProDataGrid keeps its click anchor private); Tab while editing goes to the next writable cell; ProDataGrid has no `RowHeaderStyle` or `AlternatingRowBackground` (about 8 uses, covered by row themes).
+- **An upstream bug to report (D8):** NumericUpDown and NumericSlider format their text in the machine's culture, but their binding parses en-US. With decimal places on a comma-decimal machine, "23,0000" reads as 230000 (BestFit's split-index slider uses 4 decimal places). The port keeps it; the OS-locale work (§13) should fix it in both.
 - `GenericControls` has started. Its upstream files are nearly all WPF code, so the project opts in to upstream files (`UpstreamCompileMode=OptIn`) and gains them one port at a time. Ported so far:
   - `MetroWindow` and `MetroDialogWindow`, with headless tests for their caption buttons and ResizeMode. The theme gallery runs in a `MetroWindow`.
   - `MessageBox` (with its "don't show again" option), `NameDialog` and `NameTextBox`, tested headlessly and captured by the gallery.
@@ -700,7 +706,7 @@ USACE is actively developing BestFit (2.0.1 shipped recently).
 | R3 | Plot-XML incompatibility breaks `.bestfit` round-trip | M | H | Golden WPF fixtures; exact-XML tests; schema frozen |
 | R4 | Async dialog conversion changes control flow | M | M–H | Spike D; sync-compat for complex sites; tests per site |
 | R5 | HEC-DSS natives needed on every OS at 1.0 (D6), but HEC publishes macOS only for 7-JA-7 (`libz` rpath) and the pre-build step is Windows-only | M | H | Build from source in CI for win-x64, linux-x64, osx-arm64 and osx-x64; sign with the app; keep a clear "not available" message as a safety net |
-| R6 | Dock.Avalonia can't match AvalonDock look or behaviour (auto-hide, Wayland floating) | M | M | Spike B; custom theme; managed floating windows on Linux |
+| R6 | Dock.Avalonia can't match AvalonDock look or behaviour (auto-hide, Wayland floating) | M | M | Spike B; custom theme (done 2026-10-30; matches the screenshots within a pixel); managed floating windows on Linux |
 | R7 | Silent behaviour changes (culture, `UpdateSourceTrigger`, `Hidden`, validation, focus, `Loaded`) | H | M | §5.2 rules, grep/analyzer checks, ported tests, UAT |
 | R8 | Upstream drift during a multi-month port | H | M | §10 process |
 | R9 | Cross-platform floating-point differences in results | L–M | H | Run test/verification suites per RID; document tolerances |

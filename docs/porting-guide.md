@@ -15,6 +15,8 @@ compared with its upstream original.
     only the ported files and the upstream files listed in `UpstreamCompileInclude` compile, so the
     project grows one port at a time (see `src/Framework/GenericControls`).
   - `UpstreamCompileRemove` (with a `Reason` attribute) leaves an upstream file out on purpose.
+- AvalonDock (Ms-PL, vendored inside WPF-Framework) is reference only: the dock themes take its
+  colours, key names and glyph positions, but none of its files are ported (`THIRD_PARTY_NOTICES.md`).
 - XAML is always ported: `Foo.xaml` becomes `Foo.axaml` at the same relative path, and `Foo.xaml.cs`
   becomes `Foo.axaml.cs`. Upstream `*.xaml.cs` files never compile.
 - Keep namespaces, class names, `x:Class`, element names, event-handler names and resource keys
@@ -71,7 +73,14 @@ compared with its upstream original.
 | `PreviewKeyDown="H"`, `PreviewMouse…="H"` | no attribute: `AddHandler(KeyDownEvent, H, RoutingStrategies.Tunnel)` in the code-behind |
 | `TextChanged="H"` | `TextChanging` in the code-behind: Avalonia raises `TextChanged` after rendering, WPF as the text changes (see `NameTextBox.axaml.cs`) |
 | `x:Array` | `<wpfm:ArrayExtension Type="{x:Type sys:Double}">` (`xmlns:wpfm="using:WpfCompat.Markup"`, `xmlns:sys="using:System"`) |
-| `x:FieldModifier="public"` | `internal` unless another assembly uses the field: Avalonia's generated fields have no doc comments (a warning) |
+| `x:FieldModifier="public"` | `internal` unless another assembly uses the field: Avalonia's generated fields have no doc comments (a warning). If one does, rename the element and add a documented property with upstream's name (see `NameTextPropertyControl.NameTextBox`) |
+| `x:Name` on a brush, gradient stop, drawing or grid column | not allowed: reach it through the control that owns it (`grid.Columns[0]`) |
+| A binding that names no culture | `ConverterCulture={x:Static wpf:FormattingCulture.Current}` (en-US, as WPF's bindings, plan §5.2). Keep upstream's explicit `CurrentCulture` bindings |
+| `Line` with a `Stretch` | `wpfs:Line` (`xmlns:wpfs="using:WpfCompat.Shapes"`), which stretches as WPF's does |
+| `Slider` `IsMoveToPointEnabled`, track presses | `wpf:WpfSlider.IsMoveToPointEnabled`: WPF's paging with repeat, or move to the point |
+| `Popup Placement="Left"` / `"Bottom"`, `StaysOpen="False"` | `LeftEdgeAlignedTop` / `BottomEdgeAlignedLeft`, `IsLightDismissEnabled="True"` |
+| `DrawingBrush` with a drawing as content | an explicit `<DrawingBrush.Drawing>` |
+| `MouseUp="H"` | `PointerReleased="H"` (every button, as WPF's `MouseUp`) |
 | `StrokeStartLineCap` / `StrokeEndLineCap` | `StrokeLineCap` (one for both) |
 | `RenderOptions.BitmapScalingMode` | `RenderOptions.BitmapInterpolationMode` |
 | `Line X1 Y1 X2 Y2` | `StartPoint="x1,y1"` `EndPoint="x2,y2"` |
@@ -80,6 +89,11 @@ compared with its upstream original.
 | `StrokeDashArray="1 2"` | `StrokeDashArray="1,2"` |
 | `Command="Save"` (ApplicationCommands) | `Command="{wpfi:Command Save}"`, with `xmlns:wpfi="using:WpfCompat.Input"` |
 | `x:Static SystemParameters.…` / `SystemColors.…` | the fixed resources in Themes' `Merged.axaml` (`SystemParameters.VerticalScrollBarWidth`, …) |
+| `DataGrid` `CellStyle` / `RowStyle` / `ColumnHeaderStyle`; a column's `CellStyle` / `HeaderStyle` | `CellTheme` / `RowTheme` / `ColumnHeaderTheme`; the column's `CellTheme` / `HeaderTheme` (ProDataGrid) |
+| A column's `ElementStyle` / `EditingElementStyle` | `gc:DataGridColumnStyles.ElementStyle` / `.EditingElementStyle` |
+| A header style's `ContentTemplate` | `themes:ColumnHeaderContent.Template` |
+| `Selector.IsSelectionActive` | `wpf:WpfSelector.IsSelectionActive` |
+| `AlternationCount="2"` with an `AlternationIndex` trigger | `:nth-child(2n)`. ProDataGrid has no `RowHeaderStyle` or `AlternatingRowBackground` |
 | `ScrollViewer.PanningMode`, `Stylus.*`, `SnapsToDevicePixels`, `TextOptions.*` | not ported (note it) |
 
 Templates and themes:
@@ -132,6 +146,10 @@ Templates and themes:
 | `BindingOperations.ClearBinding(o, P)` | `BindingOperations.GetBindingExpressionBase(o, P)?.Dispose()`: Avalonia's `ClearValue` leaves a binding in place |
 | `BindingOperations.SetBinding(o, P, b)`, `new Binding(path)` | `o.Bind(P, b)`; `Binding` (namespace `Avalonia.Data`) keeps `Source`, `Mode`, `StringFormat`, `UpdateSourceTrigger` |
 | `GradientStopCollection` | `GradientStops` |
+| WPF's `DataGrid` | `GenericControls.CopyPasteDataGrid` (ProDataGrid), never a bare ProDataGrid: it adds WPF's `Items`, `GetRow`/`GetCell`, keyboard, clipboard and validation, and keeps generated columns and their themes across refreshes |
+| `ItemContainerGenerator.ContainerFromIndex` (grid rows) | `CopyPasteDataGrid.GetRow(index)` |
+| `c.Content.GetType() == typeof(TextBlock)` on a grid cell | `c.Content is TextBlock`: ProDataGrid's text cells are a TextBlock subclass |
+| `MoveFocus(new TraversalRequest(…))` | WpfCompat.Input's `FocusNavigation` |
 
 - Dialogs wait, as in WPF (plan §5.3): `ShowDialog()` and `DialogResult` (WpfCompat's), WpfCompat's
   file and folder dialogs and clipboard, and `GenericControls.MessageBox.Show`. Keep upstream's order
@@ -172,7 +190,11 @@ Already handled for every ported control (Themes' `ThemeService.Initialize`):
 - **System values:** WPF's colours and sizes, as resources (`Merged.axaml`).
 
 Watch for others when porting:
-- **Range controls:** Slider's range is 0 to 10 in WPF, 0 to 100 in Avalonia.
+- **Range controls:** Slider's range is 0 to 10 in WPF, 0 to 100 in Avalonia. Its SmallChange and
+  LargeChange are 0.1 and 1 in WPF, 1 and 10 in Avalonia.
+- **DrawingBrush:** stretches Fill in WPF, Uniform in Avalonia.
+- **Gradient points:** relative points need `%` in Avalonia (`StartPoint="0%,0%"`).
+- **Alignment enums:** Avalonia lists Stretch first, so their numbers differ from WPF's.
 - **Repeat buttons:** WPF repeats after 500 ms, every 33 ms; Avalonia after 300 ms, every 100 ms.
 - **Content alignment:** a WPF Control's content defaults to Left and Top; Avalonia's ContentControl
   stretches it.
@@ -196,7 +218,31 @@ Watch for others when porting:
   - Use `AvaloniaTestIsolationLevel.PerAssembly`. Don't touch Avalonia types from a
     `[ModuleInitializer]`.
   - `dotnet test` hides MSTest's messages; run the test executable to see them.
+  - Timers only fire inside a nested dispatcher frame. Type one character per `KeyTextInput`.
+  - `Visibility.Hidden` keeps `IsVisible` true: assert WpfCompat's `Visibility`.
+  - WpfCompat's clipboard needs a focused window: call `CommandManager.InvalidateRequerySuggested()` and
+    `window.Activate()` first.
+  - A mouse-down and move shows Dock's docking targets in the window's adorner layer, and
+    `NavigatorWindow` can be shown directly.
 - **Popups in captures:** set `Popup.ShouldUseOverlayLayer`. The headless render timer uses real time.
+- **Bindings in templates:** a `{Binding}` inside a ControlTemplate applies at LocalValue priority, so
+  no style can override it. Use `TemplateBinding`, or a style, where a theme must win.
+- **Markup:** `x:Static` can't reach internal members (AVLN2000). A `StaticResource` used for `BasedOn`
+  in a dictionary loaded on its own has no application fallback: merge the base theme's dictionary
+  first. `$parent[prefix:Type]` in a reflection binding inside a dictionary failed at run time;
+  `CompiledBinding` works.
+- **Pointer capture:** Avalonia captures the pointer on every press; release it where upstream relies on
+  WPF not capturing (the colour picker, the clock).
+- **Two-way bindings:** a target set from the source property's own change handler isn't written back
+  when it equals the source's old value. Write it back explicitly (see `NumericUpDown`).
+- **ProDataGrid:** it moves the current cell after your KeyDown handlers have run, so react in
+  `CurrentCellChanged`. It commits an edit in progress when its items source changes, so don't reset
+  the items from `CellEditEnding` (see `StringListPropertyControl`).
+- **Dock's AvalonDock adapter:** it sets some templates (captions, pane content, side tabs) through
+  application and window Styles, which a ControlTheme can't replace: restyle their parts, and where a
+  template sets a value itself, override it with a nested style that has a condition. Its themes go on
+  `DockingManager.Theme`, which reaches floating, auto-hide and navigator windows (see
+  `FrameworkUI/Themes/VS2013/Dock`).
 - **Dispatchers:** as in WPF, each object belongs to the dispatcher of the thread that made it, and the
   first thread to create a dispatcher becomes the UI thread. A test project whose tests run in parallel
   must start its headless application in `[AssemblyInitialize]`, before any test makes an Avalonia
@@ -208,7 +254,9 @@ Watch for others when porting:
   `HeadlessSession.cs` from an existing one. Test what a screenshot can't show: commands, state, layout
   rules.
 - **Gallery:** `tools/ThemeGallery` shows controls in all three themes, and `capture <dir>` renders
-  PNGs for review.
+  PNGs for review. Captures that need a test's setup are tests in category `Capture` (e.g.
+  `FrameworkUI.Tests --filter "TestCategory=Capture"` for the docking chrome), writing to
+  `artifacts/screenshots`.
 - **Before committing:** `dotnet build XGoodFit.slnx -c Release` with no warnings, and
   `dotnet test XGoodFit.slnx -c Release --no-build`. CI runs both on Windows, macOS and Linux.
 - **Commits:** clear messages, ending with the co-author trailer the repository uses.
