@@ -309,31 +309,45 @@ namespace RMC.BestFit.App.Tests.XGoodFit
             Dispatcher.UIThread.RunJobs();
         }
 
-        /// <summary>Clicks the left button at the centre of <paramref name="visual"/>.</summary>
+        /// <summary>
+        /// Clicks the left button at the centre of <paramref name="visual"/>, moving the pointer there first,
+        /// as a mouse does: the shell notes which pane the pointer is over on mouse moves (MainWindow's
+        /// Me_MouseMove), and a click in the explorer relies on that to keep its selection when it
+        /// activates a document.
+        /// </summary>
         public static void Click(this TopLevel window, Visual visual)
         {
             Frame();
             Point at = visual.TranslatePoint(new Point(visual.Bounds.Width / 2, visual.Bounds.Height / 2), window)!.Value;
+            window.MouseMove(at);
             window.MouseDown(at, MouseButton.Left);
             window.MouseUp(at, MouseButton.Left);
             Frame();
         }
 
-        /// <summary>Clicks the right button at the centre of <paramref name="visual"/>, which opens its context menu.</summary>
+        /// <summary>
+        /// Clicks the right button at the centre of <paramref name="visual"/>, which opens its context menu,
+        /// moving the pointer there first (see <see cref="Click(TopLevel, Visual)"/>).
+        /// </summary>
         public static void RightClick(this TopLevel window, Visual visual)
         {
             Frame();
             Point at = visual.TranslatePoint(new Point(visual.Bounds.Width / 2, visual.Bounds.Height / 2), window)!.Value;
+            window.MouseMove(at);
             window.MouseDown(at, MouseButton.Right);
             window.MouseUp(at, MouseButton.Right);
             Frame();
         }
 
-        /// <summary>Double-clicks the left button at the centre of <paramref name="visual"/>.</summary>
+        /// <summary>
+        /// Double-clicks the left button at the centre of <paramref name="visual"/>, moving the pointer there
+        /// first (see <see cref="Click(TopLevel, Visual)"/>).
+        /// </summary>
         public static void DoubleClick(this TopLevel window, Visual visual)
         {
             Frame();
             Point at = visual.TranslatePoint(new Point(visual.Bounds.Width / 2, visual.Bounds.Height / 2), window)!.Value;
+            window.MouseMove(at);
             window.MouseDown(at, MouseButton.Left);
             window.MouseUp(at, MouseButton.Left);
             window.MouseDown(at, MouseButton.Left);

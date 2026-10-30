@@ -308,9 +308,14 @@ namespace RMC.BestFit.App.Tests.XGoodFit
                     Assert.AreEqual("MCMC copy", copy.Name);
                     Assert.AreEqual("MCMC copy", copyNode.NodeHeader.HeaderText);
 
+                    // A right click selects a node added since the project opened (the copy, whose document
+                    // Copy... opened) as it does one the project opened with.
+                    window.RightClick(copyNode.NodeHeader);
+                    CollectionAssert.AreEqual(new Node[] { copyNode }, copyNode.ParentTreeView.SelectedNodes.ToArray(), "a right click selects the copy");
+                    copyNode.ContextMenu!.Close();
+
                     // Delete... (from the node's context menu, which a right click opens and selects the node
-                    // for) asks first, then removes it. It deletes a node the project opened with: a right click
-                    // on a node added since (the copy) doesn't select it in the port's explorer (FrameworkUI).
+                    // for) asks first, then removes it.
                     window.RightClick(originalNode.NodeHeader);
                     Assert.IsTrue(originalNode.ContextMenu!.IsOpen, "a right click opens the node's menu");
                     CollectionAssert.AreEqual(new Node[] { originalNode }, originalNode.ParentTreeView.SelectedNodes.ToArray(), "and selects the node");

@@ -128,6 +128,41 @@ public sealed class ExplorerTests
     }
 
     [TestMethod]
+    public void ClickingANodeAddedAfterTheProjectOpened_SelectsIt()
+    {
+        HeadlessSession.Run(() =>
+        {
+            ThemeManager.SetTheme(ThemeColor.Light);
+            var project = SampleProject();
+            var (window, tree, root) = Show(project);
+            try
+            {
+                // A new element (Project > New…, or Copy…) gets its node from the collection's ElementAdded.
+                var series = project.Collection("Time Series Data");
+                var added = new TestElement("Annual Peaks", series);
+                series.Add(added);
+                Dispatcher.UIThread.RunJobs();
+                ElementNode node = ElementNode.FindElementNode(added, root)!;
+                Assert.IsNotNull(node);
+
+                window.Click(node.NodeHeader);
+                CollectionAssert.AreEqual(new Node[] { node }, tree.SelectedNodes.ToArray(), "left-clicking selects the new node");
+
+                ElementNode loaded = ElementNode.FindElementNode(series[0], root)!;
+                window.Click(loaded.NodeHeader, MouseButton.Right);
+                loaded.ContextMenu!.Close();
+                window.Click(node.NodeHeader, MouseButton.Right);
+                CollectionAssert.AreEqual(new Node[] { node }, tree.SelectedNodes.ToArray(), "right-clicking selects it too");
+                node.ContextMenu!.Close();
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+    }
+
+    [TestMethod]
     public void ContextMenu_RightClickSelectsTheNodeAndShowsItsCommands()
     {
         HeadlessSession.Run(() =>
