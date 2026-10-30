@@ -8,7 +8,8 @@
 
     Ported so far: the Metro windows, MessageBox and its window, NameDialog and NameTextBox, the
     converters and utilities (Utilities/, BooleanToVisibilityConverter, ColorToByteConverter),
-    FolderBrowser, the icon and resource dictionaries, and the theme's control styles. Not ported:
+    FolderBrowser, the icon and resource dictionaries, the theme's control styles, and the data grids
+    and their toolbar (DataGrid/, on ProDataGrid). Not ported:
     Utilities/ValidationRules.cs, which nothing BestFit uses needs.
   -->
   <PropertyGroup>
