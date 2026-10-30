@@ -501,11 +501,11 @@ namespace GenericControls
                     // the themed ControlTemplate with IsKeyboardFocusWithin border trigger is applied.
                     if (dgtc.CellTheme == null)
                     {
-                        dgtc.CellTheme = new ControlTheme(typeof(DataGridCell)) { BasedOn = CellTheme };
+                        dgtc.CellTheme = new ControlTheme(typeof(DataGridCell)) { BasedOn = CellThemeOrDefault };
                     }
                     else
                     {
-                        var newStyle = new ControlTheme(typeof(DataGridCell)) { BasedOn = CellTheme };
+                        var newStyle = new ControlTheme(typeof(DataGridCell)) { BasedOn = CellThemeOrDefault };
                         foreach (var setter in dgtc.CellTheme.Setters)
                             newStyle.Setters.Add(setter);
                         dgtc.CellTheme = newStyle;
@@ -517,11 +517,11 @@ namespace GenericControls
                     // CellStyle for checkbox columns
                     if (dgtcbx.CellTheme == null)
                     {
-                        dgtcbx.CellTheme = new ControlTheme(typeof(DataGridCell)) { BasedOn = CellTheme };
+                        dgtcbx.CellTheme = new ControlTheme(typeof(DataGridCell)) { BasedOn = CellThemeOrDefault };
                     }
                     else
                     {
-                        var newStyle = new ControlTheme(typeof(DataGridCell)) { BasedOn = CellTheme };
+                        var newStyle = new ControlTheme(typeof(DataGridCell)) { BasedOn = CellThemeOrDefault };
                         foreach (var setter in dgtcbx.CellTheme.Setters)
                             newStyle.Setters.Add(setter);
                         dgtcbx.CellTheme = newStyle;
@@ -1684,6 +1684,11 @@ namespace GenericControls
         /// leaves those out before raising the event.
         /// </para>
         /// <para>
+        /// A generated column's binding converts with WpfCompat's FormattingCulture (en-US), as WPF's does.
+        /// And no column is generated for a property the items don't have, which ProDataGrid asks for when
+        /// its collection of objects has been empty (see the code).
+        /// </para>
+        /// <para>
         /// WPF generates the columns once for an items source. ProDataGrid generates them again each time
         /// its view resets or sorts (a refresh, a paste), which would replace the columns and whatever
         /// was set on them, and raise the events again. So the grid keeps the columns it generated for its
@@ -1707,6 +1712,25 @@ namespace GenericControls
                 }
                 return;
             }
+            // ProDataGrid reads an empty collection of objects as having the properties of System.Type (those of
+            // the item type object itself), and keeps them until its view refreshes with items. WPF finds no
+            // properties on object, and keeps the columns it generated for the items source across resets. So a
+            // property the items don't have gives back the next column generated for the items source (in the
+            // order they were generated), or else generates nothing.
+            if (!ItemsHaveProperty(e.PropertyName))
+            {
+                DataGridColumn next = _generatedColumns.Values.FirstOrDefault(c => c != null && !Columns.Contains(c));
+                if (next == null)
+                {
+                    e.Cancel = true;
+                }
+                else
+                {
+                    next.DisplayIndex = -1;
+                    e.Column = next;
+                }
+                return;
+            }
             if (ItemType() is { } itemType
                 && itemType.GetProperties().FirstOrDefault(p => p.Name == e.PropertyName) is { } property
                 && (property.GetGetMethod() == null || property.GetIndexParameters().Length > 0))
@@ -1715,9 +1739,26 @@ namespace GenericControls
                 _generatedColumns[e.PropertyName] = null;
                 return;
             }
+            // A generated column's binding names no culture, so WPF's converts with en-US (the element's
+            // Language): WpfCompat's FormattingCulture (plan §5.2). ProDataGrid's would use the current culture.
+            if (e.Column is DataGridBoundColumn { Binding: ReflectionBinding generatedBinding } && generatedBinding.ConverterCulture == null)
+            {
+                generatedBinding.ConverterCulture = FormattingCulture.Current;
+            }
             base.OnAutoGeneratingColumn(e);
             _generatedColumns[e.PropertyName] = e.Cancel ? null : e.Column;
             _autoGeneratingColumns++;
+        }
+
+        // Whether the items have the property, as WPF's type descriptor lists them (with a DataTable's columns):
+        // the first item's, or with none, those of the collection's item type, if it isn't object.
+        private bool ItemsHaveProperty(string name)
+        {
+            object item = ItemsSource?.Cast<object>().FirstOrDefault();
+            if (item != null)
+                return TypeDescriptor.GetProperties(item).Find(name, false) != null;
+            Type itemType = ItemType();
+            return itemType != null && itemType != typeof(object) && TypeDescriptor.GetProperties(itemType).Find(name, false) != null;
         }
 
         // The type of the items, as ProDataGrid finds it: the collection's item type, or else its first item's.
@@ -1799,6 +1840,18 @@ namespace GenericControls
             get => GetValue(VerticalContentAlignmentProperty);
             set => SetValue(VerticalContentAlignmentProperty, value);
         }
+
+        /// <summary>
+        /// The theme a generated column's cell theme is based on: the grid's <see cref="DataGrid.CellTheme"/>,
+        /// or WPF's own cell style (Themes' DataGridCellDefaultTheme) when the grid has none.
+        /// </summary>
+        /// <remarks>
+        /// Upstream bases the styles on the grid's CellStyle, which can be null (UncertainOrderedTableEditor
+        /// binds it to a property that is null by default). A WPF style based on nothing still has WPF's own
+        /// cell style (Aero2) under it; a ControlTheme has nothing, and ProDataGrid's cells then take a template
+        /// of their own.
+        /// </remarks>
+        internal ControlTheme CellThemeOrDefault => CellTheme ?? this.TryFindResource("DataGridCellDefaultTheme") as ControlTheme;
 
         /// <summary>
         /// Adds <paramref name="setter"/> to <paramref name="style"/>, replacing a setter for the same
@@ -1997,9 +2050,16 @@ namespace GenericControls
             var column = (DataGridColumn)sender;
             foreach (DataGridCell cell in this.GetVisualDescendants().OfType<DataGridCell>().Where(c => ReferenceEquals(c.OwningColumn, column)))
             {
-                // As ProDataGrid gives a new cell its theme.
-                if ((column.CellTheme ?? CellTheme) is { } theme)
+                // As ProDataGrid gives a new cell its theme: its column's as a local value, or else the grid's.
+                if (column.CellTheme is { } columnTheme)
+                {
+                    cell.Theme = columnTheme;
+                }
+                else if (CellTheme is { } theme)
+                {
+                    cell.ClearValue(ThemeProperty);
                     cell.SetValue(ThemeProperty, theme, BindingPriority.Template);
+                }
                 DataGridColumnStyles.Apply(cell);
             }
         }
