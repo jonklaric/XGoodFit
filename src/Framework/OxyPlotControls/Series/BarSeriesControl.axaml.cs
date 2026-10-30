@@ -208,9 +208,10 @@ namespace OxyPlotControls
             var properties = new XElement(BarSeriesPropertiesTag);
             properties.SetAttributeValue("IsEnabled", barSeries.IsEnabled.ToString());
 
-            // XGoodFit port: WPF's text forms (WPF's ToString on brushes, colours, font weights and
-            // thicknesses), through WpfCompat's converters.
+            // XGoodFit port: WPF's text forms (WPF's ToString on brushes, colours, font families, font
+            // weights and thicknesses), through WpfCompat's converters.
             var brushConverter = new WpfCompat.Media.BrushConverter();
+            var fontFamilyConverter = new WpfCompat.Media.FontFamilyConverter();
             var fontWeightConverter = new FontWeightConverter();
             var thicknessConverter = new ThicknessConverter();
 
@@ -219,7 +220,7 @@ namespace OxyPlotControls
             labelProps.SetAttributeValue("Title", barSeries.Title);
             labelProps.SetAttributeValue("LabelPlacement", barSeries.LabelPlacement.ToString());
             labelProps.SetAttributeValue("TextColor", brushConverter.ConvertToInvariantString(barSeries.Foreground));
-            labelProps.SetAttributeValue("Font", barSeries.FontFamily);
+            labelProps.SetAttributeValue("Font", fontFamilyConverter.ConvertToInvariantString(barSeries.FontFamily));
             labelProps.SetAttributeValue("FontSize", barSeries.FontSize.ToString("G17", CultureInfo.InvariantCulture));
             labelProps.SetAttributeValue("FontWeight", fontWeightConverter.ConvertToInvariantString(barSeries.FontWeight));
             labelProps.SetAttributeValue("Padding", thicknessConverter.ConvertToInvariantString(barSeries.Padding));

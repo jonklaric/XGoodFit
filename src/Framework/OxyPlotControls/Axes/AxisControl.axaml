@@ -10,6 +10,9 @@
     - Avalonia's bindings have no NotifyOnSourceUpdated; upstream handles no SourceUpdated events.
     - The hidden dummy property controls, which only measure the property column, are Opacity="0"
       without hit testing, as WPF's Visibility="Hidden".
+    - Converters of two-way bindings are wrapped in WpfCompat's TwoWayConverter, one per binding
+      (x:Shared="False"): Avalonia's bindings write back the value they show, so a converter that
+      shows a default (a NaN font size as 12, an automatic line style as solid) would change the plot.
 -->
 <UserControl x:Class="OxyPlotControls.AxisControl" x:Name="AxisProperties"
              xmlns="https://github.com/avaloniaui"
@@ -38,12 +41,22 @@
                         <sys:Double>4</sys:Double>
                         <sys:Double>5</sys:Double>
                     </wpfm:ArrayExtension>
-                    <local:DateToNumberConverter x:Key="DateNumberConverter"/>
-                    <local:OxyAutomaticColorConverter x:Key="ConvertColorToBrush"/>
-                    <local:OxyLineStyleToDashArrayConverter x:Key="LineStyleConverter"/>
-                    <local:EmptyStringToNullConverter x:Key="EmptyToNullConverter"/>
+                    <wpfd:TwoWayConverter x:Key="DateNumberConverter" x:Shared="False">
+                        <local:DateToNumberConverter/>
+                    </wpfd:TwoWayConverter>
+                    <wpfd:TwoWayConverter x:Key="ConvertColorToBrush" x:Shared="False">
+                        <local:OxyAutomaticColorConverter/>
+                    </wpfd:TwoWayConverter>
+                    <wpfd:TwoWayConverter x:Key="LineStyleConverter" x:Shared="False">
+                        <local:OxyLineStyleToDashArrayConverter/>
+                    </wpfd:TwoWayConverter>
+                    <wpfd:TwoWayConverter x:Key="EmptyToNullConverter" x:Shared="False">
+                        <local:EmptyStringToNullConverter/>
+                    </wpfd:TwoWayConverter>
                     <local:ReverseAxisConverter x:Key="ReverseConverter"/>
-                    <local:OxyDefaultFontSizeConverter x:Key="DefaultFontSizeConverter"/>
+                    <wpfd:TwoWayConverter x:Key="DefaultFontSizeConverter" x:Shared="False">
+                        <local:OxyDefaultFontSizeConverter/>
+                    </wpfd:TwoWayConverter>
                     <cntrls:DoubleToGridLengthConverter x:Key="ActualToLengthConverter" />
                 </ResourceDictionary>
             </ResourceDictionary.MergedDictionaries>

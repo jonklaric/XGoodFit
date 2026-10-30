@@ -9,6 +9,9 @@
     - Avalonia's ComboBox has no ItemStringFormat: the text line positions' item template formats them
       as percentages (P0), in WpfCompat's FormattingCulture as WPF's bindings do.
     - Avalonia's bindings have no NotifyOnSourceUpdated; upstream handles no SourceUpdated events.
+    - Converters of two-way bindings are wrapped in WpfCompat's TwoWayConverter, one per binding
+      (x:Shared="False"): Avalonia's bindings write back the value they show, so a converter that
+      shows a default (a NaN font size as 12, an automatic line style as solid) would change the plot.
 -->
 <UserControl x:Class="OxyPlotControls.AnnotationControl" x:Name="AnnotationProperties"
              xmlns="https://github.com/avaloniaui"
@@ -16,6 +19,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:local="using:OxyPlotControls"
+             xmlns:wpfd="using:WpfCompat.Data"
              xmlns:cntrls="using:GenericControls"
              xmlns:wpf="using:WpfCompat"
              mc:Ignorable="d"
@@ -29,19 +33,35 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceInclude Source="avares://OxyPlotControls/Resources/ResourceDictionary.axaml"/>
                 <ResourceDictionary>
-                    <local:OxyLineStyleToDashArrayConverter x:Key="LineStyleConverter"/>
-                    <local:OxyAutomaticColorConverter x:Key="OxyAutoColorConverter"/>
-                    <cntrls:FontFamilyToFontStringConverter x:Key="FontFamilyToFontConverter"/>
-                    <local:DataPointToPointConverter x:Key="DataPointConverter"/>
+                    <wpfd:TwoWayConverter x:Key="LineStyleConverter" x:Shared="False">
+                        <local:OxyLineStyleToDashArrayConverter/>
+                    </wpfd:TwoWayConverter>
+                    <wpfd:TwoWayConverter x:Key="OxyAutoColorConverter" x:Shared="False">
+                        <local:OxyAutomaticColorConverter/>
+                    </wpfd:TwoWayConverter>
+                    <wpfd:TwoWayConverter x:Key="FontFamilyToFontConverter" x:Shared="False">
+                        <cntrls:FontFamilyToFontStringConverter/>
+                    </wpfd:TwoWayConverter>
+                    <wpfd:TwoWayConverter x:Key="DataPointConverter" x:Shared="False">
+                        <local:DataPointToPointConverter/>
+                    </wpfd:TwoWayConverter>
                     <local:ScreenVectorToPointConverter x:Key="ScreenVectorConverter"/>
                     <cntrls:VectorToPointConverter x:Key="VectorConverter"/>
                     <local:EmptyStringToNullConverter x:Key="EmptyToNullConverter"/>
                     <cntrls:AlwaysVisibleConverter x:Key="AlwaysVisibleConverter" />
-                    <cntrls:ThicknessToDoubleConverter x:Key="ConvertThicknessToDouble"/>
-                    <local:OxyDefaultFontSizeConverter x:Key="DefaultFontSizeConverter"/>
+                    <wpfd:TwoWayConverter x:Key="ConvertThicknessToDouble" x:Shared="False">
+                        <cntrls:ThicknessToDoubleConverter/>
+                    </wpfd:TwoWayConverter>
+                    <wpfd:TwoWayConverter x:Key="DefaultFontSizeConverter" x:Shared="False">
+                        <local:OxyDefaultFontSizeConverter/>
+                    </wpfd:TwoWayConverter>
                     <cntrls:DoubleToGridLengthConverter x:Key="ActualToLengthConverter" />
-                    <local:OxyHorizontalAlignmentConverter x:Key="OxyHorizontalAlignmentConverter"/>
-                    <local:OxyVerticalAlignmentConverter x:Key="OxyVerticalAlignmentConverter"/>
+                    <wpfd:TwoWayConverter x:Key="OxyHorizontalAlignmentConverter" x:Shared="False">
+                        <local:OxyHorizontalAlignmentConverter/>
+                    </wpfd:TwoWayConverter>
+                    <wpfd:TwoWayConverter x:Key="OxyVerticalAlignmentConverter" x:Shared="False">
+                        <local:OxyVerticalAlignmentConverter/>
+                    </wpfd:TwoWayConverter>
                 </ResourceDictionary>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>

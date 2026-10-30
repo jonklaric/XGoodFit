@@ -4,6 +4,9 @@
       bindings (Avalonia's styles are ControlThemes).
     - The hidden dummy property control, which only measures the property column, is Opacity="0"
       without hit testing, as WPF's Visibility="Hidden".
+    - Converters of two-way bindings are wrapped in WpfCompat's TwoWayConverter, one per binding
+      (x:Shared="False"): Avalonia's bindings write back the value they show, so a converter that
+      shows a default (a NaN font size as 12, an automatic line style as solid) would change the plot.
 -->
 <UserControl x:Class="OxyPlotControls.GeneralPlotControl" x:Name="GeneralPlotProperties"
              xmlns="https://github.com/avaloniaui"
@@ -11,6 +14,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:local="using:OxyPlotControls"
+             xmlns:wpfd="using:WpfCompat.Data"
              xmlns:cntrls="using:GenericControls"
              mc:Ignorable="d"
              MinWidth="200"
@@ -22,11 +26,19 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceInclude Source="avares://OxyPlotControls/Resources/ResourceDictionary.axaml"/>
                 <ResourceDictionary>
-                    <local:OxyAutomaticColorConverter x:Key="OxyAutoColorConverter"/>
-                    <cntrls:ThicknessToDoubleConverter x:Key="ConvertThicknessToDouble"/>
-                    <local:OxyDefaultFontSizeConverter x:Key="DefaultFontSizeConverter"/>
+                    <wpfd:TwoWayConverter x:Key="OxyAutoColorConverter" x:Shared="False">
+                        <local:OxyAutomaticColorConverter/>
+                    </wpfd:TwoWayConverter>
+                    <wpfd:TwoWayConverter x:Key="ConvertThicknessToDouble" x:Shared="False">
+                        <cntrls:ThicknessToDoubleConverter/>
+                    </wpfd:TwoWayConverter>
+                    <wpfd:TwoWayConverter x:Key="DefaultFontSizeConverter" x:Shared="False">
+                        <local:OxyDefaultFontSizeConverter/>
+                    </wpfd:TwoWayConverter>
                     <cntrls:DoubleToGridLengthConverter x:Key="ActualToLengthConverter" />
-                    <local:SolidColorBrushConverter x:Key="BrushToSolidConverter"/>
+                    <wpfd:TwoWayConverter x:Key="BrushToSolidConverter" x:Shared="False">
+                        <local:SolidColorBrushConverter/>
+                    </wpfd:TwoWayConverter>
                 </ResourceDictionary>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>

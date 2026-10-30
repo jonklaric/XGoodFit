@@ -6,6 +6,9 @@
       property column, is Opacity="0" without hit testing, as WPF's Visibility="Hidden".
     - The two-way MultiBindings are WpfCompat's (Avalonia's is one-way).
     - Avalonia's bindings have no NotifyOnSourceUpdated; upstream handles no SourceUpdated events.
+    - Converters of two-way bindings are wrapped in WpfCompat's TwoWayConverter, one per binding
+      (x:Shared="False"): Avalonia's bindings write back the value they show, so a converter that
+      shows a default (a NaN font size as 12, an automatic line style as solid) would change the plot.
 -->
 <UserControl x:Class="OxyPlotControls.BarSeriesControl" x:Name="BarSeriesProperties"
              xmlns="https://github.com/avaloniaui"
@@ -27,11 +30,15 @@
                 <ResourceDictionary>
                     <cntrls:FontFamilyToFontStringConverter x:Key="FontFamilyToFontConverter"/>
                     <local:BarSeriesFillConverter x:Key="FillColorConverter"/>
-                    <local:OxyAutomaticColorConverter x:Key="OxyAutoColorConverter"/>
+                    <wpfd:TwoWayConverter x:Key="OxyAutoColorConverter" x:Shared="False">
+                        <local:OxyAutomaticColorConverter/>
+                    </wpfd:TwoWayConverter>
                     <cntrls:AlwaysVisibleConverter x:Key="AlwaysVisibleConverter" />
                     <local:OxyDefaultFontSizeConverter x:Key="DefaultFontSizeConverter"/>
                     <cntrls:DoubleToGridLengthConverter x:Key="ActualToLengthConverter" />
-                    <cntrls:VisibilityToBooleanConverter x:Key="VisibilityToBoolConverter" VisibleValue="True" CollapsedValue="False" HiddenValue="False"/>
+                    <wpfd:TwoWayConverter x:Key="VisibilityToBoolConverter" x:Shared="False">
+                        <cntrls:VisibilityToBooleanConverter VisibleValue="True" CollapsedValue="False" HiddenValue="False"/>
+                    </wpfd:TwoWayConverter>
                 </ResourceDictionary>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>

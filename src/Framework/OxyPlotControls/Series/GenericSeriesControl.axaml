@@ -6,6 +6,9 @@
       property column, is Opacity="0" without hit testing, as WPF's Visibility="Hidden".
     - The two-way MultiBindings are WpfCompat's (Avalonia's is one-way).
     - Avalonia's bindings have no NotifyOnSourceUpdated; upstream handles no SourceUpdated events.
+    - Converters of two-way bindings are wrapped in WpfCompat's TwoWayConverter, one per binding
+      (x:Shared="False"): Avalonia's bindings write back the value they show, so a converter that
+      shows a default (a NaN font size as 12, an automatic line style as solid) would change the plot.
 -->
 <UserControl x:Class="OxyPlotControls.GenericSeriesControl" x:Name="SeriesProperties"
              xmlns="https://github.com/avaloniaui"
@@ -26,7 +29,9 @@
                 <ResourceInclude Source="avares://OxyPlotControls/Resources/ResourceDictionary.axaml"/>
                 <ResourceDictionary>
                     <cntrls:FontFamilyToFontStringConverter x:Key="FontFamilyToFontConverter"/>
-                    <local:OxyAutomaticColorConverter x:Key="OxyAutoColorConverter"/>
+                    <wpfd:TwoWayConverter x:Key="OxyAutoColorConverter" x:Shared="False">
+                        <local:OxyAutomaticColorConverter/>
+                    </wpfd:TwoWayConverter>
                     <cntrls:AlwaysVisibleConverter x:Key="AlwaysVisibleConverter" />
                     <local:EmptyStringToNullConverter x:Key="EmptyToNullConverter"/>
                     <cntrls:TabSizeConverter x:Key="TabSizeConverter" />
@@ -34,8 +39,12 @@
                     <local:GenericSeriesFillConverter x:Key="FillColorConverter"/>
                     <local:OxySeriesMarkerFillConverter x:Key="MarkerFillConverter"/>
                     <local:OxySeriesMarkerStrokeConverter x:Key="MarkerStrokeConverter"/>
-                    <local:OxyLineStyleToDashArrayConverter x:Key="LineStyleConverter"/>
-                    <cntrls:VisibilityToBooleanConverter x:Key="VisibilityToBoolConverter" VisibleValue="True" CollapsedValue="False" HiddenValue="False"/>
+                    <wpfd:TwoWayConverter x:Key="LineStyleConverter" x:Shared="False">
+                        <local:OxyLineStyleToDashArrayConverter/>
+                    </wpfd:TwoWayConverter>
+                    <wpfd:TwoWayConverter x:Key="VisibilityToBoolConverter" x:Shared="False">
+                        <cntrls:VisibilityToBooleanConverter VisibleValue="True" CollapsedValue="False" HiddenValue="False"/>
+                    </wpfd:TwoWayConverter>
                     <local:OxyDefaultFontSizeConverter x:Key="DefaultFontSizeConverter"/>
                     <local:StairStepVerticalThicknessConverter x:Key="VerticalThicknessConverter"/>
                     <cntrls:DoubleToGridLengthConverter x:Key="ActualToLengthConverter" />
