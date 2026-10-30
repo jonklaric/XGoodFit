@@ -20,7 +20,10 @@ public sealed class FlowDocument
     /// <summary>Creates an empty document.</summary>
     public FlowDocument()
     {
-        Blocks.CollectionChanged += (_, _) => Changed?.Invoke(this, EventArgs.Empty);
+        Blocks.CollectionChanged += (_, _) =>
+        {
+            if (!_replacingBlocks) Changed?.Invoke(this, EventArgs.Empty);
+        };
         ContentStart = new TextPointer(this, isStart: true);
         ContentEnd = new TextPointer(this, isStart: false);
     }
@@ -54,6 +57,25 @@ public sealed class FlowDocument
 
     /// <summary>Raised when blocks are added or removed, so the viewer shows them.</summary>
     public event EventHandler? Changed;
+
+    private bool _replacingBlocks;
+
+    /// <summary>Replaces the blocks, raising <see cref="Changed"/> once.</summary>
+    internal void ReplaceBlocks(IEnumerable<Block> blocks)
+    {
+        _replacingBlocks = true;
+        try
+        {
+            Blocks.Clear();
+            foreach (Block block in blocks)
+                Blocks.Add(block);
+        }
+        finally
+        {
+            _replacingBlocks = false;
+        }
+        Changed?.Invoke(this, EventArgs.Empty);
+    }
 
     /// <summary>The document's text: its paragraphs, each followed by a line break, as WPF's <c>TextRange.Text</c>.</summary>
     internal string Text
@@ -103,14 +125,16 @@ public sealed class TextRange
         _document = start.Document;
     }
 
-    /// <summary>The range's text. Setting it replaces the document's content with one paragraph.</summary>
+    /// <summary>The range's text. Setting it replaces the document's content with a paragraph for each line.</summary>
     public string Text
     {
         get => _document.Text;
         set
         {
-            _document.Blocks.Clear();
-            _document.Blocks.Add(new Paragraph(new Run(value ?? string.Empty)));
+            // As WPF's, each line becomes a paragraph (with automatic margins, so a line apart).
+            _document.ReplaceBlocks((value ?? string.Empty)
+                .Split(new[] { "\r\n", "\n", "\r" }, StringSplitOptions.None)
+                .Select(line => new Paragraph(new Run(line))));
         }
     }
 }
