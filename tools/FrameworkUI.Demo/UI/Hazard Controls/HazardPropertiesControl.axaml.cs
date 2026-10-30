@@ -1,8 +1,7 @@
 // XGoodFit port: Avalonia's controls, bindings and colours, with WpfCompat's resource lookups, cursor
 // and mouse events. The dependency properties are styled properties, the XAML's Preview handlers are
 // added here, and the parameter grid's columns, which Avalonia's XAML can't name, are found by
-// position. NumericControls' Parameter compiles from upstream's source until NumericControls is
-// ported; its probability ordinates editor is deferred until then.
+// position.
 using FrameworkInterfaces;
 using Numerics.Distributions;
 using NumericControls;
@@ -74,6 +73,7 @@ namespace FrameworkUI.Demo.UI
             ConfidenceInterval.AddPreviewMouseLeftButtonDownHandler(ConfidenceInterval_PreviewMouseLeftButtonDown);
             Realizations.AddPreviewMouseLeftButtonDownHandler(Realizations_PreviewMouseLeftButtonDown);
             PRNGSeed.AddPreviewMouseLeftButtonDownHandler(PRNGSeed_PreviewMouseLeftButtonDown);
+            ProbabilityOrdinatesEditor.AddPreviewMouseLeftButtonDownHandler(ProbabilityOrdinatesControl_PreviewMouseLeftButtonDown);
             General_TabItem.AddPreviewMouseLeftButtonDownHandler(TabItem_PreviewMouseLeftButtonDown);
             Options_TabItem.AddPreviewMouseLeftButtonDownHandler(TabItem_PreviewMouseLeftButtonDown);
         }

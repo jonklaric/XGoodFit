@@ -44,6 +44,11 @@ namespace FrameworkUI.Demo
                 Setters = { new Setter(Visual.IsVisibleProperty, true) },
             });
 
+            // The hazard document's plot toolbar asks before re-theming its plot when the theme changes
+            // (OxyPlotThemeManager.ConfirmThemeChange, a modal question nobody answers here): answer OK,
+            // as "Don't show this message again" does.
+            OxyPlotControls.OxyPlotThemeManager.SuppressThemeChangeWarning = true;
+
             // The shell's settings, layout, recent files and log go to a temporary folder, not the user's.
             string state = Path.Combine(Path.GetTempPath(), "FrameworkUI.Demo-capture-" + Guid.NewGuid().ToString("N"));
             UseFolder(state);

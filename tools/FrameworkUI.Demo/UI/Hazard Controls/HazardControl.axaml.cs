@@ -1,11 +1,11 @@
 // XGoodFit port: Avalonia's controls, colours and dispatcher, with WpfCompat's colour converter,
 // visibility and mouse events. Element is a styled property. The grid columns, which Avalonia's XAML
-// can't name, are found by position. Deferred until their libraries are ported: the plot toolbar
-// (OxyPlotControls' OxyPlotToolbar) and the parameter sets table (DatabaseControls' TableViewer).
+// can't name, are found by position.
 using DatabaseManager;
 using FrameworkInterfaces;
 using OxyPlot;
 using OxyPlot.Wpf;
+using OxyPlotControls;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Data;
@@ -156,7 +156,7 @@ namespace FrameworkUI.Demo.UI
                 {
                     oldElement.PropertyChanged -= thisControl.HazardFunctionPropertyChanged;
                     thisControl.FrequencyPlotHost.Content = null;
-                    // XGoodFit port: the plot toolbar is deferred with OxyPlotControls' port.
+                    thisControl.PlotToolbar.Plot = null;
                 }
             }
 
@@ -172,7 +172,7 @@ namespace FrameworkUI.Demo.UI
             using (newElement.SuspendPlotBridges())
             {
                 thisControl.FrequencyPlotHost.Content = newElement.FrequencyPlot;
-                // XGoodFit port: the plot toolbar is deferred with OxyPlotControls' port.
+                thisControl.PlotToolbar.Plot = newElement.FrequencyPlot;
             }
 
             thisControl.UpdatePlot();
@@ -459,10 +459,9 @@ namespace FrameworkUI.Demo.UI
         {
             if (Plot == null) return;
 
-            // XGoodFit port: Avalonia's GetVisualAt is WPF's VisualTreeHelper.HitTest; the plot toolbar
-            // is deferred with OxyPlotControls' port, so it isn't hit.
+            // XGoodFit port: Avalonia's GetVisualAt is WPF's VisualTreeHelper.HitTest.
             var plotHitResult = Plot.GetVisualAt(e.GetPosition(Plot));
-            Visual toolbarHitResult = null;
+            var toolbarHitResult = PlotToolbar.GetVisualAt(e.GetPosition(PlotToolbar));
 
             PreviewControlClicked?.Invoke(plotHitResult != null, toolbarHitResult != null, Plot);
             PlotClicked = plotHitResult != null;
@@ -696,13 +695,13 @@ namespace FrameworkUI.Demo.UI
         {
             if (Element?.Results == null)
             {
-                ParameterSetDataView = null;
+                ParameterSetTableViewer.DataView = null;
                 return;
             }
 
             if (!Element.IsUncertain)
             {
-                ParameterSetDataView = null;
+                ParameterSetTableViewer.DataView = null;
             }
             else
             {
@@ -751,18 +750,9 @@ namespace FrameworkUI.Demo.UI
                     }
                 }
 
-                ParameterSetDataView = new InMemoryReader(dt).GetTableManager(dt.TableName);
+                ParameterSetTableViewer.DataView = new InMemoryReader(dt).GetTableManager(dt.TableName);
             }
         }
-
-        /// <summary>
-        /// The parameter sets the parameter sets table shows.
-        /// </summary>
-        /// <remarks>
-        /// XGoodFit port: upstream's TableViewer (ParameterSetTableViewer.DataView) is deferred with
-        /// DatabaseControls' port; the table it would show is kept here.
-        /// </remarks>
-        private DataTableView ParameterSetDataView { get; set; }
 
         /// <summary>
         /// Handles the SelectionChanged event of the tab control to refresh the parameter set viewer.
@@ -773,7 +763,7 @@ namespace FrameworkUI.Demo.UI
         {
             if (((TabControl)sender).SelectedIndex == 2)
             {
-                // XGoodFit port: the parameter set table's refresh is deferred with DatabaseControls' port.
+                ParameterSetTableViewer.RefreshView();
             }
         }
 

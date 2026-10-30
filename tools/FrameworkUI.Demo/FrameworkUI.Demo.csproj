@@ -6,9 +6,6 @@
     "capture <folder>" it renders the shell in every theme to PNG files instead, headlessly.
 
     Upstream C# files compile unchanged unless a ported copy exists here (Directory.Build.targets).
-    Left out until their libraries are ported (marked "XGoodFit port: deferred" where they were):
-    the hazard document's plot toolbar and the plot properties panel (OxyPlotControls), its parameter
-    sets table (DatabaseControls' TableViewer), and the probability ordinates editor (NumericControls).
   -->
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
@@ -42,23 +39,16 @@
   <ItemGroup>
     <ProjectReference Include="$(UpstreamFrameworkSrc)DatabaseManager/DatabaseManager.csproj" />
     <ProjectReference Include="$(UpstreamRoot)Numerics/Numerics/Numerics.csproj" />
+    <ProjectReference Include="../../src/Framework/DatabaseControls/DatabaseControls.csproj" />
     <ProjectReference Include="../../src/Framework/FrameworkInterfaces/FrameworkInterfaces.csproj" />
     <ProjectReference Include="../../src/Framework/FrameworkUI/FrameworkUI.csproj" />
     <ProjectReference Include="../../src/Framework/GenericControls/GenericControls.csproj" />
+    <ProjectReference Include="../../src/Framework/NumericControls/NumericControls.csproj" />
     <ProjectReference Include="../../src/Framework/OxyPlot/OxyPlot.Wpf/OxyPlot.Wpf.csproj" />
     <ProjectReference Include="../../src/Framework/OxyPlotControls/OxyPlotControls.csproj" />
     <ProjectReference Include="../../src/Framework/SoftwareUpdate/SoftwareUpdate.csproj" />
     <ProjectReference Include="../../src/Framework/Themes/Themes.csproj" />
     <ProjectReference Include="../../src/Framework/WpfCompat/WpfCompat.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <!--
-      The hazard properties' parameter rows: NumericControls' Parameter, which has no WPF code, compiles
-      from upstream's source until NumericControls is ported (then it's a project reference).
-    -->
-    <Compile Include="$(UpstreamFrameworkSrc)NumericControls/Distributions/Univariate/Distribution Selector/Parameter.cs"
-             Link="upstream/NumericControls/Parameter.cs" />
   </ItemGroup>
 
   <ItemGroup>

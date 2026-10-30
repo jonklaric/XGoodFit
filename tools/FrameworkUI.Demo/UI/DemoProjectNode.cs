@@ -1,10 +1,11 @@
 // XGoodFit port: WPF's controls, images and events are Avalonia's, with WpfCompat's resource lookups
-// and dialogs; documents and properties panels are Controls (FrameworkUI's UIElement). The plot
-// properties panel is deferred with OxyPlotControls' port (see the OxyPlot region's note).
+// and dialogs; documents and properties panels are Controls (FrameworkUI's UIElement).
 using FrameworkInterfaces;
 using FrameworkUI;
 using FrameworkUI.ProjectExplorer;
 using GenericControls;
+using OxyPlot.Wpf;
+using OxyPlotControls;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -43,7 +44,8 @@ namespace FrameworkUI.Demo.UI
         public DemoProjectNode(IProject project) : base(project)
         {
 
-            // XGoodFit port: no plot properties panel (OxyPlotPropertiesControl) until OxyPlotControls is ported.
+            _plotPropertiesControl = new OxyPlotPropertiesControl() { Margin = new Thickness(0, 0, 5, 5) };
+            _plotPropertiesControl.ClosePropertiesCalled += (x) => { ClosePlotProperties_Click(x.Plot); };
         }
 
         /// <summary>
@@ -56,6 +58,12 @@ namespace FrameworkUI.Demo.UI
         /// Used to prevent recursive closure operations and ensure proper cleanup.
         /// </summary>
         private bool _plotPropertiesClosing = false;
+
+        /// <summary>
+        /// The OxyPlot properties control instance used to display and edit plot configuration settings.
+        /// This control is shared across all plot types in the application.
+        /// </summary>
+        private OxyPlotPropertiesControl _plotPropertiesControl;
 
         /// <summary>
         /// Gets a value indicating whether multiple nodes can be selected simultaneously.
@@ -243,8 +251,8 @@ namespace FrameworkUI.Demo.UI
                 if (element as HazardElement != null)
                 {
                     var cntrl = new HazardControl() { Element = (HazardElement)element };
-                    // XGoodFit port: deferred with OxyPlotControls' port: the plot toolbar's properties
-                    // requests and the document's clicks, which open and close the plot properties panel.
+                    cntrl.PlotToolbar.PropertiesCalled += PlotPropertiesCalled;
+                    cntrl.PreviewControlClicked += DocumentControl_PreviewClicked;
                     return cntrl;
                 }
             }
@@ -303,7 +311,9 @@ namespace FrameworkUI.Demo.UI
             // Hazard Element
             if (documentControl as HazardControl != null)
             {
-                // XGoodFit port: no plot properties handlers to remove until OxyPlotControls is ported.
+                var cntrl = (HazardControl)documentControl;
+                cntrl.PlotToolbar.PropertiesCalled -= PlotPropertiesCalled;
+                cntrl.PreviewControlClicked -= DocumentControl_PreviewClicked;
             }
 
             return;
@@ -371,12 +381,14 @@ namespace FrameworkUI.Demo.UI
             // Hazard Element
             if (documentControl as HazardControl != null)
             {
-                // XGoodFit port: the plot properties panel, which stayed open for its plot's document, is
-                // deferred with OxyPlotControls' port, so the panel is never open (isOpen is false).
                 if (isOpen == true && _plotPropertiesClosing == false)
                 {
-                    _plotPropertiesOpen = true;
-                    return null;
+                    var plot = ((HazardControl)documentControl).Plot;
+                    if (plot != null && _plotPropertiesControl.Plot.Equals(plot))
+                    {
+                        _plotPropertiesOpen = true;
+                        return null;
+                    }
                 }
                 var element = ((HazardControl)documentControl).Element;
                 return new HazardPropertiesControl() { Element = element };
@@ -387,8 +399,82 @@ namespace FrameworkUI.Demo.UI
 
         #endregion
 
-        // XGoodFit port: deferred with OxyPlotControls' port: the OxyPlot region, which showed the plot
-        // toolbar's properties panel (OxyPlotPropertiesControl) in the properties window
-        // (PlotPropertiesCalled, ClosePlotProperties_Click, DocumentControl_PreviewClicked).
+        #region OxyPlot
+
+        /// <summary>
+        /// Handles requests to show or toggle the OxyPlot properties control panel. Manages the visibility state
+        /// of the properties panel and coordinates which plot's properties are currently being displayed.
+        /// </summary>
+        /// <param name="plotRequestingProperties">The OxyPlot plot instance that is requesting the properties panel.</param>
+        /// <param name="openProperties">Indicates whether to open the properties control if it is not already open.</param>
+        /// <param name="propertyExpander">The specific property expander section to open within the properties control.</param>
+        /// <param name="selectedObject">The OxyPlot object (axis, series, annotation, etc.) that has been selected by the user for editing.</param>
+        /// <remarks>
+        /// This method implements toggle behavior: if the properties panel is already open for the requesting plot
+        /// and no specific object is selected, the panel will be closed. Otherwise, the panel is opened or updated
+        /// to show the requested plot's properties. The method also handles expanding specific property sections
+        /// when a plot element is selected.
+        /// </remarks>
+        private void PlotPropertiesCalled(Plot plotRequestingProperties, bool openProperties, OxyPlotPropertiesControl.PropertyEXP? propertyExpander, object selectedObject)
+        {
+            if (_plotPropertiesOpen && _plotPropertiesControl.Plot.Equals(plotRequestingProperties) && selectedObject == null)
+            {
+                ClosePlotProperties_Click(_plotPropertiesControl.Plot);
+                _plotPropertiesOpen = false;
+            }
+            else if (openProperties == true)
+            {
+                _plotPropertiesControl.Plot = plotRequestingProperties;
+                RaiseSetPropertiesControl(_plotPropertiesControl);
+                _plotPropertiesOpen = true;
+            }
+
+            if (_plotPropertiesOpen && propertyExpander.HasValue)
+            {
+                _plotPropertiesControl.ExpandProperty(propertyExpander.Value, selectedObject);
+            }
+        }
+
+        /// <summary>
+        /// Closes the OxyPlot properties control panel if it is currently open for the specified plot.
+        /// Sets appropriate state flags to coordinate the closure operation.
+        /// </summary>
+        /// <param name="plotRequestingProperties">The OxyPlot plot instance that is requesting closure of the properties panel.</param>
+        /// <remarks>
+        /// This method verifies that the properties panel is open and that it is displaying properties for
+        /// the requesting plot before initiating closure. The _plotPropertiesClosing flag is set during the
+        /// closure operation to prevent recursive calls or interference with other state management operations.
+        /// If the properties panel is not open or is showing a different plot, the method returns without action.
+        /// </remarks>
+        private void ClosePlotProperties_Click(Plot plotRequestingProperties)
+        {
+            if (_plotPropertiesControl.Plot == null || _plotPropertiesOpen == false) return;
+            if (_plotPropertiesControl.Plot.Equals(plotRequestingProperties) == false) return;
+            _plotPropertiesClosing = true;
+            RaiseClosePropertiesControl(_plotPropertiesControl);
+            _plotPropertiesOpen = false;
+            _plotPropertiesClosing = false;
+        }
+
+        /// <summary>
+        /// Handles preview click events on document controls to determine if the plot properties panel should be closed.
+        /// Closes the properties panel if the user clicked outside the plot and toolbar areas.
+        /// </summary>
+        /// <param name="plotClicked">Indicates whether the plot area itself was clicked by the user.</param>
+        /// <param name="toolbarClicked">Indicates whether the plot's toolbar was clicked by the user.</param>
+        /// <param name="plot">The plot instance associated with the clicked document control.</param>
+        /// <remarks>
+        /// This method implements user-friendly behavior where clicking on the document control's background
+        /// or other non-plot areas will automatically close the plot properties panel. This helps maintain
+        /// a clean interface and clear user intent. If either the plot or toolbar was clicked, the properties
+        /// panel remains open to allow continued editing.
+        /// </remarks>
+        private void DocumentControl_PreviewClicked(bool plotClicked, bool toolbarClicked, Plot plot)
+        {
+            if (plotClicked == false && toolbarClicked == false)
+                ClosePlotProperties_Click(plot);
+        }
+
+        #endregion
     }
 }

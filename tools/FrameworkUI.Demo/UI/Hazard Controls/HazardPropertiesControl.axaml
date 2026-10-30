@@ -11,13 +11,14 @@
     - The dates format in WPF's binding culture (WpfCompat's FormattingCulture).
     - As upstream, the property widths bind to ActualPropertyWidth, which the property controls don't
       have: the bindings fail and the controls keep their default width.
-    - Deferred until NumericControls is ported: the probability ordinates editor
-      (ProbabilityOrdinatesControl) in the Options tab.
+    - The probability ordinates editor is named (ProbabilityOrdinatesEditor), so the code-behind can add
+      its PreviewMouseLeftButtonDown handler.
 -->
 <UserControl x:Class="FrameworkUI.Demo.UI.HazardPropertiesControl" x:Name="HazardProperties"
              xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:cntrls="using:GenericControls"
+             xmlns:numCntrls="using:NumericControls"
              xmlns:wpf="using:WpfCompat"
              MinWidth="100"
              MinHeight="100"
@@ -189,7 +190,7 @@
                             Grid.ColumnSpan="2"
                             Theme="{DynamicResource PropertyExpanderStyle}">
                                 <DockPanel >
-                                    <!--Probability ordinates editor (NumericControls' ProbabilityOrdinatesControl): deferred with NumericControls' port.-->
+                                    <numCntrls:ProbabilityOrdinatesControl x:Name="ProbabilityOrdinatesEditor" ProbabilityOrdinates="{Binding ElementName=HazardProperties, Path=Element.ProbabilityOrdinates, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}"/>
                                 </DockPanel>
                             </Expander>
                         </Grid>

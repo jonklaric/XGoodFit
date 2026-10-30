@@ -5,12 +5,12 @@
       (as FrameworkUI's grids do). Avalonia can't name grid columns: the code finds them by position.
     - The value column formats with the current culture (WpfCompat's FormattingCulture).
     - PreviewMouseDown is attached in code (WpfCompat's tunnelling pointer press).
-    - Deferred until their libraries are ported: the plot toolbar beside the plot (OxyPlotControls'
-      OxyPlotToolbar), and the parameter sets table (DatabaseControls' TableViewer) in its tab.
 -->
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:cntrls="using:GenericControls"
+             xmlns:oxyCntrls="using:OxyPlotControls"
+             xmlns:dbCntrls="using:DatabaseControls"
              xmlns:wpf="using:WpfCompat"
              x:Class="FrameworkUI.Demo.UI.HazardControl"
              MinWidth="100"
@@ -37,8 +37,16 @@
                     <!--Frequency Plot. The plot object is owned by the hazard element and
                         hosted here so its visual state can be undone and persisted.-->
                     <ContentControl x:Name="FrequencyPlotHost" Grid.Column="0" Margin="2,2,0,0"/>
-                    <!--Frequency Plot Toolbar: deferred with OxyPlotControls' port.-->
-                    <DockPanel Grid.Column="1"/>
+                    <!--Frequency Plot Toolbar. The toolbar's Plot is assigned in code when
+                        the Element dependency property changes.-->
+                    <DockPanel Grid.Column="1">
+                        <oxyCntrls:OxyPlotToolbar
+                           DockPanel.Dock="Top"
+                           x:Name="PlotToolbar"
+                           Background="Transparent"
+                           ToolBarOrientation="Vertical"
+                           VerticalAlignment="Stretch"/>
+                    </DockPanel>
                 </Grid>
             </TabItem>
             <TabItem Header="Tabular Results" Theme="{DynamicResource HorizontalTabItemStyle}">
@@ -113,7 +121,13 @@
                 </Grid>
             </TabItem>
             <TabItem Name="ParameterSetsTab" Header="Parameter Sets" Theme="{DynamicResource HorizontalTabItemStyle}">
-                <!--Parameter set table (DatabaseControls' TableViewer): deferred with DatabaseControls' port.-->
+                <dbCntrls:TableViewer
+                   x:Name="ParameterSetTableViewer"
+                   RowSelectable="True"
+                   ColumnSelectable="True"
+                   CellSelectable="True"
+                   ShowRowHeaders="False"
+                   AutoFitColumns="True"/>
             </TabItem>
         </TabControl>
     </Grid>
