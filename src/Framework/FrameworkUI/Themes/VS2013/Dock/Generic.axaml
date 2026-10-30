@@ -1,0 +1,685 @@
+<!--
+    XGoodFit addition: the VS2013 dock theme, which gives the shell's docking the look of AvalonDock's
+    VS2013 theme (upstream/WPF-Framework/src/AvalonDock/Xceed.Wpf.AvalonDock.Themes.VS2013, Ms-PL, the
+    reference for the look; none of its files is used). Upstream's MainWindow merged that theme into
+    its resources; XGoodFit docks with Dock's AvalonDock adapter, which draws the layout with Dock's
+    own controls (ToolChromeControl, DocumentTabStrip, ...). So this dictionary restyles those:
+    ControlThemes keyed by their types and based on Dock's, which give them the reference theme's
+    structure, sizes and colours ({Light,Dark,Blue}Colors.axaml). The theme is a docking manager's
+    Theme (Vs2013DockTheme): the adapter merges it into the manager's resources and those of its
+    floating, auto-hide, navigator and overlay windows, so these themes replace Dock's there only.
+
+    Notes:
+    - Dock's control dictionaries are merged first, so that the themes here can be based on them.
+    - The adapter sets the templates of the caption (ToolChromeControl), the pane contents
+      (ToolControl, DocumentControl) and the auto-hide tabs with application styles, which a
+      ControlTheme can't replace. Their parts are restyled instead; where a template sets a value
+      itself, a style with a condition (a pseudo-class or property) is needed to change it.
+    - The reference theme's glyphs are 13-pixel opacity masks; here they are paths of the same
+      pixels, drawn unscaled.
+    - The reference theme's context menus, title and header templates have no counterpart: the
+      adapter supplies its own menus with the same commands, and upstream's MainWindow sets the
+      document header template itself.
+-->
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:dock="using:Dock.Avalonia.Controls"
+                    xmlns:controls="using:AvalonDock.Controls"
+                    xmlns:layout="using:AvalonDock.Layout"
+                    xmlns:local="using:FrameworkUI">
+
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceInclude Source="avares://Dock.Avalonia.Themes.Fluent/Controls/ToolChromeControl.axaml" />
+        <ResourceInclude Source="avares://Dock.Avalonia.Themes.Fluent/Controls/ToolTabStrip.axaml" />
+        <ResourceInclude Source="avares://Dock.Avalonia.Themes.Fluent/Controls/ToolPinItemControl.axaml" />
+        <ResourceInclude Source="avares://Dock.Avalonia.Themes.Fluent/Controls/HostWindow.axaml" />
+        <ResourceInclude Source="avares://Dock.Avalonia.AvalonDock/Themes/LayoutFloatingWindowControlsResources.axaml" />
+        <ResourceInclude Source="avares://Dock.Avalonia.Themes.Fluent/Controls/ToolTabStripItem.axaml" />
+        <ResourceInclude Source="avares://Dock.Avalonia.Themes.Fluent/Controls/DocumentControl.axaml" />
+        <ResourceInclude Source="avares://Dock.Avalonia.Themes.Fluent/Controls/DocumentTabStrip.axaml" />
+        <ResourceInclude Source="avares://Dock.Avalonia.Themes.Fluent/Controls/DocumentTabStripItem.axaml" />
+        <ResourceInclude Source="avares://Dock.Avalonia.Themes.Fluent/Controls/RootDockControl.axaml" />
+    </ResourceDictionary.MergedDictionaries>
+
+    <!--
+        The caption, tab and overflow buttons' glyphs (the reference theme's Images/PinMenu.png,
+        PinAutoHide.png, PinClose.png, PinDocMenu.png, PinMaximize.png and PinRestore.png): menu, pin,
+        close, document list, maximize and restore, pixel for pixel in 13 x 13 boxes (12 x 12 for the
+        document list).
+    -->
+    <StreamGeometry x:Key="Vs2013Dock.PinMenuGeometry">M3,4h8v1h-8zM4,5h6v1h-6zM5,6h4v1h-4zM6,7h2v1h-2z</StreamGeometry>
+    <StreamGeometry x:Key="Vs2013Dock.PinAutoHideGeometry">M4,2h5v1h-5zM4,3h1v1h-1zM7,3h2v1h-2zM4,4h1v1h-1zM7,4h2v1h-2zM4,5h1v1h-1zM7,5h2v1h-2zM4,6h1v1h-1zM7,6h2v1h-2zM4,7h1v1h-1zM7,7h2v1h-2zM3,8h7v1h-7zM6,9h1v1h-1zM6,10h1v1h-1zM6,11h1v1h-1z</StreamGeometry>
+    <StreamGeometry x:Key="Vs2013Dock.PinCloseGeometry">M2,2h2v1h-2zM9,2h2v1h-2zM3,3h2v1h-2zM8,3h2v1h-2zM4,4h2v1h-2zM7,4h2v1h-2zM5,5h3v1h-3zM5,6h3v1h-3zM4,7h2v1h-2zM7,7h2v1h-2zM3,8h2v1h-2zM8,8h2v1h-2zM2,9h2v1h-2zM9,9h2v1h-2z</StreamGeometry>
+    <StreamGeometry x:Key="Vs2013Dock.PinDocMenuGeometry">M2,2h8v1h-8zM2,3h8v1h-8zM2,6h8v1h-8zM3,7h6v1h-6zM4,8h4v1h-4zM5,9h2v1h-2z</StreamGeometry>
+    <StreamGeometry x:Key="Vs2013Dock.PinMaximizeGeometry">M2,2h9v1h-9zM2,3h9v1h-9zM2,4h1v1h-1zM10,4h1v1h-1zM2,5h1v1h-1zM10,5h1v1h-1zM2,6h1v1h-1zM10,6h1v1h-1zM2,7h1v1h-1zM10,7h1v1h-1zM2,8h1v1h-1zM10,8h1v1h-1zM2,9h9v1h-9z</StreamGeometry>
+    <StreamGeometry x:Key="Vs2013Dock.PinRestoreGeometry">M4,1h8v1h-8zM4,2h8v1h-8zM4,3h1v1h-1zM11,3h1v1h-1zM1,4h8v1h-8zM11,4h1v1h-1zM1,5h8v1h-8zM11,5h1v1h-1zM1,6h1v1h-1zM8,6h1v1h-1zM11,6h1v1h-1zM1,7h1v1h-1zM8,7h4v1h-4zM1,8h1v1h-1zM8,8h1v1h-1zM1,9h1v1h-1zM8,9h1v1h-1zM1,10h8v1h-8z</StreamGeometry>
+
+    <!--
+        The caption's dotted grip, as an opacity mask over the grip colour: a 4 x 5 tile with dots at
+        (0,0), (0,4) and (2,2), as the reference theme's DragHandleTexture.
+    -->
+    <DrawingBrush x:Key="Vs2013Dock.CaptionGripMask" TileMode="Tile" Stretch="None"
+                  SourceRect="0,0,4,5" DestinationRect="0,0,4,5">
+        <DrawingBrush.Drawing>
+            <GeometryDrawing Brush="Black" Geometry="M0,0h1v1h-1zM0,4h1v1h-1zM2,2h1v1h-1z" />
+        </DrawingBrush.Drawing>
+    </DrawingBrush>
+
+    <!--
+        The sizes of Dock's controls (Dock.Avalonia.Themes.Fluent's Accents/Fluent.axaml) that give them
+        the reference theme's layout. The colours are in the *Colors files.
+    -->
+    <x:Double x:Key="DockFontSizeNormal">12</x:Double>
+    <Thickness x:Key="DockHeaderContentPadding">0</Thickness>
+    <!-- Caption: upstream's title grid has a 2,3 margin and the title a 2,0,0,0 one. The title's right
+         margin is the gap before the grip, which here lies under the title (see ToolChromeControl). -->
+    <Thickness x:Key="DockToolChromeHeaderMargin">2,3</Thickness>
+    <Thickness x:Key="DockToolChromeTitleMargin">2,-1,8,0</Thickness>
+    <Thickness x:Key="DockToolChromeMenuIconMargin">0</Thickness>
+    <x:Double x:Key="DockChromeGripHeight">5</x:Double>
+    <Thickness x:Key="DockChromeGripMargin">0,0,4,0</Thickness>
+    <!-- Tabs: the content margins and spacing give upstream's document tab: a 4-pixel margin around the
+         header and a 15-pixel close button with a 3-pixel margin. -->
+    <Thickness x:Key="DockTabContentMargin">2,0</Thickness>
+    <x:Double x:Key="DockTabContentSpacing">3</x:Double>
+    <x:Double x:Key="DockDocumentTabHeaderContentSpacing">0</x:Double>
+    <x:Double x:Key="DockDocumentTabItemMinHeight">0</x:Double>
+    <x:Double x:Key="DockDocumentTabItemMinWidth">0</x:Double>
+    <x:Double x:Key="DockToolTabItemMinHeight">0</x:Double>
+    <x:Double x:Key="DockDocumentTabItemSeparatorOpacity">0</x:Double>
+    <Thickness x:Key="DockDocumentTabItemMargin">0</Thickness>
+    <Thickness x:Key="DockToolTabItemPadding">4,2</Thickness>
+    <Thickness x:Key="DockToolTabItemSelectedPadding">4,2</Thickness>
+    <!-- Document well: upstream's 2-pixel line under the tabs, and the content's border without a top. -->
+    <x:Double x:Key="DockDocumentTabStripSeparatorSize">2</x:Double>
+    <x:Boolean x:Key="DockDocumentTabStripSeparatorVisible">True</x:Boolean>
+    <Thickness x:Key="DockDocumentContentBorderThickness">1,0,1,1</Thickness>
+
+    <!--
+        Upstream's AvalonDockThemeVs2013ButtonStyle: the caption buttons. Their hover and
+        pressed colours depend on the caption's state, so ToolChromeControl's theme sets them.
+    -->
+    <ControlTheme x:Key="Vs2013Dock.CaptionButton" TargetType="Button">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Margin" Value="0" />
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="HorizontalAlignment" Value="Center" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}">
+                    <ContentPresenter x:Name="PART_ContentPresenter"
+                                      Content="{TemplateBinding Content}"
+                                      ContentTemplate="{TemplateBinding ContentTemplate}" />
+                </Border>
+            </ControlTemplate>
+        </Setter>
+    </ControlTheme>
+
+    <!--
+        The tool window caption: upstream's AnchorablePaneTitle style, on Dock's ToolChromeControl (the
+        adapter's template, AvalonDockToolChrome). Its title, grip and buttons have upstream's colours,
+        glyphs and sizes: a 21-pixel caption inside the pane's border.
+        Notes:
+        - The template puts the grip in a column of its own before the buttons, where it would only be
+          as wide as its minimum, while upstream's fills the space between the title and the buttons. So
+          the grip moves into the title's column, under the title, whose panel takes the caption's colour
+          to hide it.
+        - Upstream's caption row is 15 pixels high, the buttons' height, with the title a pixel higher
+          than a 16-pixel text box would put it: DockToolChromeTitleMargin gives the title that offset.
+        - The caption draws no background behind the pane's content, so that the tool tabs below the
+          content show the dock's background, as upstream's do. The content has its own (ToolControl).
+        - As a floating window's title (:floating) the caption is upstream's floating tool window
+          header: 24 pixels high, without a grip, and with the document tab buttons' colours.
+        - The menu button's open state is its pressed state: the adapter opens its menu itself.
+    -->
+    <ControlTheme x:Key="{x:Type dock:ToolChromeControl}" TargetType="dock:ToolChromeControl"
+                  BasedOn="{StaticResource {x:Type dock:ToolChromeControl}}">
+        <Setter Property="MenuButtonTheme" Value="{StaticResource Vs2013Dock.CaptionButton}" />
+        <Setter Property="PinButtonTheme" Value="{StaticResource Vs2013Dock.CaptionButton}" />
+        <Setter Property="MaximizeButtonTheme" Value="{StaticResource Vs2013Dock.CaptionButton}" />
+        <Setter Property="CloseButtonTheme" Value="{StaticResource Vs2013Dock.CaptionButton}" />
+        <Setter Property="Background" Value="Transparent" />
+
+        <!-- Tool Window : Caption / Inactive -->
+        <Style Selector="^/template/ Border#PART_Border">
+            <Setter Property="TextElement.Foreground" Value="{DynamicResource Vs2013Dock.ToolWindowCaptionInactiveText}" />
+        </Style>
+        <Style Selector="^/template/ Grid#PART_Grip">
+            <Setter Property="Background" Value="{DynamicResource Vs2013Dock.ToolWindowCaptionInactiveBackground}" />
+        </Style>
+        <Style Selector="^/template/ Grid#PART_Grip > Grid > Panel">
+            <Setter Property="Background" Value="{DynamicResource Vs2013Dock.ToolWindowCaptionInactiveBackground}" />
+        </Style>
+        <Style Selector="^/template/ Grid#PART_Grid">
+            <Setter Property="MinWidth" Value="0" />
+            <Setter Property="ZIndex" Value="-1" />
+            <Setter Property="Background" Value="{DynamicResource Vs2013Dock.ToolWindowCaptionInactiveGrip}" />
+            <Setter Property="OpacityMask" Value="{StaticResource Vs2013Dock.CaptionGripMask}" />
+        </Style>
+        <Style Selector="^:not(:floating) /template/ Grid#PART_Grid">
+            <Setter Property="Grid.Column" Value="0" />
+        </Style>
+        <Style Selector="^:floating /template/ Grid#PART_Grid">
+            <Setter Property="IsVisible" Value="False" />
+        </Style>
+
+        <!-- Tool Window : Caption / Active -->
+        <Style Selector="^:active /template/ Grid#PART_Grip">
+            <Setter Property="Background" Value="{DynamicResource Vs2013Dock.ToolWindowCaptionActiveBackground}" />
+        </Style>
+        <Style Selector="^:active /template/ Grid#PART_Grip > Grid > Panel">
+            <Setter Property="Background" Value="{DynamicResource Vs2013Dock.ToolWindowCaptionActiveBackground}" />
+        </Style>
+        <Style Selector="^:active /template/ Grid#PART_Grid">
+            <Setter Property="Background" Value="{DynamicResource Vs2013Dock.ToolWindowCaptionActiveGrip}" />
+        </Style>
+
+        <!-- Tool Window : Caption : Button glyphs -->
+        <Style Selector="^/template/ Path">
+            <Setter Property="Width" Value="13" />
+            <Setter Property="Height" Value="13" />
+            <Setter Property="Stretch" Value="None" />
+            <Setter Property="Fill" Value="{DynamicResource Vs2013Dock.ToolWindowCaptionButtonInactiveGlyph}" />
+        </Style>
+        <Style Selector="^/template/ Path#PART_MenuPath">
+            <Setter Property="Data" Value="{StaticResource Vs2013Dock.PinMenuGeometry}" />
+        </Style>
+        <Style Selector="^/template/ Path#PART_PinPath">
+            <Setter Property="Data" Value="{StaticResource Vs2013Dock.PinAutoHideGeometry}" />
+        </Style>
+        <!-- Upstream turns the auto-hide pin a quarter turn when the window is auto-hidden. -->
+        <Style Selector="^:pinned /template/ Path#PART_PinPath">
+            <Setter Property="Data" Value="{StaticResource Vs2013Dock.PinAutoHideGeometry}" />
+            <Setter Property="RenderTransform" Value="rotate(90deg)" />
+        </Style>
+        <Style Selector="^/template/ Path#PART_MaximizeRestorePath">
+            <Setter Property="Data" Value="{StaticResource Vs2013Dock.PinMaximizeGeometry}" />
+        </Style>
+        <Style Selector="^:maximized /template/ Path#PART_MaximizeRestorePath">
+            <Setter Property="Data" Value="{StaticResource Vs2013Dock.PinRestoreGeometry}" />
+        </Style>
+        <Style Selector="^/template/ Path#PART_ClosePath">
+            <Setter Property="Data" Value="{StaticResource Vs2013Dock.PinCloseGeometry}" />
+        </Style>
+
+        <!-- Tool Window : Caption : Button / Active -->
+        <Style Selector="^:active /template/ Path">
+            <Setter Property="Fill" Value="{DynamicResource Vs2013Dock.ToolWindowCaptionButtonActiveGlyph}" />
+        </Style>
+
+        <!-- Tool Window : Caption : Button / Inactive, hovered -->
+        <Style Selector="^/template/ Button:pointerover">
+            <Setter Property="Background" Value="{DynamicResource Vs2013Dock.ToolWindowCaptionButtonInactiveHoveredBackground}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource Vs2013Dock.ToolWindowCaptionButtonInactiveHoveredBorder}" />
+        </Style>
+        <Style Selector="^/template/ Button:pointerover Path">
+            <Setter Property="Fill" Value="{DynamicResource Vs2013Dock.ToolWindowCaptionButtonInactiveHoveredGlyph}" />
+        </Style>
+
+        <!-- Tool Window : Caption : Button / Active, hovered -->
+        <Style Selector="^:active /template/ Button:pointerover">
+            <Setter Property="Background" Value="{DynamicResource Vs2013Dock.ToolWindowCaptionButtonActiveHoveredBackground}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource Vs2013Dock.ToolWindowCaptionButtonActiveHoveredBorder}" />
+        </Style>
+        <Style Selector="^:active /template/ Button:pointerover Path">
+            <Setter Property="Fill" Value="{DynamicResource Vs2013Dock.ToolWindowCaptionButtonActiveHoveredGlyph}" />
+        </Style>
+
+        <!-- Tool Window : Caption : Button / Active / Inactive, pressed (upstream uses the active colours for both) -->
+        <Style Selector="^/template/ Button:pressed">
+            <Setter Property="Background" Value="{DynamicResource Vs2013Dock.ToolWindowCaptionButtonActivePressedBackground}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource Vs2013Dock.ToolWindowCaptionButtonActivePressedBorder}" />
+        </Style>
+        <Style Selector="^/template/ Button:pressed Path">
+            <Setter Property="Fill" Value="{DynamicResource Vs2013Dock.ToolWindowCaptionButtonActivePressedGlyph}" />
+        </Style>
+
+        <!-- Floating tool window: upstream's 24-pixel header with a 2-pixel padding -->
+        <Style Selector="^:floating /template/ Grid#PART_Grip > Grid">
+            <Setter Property="Margin" Value="0,5,2,4" />
+        </Style>
+
+        <!-- Floating tool window : Button / Inactive, and hovered and pressed -->
+        <Style Selector="^:floating /template/ Path">
+            <Setter Property="Fill" Value="{DynamicResource Vs2013Dock.DocumentWellTabButtonSelectedInactiveGlyph}" />
+        </Style>
+        <Style Selector="^:floating /template/ Button:pointerover">
+            <Setter Property="Background" Value="{DynamicResource Vs2013Dock.DocumentWellTabButtonSelectedInactiveHoveredBackground}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource Vs2013Dock.DocumentWellTabButtonSelectedInactiveHoveredBorder}" />
+        </Style>
+        <Style Selector="^:floating /template/ Button:pointerover Path">
+            <Setter Property="Fill" Value="{DynamicResource Vs2013Dock.DocumentWellTabButtonSelectedInactiveHoveredGlyph}" />
+        </Style>
+        <Style Selector="^:floating /template/ Button:pressed">
+            <Setter Property="Background" Value="{DynamicResource Vs2013Dock.DocumentWellTabButtonSelectedInactivePressedBackground}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource Vs2013Dock.DocumentWellTabButtonSelectedInactivePressedBorder}" />
+        </Style>
+        <Style Selector="^:floating /template/ Button:pressed Path">
+            <Setter Property="Fill" Value="{DynamicResource Vs2013Dock.DocumentWellTabButtonSelectedInactivePressedGlyph}" />
+        </Style>
+
+        <!-- Floating tool window : Button / Active, and hovered and pressed -->
+        <Style Selector="^:floating:active /template/ Path">
+            <Setter Property="Fill" Value="{DynamicResource Vs2013Dock.DocumentWellTabButtonSelectedActiveGlyph}" />
+        </Style>
+        <Style Selector="^:floating:active /template/ Button:pointerover">
+            <Setter Property="Background" Value="{DynamicResource Vs2013Dock.DocumentWellTabButtonSelectedActiveHoveredBackground}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource Vs2013Dock.DocumentWellTabButtonSelectedActiveHoveredBorder}" />
+        </Style>
+        <Style Selector="^:floating:active /template/ Button:pointerover Path">
+            <Setter Property="Fill" Value="{DynamicResource Vs2013Dock.DocumentWellTabButtonSelectedActiveHoveredGlyph}" />
+        </Style>
+        <Style Selector="^:floating:active /template/ Button:pressed">
+            <Setter Property="Background" Value="{DynamicResource Vs2013Dock.DocumentWellTabButtonSelectedActivePressedBackground}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource Vs2013Dock.DocumentWellTabButtonSelectedActivePressedBorder}" />
+        </Style>
+        <Style Selector="^:floating:active /template/ Button:pressed Path">
+            <Setter Property="Fill" Value="{DynamicResource Vs2013Dock.DocumentWellTabButtonSelectedActivePressedGlyph}" />
+        </Style>
+    </ControlTheme>
+
+    <!--
+        The tool window tab strip: upstream's AnchorablePaneTabPanel spans the pane, so the adapter's
+        panel (the same) gives the tabs their own widths while they fit. Dock's strip sizes its items to
+        the tabs, which makes the panel share its width between them; here the items span the strip.
+    -->
+    <ControlTheme x:Key="{x:Type dock:ToolTabStrip}" TargetType="dock:ToolTabStrip"
+                  BasedOn="{StaticResource {x:Type dock:ToolTabStrip}}">
+        <Style Selector="^/template/ ItemsPresenter#PART_ItemsPresenter">
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+        </Style>
+    </ControlTheme>
+
+    <!--
+        The tool window tabs (more than one tool in a pane): upstream's AnchorablePaneControlStyle item
+        container style, on Dock's ToolTabStripItem. Dock's tab strip breaks the pane's bottom border
+        under the selected tab, as upstream's tab does.
+    -->
+    <ControlTheme x:Key="{x:Type dock:ToolTabStripItem}" TargetType="dock:ToolTabStripItem"
+                  BasedOn="{StaticResource {x:Type dock:ToolTabStripItem}}">
+        <Setter Property="Background" Value="{DynamicResource Vs2013Dock.ToolWindowTabUnselectedBackground}" />
+        <Setter Property="Foreground" Value="{DynamicResource Vs2013Dock.ToolWindowTabUnselectedText}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Vs2013Dock.PanelBorderBrush}" />
+
+        <!-- Tool Window : Tab / Selected, active and inactive -->
+        <Style Selector="^:selected">
+            <Setter Property="Background" Value="{DynamicResource Vs2013Dock.ToolWindowTabSelectedActiveBackground}" />
+            <Setter Property="Foreground" Value="{DynamicResource Vs2013Dock.ToolWindowTabSelectedActiveText}" />
+        </Style>
+        <Style Selector="^:selected:pointerover">
+            <Setter Property="Background" Value="{DynamicResource Vs2013Dock.ToolWindowTabSelectedActiveBackground}" />
+        </Style>
+
+        <!-- Tool Window : Tab / Unselected, hovered -->
+        <Style Selector="^:pointerover:not(:selected)">
+            <Setter Property="Background" Value="{DynamicResource Vs2013Dock.ToolWindowTabUnselectedHoveredBackground}" />
+            <Setter Property="Foreground" Value="{DynamicResource Vs2013Dock.ToolWindowTabUnselectedHoveredText}" />
+        </Style>
+    </ControlTheme>
+
+    <!--
+        The document well: upstream's DocumentPaneControlStyle, on Dock's DocumentControl (the adapter's
+        template, AvalonDockDocumentContent). The 2-pixel line under the tabs has the selected tab's
+        colour, and the content has upstream's background and a border without a top.
+        An empty well shows no border, as upstream's collapsed content panel.
+    -->
+    <ControlTheme x:Key="{x:Type dock:DocumentControl}" TargetType="dock:DocumentControl"
+                  BasedOn="{StaticResource {x:Type dock:DocumentControl}}">
+        <Style Selector="^/template/ Panel#PART_DocumentSeperator">
+            <Setter Property="Background" Value="{DynamicResource Vs2013Dock.DocumentWellTabSelectedInactiveBackground}" />
+        </Style>
+        <Style Selector="^:active /template/ Panel#PART_DocumentSeperator">
+            <Setter Property="Background" Value="{DynamicResource Vs2013Dock.DocumentWellTabSelectedActiveBackground}" />
+        </Style>
+        <Style Selector="^/template/ Border#PART_Border">
+            <Setter Property="Background" Value="{DynamicResource Vs2013Dock.TabBackground}" />
+        </Style>
+        <Style Selector="^[HasVisibleDockables=False] /template/ Border#PART_Border">
+            <Setter Property="IsVisible" Value="False" />
+        </Style>
+    </ControlTheme>
+
+    <!--
+        The document tab strip: Dock's DocumentTabStrip template (Dock.Avalonia.Themes.Fluent's
+        Controls/DocumentTabStrip.axaml, v12.1.0.13, MIT licence, Copyright (c) Wiesław Šoltés),
+        copied unchanged apart from the styles on the right-hand content.
+        The adapter puts its open-documents button there, a button with local values
+        inside its own user control, so only a style above it can give it upstream's overflow button
+        (MenuDropDownButton): a 14-pixel button with the PinDocMenu glyph and its hover and open colours,
+        moved over the button's 2-pixel right margin to sit at the pane's edge as upstream's does.
+    -->
+    <ControlTheme x:Key="{x:Type dock:DocumentTabStrip}" TargetType="dock:DocumentTabStrip"
+                  BasedOn="{StaticResource {x:Type dock:DocumentTabStrip}}">
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Grid Background="{TemplateBinding Background}"
+                      ClipToBounds="False"
+                      RowDefinitions="Auto,*,Auto"
+                      ColumnDefinitions="Auto,*,Auto">
+                    <ContentPresenter Grid.Row="0"
+                                      Grid.Column="0"
+                                      Grid.ColumnSpan="3"
+                                      Content="{TemplateBinding TopContent}"
+                                      ContentTemplate="{TemplateBinding TopContentTemplate}" />
+                    <ContentPresenter Grid.Row="1"
+                                      Grid.Column="0"
+                                      Content="{TemplateBinding LeftContent}"
+                                      ContentTemplate="{TemplateBinding LeftContentTemplate}" />
+                    <ContentPresenter Grid.Row="1"
+                                      Grid.Column="2"
+                                      Content="{TemplateBinding RightContent}"
+                                      ContentTemplate="{TemplateBinding RightContentTemplate}">
+                        <ContentPresenter.Styles>
+                            <!-- Document Well : Overflow Button -->
+                            <Style Selector="Button.avalondock-document-menu">
+                                <Setter Property="Template">
+                                    <ControlTemplate>
+                                        <Border x:Name="PART_Border"
+                                                Width="14" Height="14" Margin="0,2,-2,0"
+                                                HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                Background="Transparent" BorderBrush="Transparent" BorderThickness="1">
+                                            <Path x:Name="PART_Glyph" Width="12" Height="12" Stretch="None"
+                                                  Data="{StaticResource Vs2013Dock.PinDocMenuGeometry}"
+                                                  Fill="{DynamicResource Vs2013Dock.DocumentWellOverflowButtonDefaultGlyph}" />
+                                        </Border>
+                                    </ControlTemplate>
+                                </Setter>
+                            </Style>
+                            <Style Selector="Button.avalondock-document-menu:pointerover /template/ Border#PART_Border">
+                                <Setter Property="Background" Value="{DynamicResource Vs2013Dock.DocumentWellOverflowButtonHoveredBackground}" />
+                                <Setter Property="BorderBrush" Value="{DynamicResource Vs2013Dock.DocumentWellOverflowButtonHoveredBorder}" />
+                            </Style>
+                            <Style Selector="Button.avalondock-document-menu:pointerover /template/ Path#PART_Glyph">
+                                <Setter Property="Fill" Value="{DynamicResource Vs2013Dock.DocumentWellOverflowButtonHoveredGlyph}" />
+                            </Style>
+                            <Style Selector="Button.avalondock-document-menu:pressed /template/ Border#PART_Border, Button.avalondock-document-menu:flyout-open /template/ Border#PART_Border">
+                                <Setter Property="Background" Value="{DynamicResource Vs2013Dock.DocumentWellOverflowButtonPressedBackground}" />
+                                <Setter Property="BorderBrush" Value="{DynamicResource Vs2013Dock.DocumentWellOverflowButtonPressedBorder}" />
+                            </Style>
+                            <Style Selector="Button.avalondock-document-menu:pressed /template/ Path#PART_Glyph, Button.avalondock-document-menu:flyout-open /template/ Path#PART_Glyph">
+                                <Setter Property="Fill" Value="{DynamicResource Vs2013Dock.DocumentWellOverflowButtonPressedGlyph}" />
+                            </Style>
+                        </ContentPresenter.Styles>
+                    </ContentPresenter>
+                    <ContentPresenter Grid.Row="2"
+                                      Grid.Column="0"
+                                      Grid.ColumnSpan="3"
+                                      Content="{TemplateBinding BottomContent}"
+                                      ContentTemplate="{TemplateBinding BottomContentTemplate}" />
+
+                    <DockPanel Grid.Row="1"
+                               Grid.Column="1"
+                               ClipToBounds="False">
+                        <Panel x:Name="PART_LeadingSpacer"
+                               DockPanel.Dock="Left"
+                               Width="{DynamicResource DockDocumentTabStripLeadingSpacerWidth}"
+                               Height="1" />
+                        <Panel Name="PART_Panel">
+                            <ScrollViewer x:Name="PART_ScrollViewer">
+                                <ItemsPresenter x:Name="PART_ItemsPresenter"
+                                                ItemsPanel="{TemplateBinding ItemsPanel}" />
+                            </ScrollViewer>
+                            <Border Name="PART_BorderFill"
+                                    DockProperties.IsDropArea="True"
+                                    DockProperties.IsDockTarget="True"
+                                    DockProperties.ShowDockIndicatorOnly="True"
+                                    DockProperties.IndicatorDockOperation="Fill">
+                                <Border.Margin>
+                                    <MultiBinding Converter="{x:Static BorderFillMarginConverter.Instance}">
+                                        <Binding Path="#PART_ItemsPresenter.Bounds.Width" />
+                                        <Binding Path="#PART_ItemsPresenter.Bounds.Height" />
+                                        <Binding Path="#PART_ItemsPresenter.IsVisible" />
+                                        <Binding Path="#PART_ItemsPresenter.VerticalAlignment" />
+                                        <Binding Path="#PART_ItemsPresenter.HorizontalAlignment" />
+                                    </MultiBinding>
+                                </Border.Margin>
+                            </Border>
+                        </Panel>
+                        <ContentPresenter x:Name="PART_CreateButtonHost"
+                                          Content="{Binding}"
+                                          IsVisible="{Binding CanCreateDocument}" />
+                        <Panel Name="PART_TrailingFill" />
+                    </DockPanel>
+                </Grid>
+            </ControlTemplate>
+        </Setter>
+    </ControlTheme>
+
+    <!--
+        The document tabs: upstream's DocumentPaneControlStyle item container style and
+        LayoutDocumentTabItem template, on Dock's DocumentTabStripItem: upstream's colours, a 20-pixel
+        tab above the 2-pixel line (upstream's 22-pixel tab draws the line's part itself) and upstream's
+        margins around the header. A tab is selected and active when its pane is active (upstream: its
+        document is active, which only the selected one can be).
+    -->
+    <ControlTheme x:Key="{x:Type dock:DocumentTabStripItem}" TargetType="dock:DocumentTabStripItem"
+                  BasedOn="{StaticResource {x:Type dock:DocumentTabStripItem}}">
+        <Setter Property="Padding" Value="2,3,1,1" />
+        <Setter Property="VerticalContentAlignment" Value="Stretch" />
+        <Setter Property="Background" Value="{DynamicResource Vs2013Dock.DocumentWellTabUnselectedBackground}" />
+        <Setter Property="Foreground" Value="{DynamicResource Vs2013Dock.DocumentWellTabUnselectedText}" />
+
+        <!-- Document Well : Tab / Selected, inactive -->
+        <Style Selector="^:selected">
+            <Setter Property="Background" Value="{DynamicResource Vs2013Dock.DocumentWellTabSelectedInactiveBackground}" />
+            <Setter Property="Foreground" Value="{DynamicResource Vs2013Dock.DocumentWellTabSelectedInactiveText}" />
+        </Style>
+
+        <!-- Document Well : Tab / Selected, active -->
+        <Style Selector="^:selected:active">
+            <Setter Property="Background" Value="{DynamicResource Vs2013Dock.DocumentWellTabSelectedActiveBackground}" />
+            <Setter Property="Foreground" Value="{DynamicResource Vs2013Dock.DocumentWellTabSelectedActiveText}" />
+        </Style>
+
+        <!-- Document Well : Tab / Unselected, hovered -->
+        <Style Selector="^:pointerover:not(:selected)">
+            <Setter Property="Background" Value="{DynamicResource Vs2013Dock.DocumentWellTabUnselectedHoveredBackground}" />
+            <Setter Property="Foreground" Value="{DynamicResource Vs2013Dock.DocumentWellTabUnselectedHoveredText}" />
+        </Style>
+    </ControlTheme>
+
+    <!--
+        The document tabs' close button (Dock's DocumentCloseButtonTheme key): upstream's
+        DocumentCloseButton, a 15-pixel button with the PinClose glyph, shown on the selected tab and on a
+        hovered one. Its colours depend on its tab's state, which its template reads from
+        the tab into classes; it draws its glyph itself rather than the adapter's.
+    -->
+    <ControlTheme x:Key="DocumentCloseButtonTheme" TargetType="Button">
+        <Setter Property="Width" Value="15" />
+        <Setter Property="Height" Value="15" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Margin" Value="0" />
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="HorizontalAlignment" Value="Center" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border x:Name="PART_Border"
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        Classes.tabover="{CompiledBinding $parent[dock:DocumentTabStripItem].IsPointerOver}"
+                        Classes.selected="{CompiledBinding $parent[dock:DocumentTabStripItem].IsSelected}"
+                        Classes.active="{CompiledBinding $parent[dock:DocumentTabStripItem].IsActive}">
+                    <Path x:Name="PART_Glyph" Width="13" Height="13" Stretch="None"
+                          Data="{StaticResource Vs2013Dock.PinCloseGeometry}" />
+                </Border>
+            </ControlTemplate>
+        </Setter>
+
+        <!-- Upstream hides the button (keeping its space) unless its tab is selected or hovered. -->
+        <Style Selector="^/template/ Border#PART_Border">
+            <Setter Property="IsVisible" Value="False" />
+        </Style>
+
+        <!-- Document Well : Tab : Button / Unselected, tab hovered -->
+        <Style Selector="^/template/ Border#PART_Border.tabover">
+            <Setter Property="IsVisible" Value="True" />
+        </Style>
+        <Style Selector="^/template/ Border#PART_Border.tabover > Path#PART_Glyph">
+            <Setter Property="Fill" Value="{DynamicResource Vs2013Dock.DocumentWellTabButtonUnselectedTabHoveredGlyph}" />
+        </Style>
+        <Style Selector="^:pointerover /template/ Border#PART_Border.tabover">
+            <Setter Property="Background" Value="{DynamicResource Vs2013Dock.DocumentWellTabButtonUnselectedTabHoveredButtonHoveredBackground}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource Vs2013Dock.DocumentWellTabButtonUnselectedTabHoveredButtonHoveredBorder}" />
+        </Style>
+        <Style Selector="^:pointerover /template/ Border#PART_Border.tabover > Path#PART_Glyph">
+            <Setter Property="Fill" Value="{DynamicResource Vs2013Dock.DocumentWellTabButtonUnselectedTabHoveredButtonHoveredGlyph}" />
+        </Style>
+        <Style Selector="^:pressed /template/ Border#PART_Border.tabover">
+            <Setter Property="Background" Value="{DynamicResource Vs2013Dock.DocumentWellTabButtonUnselectedTabHoveredButtonPressedBackground}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource Vs2013Dock.DocumentWellTabButtonUnselectedTabHoveredButtonPressedBorder}" />
+        </Style>
+        <Style Selector="^:pressed /template/ Border#PART_Border.tabover > Path#PART_Glyph">
+            <Setter Property="Fill" Value="{DynamicResource Vs2013Dock.DocumentWellTabButtonUnselectedTabHoveredButtonPressedGlyph}" />
+        </Style>
+
+        <!-- Document Well : Tab : Button / Selected, inactive (upstream: the last focused document) -->
+        <Style Selector="^/template/ Border#PART_Border.selected">
+            <Setter Property="IsVisible" Value="True" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+        </Style>
+        <Style Selector="^/template/ Border#PART_Border.selected > Path#PART_Glyph">
+            <Setter Property="Fill" Value="{DynamicResource Vs2013Dock.DocumentWellTabButtonSelectedInactiveGlyph}" />
+        </Style>
+        <Style Selector="^:pointerover /template/ Border#PART_Border.selected">
+            <Setter Property="Background" Value="{DynamicResource Vs2013Dock.DocumentWellTabButtonSelectedInactiveHoveredBackground}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource Vs2013Dock.DocumentWellTabButtonSelectedInactiveHoveredBorder}" />
+        </Style>
+        <Style Selector="^:pointerover /template/ Border#PART_Border.selected > Path#PART_Glyph">
+            <Setter Property="Fill" Value="{DynamicResource Vs2013Dock.DocumentWellTabButtonSelectedInactiveHoveredGlyph}" />
+        </Style>
+        <Style Selector="^:pressed /template/ Border#PART_Border.selected">
+            <Setter Property="Background" Value="{DynamicResource Vs2013Dock.DocumentWellTabButtonSelectedInactivePressedBackground}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource Vs2013Dock.DocumentWellTabButtonSelectedInactivePressedBorder}" />
+        </Style>
+        <Style Selector="^:pressed /template/ Border#PART_Border.selected > Path#PART_Glyph">
+            <Setter Property="Fill" Value="{DynamicResource Vs2013Dock.DocumentWellTabButtonSelectedInactivePressedGlyph}" />
+        </Style>
+
+        <!-- Document Well : Tab : Button / Selected, active -->
+        <Style Selector="^/template/ Border#PART_Border.selected.active > Path#PART_Glyph">
+            <Setter Property="Fill" Value="{DynamicResource Vs2013Dock.DocumentWellTabButtonSelectedActiveGlyph}" />
+        </Style>
+        <Style Selector="^:pointerover /template/ Border#PART_Border.selected.active">
+            <Setter Property="Background" Value="{DynamicResource Vs2013Dock.DocumentWellTabButtonSelectedActiveHoveredBackground}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource Vs2013Dock.DocumentWellTabButtonSelectedActiveHoveredBorder}" />
+        </Style>
+        <Style Selector="^:pointerover /template/ Border#PART_Border.selected.active > Path#PART_Glyph">
+            <Setter Property="Fill" Value="{DynamicResource Vs2013Dock.DocumentWellTabButtonSelectedActiveHoveredGlyph}" />
+        </Style>
+        <Style Selector="^:pressed /template/ Border#PART_Border.selected.active">
+            <Setter Property="Background" Value="{DynamicResource Vs2013Dock.DocumentWellTabButtonSelectedActivePressedBackground}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource Vs2013Dock.DocumentWellTabButtonSelectedActivePressedBorder}" />
+        </Style>
+        <Style Selector="^:pressed /template/ Border#PART_Border.selected.active > Path#PART_Glyph">
+            <Setter Property="Fill" Value="{DynamicResource Vs2013Dock.DocumentWellTabButtonSelectedActivePressedGlyph}" />
+        </Style>
+    </ControlTheme>
+
+    <!--
+        The auto-hide side tabs: upstream's AnchorTemplate (AvalonDockThemeVs2013AnchorTemplate), on the
+        adapter's LayoutAnchorControl (its template, AvalonDockAnchor): a tab with a 6-pixel bar on the
+        dock's outer edge, a 12-pixel gap after it, and upstream's colours.
+        Notes:
+        - The adapter's own theme for LayoutAnchorControl is based on Dock's ToolPinItemControl theme and
+          adds the two setters below; this one does the same, as it replaces the adapter's.
+        - The adapter gives the anchor the manager's AnchorTemplate as its current value, so the template
+          stays, and its border is restyled. Its padding is the template's own value, so the styles that
+          change it have a condition (the side).
+        - Upstream turns the left and right sides' tabs a quarter turn clockwise (AnchorGroupTemplate),
+          Dock anticlockwise; they turn clockwise here, so that their text reads downwards as upstream's.
+    -->
+    <ControlTheme x:Key="{x:Type controls:LayoutAnchorControl}" TargetType="controls:LayoutAnchorControl"
+                  BasedOn="{StaticResource {x:Type dock:ToolPinItemControl}}">
+        <Setter Property="PinContextMenu" Value="{x:Null}" />
+        <Setter Property="IsEnabled" Value="{CompiledBinding $self.((layout:LayoutAnchorable)Model).IsEnabled}" />
+        <Setter Property="Background" Value="{DynamicResource Vs2013Dock.AutoHideTabDefaultBackground}" />
+        <Setter Property="Foreground" Value="{DynamicResource Vs2013Dock.AutoHideTabDefaultText}" />
+
+        <Style Selector="^[Orientation=Vertical]/template/ LayoutTransformControl#PART_LayoutTransformControl">
+            <Setter Property="LayoutTransform">
+                <RotateTransform Angle="90" />
+            </Setter>
+        </Style>
+        <Style Selector="^/template/ LayoutTransformControl#PART_LayoutTransformControl > Border">
+            <Setter Property="Margin" Value="0,0,12,0" />
+            <Setter Property="BorderBrush" Value="{DynamicResource Vs2013Dock.AutoHideTabDefaultBorder}" />
+        </Style>
+        <Style Selector="^[Side=Left] /template/ LayoutTransformControl#PART_LayoutTransformControl > Border, ^[Side=Bottom] /template/ LayoutTransformControl#PART_LayoutTransformControl > Border">
+            <Setter Property="BorderThickness" Value="0,0,0,6" />
+            <Setter Property="Padding" Value="0,3,0,3" />
+        </Style>
+        <Style Selector="^[Side=Right] /template/ LayoutTransformControl#PART_LayoutTransformControl > Border, ^[Side=Top] /template/ LayoutTransformControl#PART_LayoutTransformControl > Border">
+            <Setter Property="BorderThickness" Value="0,6,0,0" />
+            <Setter Property="Padding" Value="0,3,0,3" />
+        </Style>
+
+        <Style Selector="^:pointerover">
+            <Setter Property="Background" Value="{DynamicResource Vs2013Dock.AutoHideTabHoveredBackground}" />
+            <Setter Property="Foreground" Value="{DynamicResource Vs2013Dock.AutoHideTabHoveredText}" />
+        </Style>
+        <Style Selector="^:pointerover /template/ LayoutTransformControl#PART_LayoutTransformControl > Border">
+            <Setter Property="BorderBrush" Value="{DynamicResource Vs2013Dock.AutoHideTabHoveredBorder}" />
+        </Style>
+    </ControlTheme>
+
+    <!--
+        The floating windows: upstream's LayoutAnchorableFloatingWindowControl and
+        LayoutDocumentFloatingWindowControl styles' background and 1-pixel border. These
+        are based on the adapter's themes (merged above from its resources), whose frame keeps its
+        3-pixel padding.
+    -->
+    <ControlTheme x:Key="{x:Type controls:LayoutAnchorableFloatingWindowControl}" TargetType="controls:LayoutAnchorableFloatingWindowControl"
+                  BasedOn="{StaticResource {x:Type controls:LayoutAnchorableFloatingWindowControl}}">
+        <Setter Property="Background" Value="{DynamicResource Vs2013Dock.FloatingToolWindowBackground}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Vs2013Dock.FloatingToolWindowBorder}" />
+        <Setter Property="BorderThickness" Value="1" />
+    </ControlTheme>
+    <ControlTheme x:Key="{x:Type controls:LayoutDocumentFloatingWindowControl}" TargetType="controls:LayoutDocumentFloatingWindowControl"
+                  BasedOn="{StaticResource {x:Type controls:LayoutDocumentFloatingWindowControl}}">
+        <Setter Property="Background" Value="{DynamicResource Vs2013Dock.FloatingDocumentWindowBackground}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Vs2013Dock.FloatingDocumentWindowBorder}" />
+        <Setter Property="BorderThickness" Value="1" />
+    </ControlTheme>
+
+    <!--
+        The dock's background: upstream's DockingManager style sets its Background. The
+        adapter's manager template doesn't draw a background, so the root dock's panel does. Upstream's
+        auto-hide sides (AnchorSideTemplate) are at least 4 pixels wide, a margin around the panes; Dock
+        hides its empty sides, so the panes' panel has the margin (AnchorSideMarginConverter), which a
+        side with auto-hidden tool windows overlaps. Floating windows have no sides.
+    -->
+    <ControlTheme x:Key="{x:Type dock:RootDockControl}" TargetType="dock:RootDockControl"
+                  BasedOn="{StaticResource {x:Type dock:RootDockControl}}">
+        <Style Selector="^/template/ dock|DockableControl">
+            <Setter Property="Background" Value="{DynamicResource Vs2013Dock.Background}" />
+        </Style>
+        <Style Selector="^/template/ dock|PinnedDockHostPanel">
+            <Setter Property="Margin" Value="{Binding Window, Converter={x:Static local:AnchorSideMarginConverter.Instance}}" />
+        </Style>
+        <Style Selector="^/template/ dock|ToolPinnedControl[(DockPanel.Dock)=Left]">
+            <Setter Property="Margin" Value="0,0,-4,0" />
+        </Style>
+        <Style Selector="^/template/ dock|ToolPinnedControl[(DockPanel.Dock)=Right]">
+            <Setter Property="Margin" Value="-4,0,0,0" />
+        </Style>
+        <Style Selector="^/template/ dock|ToolPinnedControl[(DockPanel.Dock)=Top]">
+            <Setter Property="Margin" Value="0,0,0,-4" />
+        </Style>
+        <Style Selector="^/template/ dock|ToolPinnedControl[(DockPanel.Dock)=Bottom]">
+            <Setter Property="Margin" Value="0,-4,0,0" />
+        </Style>
+    </ControlTheme>
+
+</ResourceDictionary>

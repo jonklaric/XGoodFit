@@ -1,0 +1,10 @@
+<!--
+    XGoodFit addition: the Dark VS2013 dock theme, Vs2013DockTheme's dictionary for ThemeColor.Dark:
+    the theme's Dark colours and its control themes.
+-->
+<ResourceDictionary xmlns="https://github.com/avaloniaui">
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceInclude Source="avares://FrameworkUI/Themes/VS2013/Dock/DarkColors.axaml" />
+        <ResourceInclude Source="avares://FrameworkUI/Themes/VS2013/Dock/Generic.axaml" />
+    </ResourceDictionary.MergedDictionaries>
+</ResourceDictionary>
