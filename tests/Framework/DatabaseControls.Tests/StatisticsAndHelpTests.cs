@@ -38,6 +38,10 @@ public sealed class StatisticsAndHelpTests
             Assert.AreEqual("285.000000000000000", values[3]);
             Assert.AreEqual("14.250000000000000", values[4]);
             Assert.AreEqual("14.250000000000000", values[10], "the median");
+            // Upstream's 311-pixel table shows all 13 statistics: the column widths and the visible rows are
+            // worked out after the layout pass, as in WPF (WpfCompat's SizeChangedEvents).
+            Assert.AreEqual(13, stats.NumericColumnViewer.StatsTable.VisibleRowCount());
+            Assert.IsFalse(stats.NumericColumnViewer.StatsTable.VerticalScrollbar.IsVisible);
             Assert.IsTrue(stats.NumericColumnViewer.HistogramData.Count > 0, "Rice's rule bins the data");
             Assert.AreEqual(stats.NumericColumnViewer.HistogramData.Count, stats.NumericColumnViewer.BreaksTable.DataView.NumberOfRows);
             Assert.AreEqual(20, stats.NumericColumnViewer.BreaksTable.DataView.GetColumn(1).Sum(o => Convert.ToInt32(o)), "the bins hold every value");

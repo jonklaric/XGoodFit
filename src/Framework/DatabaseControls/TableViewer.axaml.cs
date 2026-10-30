@@ -760,6 +760,10 @@ namespace DatabaseControls
             GridPanel.AddMouseLeftButtonUpHandler(GridPanel_MouseLeftButtonUp);
             GridPanel.AddMouseRightButtonUpHandler(GridPanel_RightMouseUp);
             GridPanel.AddMouseMoveHandler(GridPanel_MouseMove);
+            // XGoodFit port: the XAML's SizeChanged, raised after the layout pass as in WPF (WpfCompat's
+            // SizeChangedEvents): the handler reads the scroll viewer's viewport, which Avalonia's own
+            // SizeChanged comes too early for.
+            HorizontalViewerGrid.AddSizeChangedHandler(HorizontalScrollViewer_SizeChanged);
             // XGoodFit port: the column header row's height binding (a row definition has no data context),
             // and the scroll bar's IsEnabledChanged (see VerticalScrollbarIsEnabled).
             HorizontalViewerGrid.RowDefinitions[0].Bind(RowDefinition.HeightProperty, new Binding(nameof(ColumnHeaderHeight)) { Source = this });
@@ -877,7 +881,7 @@ namespace DatabaseControls
                 thisControl._activeCellDataColumnIndex = 0;
                 thisControl._activeCellVirtualRowIndex = 0;
                 thisControl._selectedRowsOnly = false;
-                thisControl.ColumnHeadersGrid.SizeChanged -= thisControl.ColumnsGridSizeChanged;
+                thisControl.ColumnHeadersGrid.RemoveSizeChangedHandler(thisControl.ColumnsGridSizeChanged);
                 thisControl.GridPanel.Children.Clear();
                 thisControl.RowHeadersGrid.Children.Clear();
                 thisControl.RowColorGrid.Children.Clear();
@@ -1168,7 +1172,7 @@ namespace DatabaseControls
             for (int i = 0; i < _rowId.Length; i++) _rowId[i] = i;
             _rowId.CopyTo(_rowOffset, 0);
 
-            ColumnHeadersGrid.SizeChanged -= ColumnsGridSizeChanged;
+            ColumnHeadersGrid.RemoveSizeChangedHandler(ColumnsGridSizeChanged);
 
             GridPanel.Children.Clear();
             RowHeadersGrid.Children.Clear();
@@ -1352,7 +1356,7 @@ namespace DatabaseControls
         /// </summary>
         private void NumberOfColumnsChanged()
         {
-            ColumnHeadersGrid.SizeChanged -= ColumnsGridSizeChanged;
+            ColumnHeadersGrid.RemoveSizeChangedHandler(ColumnsGridSizeChanged);
             GridPanel.Children.Clear();
             RowHeadersGrid.Children.Clear();
             RowColorGrid.Children.Clear();
@@ -1421,7 +1425,9 @@ namespace DatabaseControls
         /// </summary>
         private void CreateColumns()
         {
-            ColumnHeadersGrid.SizeChanged += ColumnsGridSizeChanged;
+            // XGoodFit port: WpfCompat's SizeChanged comes after the layout pass, as WPF's, when the scroll
+            // viewer has its new width too; Avalonia's comes while the grid is arranged.
+            ColumnHeadersGrid.AddSizeChangedHandler(ColumnsGridSizeChanged);
             _columnWidths = new GridLength[DataView.ColumnNames.Count()];
 
             for (int i = 0; i < DataView.ColumnNames.Count(); i++)
@@ -2299,7 +2305,7 @@ namespace DatabaseControls
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The event data.</param>
-        private void HorizontalScrollViewer_SizeChanged(object sender, SizeChangedEventArgs e) => RefreshView();
+        private void HorizontalScrollViewer_SizeChanged(object? sender, SizeChangedEventArgs e) => RefreshView();
 
         /// <summary>
         /// Handles mouse wheel scrolling on the grid panel.
@@ -3214,8 +3220,11 @@ namespace DatabaseControls
         /// <param name="e">The render event data.</param>
         private void SelectorRendered(object? sender, EventArgs e)
         {
+            // XGoodFit port: WPF raises ContentRendered once the content has loaded and rendered; Avalonia
+            // raises Opened before the content loads, when the expression editor ignores new text (as
+            // upstream's does until it loads). Posted at Background priority, it runs after both.
             if (sender is FieldCalculator fc)
-                fc.ExpressionCalculator.SetExpressionText(_attributeSelectorString);
+                Dispatcher.UIThread.Post(() => fc.ExpressionCalculator.SetExpressionText(_attributeSelectorString), DispatcherPriority.Background);
         }
 
         /// <summary>
@@ -3225,8 +3234,9 @@ namespace DatabaseControls
         /// <param name="e">The render event data.</param>
         private void CalculatorRendered(object? sender, EventArgs e)
         {
+            // XGoodFit port: after the content has loaded, as WPF's ContentRendered (see SelectorRendered).
             if (sender is FieldCalculator fc)
-                fc.ExpressionCalculator.SetExpressionText(_fieldCalculatorString);
+                Dispatcher.UIThread.Post(() => fc.ExpressionCalculator.SetExpressionText(_fieldCalculatorString), DispatcherPriority.Background);
         }
 
         /// <summary>

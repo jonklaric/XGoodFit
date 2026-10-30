@@ -118,6 +118,7 @@ public sealed class DialogTests
 
             using (TestSupport.WhenOpened<FieldCalculator>(fc =>
             {
+                TestSupport.Settle(); // the viewer restores the last expression once the window has rendered
                 createNew = fc.CreateNewFieldRadioButton.IsChecked;
                 fields = fc.ExistingFieldsCombobox.Items.Cast<string>().ToArray();
                 fc.NewFieldName.Text = "Doubled";
@@ -145,15 +146,19 @@ public sealed class DialogTests
 
             // The calculator opens again with the last expression.
             string reopened = "";
+            bool parsed = false;
             using (TestSupport.WhenOpened<FieldCalculator>(fc =>
             {
+                TestSupport.Settle();
                 reopened = fc.ExpressionCalculator.GetExpressionText();
+                parsed = fc.ExecuteButton.IsEnabled && fc.PreviewExpander.IsVisible;
                 fc.Close();
             }))
             {
                 viewer.OpenFC.RaiseClick();
             }
             Assert.AreEqual(expression, reopened);
+            Assert.IsTrue(parsed, "the restored expression is parsed, as after WPF's ContentRendered");
             window.Close();
         });
     }
@@ -263,6 +268,7 @@ public sealed class DialogTests
 
             using (TestSupport.WhenOpened<FieldCalculator>(fc =>
             {
+                TestSupport.Settle(); // the viewer restores the last expression once the window has rendered
                 title = fc.Title ?? "";
                 fieldsShown = fc.FieldSelectionGrid.IsVisible;
                 // A number isn't a selection.

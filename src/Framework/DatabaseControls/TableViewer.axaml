@@ -5,7 +5,9 @@
       style keys are Themes' string keys of the same names (ToolBar.axaml).
     - Visibility bindings set WpfCompat's Visibility: the converter produces WpfCompat's Visibility.
     - The Preview and mouse event handlers are added in the code-behind (WpfCompat's mouse events, and
-      AddHandler for PreviewKeyDown): Avalonia has pointer events and no Preview events.
+      AddHandler for PreviewKeyDown): Avalonia has pointer events and no Preview events. So is the grid's
+      SizeChanged handler, with WpfCompat's SizeChangedEvents, which raises it after the layout pass as
+      WPF does.
     - Grid row and column definitions can't be named in Avalonia; the code-behind reaches the one it uses
       (RowHeadersColumnDefinition) through its grid. ActualWidth is Bounds.Width.
     - The column header row's height binding has the viewer as its source in the code-behind: a row
@@ -258,7 +260,7 @@
                 Grid.Row="0"
                 Grid.RowSpan="3"
                 Grid.Column="1">
-                <Grid x:Name="HorizontalViewerGrid" SizeChanged="HorizontalScrollViewer_SizeChanged">
+                <Grid x:Name="HorizontalViewerGrid">
                     <Grid.RowDefinitions>
                         <RowDefinition SharedSizeGroup="A"/>
                         <RowDefinition Height="*"/>

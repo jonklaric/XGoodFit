@@ -5,6 +5,7 @@ using Avalonia.Headless;
 using Avalonia.Media.Imaging;
 using Avalonia.Styling;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 using Themes;
 
 namespace DatabaseControls.Tests;
@@ -42,6 +43,105 @@ public sealed class Captures
             }
             ThemeService.Instance.SetTheme(Theme.Light);
         });
+    }
+
+    [TestMethod]
+    [TestCategory("Capture")]
+    public void TableViewerStates_AndItsWindows()
+    {
+        HeadlessSession.Run(() =>
+        {
+            UsePopupOverlay();
+            string folder = ScreenshotFolder();
+            foreach (Theme theme in Enum.GetValues<Theme>())
+            {
+                ThemeService.Instance.SetTheme(theme);
+                var demo = new DatabaseControls.Demo.MainWindow();
+                demo.Show();
+                Settle();
+                // The gallery sample with its Value column as numbers (the CSV reader reads text), so the
+                // calculator and the statistics show numbers as with a database table.
+                demo.TestViewer.DataView = new DatabaseManager.InMemoryReader(TypedGallerySample()).GetTableManager("synthetic-gallery-sample");
+                Settle();
+                TableViewer viewer = demo.TestViewer;
+
+                // Rows selected from the row headers, the active cell, and the column menu.
+                var rowHeaders = viewer.RowHeadersGrid.Children.OfType<Border>().ToArray();
+                demo.Click(rowHeaders[2].Centre());
+                demo.Click(rowHeaders[4].Centre(), Avalonia.Input.RawInputModifiers.Shift);
+                demo.Click(viewer.CellCentre(6, 2));
+                demo.RightClick(viewer.ColumnHeadersGrid.Children.OfType<Border>().ElementAt(2).Centre());
+                Save(demo, Path.Combine(folder, $"database-viewer-selection-menu-{theme}.png"));
+                demo.GetVisualDescendants().OfType<ContextMenu>().Single(m => m.IsOpen).Close();
+
+                // A cell being edited.
+                demo.Click(viewer.CellCentre(8, 0));
+                demo.Type("DEMO-X");
+                Save(demo, Path.Combine(folder, $"database-viewer-editing-{theme}.png"));
+                demo.Press(Avalonia.Input.Key.Escape);
+
+                var find = new FindAndReplace(viewer, 1, 0);
+                find.Show();
+                find.FindText.Text = "Group B";
+                Save(find, Path.Combine(folder, $"database-find-{theme}.png"));
+                find.Close();
+
+                var calculator = new FieldCalculator(viewer.DataView, null, null);
+                calculator.Show();
+                Settle();
+                calculator.NewFieldName.Text = "Doubled";
+                calculator.ExpressionCalculator.SetExpressionText("[Value] * 2");
+                Save(calculator, Path.Combine(folder, $"database-field-calculator-{theme}.png"));
+                calculator.ExpressionCalculator.SetFunctionsToggle(true);
+                Save(calculator, Path.Combine(folder, $"database-field-calculator-functions-{theme}.png"));
+                calculator.Close();
+
+                var selector = new FieldCalculator(viewer.DataView, new List<int> { 2, 3, 4 }, null, null, true);
+                selector.Show();
+                Settle();
+                selector.ExpressionCalculator.SetExpressionText("[Value] > 20");
+                Save(selector, Path.Combine(folder, $"database-select-by-attribute-{theme}.png"));
+                selector.Close();
+
+                var numericStats = new ColumnStatsWindow(viewer, 2);
+                numericStats.Show();
+                Save(numericStats, Path.Combine(folder, $"database-column-stats-numeric-{theme}.png"));
+                numericStats.Close();
+
+                var textStats = new ColumnStatsWindow(viewer, 1);
+                textStats.Show();
+                Save(textStats, Path.Combine(folder, $"database-column-stats-text-{theme}.png"));
+                textStats.Close();
+
+                var help = new CalculatorHelpWindow();
+                help.Show();
+                Settle();
+                Thread.Sleep(500); // HtmlRenderer loads the pictures on the thread pool.
+                Save(help, Path.Combine(folder, $"database-calculator-help-{theme}.png"));
+                help.Close();
+
+                demo.Close();
+            }
+            ThemeService.Instance.SetTheme(Theme.Light);
+        });
+    }
+
+    // upstream's gallery sample, typed: Value is a double.
+    private static System.Data.DataTable TypedGallerySample()
+    {
+        var table = new System.Data.DataTable("synthetic-gallery-sample");
+        string[] lines = File.ReadAllLines(SampleCsv);
+        string[] names = lines[0].Split(',');
+        foreach (string name in names)
+        {
+            table.Columns.Add(name, name == "Value" ? typeof(double) : typeof(string));
+        }
+        foreach (string line in lines.Skip(1))
+        {
+            string[] values = line.Split(',');
+            table.Rows.Add(values.Select((v, i) => names[i] == "Value" ? (object)double.Parse(v, System.Globalization.CultureInfo.InvariantCulture) : v).ToArray());
+        }
+        return table;
     }
 
     internal static void UsePopupOverlay()
