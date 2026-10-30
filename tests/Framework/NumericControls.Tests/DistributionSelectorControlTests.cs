@@ -205,6 +205,24 @@ public sealed class DistributionSelectorControlTests
     }
 
     [TestMethod]
+    public void Tables_LayOutTheirHeaders_AsUpstreamsDo()
+    {
+        HeadlessSession.Run(() =>
+        {
+            var (window, selector) = ShowSelector(s => { s.Distributions = DemoOptions(); s.SelectedDistribution = new Normal(100, 15); });
+
+            // The parameters have no headers: their rows start at the top.
+            Assert.AreEqual(0, Parameters(selector).GetVisualDescendants().OfType<DataGridRowsPresenter>().Single().Bounds.Top);
+
+            // The statistics' headers are one line high at their columns' widths, though the grid is first laid
+            // out before its width (bound to its container's) is known.
+            var summary = selector.FindControl<CopyPasteDataGrid>("SummaryTable")!;
+            Assert.AreEqual(24, summary.GetVisualDescendants().OfType<DataGridColumnHeadersPresenter>().Single().Bounds.Height);
+            window.Close();
+        });
+    }
+
+    [TestMethod]
     public void SampleData_AddsAHistogram_TheDataColumn_FitStatistics_AndEstimation()
     {
         HeadlessSession.Run(() =>
@@ -387,7 +405,7 @@ public sealed class DistributionSelectorControlTests
     }
 
     // Edits a parameter's value as a user does: F2, the text, Enter.
-    private static void EditParameter(Window window, DistributionSelectorControl selector, int row, string text)
+    internal static void EditParameter(Window window, DistributionSelectorControl selector, int row, string text)
     {
         var grid = Parameters(selector);
         grid.Focus();
