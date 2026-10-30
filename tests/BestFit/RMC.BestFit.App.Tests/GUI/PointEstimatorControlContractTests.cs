@@ -57,7 +57,7 @@ public class PointEstimatorControlContractTests
     // [DataRow("PointProcess")]
     // [DataRow("SeasonalPointProcess")]
     //
-    // [DataRow("Composite")]
+    [DataRow("Composite")]
     [DataRow("B17C")]
     [DataRow("Bivariate")]
     // [DataRow("RatingCurve")]
