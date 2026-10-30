@@ -18,6 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="../../src/Framework/GenericControls/GenericControls.csproj" />
     <ProjectReference Include="../../src/Framework/Themes/Themes.csproj" />
   </ItemGroup>
 

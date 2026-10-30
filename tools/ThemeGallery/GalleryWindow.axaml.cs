@@ -12,7 +12,7 @@ namespace ThemeGallery;
 /// Shows the standard controls in the ported theme, and every palette key as a live swatch grouped by the
 /// control it styles, on two tabs. The menu bar is a live sample of the Menu theme.
 /// </summary>
-public partial class GalleryWindow : Window
+public partial class GalleryWindow : GenericControls.MetroWindow
 {
     public GalleryWindow()
     {

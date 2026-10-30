@@ -41,6 +41,13 @@ internal static class Program
             Setters = { new Setter(Popup.ShouldUseOverlayLayerProperty, true) },
         });
 
+        // Show the Metro title bar, which the window hides where the platform draws its own, as the
+        // headless one does.
+        Application.Current.Styles.Add(new Style(x => x.Is<Window>().PropertyEquals(Window.IsExtendedIntoWindowDecorationsProperty, false).Template().OfType<Grid>().Name("TitleBar"))
+        {
+            Setters = { new Setter(Visual.IsVisibleProperty, true) },
+        });
+
         Directory.CreateDirectory(folder);
         var window = new GalleryWindow();
         window.Show();

@@ -501,12 +501,17 @@ Sizes are relative, for one developer with AI-assisted porting: S ≈ ≤2 wk, M
 
 **Exit:** each control has a demo page, screenshot parity, and behaviour tests (grid copy/paste and add-row in particular).
 
-**Progress (2026-10-30):** 23 of the 27 `Themes` control theme files are ported: Button, Calendar, CheckBox, ComboBox, Expander, GridSplitter, GroupBox, Label, ListBox, ListView, Menu (with ContextMenu), ProgressBar, RadioButton, ScrollBar (with ScrollViewer), Separator, Slider, StackPanel, TabControl (with the three keyed TabItem styles BestFit uses), TextBlock, TextBox, ToolBar (the style keys upstream gives ordinary buttons), ToolTip and TreeView.
-- The other four belong with later work:
+**Progress (2026-10-30):** 24 of the 27 `Themes` control theme files are ported: Button, Calendar, CheckBox, ComboBox, Expander, GridSplitter, GroupBox, Label, ListBox, ListView, Menu (with ContextMenu), MetroWindowStyle, ProgressBar, RadioButton, ScrollBar (with ScrollViewer), Separator, Slider, StackPanel, TabControl (with the three keyed TabItem styles BestFit uses), TextBlock, TextBox, ToolBar (the style keys upstream gives ordinary buttons), ToolTip and TreeView.
+- The other three belong with later work:
   - DataGrid: with ProDataGrid and `CopyPasteDataGrid` (this phase).
-  - MetroWindowStyle: with the window chrome (Phase 2).
   - RichTextBox: its colours and context menu go to AvaloniaEdit and SelectableTextBlock (Phases 5 and 7).
   - StatusBar: not ported, as nothing upstream uses one and Avalonia has no StatusBar control.
+- The window chrome (MetroWindowStyle and MetroDialogStyle) draws the VS2013 title bar in an extended client area:
+  - Windows: the title bar has Avalonia's TitleBar role, which gives native dragging, snapping and the system menu.
+  - macOS: the native traffic lights stay.
+  - Linux: the native title bar stays, and the drawn one hides.
+  - Caption buttons run MetroWindow's command handlers through WpfCompat's routed commands, as in WPF.
+- `GenericControls` has started: `MetroWindow` and `MetroDialogWindow`, with headless tests for their caption buttons and ResizeMode. Its upstream files are nearly all WPF code, so the project opts in to upstream files (`UpstreamCompileMode=OptIn`) and gains them one port at a time. The theme gallery now runs in a `MetroWindow`.
 - Behaviour gaps to close when the controls that need them are ported:
   - Slider track clicks: WPF moves the thumb by LargeChange, unless IsMoveToPointEnabled; Avalonia always moves it to the pointer. GenericControls' NumericSlider needs WPF's default, and its ColorPicker uses move-to-point.
   - ComboBox drop-downs: WPF's maximum height is a third of the screen; the theme assumes a 1080-pixel screen until WpfCompat can read the real one.

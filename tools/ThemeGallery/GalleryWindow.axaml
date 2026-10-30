@@ -1,10 +1,10 @@
-<Window xmlns="https://github.com/avaloniaui"
+<gc:MetroWindow xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:gc="using:GenericControls"
         x:Class="ThemeGallery.GalleryWindow"
         Title="XGoodFit theme gallery"
         Width="1280" Height="960"
-        Background="{DynamicResource EnvironmentWindowBackground}"
-        Foreground="{DynamicResource EnvironmentWindowText}">
+        Theme="{DynamicResource MetroWindowStyle}">
     <Window.Styles>
         <Style Selector="Border.card">
             <Setter Property="Width" Value="300"/>
@@ -277,4 +277,4 @@
             </TabItem>
         </TabControl>
     </DockPanel>
-</Window>
+</gc:MetroWindow>

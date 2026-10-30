@@ -12,13 +12,19 @@
       files are never compiled.
     - UpstreamCompileRemove lists upstream files left out on purpose, with the reason as metadata,
       e.g. <UpstreamCompileRemove Include="Properties/AssemblyInfo.cs" Reason="WPF ThemeInfo" />.
+    - A project whose upstream files are nearly all WPF code, ported one at a time, sets
+      UpstreamCompileMode to OptIn. Then only the upstream files it lists in UpstreamCompileInclude
+      compile unchanged, besides its ported copies.
 
     Projects under upstream/ never see this file (upstream/Directory.Build.targets is empty).
   -->
   <ItemGroup Condition="'$(UpstreamProjectDir)' != ''">
     <_PortedCompile Include="**/*.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
-    <_UpstreamCompile Include="$(UpstreamProjectDir)**/*.cs"
+    <_UpstreamCompile Condition="'$(UpstreamCompileMode)' != 'OptIn'"
+                      Include="$(UpstreamProjectDir)**/*.cs"
                       Exclude="$(UpstreamProjectDir)bin/**;$(UpstreamProjectDir)obj/**;$(UpstreamProjectDir)**/*.xaml.cs" />
+    <_UpstreamCompile Condition="'$(UpstreamCompileMode)' == 'OptIn'"
+                      Include="@(UpstreamCompileInclude->'$(UpstreamProjectDir)%(Identity)')" />
     <_UpstreamCompile Remove="@(_PortedCompile->'$(UpstreamProjectDir)%(RecursiveDir)%(Filename)%(Extension)')" />
     <_UpstreamCompile Remove="@(UpstreamCompileRemove->'$(UpstreamProjectDir)%(Identity)')" />
     <Compile Include="@(_UpstreamCompile)"

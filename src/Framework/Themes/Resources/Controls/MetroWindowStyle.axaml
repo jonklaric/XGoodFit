@@ -1,0 +1,384 @@
+<!-- Ported from upstream/WPF-Framework/src/Themes/Resources/Controls/MetroWindowStyle.xaml. Conversion rules: Button.axaml. -->
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:themes="using:Themes"
+                    xmlns:wpf="using:WpfCompat"
+                    xmlns:wpfi="using:WpfCompat.Input">
+
+    <!--
+    XGoodFit port notes:
+    - Custom chrome: WPF's WindowChrome becomes Avalonia's extended client area
+      (ExtendClientAreaToDecorationsHint). The template draws the title bar, as in WPF:
+      - On Windows the title bar's TitleBar role gives the native caption behaviour: dragging,
+        double-click to maximize, snapping and the system menu. The caption buttons are ordinary buttons
+        with the User role, as WPF's WindowChrome.IsHitTestVisibleInChrome makes them, so they run
+        MetroWindow's handlers. Avalonia would draw its own title bar too, so MetroWindowDecorations
+        replaces its drawn decorations with nothing.
+      - On macOS the native traffic lights stay (docs/migration-plan.md §6): the title bar leaves room for
+        them and the Metro caption buttons are hidden.
+      - On Linux Avalonia keeps the native title bar, so the drawn one is hidden whenever the client area
+        isn't extended (IsExtendedIntoWindowDecorations).
+    - ResizeMode is WpfCompat's WpfWindow.ResizeMode, which sets Avalonia's CanResize, CanMinimize and
+      CanMaximize. The caption buttons use WpfCompat's SystemCommands through {wpfi:Command}, so they
+      route from the button to the window's command bindings, as in WPF.
+    - The window's Icon is a WindowIcon in Avalonia, so the title bar shows it through
+      WindowIconImageConverter.
+    - WPF's frame margin (SystemParameters.WindowNonClientFrameThickness) doesn't show in WPF on
+      screen: the title bar sits at the top of the window (upstream's docs/assets/gallery screenshots).
+      When maximized, Avalonia's OffScreenMargin keeps the window's edges on screen, as that margin
+      does in WPF.
+    - AdornerDecorator becomes VisualLayerManager. Not ported: TextOptions.TextFormattingMode="Display"
+      (Avalonia has no display text formatting) and SnapsToDevicePixels.
+    -->
+
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+    <!-- WINDOW CAPTION BUTTON STYLE                                                  -->
+    <!-- Used for minimize, maximize, and restore buttons                             -->
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+    <ControlTheme x:Key="MetroWindowButtonStyle" TargetType="Button">
+        <Setter Property="Foreground" Value="{DynamicResource MainWindowCaptionButtonActiveGlyph}" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="HorizontalAlignment" Value="Stretch"/>
+        <Setter Property="VerticalAlignment" Value="Stretch"/>
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Padding" Value="1" />
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Grid Background="{TemplateBinding Background}">
+                    <ContentPresenter x:Name="PART_ContentPresenter"
+                            Content="{TemplateBinding Content}"
+                            ContentTemplate="{TemplateBinding ContentTemplate}"
+                            HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                            Margin="{TemplateBinding Padding}"
+                            RecognizesAccessKey="True" />
+                </Grid>
+            </ControlTemplate>
+        </Setter>
+
+        <Style Selector="^:pointerover">
+            <Setter Property="Background" Value="{DynamicResource MainWindowCaptionButtonActiveHoveredBackground}"/>
+            <Setter Property="Foreground" Value="{DynamicResource MainWindowCaptionButtonActiveHoveredGlyph}"/>
+        </Style>
+        <Style Selector="^:pressed">
+            <Setter Property="Background" Value="{DynamicResource MainWindowCaptionButtonPressedBackground}" />
+            <Setter Property="Foreground" Value="{DynamicResource MainWindowCaptionButtonPressedGlyph}" />
+        </Style>
+        <Style Selector="^:disabled /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Opacity" Value=".5" />
+        </Style>
+    </ControlTheme>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+    <!-- WINDOW CLOSE BUTTON STYLE                                                    -->
+    <!-- Special red highlight for close button                                       -->
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+    <ControlTheme x:Key="MetroWindowCloseButtonStyle" TargetType="Button">
+        <Setter Property="Foreground" Value="{DynamicResource MainWindowCaptionButtonActiveGlyph}" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="HorizontalAlignment" Value="Stretch"/>
+        <Setter Property="VerticalAlignment" Value="Stretch"/>
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Padding" Value="1" />
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Grid Background="{TemplateBinding Background}">
+                    <ContentPresenter x:Name="PART_ContentPresenter"
+                      Content="{TemplateBinding Content}"
+                      ContentTemplate="{TemplateBinding ContentTemplate}"
+                      HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                      VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                      Margin="{TemplateBinding Padding}"
+                      RecognizesAccessKey="True" />
+                </Grid>
+            </ControlTemplate>
+        </Setter>
+
+        <Style Selector="^:pointerover">
+            <Setter Property="Background" Value="{DynamicResource CloseButtonHighlightColorBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource CloseButtonHighlightForegroundColorBrush}" />
+        </Style>
+        <Style Selector="^:pressed">
+            <Setter Property="Background" Value="{DynamicResource CloseButtonPressColorBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource CloseButtonHighlightForegroundColorBrush}" />
+        </Style>
+        <Style Selector="^:disabled /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Opacity" Value=".5" />
+        </Style>
+    </ControlTheme>
+
+    <!--
+    XGoodFit addition: Avalonia's drawn window decorations, which it adds on Windows when the client
+    area is extended, without anything to draw. The Metro window templates draw their own title bar.
+    -->
+    <ControlTheme x:Key="MetroWindowDecorations" TargetType="WindowDrawnDecorations">
+        <Setter Property="DefaultTitleBarHeight" Value="30"/>
+        <Setter Property="DefaultFrameThickness" Value="0"/>
+        <Setter Property="DefaultShadowThickness" Value="0"/>
+        <Setter Property="Template">
+            <WindowDrawnDecorationsTemplate>
+                <WindowDrawnDecorationsContent/>
+            </WindowDrawnDecorationsTemplate>
+        </Setter>
+    </ControlTheme>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+    <!-- METRO WINDOW STYLE                                                           -->
+    <!-- Full window style with minimize, maximize, restore, and close buttons        -->
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+    <ControlTheme x:Key="MetroWindowStyle" TargetType="Window">
+        <Setter Property="Background" Value="{DynamicResource MainWindowCaptionActiveBackground}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource MainWindowActiveBorder}"/>
+        <Setter Property="Foreground" Value="{DynamicResource MainWindowCaptionActiveText}" />
+        <Setter Property="wpf:WpfWindow.ResizeMode" Value="CanResizeWithGrip" />
+        <Setter Property="UseLayoutRounding" Value="True" />
+        <Setter Property="ExtendClientAreaToDecorationsHint" Value="True" />
+        <Setter Property="ExtendClientAreaTitleBarHeightHint" Value="30" />
+        <Setter Property="WindowDecorationsTheme" Value="{StaticResource MetroWindowDecorations}" />
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Panel>
+                    <Border Name="PART_TransparencyFallback" IsHitTestVisible="False" />
+                    <Border x:Name="WindowBorder" Margin="{TemplateBinding OffScreenMargin}"
+                            Background="{DynamicResource EnvironmentWindowBackground}">
+                        <Grid>
+                            <Border BorderThickness="1">
+                                <VisualLayerManager Name="PART_VisualLayerManager">
+                                    <Grid x:Name="LayoutRoot" RowDefinitions="Auto,*,15">
+
+                                        <!-- Title Bar -->
+                                        <Grid x:Name="TitleBar" Grid.Row="0" Height="30" Background="{TemplateBinding Background}"
+                                              ColumnDefinitions="Auto,*,Auto"
+                                              WindowDecorationProperties.ElementRole="TitleBar">
+
+                                            <!-- Window Icon -->
+                                            <Label Grid.Column="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                                                   VerticalAlignment="Stretch" VerticalContentAlignment="Center"
+                                                   Margin="{OnPlatform '0', macOS='72,0,0,0'}">
+                                                <Image Width="16" Height="16"
+                                                       Source="{TemplateBinding Icon, Converter={x:Static themes:WindowIconImageConverter.Instance}}" />
+                                            </Label>
+
+                                            <!-- Window Title -->
+                                            <Label Grid.Column="1" Content="{TemplateBinding Title}"
+                                                HorizontalAlignment="Stretch"
+                                                VerticalAlignment="Stretch"
+                                                HorizontalContentAlignment="Left"
+                                                VerticalContentAlignment="Center"
+                                                Padding="0,5,0,0"
+                                                Foreground="{TemplateBinding Foreground}"
+                                                FontSize="12"/>
+
+                                            <!-- Window Buttons -->
+                                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                        WindowDecorationProperties.ElementRole="User" Grid.Column="2"
+                                                        IsVisible="{OnPlatform True, macOS=False}">
+                                                <!-- Minimize Button -->
+                                                <Button x:Name="Minimize" ToolTip.Tip="Minimize"
+                                                        Command="{wpfi:Command {x:Static wpf:SystemCommands.MinimizeWindowCommand}}"
+                                                        Theme="{StaticResource MetroWindowButtonStyle}">
+                                                    <Grid Width="30" Height="30">
+                                                        <Grid.RenderTransform>
+                                                            <MatrixTransform Matrix="1,0,0,1,0,1"/>
+                                                        </Grid.RenderTransform>
+                                                        <Path Data="M0,8 L11,8 Z" Width="11" Height="10"
+                                                              VerticalAlignment="Center" HorizontalAlignment="Center"
+                                                              Stroke="{Binding $parent[Button].Foreground}"
+                                                              StrokeThickness="2" />
+                                                    </Grid>
+                                                </Button>
+                                                <Grid Margin="1,0,1,0">
+                                                    <!-- Restore Button -->
+                                                    <Button x:Name="Restore" ToolTip.Tip="Restore Down" IsVisible="False"
+                                                            Command="{wpfi:Command {x:Static wpf:SystemCommands.RestoreWindowCommand}}"
+                                                            Theme="{StaticResource MetroWindowButtonStyle}">
+                                                        <Grid Width="30" Height="30" UseLayoutRounding="True">
+                                                            <Grid.RenderTransform>
+                                                                <MatrixTransform Matrix="1,0,0,1,.5,.5"/>
+                                                            </Grid.RenderTransform>
+                                                            <Path Data="M2,0 L11,0 L11,9 M0,3 L9,3 M0,2 L9,2 L9,11 L0,11 Z"
+                                                                  Width="12" Height="12"
+                                                                  VerticalAlignment="Center" HorizontalAlignment="Center"
+                                                                  Stroke="{Binding $parent[Button].Foreground}"
+                                                                  StrokeThickness="1" />
+                                                        </Grid>
+                                                    </Button>
+                                                    <!-- Maximize Button -->
+                                                    <Button x:Name="Maximize" ToolTip.Tip="Maximize"
+                                                            Command="{wpfi:Command {x:Static wpf:SystemCommands.MaximizeWindowCommand}}"
+                                                            Theme="{StaticResource MetroWindowButtonStyle}">
+                                                        <Grid Width="30" Height="30">
+                                                            <Path Data="M0,1 L12,1 L12,11 L0,11 Z" Width="12" Height="11"
+                                                                  VerticalAlignment="Center" HorizontalAlignment="Center"
+                                                                  Stroke="{Binding $parent[Button].Foreground}"
+                                                                  StrokeThickness="2" />
+                                                        </Grid>
+                                                    </Button>
+                                                </Grid>
+                                                <!-- Close Button -->
+                                                <Button x:Name="Close" ToolTip.Tip="Close"
+                                                        Command="{wpfi:Command {x:Static wpf:SystemCommands.CloseWindowCommand}}"
+                                                        Theme="{StaticResource MetroWindowCloseButtonStyle}">
+                                                    <Grid Width="34" Height="30">
+                                                        <Grid.RenderTransform>
+                                                            <MatrixTransform Matrix="1,0,0,1,0,1"/>
+                                                        </Grid.RenderTransform>
+                                                        <Path Data="M0,0 L11,10 M11,0 L0,10 Z" Width="11" Height="10" Margin="0,0,4,0"
+                                                              VerticalAlignment="Center" HorizontalAlignment="Center"
+                                                              Stroke="{Binding $parent[Button].Foreground}"
+                                                              StrokeThickness="1.5" />
+                                                    </Grid>
+                                                </Button>
+                                            </StackPanel>
+                                        </Grid>
+
+                                        <!-- Content Area -->
+                                        <ContentPresenter x:Name="PART_ContentPresenter" Grid.Row="1" Grid.RowSpan="2"
+                                                          Content="{TemplateBinding Content}"
+                                                          ContentTemplate="{TemplateBinding ContentTemplate}"/>
+
+                                        <!-- Resize Grip -->
+                                        <Grid Grid.Row="2">
+                                            <Path x:Name="ResizeGrip" IsVisible="False" Width="12" Height="12" Margin="1"
+                                                  HorizontalAlignment="Right"
+                                                  Stroke="{DynamicResource MainWindowCaptionButtonActiveGlyph}" StrokeThickness="1"
+                                                  Stretch="None"
+                                                  Data="F1 M1,10 L3,10 M5,10 L7,10 M9,10 L11,10 M2,9 L2,11 M6,9 L6,11 M10,9 L10,11 M5,6 L7,6 M9,6 L11,6 M6,5 L6,7 M10,5 L10,7 M9,2 L11,2 M10,1 L10,3" />
+                                        </Grid>
+                                    </Grid>
+                                </VisualLayerManager>
+                            </Border>
+                            <!-- Active Border -->
+                            <Border BorderBrush="{DynamicResource MainWindowActiveBorder}" BorderThickness="1"
+                                    IsVisible="{TemplateBinding IsActive}" IsHitTestVisible="False" />
+                        </Grid>
+                    </Border>
+                </Panel>
+            </ControlTemplate>
+        </Setter>
+
+        <!-- XGoodFit: where Avalonia keeps the native title bar (Linux), the drawn one is hidden. -->
+        <Style Selector="^[IsExtendedIntoWindowDecorations=False] /template/ Grid#TitleBar">
+            <Setter Property="IsVisible" Value="False" />
+        </Style>
+
+        <!-- ControlTemplate.Triggers, in upstream's order -->
+        <Style Selector="^[WindowState=Maximized]">
+            <Style Selector="^ /template/ Button#Maximize">
+                <Setter Property="IsVisible" Value="False" />
+            </Style>
+            <Style Selector="^ /template/ Button#Restore">
+                <Setter Property="IsVisible" Value="True" />
+            </Style>
+            <Style Selector="^ /template/ Grid#LayoutRoot">
+                <Setter Property="Margin" Value="3" />
+            </Style>
+        </Style>
+        <Style Selector="^[(wpf|WpfWindow.ResizeMode)=NoResize] /template/ Button#Minimize, ^[(wpf|WpfWindow.ResizeMode)=NoResize] /template/ Button#Maximize, ^[(wpf|WpfWindow.ResizeMode)=NoResize] /template/ Button#Restore">
+            <Setter Property="IsVisible" Value="False" />
+        </Style>
+        <Style Selector="^[WindowState=Normal][(wpf|WpfWindow.ResizeMode)=CanResizeWithGrip] /template/ Path#ResizeGrip">
+            <Setter Property="IsVisible" Value="True" />
+        </Style>
+        <Style Selector="^[IsActive=False]">
+            <Setter Property="BorderBrush" Value="{DynamicResource MainWindowInactiveBorder}"/>
+            <Setter Property="Foreground" Value="{DynamicResource MainWindowCaptionInactiveText}"/>
+        </Style>
+    </ControlTheme>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+    <!-- METRO DIALOG STYLE                                                           -->
+    <!-- Dialog style with only close button (no minimize/maximize)                   -->
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+    <ControlTheme x:Key="MetroDialogStyle" TargetType="Window">
+        <Setter Property="Background" Value="{DynamicResource MainWindowCaptionActiveBackground}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource MainWindowActiveBorder}"/>
+        <Setter Property="Foreground" Value="{DynamicResource MainWindowCaptionActiveText}" />
+        <Setter Property="wpf:WpfWindow.ResizeMode" Value="NoResize" />
+        <Setter Property="UseLayoutRounding" Value="True" />
+        <Setter Property="ExtendClientAreaToDecorationsHint" Value="True" />
+        <Setter Property="ExtendClientAreaTitleBarHeightHint" Value="30" />
+        <Setter Property="WindowDecorationsTheme" Value="{StaticResource MetroWindowDecorations}" />
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Panel>
+                    <Border Name="PART_TransparencyFallback" IsHitTestVisible="False" />
+                    <Border x:Name="WindowBorder" Margin="{TemplateBinding OffScreenMargin}"
+                            Background="{DynamicResource EnvironmentWindowBackground}">
+                        <Grid>
+                            <Border BorderThickness="1">
+                                <VisualLayerManager Name="PART_VisualLayerManager">
+                                    <Grid x:Name="LayoutRoot" RowDefinitions="Auto,*">
+
+                                        <!-- Title Bar -->
+                                        <Grid x:Name="TitleBar" Grid.Row="0" Height="30" Background="{TemplateBinding Background}"
+                                              ColumnDefinitions="Auto,*,Auto"
+                                              WindowDecorationProperties.ElementRole="TitleBar">
+
+                                            <!-- Window Icon -->
+                                            <Label Grid.Column="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                                                   VerticalAlignment="Stretch" VerticalContentAlignment="Center"
+                                                   Margin="{OnPlatform '0', macOS='72,0,0,0'}">
+                                                <Image Width="16" Height="16"
+                                                       Source="{TemplateBinding Icon, Converter={x:Static themes:WindowIconImageConverter.Instance}}" />
+                                            </Label>
+
+                                            <!-- Window Title -->
+                                            <Label Grid.Column="1" Content="{TemplateBinding Title}"
+                                                HorizontalAlignment="Stretch"
+                                                VerticalAlignment="Stretch"
+                                                HorizontalContentAlignment="Left"
+                                                VerticalContentAlignment="Center"
+                                                Padding="0,5,0,0"
+                                                Foreground="{TemplateBinding Foreground}"
+                                                FontSize="12"/>
+
+                                            <!-- Close Button Only -->
+                                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                        WindowDecorationProperties.ElementRole="User" Grid.Column="2"
+                                                        IsVisible="{OnPlatform True, macOS=False}">
+                                                <Button x:Name="Close" ToolTip.Tip="Close"
+                                                        Command="{wpfi:Command {x:Static wpf:SystemCommands.CloseWindowCommand}}"
+                                                        Theme="{StaticResource MetroWindowCloseButtonStyle}">
+                                                    <Grid Width="34" Height="30">
+                                                        <Grid.RenderTransform>
+                                                            <MatrixTransform Matrix="1,0,0,1,0,1"/>
+                                                        </Grid.RenderTransform>
+                                                        <Path Data="M0,0 L11,10 M11,0 L0,10 Z" Width="11" Height="10" Margin="0,0,4,0"
+                                                              VerticalAlignment="Center" HorizontalAlignment="Center"
+                                                              Stroke="{Binding $parent[Button].Foreground}"
+                                                              StrokeThickness="1.5" />
+                                                    </Grid>
+                                                </Button>
+                                            </StackPanel>
+                                        </Grid>
+
+                                        <!-- Content Area -->
+                                        <ContentPresenter x:Name="PART_ContentPresenter" Grid.Row="1"
+                                                          Content="{TemplateBinding Content}"
+                                                          ContentTemplate="{TemplateBinding ContentTemplate}"/>
+                                    </Grid>
+                                </VisualLayerManager>
+                            </Border>
+                            <!-- Active Border -->
+                            <Border BorderBrush="{DynamicResource MainWindowActiveBorder}" BorderThickness="1"
+                                    IsVisible="{TemplateBinding IsActive}" IsHitTestVisible="False" />
+                        </Grid>
+                    </Border>
+                </Panel>
+            </ControlTemplate>
+        </Setter>
+
+        <!-- XGoodFit: where Avalonia keeps the native title bar (Linux), the drawn one is hidden. -->
+        <Style Selector="^[IsExtendedIntoWindowDecorations=False] /template/ Grid#TitleBar">
+            <Setter Property="IsVisible" Value="False" />
+        </Style>
+        <Style Selector="^[IsActive=False]">
+            <Setter Property="BorderBrush" Value="{DynamicResource MainWindowInactiveBorder}"/>
+            <Setter Property="Foreground" Value="{DynamicResource MainWindowCaptionInactiveText}"/>
+        </Style>
+    </ControlTheme>
+
+</ResourceDictionary>

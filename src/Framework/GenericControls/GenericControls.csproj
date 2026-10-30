@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Avalonia port of upstream/WPF-Framework/src/GenericControls: themed windows, data grids, numeric
+    inputs, property editors and the other reusable controls. Nearly all of its files are WPF code that
+    is ported one at a time, so the project opts in to upstream files (Directory.Build.targets): only
+    its ported copies and the upstream files listed in UpstreamCompileInclude compile.
+
+    Ported so far: Windows/MetroWindow.cs and Windows/MetroDialogWindow.cs.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>GenericControls</RootNamespace>
+    <AssemblyName>GenericControls</AssemblyName>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <UpstreamProjectDir>$(UpstreamFrameworkSrc)GenericControls/</UpstreamProjectDir>
+    <UpstreamCompileMode>OptIn</UpstreamCompileMode>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../Themes/Themes.csproj" />
+    <ProjectReference Include="../WpfCompat/WpfCompat.csproj" />
+  </ItemGroup>
+
+</Project>
