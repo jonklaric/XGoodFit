@@ -143,10 +143,10 @@ namespace RMC.BestFit.App.Tests.XGoodFit
         }
 
         [STATestMethod]
-        [DataRow(TwoNormals, 113.201, 110.589, 116.292, 838.221)]
-        [DataRow(ThreeNormals, 168.069, 163.59, 173.682, 950.565)]
-        [DataRow(ZeroInflated, 119.163, 115.526, 123.434, 861.705)]
-        public void ResultsTables_ShowTheFrequencyCurveAndStatistics_InUsFormats(string name, double point, double lower, double upper, double dic)
+        [DataRow(TwoNormals, 113.201, 110.589, 116.292, 838.221, 1.00030, 9285)]
+        [DataRow(ThreeNormals, 168.069, 163.59, 173.682, 950.565, 1.00065, 5702)]
+        [DataRow(ZeroInflated, 119.163, 115.526, 123.434, 861.705, 1.00053, 9283)]
+        public void ResultsTables_ShowTheFrequencyCurveAndStatistics_InUsFormats(string name, double point, double lower, double upper, double dic, double rhat, double ess)
         {
             UseAppResources(ThemeColor.Light);
             var element = Element<MixtureAnalysis>(Shared.Project, name);
@@ -176,12 +176,16 @@ namespace RMC.BestFit.App.Tests.XGoodFit
                     for (int column = 0; column < expected.Length; column++)
                         Assert.AreEqual(expected[column], CellText(table, i, column), $"row {i}, column {column}");
                 }
-                // The walkthrough's 1% AEP point estimate and 90% bounds, and its DIC.
+                // The walkthrough's 1% AEP point estimate and 90% bounds, its DIC, and its MCMC report's largest R-hat and
+                // smallest effective sample size.
                 int one = Enumerable.Range(0, element.ProbabilityOrdinates.Count).Single(i => Math.Abs(element.ProbabilityOrdinates[i] - 0.01) < 1E-12);
                 Assert.AreEqual(point, results.ModeCurve[one], 5E-4);
                 Assert.AreEqual(lower, results.ConfidenceIntervals[one, 0], 5E-3);
                 Assert.AreEqual(upper, results.ConfidenceIntervals[one, 1], 5E-3);
                 Assert.AreEqual(dic, results.DIC, 5E-4);
+                var sampled = element.BayesianAnalysis.Results.ParameterResults;
+                Assert.AreEqual(rhat, sampled.Max(r => r.SummaryStatistics.Rhat), 5E-6);
+                Assert.AreEqual(ess, sampled.Min(r => r.SummaryStatistics.ESS), 1);
                 UnivariateAnalysisViewTests.AssertIntervalHeaders(table, element.BayesianAnalysis.CredibleIntervalWidth);
                 Assert.AreEqual("Posterior Mean", table.Columns[4].Header);
 
@@ -324,9 +328,13 @@ namespace RMC.BestFit.App.Tests.XGoodFit
             double saved = element.AnalysisResults.ConfidenceIntervals[0, 1];
             element.BayesianAnalysis.CredibleIntervalWidth = 0.99;
             UnivariateAnalysisViewTests.AssertIntervalHeaders(table, 0.99);
-            UnivariateAnalysisViewTests.PumpUntil(() => Upper(element) is double upper && upper != saved && Mouse.OverrideCursor == null, "the reprocessed curves");
+            // The view redraws on the reprocessed results' notification, which it posts to the UI thread; the shared
+            // diagnostic controls also clear the wait cursor, so the test waits for the view's own update too.
+            UnivariateAnalysisViewTests.PumpUntil(() => Upper(element) is double upper && upper != saved && Mouse.OverrideCursor == null
+                && Interval(element) == "99% Credible Intervals" && table.Items.Cast<FrequencyCurvePoint>().First().Upper == upper, "the reprocessed curves");
             element.UndoManager.Undo();
-            UnivariateAnalysisViewTests.PumpUntil(() => Upper(element) == saved && Mouse.OverrideCursor == null, "the curves back");
+            UnivariateAnalysisViewTests.PumpUntil(() => Upper(element) == saved && Mouse.OverrideCursor == null
+                && Interval(element) == "90% Credible Intervals" && table.Items.Cast<FrequencyCurvePoint>().First().Upper == saved, "the curves back");
             UnivariateAnalysisViewTests.AssertIntervalHeaders(table, 0.9);
 
             // The components: a cell's combo box changes its row's distribution, the toolbar adds a row (up to three)
@@ -459,6 +467,9 @@ namespace RMC.BestFit.App.Tests.XGoodFit
                 foreach (var view in views) view.Element = null;
             }
         }
+
+        // The frequency plot's interval title.
+        private static string Interval(MixtureAnalysis element) => element.FrequencyPlot.Series.SingleOrDefault(s => s.Name == "CredibleIntervals")?.Title;
 
         // The first upper interval value, or null while the element is reprocessing its results.
         private static double? Upper(MixtureAnalysis element) =>

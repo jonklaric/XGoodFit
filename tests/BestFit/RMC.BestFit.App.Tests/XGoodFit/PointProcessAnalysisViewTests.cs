@@ -219,8 +219,11 @@ namespace RMC.BestFit.App.Tests.XGoodFit
                     DataGridRow row = statistics.GetRow(i);
                     Assert.AreEqual(rows[i].Item1 is "Minimum" or "AIC" ? new Thickness(0, 2, 0, 0) : new Thickness(0), row.BorderThickness, rows[i].Item1);
                 }
-                // The walkthrough's DIC.
+                // The walkthrough's DIC, and its MCMC report's largest R-hat and smallest effective sample size.
                 Assert.AreEqual(372.8, results.DIC, 0.05);
+                var sampled = element.BayesianAnalysis.Results.ParameterResults;
+                Assert.AreEqual(1.00056, sampled.Max(r => r.SummaryStatistics.Rhat), 5E-6);
+                Assert.AreEqual(9583, sampled.Min(r => r.SummaryStatistics.ESS), 1);
             }
             finally
             {
@@ -388,10 +391,14 @@ namespace RMC.BestFit.App.Tests.XGoodFit
             Assert.AreSame(element.ProbabilityOrdinates, properties.ProbabilityOrdinatesControl.ProbabilityOrdinates);
             element.BayesianAnalysis.CredibleIntervalWidth = 0.99;
             UnivariateAnalysisViewTests.AssertIntervalHeaders(table, 0.99);
-            UnivariateAnalysisViewTests.PumpUntil(() => Upper(element) is double upper && upper != saved && Mouse.OverrideCursor == null, "the reprocessed curves");
+            // The view redraws on the reprocessed results' notification, which it posts to the UI thread; the shared
+            // diagnostic controls also clear the wait cursor, so the test waits for the view's own update too.
+            UnivariateAnalysisViewTests.PumpUntil(() => Upper(element) is double upper && upper != saved && Mouse.OverrideCursor == null
+                && Interval(element) == "99% Credible Intervals" && table.Items.Cast<FrequencyCurvePoint>().First().Upper == upper, "the reprocessed curves");
             Assert.AreEqual("99% Credible Intervals", element.FrequencyPlot.Series.Single(s => s.Name == "CredibleIntervals").Title);
             element.UndoManager.Undo();
-            UnivariateAnalysisViewTests.PumpUntil(() => Upper(element) == saved && Mouse.OverrideCursor == null, "the curves back");
+            UnivariateAnalysisViewTests.PumpUntil(() => Upper(element) == saved && Mouse.OverrideCursor == null
+                && Interval(element) == "90% Credible Intervals" && table.Items.Cast<FrequencyCurvePoint>().First().Upper == saved, "the curves back");
             UnivariateAnalysisViewTests.AssertIntervalHeaders(table, 0.9);
             Select(properties.General_TabItem);
 
@@ -554,6 +561,9 @@ namespace RMC.BestFit.App.Tests.XGoodFit
                 foreach (var view in views) view.Element = null;
             }
         }
+
+        // The frequency plot's interval title.
+        private static string Interval(PointProcessAnalysis element) => element.FrequencyPlot.Series.SingleOrDefault(s => s.Name == "CredibleIntervals")?.Title;
 
         // The first upper interval value, or null while the element is reprocessing its results.
         private static double? Upper(PointProcessAnalysis element) =>
