@@ -32,8 +32,7 @@ namespace DatabaseControls
     /// events, through WpfCompat's WPF mouse events, and capture the pointer where upstream captured the
     /// mouse. The context menus open on the element clicked, at the pointer, as WPF's opened at the mouse.
     /// Dialogs, the clipboard, the cursor and the file dialog are WpfCompat's, and wait as WPF's do.
-    /// Column widths are measured in Segoe UI, falling back to Selawik where it isn't installed, as the
-    /// app's default font does. A wheel notch scrolls 12 rows, as WPF's 120-per-notch delta did.
+    /// A wheel notch scrolls 12 rows, as WPF's 120-per-notch delta did.
     /// </para>
     /// <para>
     /// Not ported: SnapsToDevicePixels (the grid lines are drawn aliased instead, see TableViewer.axaml).
@@ -92,10 +91,6 @@ namespace DatabaseControls
         private readonly TextBox _cellEditTextBox;
         private string _fieldCalculatorString = "";
         private HashSet<int> _readOnlyColumns = new HashSet<int>();
-
-        // XGoodFit port: the font upstream measures header and cell text in, Segoe UI, falls back to Selawik
-        // where it isn't installed, as the app's default font does (Themes' Defaults.axaml).
-        private const string SegoeUI = "Segoe UI, avares://Themes/Assets/Fonts#Selawik";
 
         // XGoodFit port: Avalonia can't name grid definitions (TableViewer.axaml).
         private ColumnDefinition RowHeadersColumnDefinition => TableControlGrid.ColumnDefinitions[0];
@@ -926,7 +921,7 @@ namespace DatabaseControls
                 {
                     thisControl.RowHeadersColumnDefinition.Width = new GridLength(
                         (int)(new FormattedText(newView.NumberOfRows.ToString(), CultureInfo.GetCultureInfo("en-us"),
-                            FlowDirection.LeftToRight, new Typeface(new FontFamily(SegoeUI), FontStyle.Normal, FontWeights.Bold, FontStretch.Normal),
+                            FlowDirection.LeftToRight, new Typeface(new FontFamily("Segoe UI"), FontStyle.Normal, FontWeights.Bold, FontStretch.Normal),
                             12, Brushes.Black).Width) + 10);
                 }
 
@@ -1341,7 +1336,7 @@ namespace DatabaseControls
             {
                 RowHeadersColumnDefinition.Width = new GridLength(
                     (int)(new FormattedText(DataView.NumberOfRows.ToString(), CultureInfo.GetCultureInfo("en-us"),
-                        FlowDirection.LeftToRight, new Typeface(new FontFamily(SegoeUI), FontStyle.Normal, FontWeights.Bold, FontStretch.Normal),
+                        FlowDirection.LeftToRight, new Typeface(new FontFamily("Segoe UI"), FontStyle.Normal, FontWeights.Bold, FontStretch.Normal),
                         12, Brushes.Black).Width) + 10);
             }
 
@@ -1441,7 +1436,7 @@ namespace DatabaseControls
                 else
                 {
                     int columnWidth = (int)(new FormattedText(DataView.ColumnNames[i], CultureInfo.GetCultureInfo("en-us"),
-                        FlowDirection.LeftToRight, new Typeface(new FontFamily(SegoeUI), FontStyle.Normal, FontWeights.Bold, FontStretch.Normal),
+                        FlowDirection.LeftToRight, new Typeface(new FontFamily("Segoe UI"), FontStyle.Normal, FontWeights.Bold, FontStretch.Normal),
                         12, Brushes.Black).Width) + 12;
                     colDef = new ColumnDefinition { Width = new GridLength(columnWidth) };
                     _columnWidths[i] = new GridLength(columnWidth);
@@ -2074,14 +2069,14 @@ namespace DatabaseControls
             {
                 var data = DataView.GetColumn(DataView.ColumnNames[columnIndex]);
                 int max = (int)(new FormattedText(DataView.ColumnNames[columnIndex], CultureInfo.GetCultureInfo("en-us"),
-                    FlowDirection.LeftToRight, new Typeface(new FontFamily(SegoeUI), FontStyle.Normal, FontWeights.Bold, FontStretch.Normal),
+                    FlowDirection.LeftToRight, new Typeface(new FontFamily("Segoe UI"), FontStyle.Normal, FontWeights.Bold, FontStretch.Normal),
                     12, Brushes.Black).Width) + 12;
 
                 for (int i = 0; i < data.Length; i++)
                 {
                     string stringData = data[i]?.ToString() ?? "";
                     int formattedWidth = (int)(new FormattedText(stringData, CultureInfo.GetCultureInfo("en-us"),
-                        FlowDirection.LeftToRight, new Typeface(new FontFamily(SegoeUI), FontStyle.Normal, FontWeights.Bold, FontStretch.Normal),
+                        FlowDirection.LeftToRight, new Typeface(new FontFamily("Segoe UI"), FontStyle.Normal, FontWeights.Bold, FontStretch.Normal),
                         12, Brushes.Black).Width) + 6;
                     if (formattedWidth > max) max = formattedWidth;
                 }

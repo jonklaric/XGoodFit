@@ -17,10 +17,10 @@ namespace DatabaseControls.Tests;
 [TestClass]
 public sealed class TableViewerDisplayTests
 {
-    // Upstream measures header and cell text in bold Segoe UI 12 (here with Selawik where it's missing).
+    // Upstream measures header and cell text in bold Segoe UI 12 (Selawik outside Windows: ThemeFonts).
     private static double TextWidth(string text) =>
         new FormattedText(text, CultureInfo.GetCultureInfo("en-us"), FlowDirection.LeftToRight,
-            new Typeface(new FontFamily("Segoe UI, avares://Themes/Assets/Fonts#Selawik"), FontStyle.Normal, FontWeight.Bold, FontStretch.Normal),
+            new Typeface(new FontFamily("Segoe UI"), FontStyle.Normal, FontWeight.Bold, FontStretch.Normal),
             12, Brushes.Black).Width;
 
     [TestMethod]
