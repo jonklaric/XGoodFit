@@ -9,6 +9,11 @@
     Docking is Dock.Avalonia.AvalonDock: AvalonDock's API (namespace AvalonDock rather than
     Xceed.Wpf.AvalonDock) over Dock's Avalonia controls. It reads and writes AvalonDock's layout XML,
     which projects store, unchanged.
+
+    Every upstream file is ported but two: Properties/Settings.Designer.cs (WPF application settings,
+    which nothing uses; the user settings are UserSettings' XML file) and
+    Themes/VS2013/Controls/MainWindowStyle.xaml (keyed styles that only it uses; see
+    Themes/VS2013/Controls/Merged.axaml). tools/FrameworkUI.Demo runs the shell.
   -->
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>

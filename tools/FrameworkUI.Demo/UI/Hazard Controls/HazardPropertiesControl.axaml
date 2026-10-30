@@ -1,0 +1,203 @@
+<!--
+    XGoodFit port of upstream's UI/Hazard Controls/HazardPropertiesControl.xaml, as FrameworkUI's
+    ProjectPropertiesControl:
+    - The grid's width follows the scroll viewer's viewport (WPF's ViewportWidth is Viewport.Width).
+    - Styles are themes; the tab panel's style is a style of the tab control's items presenter (WPF's
+      TabPanel). The parameter grid's ColumnHeaderStyle is its columns' HeaderTheme, and it keeps
+      upstream's WPF DataGrid settings, as FrameworkUI's grids do.
+    - The PreviewMouseLeftButtonDown handlers are added in the code-behind (Avalonia has no Preview
+      events in XAML). Avalonia can't name grid columns: the code finds them by position.
+    - Visibility="Hidden" is WpfCompat's Visibility, and the button's ToolTip is ToolTip.Tip.
+    - The dates format in WPF's binding culture (WpfCompat's FormattingCulture).
+    - As upstream, the property widths bind to ActualPropertyWidth, which the property controls don't
+      have: the bindings fail and the controls keep their default width.
+    - Deferred until NumericControls is ported: the probability ordinates editor
+      (ProbabilityOrdinatesControl) in the Options tab.
+-->
+<UserControl x:Class="FrameworkUI.Demo.UI.HazardPropertiesControl" x:Name="HazardProperties"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:cntrls="using:GenericControls"
+             xmlns:wpf="using:WpfCompat"
+             MinWidth="100"
+             MinHeight="100"
+             Background="{DynamicResource PropertyGrid.Content.Background}"
+             Foreground="{DynamicResource EnvironmentWindowText}"
+             DataContext="{Binding RelativeSource={RelativeSource Self}}">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <cntrls:DoubleToGridLengthConverter x:Key="ActualToLengthConverter" />
+            <cntrls:ReverseBooleanConverter x:Key="ReverseBoolConverter"/>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="10000000*" MinHeight="200"/>
+            <RowDefinition Height="*" MinHeight="1"/>
+            <RowDefinition Height="Auto" MinHeight="50" MaxHeight="200" />
+        </Grid.RowDefinitions>
+        <ScrollViewer x:Name="Viewer" Grid.Row="0" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+            <Grid x:Name="MainGrid" Width="{Binding ElementName=Viewer, Path=Viewport.Width}" MinWidth="200">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <TabControl Background="Transparent" Grid.Row="0" BorderBrush="Transparent" BorderThickness="0" Margin="0,5,0,0" Padding="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center">
+                    <TabControl.Styles>
+                        <Style Selector="TabControl /template/ ItemsPresenter#PART_ItemsPresenter">
+                            <Setter Property="HorizontalAlignment" Value="Stretch" />
+                        </Style>
+                    </TabControl.Styles>
+                    <TabItem x:Name="General_TabItem" Header="General" Theme="{DynamicResource PropertiesTabItemStyle}">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <Expander Grid.Row="0"
+                                Margin="0,4,4,8"
+                                Header="PARAMETRIC HAZARD PROPERTIES"
+                                IsExpanded="True"
+                                Grid.ColumnSpan="2"
+                                Theme="{DynamicResource PropertyExpanderStyle}">
+                                <DockPanel>
+                                    <cntrls:NameTextPropertyControl x:Name="NameControl" Margin="0 2" CharacterLimit="50" DockPanel.Dock="Top" Title="Name" MaxPropertyWidth="200"
+                                                Text="{Binding Element.Name, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                                                ExistingNames="{Binding ExistingNames, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}"
+                                                PropertyWidth="{Binding ElementName=EffectiveRecordLength, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}"
+                                                GotFocus="Name_GotFocus"
+                                                LostFocus="Name_LostFocus"/>
+                                    <cntrls:ResizeableTextPropertyControl x:Name="Description" Margin="0 2" DockPanel.Dock="Top" Title="Description" MaxPropertyWidth="200" TextBoxHeight="88"
+                                                      Text="{Binding Element.Description, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                                                      PropertyWidth="{Binding ElementName=EffectiveRecordLength, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}"/>
+                                    <cntrls:TextPropertyControl x:Name="CreationDate" Margin="0 2" DockPanel.Dock="Top" Title="Created On" MaxPropertyWidth="200" IsReadOnly="True"
+                                            Text="{Binding Element.CreationDate, UpdateSourceTrigger=PropertyChanged, Mode=OneWay, ConverterCulture={x:Static wpf:FormattingCulture.Current}}"
+                                            PropertyWidth="{Binding ElementName=EffectiveRecordLength, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}"/>
+                                    <cntrls:TextPropertyControl x:Name="LastModified" Margin="0 2" DockPanel.Dock="Top" Title="Last Modified" MaxPropertyWidth="200" IsReadOnly="True"
+                                            Text="{Binding Element.LastModified, UpdateSourceTrigger=PropertyChanged, Mode=OneWay, ConverterCulture={x:Static wpf:FormattingCulture.Current}}"
+                                            PropertyWidth="{Binding ElementName=EffectiveRecordLength, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}"/>
+                                </DockPanel>
+                            </Expander>
+                            <Expander Grid.Row="1"
+                          Margin="0,4,4,8"
+                          Header="DISTRIBUTION"
+                          IsExpanded="True"
+                          Grid.ColumnSpan="2"
+                          Theme="{DynamicResource PropertyExpanderStyle}">
+                                <DockPanel>
+                                    <cntrls:BooleanPropertyControl x:Name="IsUncertain" Margin="0 2" DockPanel.Dock="Top" Title="Uncertainty On"
+                                                          IsSelected="{Binding Element.IsUncertain, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"/>
+                                    <cntrls:NumericPropertyControl x:Name="EffectiveRecordLength" Margin="0 2" DockPanel.Dock="Top" Title="Effective Record Length" MaxPropertyWidth="200"
+                                                            CanHaveNegative="False" MinValue="10" MaxValue="10000" IsEnabled="{Binding IsSelected, ElementName=IsUncertain}"
+                                                            Number="{Binding Element.EffectiveRecordLength, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" />
+                                    <cntrls:ContentPropertyControl x:Name="Distribution" Margin="0 2" DockPanel.Dock="Top" Title="Distribution" MaxPropertyWidth="200"
+                                                PropertyWidth="{Binding ElementName=EffectiveRecordLength, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}"
+                                                               >
+                                        <cntrls:ContentPropertyControl.InnerContent>
+                                            <ComboBox Grid.Column="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
+                                            </ComboBox>
+                                        </cntrls:ContentPropertyControl.InnerContent>
+                                    </cntrls:ContentPropertyControl>
+                                    <cntrls:CopyPasteDataGrid x:Name="ParametersTable" Margin="0 2"
+                                              DockPanel.Dock="Top"
+                                              AutoGenerateColumns="False"
+                                              HeadersVisibility="Column"
+                                              SelectionMode="Extended"
+                                              SelectionUnit="Cell"
+                                              CanUserDeleteRows="False"
+                                              CanUserAddRows="False"
+                                              CanUserResizeRows="False"
+                                              CanUserResizeColumns="False"
+                                              CanUserSortColumns="False"
+                                              CanUserReorderColumns="False"
+                                              CanUserAddInsertDeleteRows="False"
+                                              PasteAddsRows="False">
+                                        <cntrls:CopyPasteDataGrid.Columns>
+                                            <!-- NameColumn -->
+                                            <DataGridTextColumn IsReadOnly="True" Header="Parameter" Width="*" Binding="{Binding Path=DisplayName}" HeaderTheme="{DynamicResource Center_ColumnHeaderStyle}"/>
+                                            <!-- ValueColumn -->
+                                            <DataGridTextColumn IsReadOnly="False" Header="Value" Width="*" Binding="{Binding Path=Value}" HeaderTheme="{DynamicResource Center_ColumnHeaderStyle}"/>
+                                        </cntrls:CopyPasteDataGrid.Columns>
+                                    </cntrls:CopyPasteDataGrid>
+                                    <Grid DockPanel.Dock="Top">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <ProgressBar x:Name="ProgressBar" Minimum="0" Maximum="100" Value="0" Margin="2,5,2,0" Grid.Column="0" wpf:WpfElement.Visibility="Hidden"/>
+                                        <TextBlock x:Name="ProgressTextBlock" Text="0%" FontSize="10" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="2,5,2,0" Grid.Column="0" wpf:WpfElement.Visibility="Hidden"/>
+                                        <Button Name="SimulateButton" ToolTip.Tip="Perform bootstrap analysis"  Grid.Column="1"  VerticalContentAlignment="Center" HorizontalContentAlignment="Center"
+                                             Width="113" Height="24" Margin="0,5,0,0" Cursor="Hand" Click="SimulateButton_Click">
+                                            <StackPanel Orientation="Horizontal">
+                                                <ContentControl Content="{DynamicResource RunIcon}" Width="16" Height="16" Margin="0,0,4,0"/>
+                                                <TextBlock Text="Compute" />
+                                            </StackPanel>
+                                        </Button>
+                                    </Grid>
+                                </DockPanel>
+                            </Expander>
+                        </Grid>
+                    </TabItem>
+                    <TabItem x:Name="Options_TabItem" Header="Options" Theme="{DynamicResource PropertiesTabItemStyle}">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <Expander Grid.Row="0"
+                            Margin="0,4,4,8"
+                            Header="BOOTSTRAP OPTIONS"
+                            IsExpanded="True"
+                            Grid.ColumnSpan="2"
+                            Theme="{DynamicResource PropertyExpanderStyle}">
+                                <DockPanel >
+                                    <cntrls:ContentPropertyControl x:Name="EstimationMethod" Margin="0 2" DockPanel.Dock="Top" Title="Estimation Method" MaxPropertyWidth="200"
+                                                IsEnabled="{Binding IsSelected, ElementName=IsUncertain}"
+                                                PropertyWidth="{Binding ElementName=ConfidenceInterval, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}">
+                                        <cntrls:ContentPropertyControl.InnerContent>
+                                            <ComboBox Grid.Column="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch"
+                                        ItemsSource="{Binding EstimationMethodList, UpdateSourceTrigger=PropertyChanged}"
+                                        SelectedValue="{Binding Element.EstimationMethod, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                                        DisplayMemberBinding="{Binding DisplayName}" SelectedValueBinding="{Binding Method}">
+                                            </ComboBox>
+                                        </cntrls:ContentPropertyControl.InnerContent>
+                                    </cntrls:ContentPropertyControl>
+                                    <cntrls:ContentPropertyControl x:Name="ConfidenceInterval" Margin="0 2" DockPanel.Dock="Top" Title="Confidence Interval" MaxPropertyWidth="200"
+                                                IsEnabled="{Binding IsSelected, ElementName=IsUncertain}">
+                                        <cntrls:ContentPropertyControl.InnerContent>
+                                            <ComboBox Grid.Column="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch"
+                                        ItemsSource="{Binding ConfidenceIntervalWidthList, UpdateSourceTrigger=PropertyChanged}"
+                                        SelectedValue="{Binding Element.ConfidenceIntervalWidth, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                                        DisplayMemberBinding="{Binding DisplayName}" SelectedValueBinding="{Binding Value}">
+                                            </ComboBox>
+                                        </cntrls:ContentPropertyControl.InnerContent>
+                                    </cntrls:ContentPropertyControl>
+                                    <cntrls:NumericPropertySelectorControl x:Name="Realizations" Margin="0 2" DockPanel.Dock="Top" Title="Realizations" MaxPropertyWidth="200"
+                                               NumericOptions="{Binding RealizationList, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding IsSelected, ElementName=IsUncertain}"
+                                               SelectedNumber="{Binding Element.Realizations, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                                               PropertyWidth="{Binding ElementName=ConfidenceInterval, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}"/>
+                                    <cntrls:NumericPropertyControl x:Name="PRNGSeed" Margin="0 2" DockPanel.Dock="Top" Title="PRNG Seed"
+                                                               MaxPropertyWidth="200"
+                                                               CanHaveNegative="False" IsEnabled="{Binding IsSelected, ElementName=IsUncertain}"
+                                                               Number="{Binding Element.PRNGSeed, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                                                               PropertyWidth="{Binding ElementName=ConfidenceInterval, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}"/>
+                                </DockPanel>
+                            </Expander>
+                            <Expander Grid.Row="1"
+                            Margin="0,4,4,8"
+                            Header="PROBABILITY ORDINATES"
+                            IsExpanded="True"
+                            Grid.ColumnSpan="2"
+                            Theme="{DynamicResource PropertyExpanderStyle}">
+                                <DockPanel >
+                                    <!--Probability ordinates editor (NumericControls' ProbabilityOrdinatesControl): deferred with NumericControls' port.-->
+                                </DockPanel>
+                            </Expander>
+                        </Grid>
+                    </TabItem>
+                </TabControl>
+            </Grid>
+        </ScrollViewer>
+        <GridSplitter Grid.Row="1" Height="1" HorizontalAlignment="Stretch" VerticalAlignment="Bottom" Background="{DynamicResource SeparatorBorder}"/>
+        <cntrls:PropertyAttributes x:Name="PropertyAttributes" Grid.Row="2"/>
+    </Grid>
+</UserControl>

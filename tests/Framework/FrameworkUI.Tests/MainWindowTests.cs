@@ -115,6 +115,44 @@ public sealed class MainWindowTests
     }
 
     [TestMethod]
+    public void WindowsDialog_ListsTheOpenDocuments_AndClosesTheSelectedOnes()
+    {
+        HeadlessSession.Run(() =>
+        {
+            ThemeManager.SetTheme(ThemeColor.Light);
+            Shell.UseTemporaryFolder();
+            var project = ExplorerTests.SampleProject();
+            var (window, controller) = Shell.Open(project);
+            try
+            {
+                var series = project.Collection("Time Series Data");
+                window.DoubleClick(ElementNode.FindElementNode(series[0], controller)!.NodeHeader);
+                window.DoubleClick(ElementNode.FindElementNode(series[1], controller)!.NodeHeader);
+
+                string[]? listed = null;
+                using (Dialogs.WhenOpened<OpenWindowsDialog>(dialog =>
+                {
+                    listed = dialog.Windows.Collection.Select(w => w.Name).ToArray();
+                    dialog.MyDataGrid.SelectedItem = dialog.Windows.Collection[0];
+                    TestInput.Frame();
+                    Dialogs.Click(dialog, "Close Window(s)");
+                    dialog.Close();
+                }))
+                {
+                    var windowsItem = window.WindowMenuItem.Items.OfType<MenuItem>().Single(m => (string?)m.Header == "Windows...");
+                    windowsItem.RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));
+                }
+                CollectionAssert.AreEqual(new[] { "Daily Discharge", "Daily Stage" }, listed, "Window > Windows... lists the open documents");
+                CollectionAssert.AreEqual(new[] { "Daily Stage" }, Documents(window).Select(d => d.Title).ToArray(), "and Close Window(s) closes the selected one");
+            }
+            finally
+            {
+                Shell.Close(window);
+            }
+        });
+    }
+
+    [TestMethod]
     public void Closing_AsksAboutUnsavedElements_CancelKeepsTheWindowAndSaveSavesThem()
     {
         HeadlessSession.Run(() =>

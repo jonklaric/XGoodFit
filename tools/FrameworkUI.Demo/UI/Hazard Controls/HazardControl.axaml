@@ -1,0 +1,120 @@
+<!--
+    XGoodFit port of upstream's UI/Hazard Controls/HazardControl.xaml:
+    - Column HeaderStyle and CellStyle are ProDataGrid's HeaderTheme and CellTheme, the tab and splitter
+      styles are control themes, and the CopyPasteDataGrids keep upstream's WPF DataGrid settings
+      (as FrameworkUI's grids do). Avalonia can't name grid columns: the code finds them by position.
+    - The value column formats with the current culture (WpfCompat's FormattingCulture).
+    - PreviewMouseDown is attached in code (WpfCompat's tunnelling pointer press).
+    - Deferred until their libraries are ported: the plot toolbar beside the plot (OxyPlotControls'
+      OxyPlotToolbar), and the parameter sets table (DatabaseControls' TableViewer) in its tab.
+-->
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:cntrls="using:GenericControls"
+             xmlns:wpf="using:WpfCompat"
+             x:Class="FrameworkUI.Demo.UI.HazardControl"
+             MinWidth="100"
+             MinHeight="100"
+             Loaded="HazardFunctionControl_Loaded"
+             Unloaded="HazardFunctionControl_Unloaded"
+             LostFocus="HazardFunctionControl_LostFocus"
+             Background="{DynamicResource EnvironmentWindowBackground}"
+             Foreground="{DynamicResource EnvironmentWindowText}"
+             DataContext="{Binding RelativeSource={RelativeSource Self}}">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <cntrls:DoubleToNAConverter x:Key="NAConverter"/>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <Grid Margin="5" Background="Transparent">
+        <TabControl Grid.Row="0" TabStripPlacement="Top" Background="Transparent" SelectionChanged="TabControl_SelectionChanged">
+            <TabItem Header="Graphical Results" Theme="{DynamicResource HorizontalTabItemStyle}">
+                <Grid >
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <!--Frequency Plot. The plot object is owned by the hazard element and
+                        hosted here so its visual state can be undone and persisted.-->
+                    <ContentControl x:Name="FrequencyPlotHost" Grid.Column="0" Margin="2,2,0,0"/>
+                    <!--Frequency Plot Toolbar: deferred with OxyPlotControls' port.-->
+                    <DockPanel Grid.Column="1"/>
+                </Grid>
+            </TabItem>
+            <TabItem Header="Tabular Results" Theme="{DynamicResource HorizontalTabItemStyle}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="0.5*"/>
+                        <ColumnDefinition Width="250" MinWidth="200" MaxWidth="500"/>
+                    </Grid.ColumnDefinitions>
+                    <cntrls:SeparatorWithHeader Header="Frequency Curve Results" Grid.Column="0" Grid.Row="0" Margin="5" />
+                    <cntrls:CopyPasteDataGrid x:Name="FrequencyCurveTable" Grid.Column="0" Grid.Row="1" Margin="0,0,4,0"
+                                           AutoGenerateColumns="False" SelectionMode="Extended" SelectionUnit="Cell" HeadersVisibility="Column" IsReadOnly="True"
+                                           CanUserAddInsertDeleteRows="False" CanUserDeleteRows="False" CanUserAddRows="False" CanUserResizeRows="False"
+                                           CanUserResizeColumns="True" CanUserSortColumns="True" CanUserReorderColumns="False"  >
+                        <cntrls:CopyPasteDataGrid.Columns>
+                            <!-- AEPColumn -->
+                            <DataGridTextColumn Header="Ex. Probability" IsReadOnly="True"  MinWidth="30"  Width="0.14286*"
+                                           Binding="{Binding Path=AEP}"
+                                           HeaderTheme="{DynamicResource Center_ColumnHeaderStyle}"
+                                           CellTheme="{DynamicResource Right_CellStyle}" />
+                            <!-- UpperColumn -->
+                            <DataGridTextColumn Header="Upper" IsReadOnly="True" MinWidth="30"  Width="0.14286*"
+                                           Binding="{Binding Path=Upper}"
+                                           HeaderTheme="{DynamicResource Center_ColumnHeaderStyle}"
+                                           CellTheme="{DynamicResource Right_CellStyle}"/>
+                            <!-- LowerColumn -->
+                            <DataGridTextColumn Header="Lower" IsReadOnly="True" MinWidth="30"  Width="0.14286*"
+                                           Binding="{Binding Path=Lower}"
+                                           HeaderTheme="{DynamicResource Center_ColumnHeaderStyle}"
+                                           CellTheme="{DynamicResource Right_CellStyle}"/>
+                            <!-- PredictiveColumn -->
+                            <DataGridTextColumn Header="Mean" IsReadOnly="True" MinWidth="30"  Width="0.14286*"
+                                           Binding="{Binding Path=Predictive}"
+                                           HeaderTheme="{DynamicResource Center_ColumnHeaderStyle}"
+                                           CellTheme="{DynamicResource Right_CellStyle}"/>
+                            <!-- ModeColumn -->
+                            <DataGridTextColumn Header="User-Specified" IsReadOnly="True" MinWidth="30"  Width="0.14286*"
+                                           Binding="{Binding Path=Mode}"
+                                           HeaderTheme="{DynamicResource Center_ColumnHeaderStyle}"
+                                           CellTheme="{DynamicResource Right_CellStyle}"/>
+                        </cntrls:CopyPasteDataGrid.Columns>
+                    </cntrls:CopyPasteDataGrid>
+                    <GridSplitter  Grid.Column="1"  Grid.Row="1" Width="6" HorizontalAlignment="Left" VerticalAlignment="Stretch" Background="Transparent" Theme="{DynamicResource VerticalGridSplitterStyle}"/>
+                    <cntrls:SeparatorWithHeader Header="Summary Statistics" Grid.Column="1" Grid.Row="0" Margin="5"/>
+                    <Grid Grid.Column="1" Grid.Row="1" Margin="4,0,0,0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <cntrls:CopyPasteDataGrid Name="SummaryStatisticsTable" Grid.Row="0" Margin="4,0,0,0" HeadersVisibility="Column"
+                                       AutoGenerateColumns="False" SelectionMode="Extended" SelectionUnit="Cell" IsReadOnly="True"
+                                       CanUserDeleteRows="False" CanUserAddRows="False" CanUserResizeColumns="True"
+                                       CanUserResizeRows="False" CanUserSortColumns="False" CanUserReorderColumns="False"
+                                       LoadingRow="SummaryStatisticsTable_LoadingRow">
+                            <cntrls:CopyPasteDataGrid.Columns>
+                                <!-- StatNameColumn -->
+                                <DataGridTextColumn Header="Measure" IsReadOnly="True" MinWidth="50" Width="0.5*"
+                                               Binding="{Binding Path=Name}"
+                                               HeaderTheme="{DynamicResource Left_ColumnHeaderStyle}"
+                                               CellTheme="{DynamicResource Left_CellStyle}"/>
+                                <!-- SystematicDataValueColumn -->
+                                <DataGridTextColumn Header="User-Specified" IsReadOnly="True"  MinWidth="50" Width="0.5*"
+                                               Binding="{Binding Path=Value, StringFormat='{}{0:#,##0.####}', FallbackValue=N/A, TargetNullValue=N/A, Converter={StaticResource NAConverter}, ConverterCulture={x:Static wpf:FormattingCulture.Current}}"
+                                               HeaderTheme="{DynamicResource Center_ColumnHeaderStyle}"
+                                               CellTheme="{DynamicResource Right_CellStyle}"/>
+                            </cntrls:CopyPasteDataGrid.Columns>
+                        </cntrls:CopyPasteDataGrid>
+                    </Grid>
+                </Grid>
+            </TabItem>
+            <TabItem Name="ParameterSetsTab" Header="Parameter Sets" Theme="{DynamicResource HorizontalTabItemStyle}">
+                <!--Parameter set table (DatabaseControls' TableViewer): deferred with DatabaseControls' port.-->
+            </TabItem>
+        </TabControl>
+    </Grid>
+</UserControl>
