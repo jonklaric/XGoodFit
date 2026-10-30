@@ -2,3 +2,7 @@
 # Build RMC-BestFit's projects against the vendored RMC.Numerics source (upstream/Numerics, tag
 # v2.2.0, the exact source of the NuGet package RMC-BestFit uses) instead of the NuGet package.
 -p:UseLocalRmcNumerics=true
+# The same for restore: once a -restoreProperty is passed (dotnet build passes its own), restore ignores
+# -p values, and would restore RMC-BestFit against the NuGet package while the build then compiles
+# against the source, which a fresh checkout hasn't restored.
+-restoreProperty:UseLocalRmcNumerics=true
