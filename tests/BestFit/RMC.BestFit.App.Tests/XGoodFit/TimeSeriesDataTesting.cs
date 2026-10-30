@@ -99,6 +99,18 @@ namespace RMC.BestFit.App.Tests.XGoodFit
             example.Substring(0, example.LastIndexOf('/')) + "/screenshots/" + file;
 
         /// <summary>
+        /// Closes a project <see cref="SharedControlsTesting.Open"/> opened, and lets it go. FrameworkInterfaces'
+        /// Messenger keeps every element that has had a message as a key until it's cleared, which the application
+        /// does when it opens the next project (MainWindow.OpenProject): without that, each example a test opened,
+        /// with its decades of observations, stayed in memory for the rest of the run.
+        /// </summary>
+        public static void CloseProject(BestFitProject project)
+        {
+            Close(project);
+            FrameworkInterfaces.Messaging.Messenger.GetInstance().Clear();
+        }
+
+        /// <summary>
         /// Shows the document view on an element in a window, as MainProjectNode makes it, with a tab selected.
         /// </summary>
         public static (TimeSeriesControl View, Window Window) ShowView(TimeSeriesElement element, string tab = "Time Series", double width = 1400, double height = 720)

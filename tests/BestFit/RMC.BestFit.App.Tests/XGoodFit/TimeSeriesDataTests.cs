@@ -45,6 +45,7 @@ namespace RMC.BestFit.App.Tests.XGoodFit
         private readonly List<Window> _windows = new List<Window>();
         private CultureScope _culture;
 
+        // The examples were saved in en-US (see CultureScope).
         [TestInitialize]
         public void Initialize() => _culture = new CultureScope("en-US");
 
@@ -52,94 +53,149 @@ namespace RMC.BestFit.App.Tests.XGoodFit
         public void Cleanup()
         {
             foreach (var window in _windows) window.Close();
-            foreach (var project in _projects) Close(project);
+            _windows.Clear();
+            foreach (var project in _projects) TimeSeriesDataTesting.CloseProject(project);
+            _projects.Clear();
             ReleaseAppResources();
-            _culture.Dispose();
+            _culture?.Dispose();
+            _culture = null;
         }
+
+        /// <summary>
+        /// Views of the largest records (over 200,000 observations) are left to <see cref="LargestRecords_DrawAsRmcBestFitDid_AndShowingThemChangesNothing"/>:
+        /// NumericControls' table makes a validating row for each observation, as upstream's does, so a view of a
+        /// million holds over a gigabyte, too much for the default run on a small CI machine.
+        /// </summary>
+        private const int LargeRecord = 200000;
 
         [STATestMethod]
         public void Plots_DrawTheStoredSeries_AsRmcBestFitDid()
         {
             UseAppResources(ThemeColor.Light);
-            var projects = new Dictionary<string, BestFitProject>();
+            ForEachNativePlot(large: false);
+        }
+
+        [STATestMethod]
+        [TestCategory("Large")]
+        public void LargestRecords_DrawAsRmcBestFitDid_AndShowingThemChangesNothing()
+        {
+            if (Environment.GetEnvironmentVariable("XGOODFIT_LARGE_TESTS") != "1")
+                Assert.Inconclusive("Views of the examples' largest records take several gigabytes: set XGOODFIT_LARGE_TESTS=1 to run this test.");
+            UseAppResources(ThemeColor.Light);
+            ForEachNativePlot(large: true);
+            foreach (string example in Examples)
+            {
+                var project = OpenProject(example);
+                foreach (var element in Elements(project).OfType<TimeSeriesElement>().Where(e => e.TimeSeries.Count > LargeRecord).ToList())
+                    AssertShowingChangesNothing(example, element);
+                CloseProject(project);
+            }
+        }
+
+        // Shows the view of each native plot screenshot's element (the largest records, or the others), and checks
+        // its plot against RMC-BestFit's capture data.
+        private void ForEachNativePlot(bool large)
+        {
+            BestFitProject project = null;
             foreach (var shot in NativePlots)
             {
-                if (!projects.TryGetValue(shot.Example, out var project)) projects[shot.Example] = project = OpenProject(shot.Example);
+                // One example at a time: they hold millions of observations.
+                if (project == null || Path.GetFileName(project.FullFileName) != Path.GetFileName(shot.Example))
+                {
+                    if (project != null) CloseProject(project);
+                    project = OpenProject(shot.Example);
+                }
                 var element = Element<TimeSeriesElement>(project, shot.Element);
+                if (element.TimeSeries.Count > LargeRecord != large) continue;
                 var savedTitles = PlotOf(element, shot.Tab).Axes.ToDictionary(a => a.Key, a => a.Title);
                 var (view, window) = Host(element, shot.Tab);
-                if (shot.Alternative != null)
+                try
                 {
-                    view.ShowAlternativesToggleButton.IsChecked = true;
-                    view.AlternativeTimeSeriesSelector.TimeSeriesList.Single(item => item.Alternative.Name == shot.Alternative).IsChecked = true;
-                    Settle();
+                    AssertNativePlot(shot, element, view, savedTitles);
                 }
-                JsonElement native = NativePlot(NativeScreenshot(shot.Example, shot.Name + "-native.json.gz"));
-                Wpf.Plot plot = view.GetCurrentPlot();
-                string what = shot.Name;
-                Assert.AreEqual(native.GetProperty("title").GetString(), plot.Title, what);
-
-                // The series RMC-BestFit drew, in order, with the points it plotted (its export recorded the model's).
-                var nativeSeries = native.GetProperty("series").EnumerateArray().ToList();
-                Assert.AreEqual(nativeSeries.Count, plot.Series.Count, $"{what}: series");
-                for (int i = 0; i < nativeSeries.Count; i++)
+                finally
                 {
-                    JsonElement expected = nativeSeries[i];
-                    Wpf.Series series = plot.Series[i];
-                    Assert.AreEqual(expected.GetProperty("name").GetString(), series.Name, $"{what}: series {i}");
-                    Assert.AreEqual(expected.GetProperty("IsVisible").GetBoolean(), series.IsVisible, $"{what}: {series.Name} visible");
-                    if (series.InternalSeries is OxyPlot.Series.DataPointSeries)
-                        AssertPoints(expected.GetProperty("points"), Member<IEnumerable<DataPoint>>(series.InternalSeries, "ActualPoints"), $"{what}: {series.Name}");
-                    if (series is Wpf.AreaSeries)
-                        AssertPoints(expected.GetProperty("points2"), Member<IEnumerable<DataPoint>>(series.InternalSeries, "ActualPoints2"), $"{what}: {series.Name} (second line)");
-                    if (series is Wpf.HistogramSeries)
+                    window.Close();
+                    _windows.Remove(window);
+                    view.Element = null;
+                    Release();
+                }
+            }
+        }
+
+        // The plot a view shows, against the capture data of RMC-BestFit's export of it.
+        private static void AssertNativePlot((string Example, string Name, string Element, string Tab, string Alternative) shot, TimeSeriesElement element,
+            TimeSeriesControl view, Dictionary<string, string> savedTitles)
+        {
+            if (shot.Alternative != null)
+            {
+                view.ShowAlternativesToggleButton.IsChecked = true;
+                view.AlternativeTimeSeriesSelector.TimeSeriesList.Single(item => item.Alternative.Name == shot.Alternative).IsChecked = true;
+                Settle();
+            }
+            using JsonDocument capture = NativeCapture(NativeScreenshot(shot.Example, shot.Name + "-native.json.gz"));
+            JsonElement native = capture.RootElement;
+            Wpf.Plot plot = view.GetCurrentPlot();
+            string what = shot.Name;
+            Assert.AreEqual(native.GetProperty("title").GetString(), plot.Title, what);
+
+            // The series RMC-BestFit drew, in order, with the points it plotted (its export recorded the model's).
+            var nativeSeries = native.GetProperty("series").EnumerateArray().ToList();
+            Assert.AreEqual(nativeSeries.Count, plot.Series.Count, $"{what}: series");
+            for (int i = 0; i < nativeSeries.Count; i++)
+            {
+                JsonElement expected = nativeSeries[i];
+                Wpf.Series series = plot.Series[i];
+                Assert.AreEqual(expected.GetProperty("name").GetString(), series.Name, $"{what}: series {i}");
+                Assert.AreEqual(expected.GetProperty("IsVisible").GetBoolean(), series.IsVisible, $"{what}: {series.Name} visible");
+                if (series.InternalSeries is OxyPlot.Series.DataPointSeries)
+                    AssertPoints(expected.GetProperty("points"), Member<IEnumerable<DataPoint>>(series.InternalSeries, "ActualPoints"), $"{what}: {series.Name}");
+                if (series is Wpf.AreaSeries)
+                    AssertPoints(expected.GetProperty("points2"), Member<IEnumerable<DataPoint>>(series.InternalSeries, "ActualPoints2"), $"{what}: {series.Name} (second line)");
+                if (series is Wpf.HistogramSeries)
+                {
+                    var items = Member<IEnumerable<OxyPlot.Series.HistogramItem>>(series.InternalSeries, "ActualItems").ToList();
+                    var expectedItems = expected.GetProperty("actualItems").EnumerateArray().ToList();
+                    Assert.AreEqual(expectedItems.Count, items.Count, $"{what}: {series.Name} items");
+                    for (int j = 0; j < items.Count; j++)
                     {
-                        var items = Member<IEnumerable<OxyPlot.Series.HistogramItem>>(series.InternalSeries, "ActualItems").ToList();
-                        var expectedItems = expected.GetProperty("actualItems").EnumerateArray().ToList();
-                        Assert.AreEqual(expectedItems.Count, items.Count, $"{what}: {series.Name} items");
-                        for (int j = 0; j < items.Count; j++)
-                        {
-                            AssertClose(expectedItems[j].GetProperty("Value").GetDouble(), items[j].Value, $"{what}: item {j}", 1e-12);
-                            Assert.AreEqual(expectedItems[j].GetProperty("RangeStart").GetDouble(), items[j].RangeStart, what);
-                            Assert.AreEqual(expectedItems[j].GetProperty("RangeEnd").GetDouble(), items[j].RangeEnd, what);
-                        }
+                        AssertClose(expectedItems[j].GetProperty("Value").GetDouble(), items[j].Value, $"{what}: item {j}", 1e-12);
+                        Assert.AreEqual(expectedItems[j].GetProperty("RangeStart").GetDouble(), items[j].RangeStart, what);
+                        Assert.AreEqual(expectedItems[j].GetProperty("RangeEnd").GetDouble(), items[j].RangeEnd, what);
                     }
                 }
-                var annotations = native.GetProperty("annotations").EnumerateArray().ToList();
-                Assert.AreEqual(annotations.Count, plot.Annotations.Count, $"{what}: annotations");
-                for (int i = 0; i < annotations.Count; i++)
-                {
-                    var annotation = (Wpf.LineAnnotation)plot.Annotations[i];
-                    Assert.AreEqual(annotations[i].GetProperty("text").GetString(), annotation.Text, what);
-                    AssertClose(annotations[i].GetProperty("geometry").GetProperty("Y").GetDouble(), annotation.Y, $"{what}: {annotation.Text}", 1e-12);
-                }
-
-                // The axes' titles, and the ranges the data gave them. RMC-BestFit's exports reset the plot first: a
-                // title the project saved, edited away from the data's label, stays (as the application keeps it).
-                foreach (JsonElement axis in native.GetProperty("axes").EnumerateArray())
-                {
-                    var actual = plot.Axes.Single(a => a.Key == axis.GetProperty("Key").GetString());
-                    string title = axis.GetProperty("Title").GetString();
-                    string saved = savedTitles[actual.Key];
-                    if (!string.IsNullOrEmpty(saved) && saved != element.UnitLabel) title = saved;
-                    Assert.AreEqual(title, actual.Title, $"{what}: {actual.Key} title");
-                    AssertClose(axis.GetProperty("ActualMinimum").GetDouble(), actual.InternalAxis.ActualMinimum, $"{what}: {actual.Key} minimum", 1e-6);
-                    AssertClose(axis.GetProperty("ActualMaximum").GetDouble(), actual.InternalAxis.ActualMaximum, $"{what}: {actual.Key} maximum", 1e-6);
-                }
-
-                // The view picks the date format for the span shown (TimeSeriesPlotModelUpdated), as upstream's does.
-                if (shot.Tab == "Time Series")
-                {
-                    var dates = (OxyPlot.Axes.DateTimeAxis)plot.Axes.Single(a => a.Key == "Xaxis").InternalAxis;
-                    double days = dates.ActualMaximum - dates.ActualMinimum;
-                    string format = days > 365 * 4 ? "yyyy" : days > 90 ? "MMM-yyyy" : days > 2 ? "dd-MMM" : "HH:mm";
-                    Assert.AreEqual(format, dates.StringFormat, $"{what}: date format");
-                }
-
-                window.Close();
-                _windows.Remove(window);
-                view.Element = null;
             }
+            var annotations = native.GetProperty("annotations").EnumerateArray().ToList();
+            Assert.AreEqual(annotations.Count, plot.Annotations.Count, $"{what}: annotations");
+            for (int i = 0; i < annotations.Count; i++)
+            {
+                var annotation = (Wpf.LineAnnotation)plot.Annotations[i];
+                Assert.AreEqual(annotations[i].GetProperty("text").GetString(), annotation.Text, what);
+                AssertClose(annotations[i].GetProperty("geometry").GetProperty("Y").GetDouble(), annotation.Y, $"{what}: {annotation.Text}", 1e-12);
+            }
+
+            // The axes' titles, and the ranges the data gave them. RMC-BestFit's exports reset the plot first: a
+            // title the project saved, edited away from the data's label, stays (as the application keeps it).
+            foreach (JsonElement axis in native.GetProperty("axes").EnumerateArray())
+            {
+                var actual = plot.Axes.Single(a => a.Key == axis.GetProperty("Key").GetString());
+                string title = axis.GetProperty("Title").GetString();
+                string saved = savedTitles[actual.Key];
+                if (!string.IsNullOrEmpty(saved) && saved != element.UnitLabel) title = saved;
+                Assert.AreEqual(title, actual.Title, $"{what}: {actual.Key} title");
+                AssertClose(axis.GetProperty("ActualMinimum").GetDouble(), actual.InternalAxis.ActualMinimum, $"{what}: {actual.Key} minimum", 1e-6);
+                AssertClose(axis.GetProperty("ActualMaximum").GetDouble(), actual.InternalAxis.ActualMaximum, $"{what}: {actual.Key} maximum", 1e-6);
+            }
+
+            // The view picks the date format for the span shown (TimeSeriesPlotModelUpdated), as upstream's does.
+            if (shot.Tab == "Time Series")
+            {
+                var dates = (OxyPlot.Axes.DateTimeAxis)plot.Axes.Single(a => a.Key == "Xaxis").InternalAxis;
+                double days = dates.ActualMaximum - dates.ActualMinimum;
+                string format = days > 365 * 4 ? "yyyy" : days > 90 ? "MMM-yyyy" : days > 2 ? "dd-MMM" : "HH:mm";
+                Assert.AreEqual(format, dates.StringFormat, $"{what}: date format");
+            }
+
         }
 
         [STATestMethod]
@@ -454,15 +510,50 @@ namespace RMC.BestFit.App.Tests.XGoodFit
             Assert.AreEqual("//GRAPEVINE INFLOW/FLOW//1Hour/RUN:2007_MAR-JUL/", element.HECDSSDataPathname);
 
             // Import reads the series from the file: the example's stored series is that path's data.
-            ClickButton(properties.ProcessDataButton);
-            for (int i = 0; i < 200 && !properties.ProcessDataButton.IsEnabled; i++)
+            WithUiContext(() =>
             {
-                System.Threading.Thread.Sleep(50);
-                Settle();
-            }
+                ClickButton(properties.ProcessDataButton);
+                for (int i = 0; i < 200 && !properties.ProcessDataButton.IsEnabled; i++)
+                {
+                    System.Threading.Thread.Sleep(50);
+                    Settle();
+                }
+            });
             Assert.IsTrue(properties.ProcessDataButton.IsEnabled, "the import finished");
             Assert.IsNull(WpfCompat.Input.Mouse.OverrideCursor);
             CollectionAssert.AreEqual(stored, element.TimeSeries.Select(o => (o.Index, o.Value)).ToList());
+        }
+
+        [STATestMethod]
+        [TestCategory("External")]
+        public void Download_ReplacesTheSeriesWithTheProvidersRecord_AndTheViewFollows()
+        {
+            // USGS's annual peaks at Back Creek, a small record.
+            UseAppResources(ThemeColor.Light);
+            var project = OpenProject(Usgs);
+            var element = Element<TimeSeriesElement>(project, "USGS - 01614000 - Peak Discharge");
+            var stored = element.TimeSeries.Select(o => (o.Index, o.Value)).Take(20).ToList();
+            var (view, _) = Host(element);
+            var properties = new TimeSeriesPropertiesControl { Element = element };
+            Host(properties, 650, 600);
+            Assert.AreEqual("Download", properties.ProcessDataButtonText.Text);
+
+            WithUiContext(() =>
+            {
+                ClickButton(properties.ProcessDataButton);
+                Assert.IsFalse(properties.ProcessDataButton.IsEnabled, "the button waits for the download");
+                for (int i = 0; i < 600 && !properties.ProcessDataButton.IsEnabled; i++)
+                {
+                    System.Threading.Thread.Sleep(100);
+                    Settle();
+                }
+            });
+            Assert.IsTrue(properties.ProcessDataButton.IsEnabled, "the download finished, or timed out with a message");
+            Assert.IsTrue(element.TimeSeries.Count >= 69, "the record has at least the saved peaks");
+            CollectionAssert.AreEqual(stored, element.TimeSeries.Select(o => (o.Index, o.Value)).Take(20).ToList(), "the early peaks are the saved ones");
+            var line = view.TimeSeriesPlot.Series.OfType<Wpf.LineSeries>().Single();
+            Assert.AreSame(element.TimeSeries, line.ItemsSource, "the plot shows the new record");
+            Assert.IsTrue(view.USGSRawTextBox.Document.Blocks.Count > element.TimeSeries.Count, "the text tab shows the new file");
         }
 
         [STATestMethod]
@@ -541,35 +632,9 @@ namespace RMC.BestFit.App.Tests.XGoodFit
             foreach (string example in Examples)
             {
                 var project = OpenProject(example);
-                foreach (var element in Elements(project).OfType<TimeSeriesElement>().ToList())
-                {
-                    var changes = new List<string>();
-                    PropertyChangedEventHandler watch = (sender, e) => changes.Add(e.PropertyName);
-                    NotifyCollectionChangedEventHandler data = (sender, e) => changes.Add("TimeSeries " + e.Action);
-                    element.PropertyChanged += watch;
-                    element.TimeSeries.CollectionChanged += data;
-                    var (view, window) = Host(element);
-                    foreach (var tab in view.MainTabControl.Items.OfType<TabItem>().Where(t => t.IsVisible).ToList())
-                        SelectTab(view, (string)tab.Header);
-                    var properties = new TimeSeriesPropertiesControl { Element = element };
-                    Window panel = Host(properties, 650, 576);
-
-                    // The shell closes a document or properties panel by taking it out of its window.
-                    ((Border)panel.Content).Child = null;
-                    ((Border)window.Content).Child = null;
-                    Settle();
-                    panel.Close();
-                    window.Close();
-                    properties.Element = null;
-                    view.Element = null;
-                    element.PropertyChanged -= watch;
-                    element.TimeSeries.CollectionChanged -= data;
-
-                    string name = $"{Path.GetFileName(example)}: {element.Name}";
-                    Assert.AreEqual(0, changes.Count, $"{name}: showing the views changed " + string.Join(", ", changes));
-                    Assert.IsFalse(element.UndoManager.CanUndo, $"{name}: showing the views recorded an undo");
-                    Assert.IsFalse(element.IsDirty, $"{name}: showing the views made the element dirty");
-                }
+                foreach (var element in Elements(project).OfType<TimeSeriesElement>().Where(e => e.TimeSeries.Count <= LargeRecord).ToList())
+                    AssertShowingChangesNothing(example, element);
+                CloseProject(project);
             }
         }
 
@@ -631,6 +696,84 @@ namespace RMC.BestFit.App.Tests.XGoodFit
             var shown = ShowView(element, tab);
             _windows.Add(shown.Window);
             return shown;
+        }
+
+        // Shows the view of an element, visits each of its tabs and shows its properties, as a user does, then closes
+        // them as the shell closes a document: nothing in the element may change.
+        private void AssertShowingChangesNothing(string example, TimeSeriesElement element)
+        {
+            var changes = new List<string>();
+            PropertyChangedEventHandler watch = (sender, e) => changes.Add(e.PropertyName);
+            NotifyCollectionChangedEventHandler data = (sender, e) => changes.Add("TimeSeries " + e.Action);
+            element.PropertyChanged += watch;
+            element.TimeSeries.CollectionChanged += data;
+            var (view, window) = Host(element);
+            foreach (var tab in view.MainTabControl.Items.OfType<TabItem>().Where(t => t.IsVisible).ToList())
+                SelectTab(view, (string)tab.Header);
+            var properties = new TimeSeriesPropertiesControl { Element = element };
+            Window panel = Host(properties, 650, 576);
+
+            // The shell closes a document or properties panel by taking it out of its window.
+            ((Border)panel.Content).Child = null;
+            ((Border)window.Content).Child = null;
+            Settle();
+            panel.Close();
+            window.Close();
+            properties.Element = null;
+            view.Element = null;
+            element.PropertyChanged -= watch;
+            element.TimeSeries.CollectionChanged -= data;
+            _windows.Remove(window);
+            _windows.Remove(panel);
+            Release();
+
+            string name = $"{Path.GetFileName(example)}: {element.Name}";
+            Assert.AreEqual(0, changes.Count, $"{name}: showing the views changed " + string.Join(", ", changes));
+            Assert.IsFalse(element.UndoManager.CanUndo, $"{name}: showing the views recorded an undo");
+            Assert.IsFalse(element.IsDirty, $"{name}: showing the views made the element dirty");
+        }
+
+        // Runs an action with Avalonia's synchronization context, as the application's UI thread has it, so that the
+        // properties panel's async Download/Import handler continues on the UI thread ([STATestMethod]s run without one,
+        // and the handler would then go on in the thread pool and touch the controls from there).
+        private static void WithUiContext(Action action)
+        {
+            var previous = System.Threading.SynchronizationContext.Current;
+            System.Threading.SynchronizationContext.SetSynchronizationContext(null);
+            AvaloniaSynchronizationContext.InstallIfNeeded();
+            try
+            {
+                action();
+            }
+            finally
+            {
+                System.Threading.SynchronizationContext.SetSynchronizationContext(previous);
+            }
+        }
+
+        // Lets a closed view go: a view of a million observations holds a gigabyte (NumericControls' table makes a
+        // row for each), so the tests don't keep two.
+        private static void Release()
+        {
+            Settle();
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+        }
+
+        // Closes a project OpenProject opened, before the test ends.
+        private void CloseProject(BestFitProject project)
+        {
+            TimeSeriesDataTesting.CloseProject(project);
+            _projects.Remove(project);
+            GC.Collect();
+        }
+
+        // A native screenshot's capture data (screenshots/*.json.gz beside an example), to dispose after use: some
+        // hold a million points.
+        private static JsonDocument NativeCapture(string relative)
+        {
+            using var stream = new System.IO.Compression.GZipStream(File.OpenRead(Example(relative)), System.IO.Compression.CompressionMode.Decompress);
+            return JsonDocument.Parse(stream);
         }
 
         private Window Host(Control control, double width, double height)

@@ -26,7 +26,9 @@ namespace RMC.BestFit.App.Tests.XGoodFit
     /// <item><c>time-series-data-hec-dss-path-selector-{theme}.png</c>: the DSS pathname selector on the example's DSS
     /// file, with the inflow's path selected, at the native screenshot's size (1050 × 620).</item>
     /// </list>
-    /// Run them alone with <c>RMC.BestFit.App.Tests --filter "FullyQualifiedName~TimeSeriesDataCaptures"</c>.
+    /// The views of records over 200,000 observations take gigabytes, so they're captured only with
+    /// XGOODFIT_LARGE_TESTS=1 (see TimeSeriesDataTests). Run the captures alone with
+    /// <c>RMC.BestFit.App.Tests --filter "FullyQualifiedName~TimeSeriesDataCaptures"</c>.
     /// </summary>
     [TestClass]
     [DoNotParallelize]
@@ -47,7 +49,8 @@ namespace RMC.BestFit.App.Tests.XGoodFit
         public void Cleanup()
         {
             foreach (var window in _windows) window.Close();
-            foreach (var project in _projects) Close(project);
+            foreach (var project in _projects) CloseProject(project);
+            _projects.Clear();
             UseAppResources(ThemeColor.Light);
             ReleaseAppResources();
             _culture.Dispose();
@@ -57,18 +60,26 @@ namespace RMC.BestFit.App.Tests.XGoodFit
         [TestCategory("Capture")]
         public void CapturePlots_AsTheNativeScreenshotsShowThem()
         {
-            var projects = new Dictionary<string, BestFitProject>();
             foreach (ThemeColor theme in Themes)
             {
                 UseAppResources(theme);
+                BestFitProject project = null;
                 foreach (var shot in NativePlots)
                 {
-                    if (!projects.TryGetValue(shot.Example, out var project))
+                    // One example at a time: they hold millions of observations.
+                    if (project == null || Path.GetFileName(project.FullFileName) != Path.GetFileName(shot.Example))
                     {
-                        projects[shot.Example] = project = Open(shot.Example);
+                        if (project != null)
+                        {
+                            CloseProject(project);
+                            _projects.Remove(project);
+                            GC.Collect();
+                        }
+                        project = Open(shot.Example);
                         _projects.Add(project);
                     }
                     var element = Element<TimeSeriesElement>(project, shot.Element);
+                    if (element.TimeSeries.Count > 200000 && Environment.GetEnvironmentVariable("XGOODFIT_LARGE_TESTS") != "1") continue;
                     var (view, window) = ShowView(element, shot.Tab);
                     _windows.Add(window);
                     var selector = view.FindControl<AlternativeTimeSeriesControl>("AlternativeTimeSeriesSelector");
@@ -90,6 +101,11 @@ namespace RMC.BestFit.App.Tests.XGoodFit
                     window.Close();
                     _windows.Remove(window);
                     view.Element = null;
+
+                    // A view of a million observations holds a gigabyte: let each go before the next.
+                    Settle();
+                    GC.Collect();
+                    GC.WaitForPendingFinalizers();
                 }
             }
         }
@@ -140,11 +156,18 @@ namespace RMC.BestFit.App.Tests.XGoodFit
                 foreach (var shot in NativeProperties)
                 {
                     var project = Open(shot.Example);
-                    _projects.Add(project);
                     var properties = new TimeSeriesPropertiesControl { Element = Element<TimeSeriesElement>(project, shot.Element) };
                     Window window = Show(properties, 650, 576);
-                    _windows.Add(window);
-                    Capture(window, $"time-series-data-{shot.Name}-{theme.ToString().ToLowerInvariant()}");
+                    try
+                    {
+                        Capture(window, $"time-series-data-{shot.Name}-{theme.ToString().ToLowerInvariant()}");
+                    }
+                    finally
+                    {
+                        window.Close();
+                        properties.Element = null;
+                        CloseProject(project);
+                    }
                 }
             }
         }
