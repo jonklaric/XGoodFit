@@ -1,9 +1,10 @@
 <Project Sdk="MSTest.Sdk/3.6.4">
 
   <!--
-    Tests for XGoodFit's platform integration (src/XGoodFit.Platform). Nothing here installs anything,
-    writes to the registry or opens a window: the update tests use a pretend Velopack installation in
-    a temporary folder, and the registration tests a pretend registry.
+    Tests for XGoodFit's platform integration (src/XGoodFit.Platform) and the packages' icon tool
+    (tools/AppIcons). Nothing here installs anything, writes to the registry or opens a window: the
+    update tests use a pretend Velopack installation in a temporary folder, and the registration
+    tests a pretend registry.
   -->
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
@@ -13,6 +14,11 @@
 
   <ItemGroup>
     <ProjectReference Include="../../src/XGoodFit.Platform/XGoodFit.Platform.csproj" />
+    <ProjectReference Include="../../tools/AppIcons/AppIcons.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="$(XGoodFitIcon)" Link="TestData/app.ico" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

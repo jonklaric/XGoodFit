@@ -35,6 +35,7 @@
     <Project Path="tests/Framework/WpfCompat.Tests/WpfCompat.Tests.csproj" />
   </Folder>
   <Folder Name="/tools/">
+    <Project Path="tools/AppIcons/AppIcons.csproj" />
     <Project Path="tools/ProjectProbe/ProjectProbe.csproj" />
     <Project Path="tools/ThemeGallery/ThemeGallery.csproj" />
   </Folder>

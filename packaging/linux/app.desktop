@@ -1,0 +1,13 @@
+[Desktop Entry]
+Type=Application
+Name=@NAME@
+GenericName=Frequency analysis
+Comment=Bayesian flood-frequency analysis and distribution fitting (a port of RMC-BestFit)
+Exec=@EXEC@ %f
+Icon=@APP_ID@
+Terminal=false
+Categories=Science;Math;
+Keywords=BestFit;RMC-BestFit;flood;frequency;distribution;
+MimeType=application/x-bestfit;
+StartupWMClass=@EXECUTABLE@
+X-AppImage-Version=@VERSION@

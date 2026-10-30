@@ -1,0 +1,11 @@
+#!/bin/sh
+# XGoodFit addition: the AppImage's entry point (scripts/package.sh fills in @EXECUTABLE@). It starts
+# the application, or with --install-desktop-entry or --remove-desktop-entry registers the AppImage
+# with the desktop for .bestfit files, or removes that again (usr/desktop-integration.sh).
+here="$(dirname "$(readlink -f "$0")")"
+case "${1:-}" in
+  --install-desktop-entry|--remove-desktop-entry)
+    exec "$here/usr/desktop-integration.sh" "$1" --exec "${APPIMAGE:-$here/AppRun}"
+    ;;
+esac
+exec "$here/usr/bin/@EXECUTABLE@" "$@"

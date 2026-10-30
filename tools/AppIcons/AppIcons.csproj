@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    XGoodFit tool: renders the application icon (Directory.Build.props' XGoodFitIcon, an .ico) into
+    what each OS's package needs: an .icns for macOS and PNGs in the freedesktop icon sizes for Linux.
+    Windows uses the .ico itself. scripts/package.sh runs it.
+  -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- For SkiaSharp, which decodes, scales and encodes the images, with its natives for every OS. -->
+    <PackageReference Include="Avalonia.Skia" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="XGoodFit.Platform.Tests" />
+  </ItemGroup>
+
+</Project>
