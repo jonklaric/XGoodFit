@@ -264,6 +264,17 @@ Watch for others when porting:
   context changes, so a value shown rounded loses its digits. Grid cells display through one-way
   bindings (`DataGridDisplayBinding`); use one-way bindings wherever the display format loses
   information.
+- **A local value doesn't clear a one-way binding:** in WPF, setting a property that has a one-way
+  binding clears the binding; Avalonia keeps it, and the next source change overwrites the value.
+  The value set is held by the binding, so disposing the binding afterwards resets it to the default.
+  Where upstream relies on an edit detaching a binding (axis titles bound to data labels), let the
+  binding's converter return `BindingOperations.DoNothing` once something else has set the target
+  (see `PlotAxisTitleDefaults.TitleBinding` in RMC.BestFit.UI).
+- **Singletons that hold Avalonia objects:** an Avalonia object belongs to the thread that makes it,
+  where WPF's frozen brushes belonged to none. Make such objects on first use by the UI rather than in
+  a static initializer that any thread may run first (see FrameworkInterfaces' `Messenger`).
+- **MSTest 3.6 with parallel tests** can run the assembly cleanup more than once: make it idempotent
+  (`Interlocked.Exchange(ref _session, null)?.Dispose()`).
 - **Grid themes:** set scroll bar visibility to `Auto`, WPF's default (ProDataGrid's is `Disabled`). A
   bare `DataGrid` gets the header-height fix only once a `CopyPasteDataGrid` exists: another reason to
   always use `CopyPasteDataGrid`. Grids laid out with unbounded height log layout-cycle warnings; that

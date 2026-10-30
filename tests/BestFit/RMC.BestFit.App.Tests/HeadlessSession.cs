@@ -53,8 +53,12 @@ namespace RMC.BestFit.App.Tests
         }
 
         /// <summary>Stops the session.</summary>
+        /// <remarks>
+        /// MSTest 3.6 can run the assembly cleanup more than once, on several threads, when parallel tests
+        /// finish together, so only the first call disposes the session (a second Dispose throws).
+        /// </remarks>
         [AssemblyCleanup]
-        public static void Stop() => _session?.Dispose();
+        public static void Stop() => Interlocked.Exchange(ref _session, null)?.Dispose();
 
         /// <summary>Runs a function on the Avalonia UI thread and waits for its result.</summary>
         /// <typeparam name="T">The function's result type.</typeparam>
