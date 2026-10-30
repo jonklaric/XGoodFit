@@ -1,0 +1,53 @@
+<!--
+    XGoodFit port of upstream's Themes/NumericControlsTheme.xaml: it merges the icon dictionary, as
+    upstream's does, and its styles and brushes aren't ported:
+    - PropertyExpanderStyle, Left_ColumnHeaderStyle, Right_ColumnHeaderStyle and Right_CellStyle: Themes
+      defines the same keys and is merged after this dictionary (by ThemeService, as in upstream's App),
+      so its definitions are the ones the app uses.
+    - WrappedColumnHeaderStyle, ReadOnlyTextBackgroundCellStyle, ReadOnlyValueBackgroundCellStyle,
+      Right_CellStyleDisabled and ParameterValueCellStyle, and the three NumericControls.* brushes that
+      only they use: the ported controls define their own styles under these keys in their resources,
+      which they find first, and only controls that aren't ported (decision D10) use these.
+-->
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:local="using:NumericControls">
+
+    <!--
+    ╔═══════════════════════════════════════════════════════════════════════════════╗
+    ║  NumericControls Theme Resource Dictionary                                    ║
+    ╠═══════════════════════════════════════════════════════════════════════════════╣
+    ║  Contains theme-aware styles and brushes for NumericControls components       ║
+    ║  that use DynamicResource bindings to respond to runtime theme changes.       ║
+    ║                                                                               ║
+    ║  CONTENTS:                                                                    ║
+    ║  • Common Brushes         - Read-only, validation, alternating backgrounds   ║
+    ║  • PropertyExpanderStyle  - Collapsible expander for property sections        ║
+    ║  • Column Header Styles   - Left, Right, Wrapped alignment styles             ║
+    ║  • Cell Styles            - Read-only, right-aligned, validation styles       ║
+    ║                                                                               ║
+    ║  THEME SUPPORT:                                                               ║
+    ║  All colors use DynamicResource bindings to the Themes library.               ║
+    ║  Common theme resources referenced:                                           ║
+    ║  • EnvironmentWindowText/Background - Window colors                           ║
+    ║  • Button.MouseOver/Pressed.*       - Interactive button states               ║
+    ║  • DataGrid.*                       - DataGrid-specific theming               ║
+    ║  • SystemColors.*                   - System color integration                ║
+    ║                                                                               ║
+    ║  USAGE:                                                                       ║
+    ║  <Expander Style="{DynamicResource PropertyExpanderStyle}"/>                  ║
+    ║  <DataGridTextColumn CellStyle="{StaticResource Right_CellStyle}"/>           ║
+    ╚═══════════════════════════════════════════════════════════════════════════════╝
+    -->
+
+    <!-- Merge Icon Dictionary for vector icons -->
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceInclude Source="avares://NumericControls/Resources/IconDictionary.axaml"/>
+    </ResourceDictionary.MergedDictionaries>
+
+    <!--
+    XGoodFit port: the brushes, expander style, column header styles and cell styles aren't ported (see
+    the notes above).
+    -->
+
+</ResourceDictionary>

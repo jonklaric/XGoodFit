@@ -84,6 +84,29 @@ public sealed class DataGridThemeTests
     }
 
     [TestMethod]
+    public void ColumnHeaders_AreAsHighAsTheirTextAtTheColumnsWidths()
+    {
+        HeadlessSession.Run(() =>
+        {
+            // As the distribution selector's statistics: star columns, in a grid first laid out narrow.
+            var (window, grid) = ShowGrid(Rows(2), g =>
+            {
+                g.ColumnWidth = new DataGridLength(1, DataGridLengthUnitType.Star);
+                g.Width = 30;
+            });
+            var headers = grid.GetVisualDescendants().OfType<Avalonia.Controls.Primitives.DataGridColumnHeadersPresenter>().Single();
+            Assert.IsTrue(headers.Bounds.Height > 50, $"the narrow headers wrap their text: {headers.Bounds.Height}");
+
+            grid.Width = 400;
+            Settle();
+            DataGridColumnHeader header = grid.GetVisualDescendants().OfType<DataGridColumnHeader>().Single(h => Equals(h.Content, "Name"));
+            Assert.AreEqual(24, header.Bounds.Height, "one line of text (the headers' MinHeight)");
+            Assert.AreEqual(24, headers.Bounds.Height, "the row of headers is as high as its headers");
+            window.Close();
+        });
+    }
+
+    [TestMethod]
     public void ValidationGrid_TakesItsErrorBrushesFromTheTheme()
     {
         HeadlessSession.Run(() =>

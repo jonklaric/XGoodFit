@@ -351,11 +351,11 @@ namespace GenericControls
                     ControlTheme cellStyle;
                     if (dgtc.CellTheme == null)
                     {
-                        cellStyle = new ControlTheme(typeof(DataGridCell)) { BasedOn = CellTheme };
+                        cellStyle = new ControlTheme(typeof(DataGridCell)) { BasedOn = CellThemeOrDefault };
                     }
                     else
                     {
-                        var newStyle = new ControlTheme(typeof(DataGridCell)) { BasedOn = CellTheme };
+                        var newStyle = new ControlTheme(typeof(DataGridCell)) { BasedOn = CellThemeOrDefault };
                         foreach (var setter in dgtc.CellTheme.Setters)
                             newStyle.Setters.Add(setter);
                         cellStyle = newStyle;
@@ -405,11 +405,11 @@ namespace GenericControls
                     // grid cell check box style — use this.CellStyle (see text column comment above)
                     if (dgtcbx.CellTheme == null)
                     {
-                        dgtcbx.CellTheme = new ControlTheme(typeof(DataGridCell)) { BasedOn = CellTheme };
+                        dgtcbx.CellTheme = new ControlTheme(typeof(DataGridCell)) { BasedOn = CellThemeOrDefault };
                     }
                     else
                     {
-                        var newStyle = new ControlTheme(typeof(DataGridCell)) { BasedOn = CellTheme };
+                        var newStyle = new ControlTheme(typeof(DataGridCell)) { BasedOn = CellThemeOrDefault };
                         foreach (var setter in dgtcbx.CellTheme.Setters)
                             newStyle.Setters.Add(setter);
                         dgtcbx.CellTheme = newStyle;
