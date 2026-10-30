@@ -130,6 +130,7 @@
 
   <!-- Upstream test files: Univariate Distribution Analysis: Point Process, Mixture. -->
   <ItemGroup>
+    <!-- GUI/MixtureDistributionGridSafetyTests.cs is a ported copy (the panel shown in a window, Avalonia's controls), as GUI/MixtureDiagnosticCoordinateSourceTests.cs is (ported with the shared controls). -->
   </ItemGroup>
 
   <!-- Upstream test files: Univariate Distribution Analysis: Composite. -->
