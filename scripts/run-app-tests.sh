@@ -29,14 +29,26 @@ fi
 
 failed=0
 ran=0
+retried=""
 
+# Runs one group in its own process. A third argument allows that many attempts in all, for a known
+# upstream race (see below); every other group fails on its first failure.
 run() {
-  local name="$1" filter="$2"
-  local log="$logs/$name.log" status=0 start=$SECONDS
+  local name="$1" filter="$2" attempts="${3:-1}"
+  local log="$logs/$name.log" status attempt=1 start=$SECONDS
   [[ "$selected" == "  " || "$selected" == *" $name "* ]] || return 0
-  "$exe" --filter "$filter" > "$log" 2>&1 || status=$?
-  # Exit code 8: no test matched (a class whose tests are all External).
-  [[ $status -eq 8 ]] && status=0
+  while true; do
+    status=0
+    "$exe" --filter "$filter" > "$log" 2>&1 || status=$?
+    # Exit code 8: no test matched (a class whose tests are all External).
+    [[ $status -eq 8 ]] && status=0
+    [[ $status -eq 0 || $attempt -ge $attempts ]] && break
+    echo "==> $name: attempt $attempt failed, retrying (known upstream race):"
+    grep -E -A2 "^failed " "$log" | head -12
+    cp "$log" "$logs/$name.attempt$attempt.log"
+    attempt=$((attempt + 1))
+  done
+  [[ $status -eq 0 && $attempt -gt 1 ]] && retried+=" $name"
   local summary
   summary="$(grep -E "^\s+(total|failed|succeeded|skipped):" "$log" | tr -s ' ' | tr '\n' ' ')"
   echo "==> $name ($((SECONDS - start)) s):$summary"
@@ -65,16 +77,19 @@ done
 #    element's validation sorts those series in place on the UI thread (BivariateDistribution's
 #    GetEligibleExactData); the reprocess then throws and clears IsEstimated. After the other classes
 #    ran in the same process it failed in about a third of runs on two cores; on its own it passed 22 of
-#    22 (with the thread pool capped at three workers, it still failed once in 10).
+#    22 here (with the thread pool capped at three workers, it still failed once in 10), but on Windows
+#    CI's runner it failed in its own process too (2 of 2). Until the race is fixed it gets three
+#    attempts, and the summary names it when it passed only on a retry.
 #    See IssuesToRaise/README.md, "Pending".
 for class in PointEstimatorControlContractTests; do
-  run "$class" "FullyQualifiedName~.$class.&TestCategory!=External"
+  run "$class" "FullyQualifiedName~.$class.&TestCategory!=External" 3
   rest+="&FullyQualifiedName!~.$class."
 done
 
 # Everything else: upstream's tests (support classes and ported copies), which are light.
 run "Others" "$rest"
 
+[[ -n "$retried" ]] && echo "Passed only on a retry:$retried"
 if [[ $failed -ne 0 ]]; then
   echo "App tests FAILED"
   exit 1
