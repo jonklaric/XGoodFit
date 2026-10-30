@@ -212,6 +212,8 @@ namespace GenericControls
             SelectedCellsChanged += (sender, e) => NoteSelectionAnchor();
             // XGoodFit port: the cells show their values through one-way bindings, as WPF's do (DataGridDisplayBinding).
             DataGridDisplayBinding.Register();
+            // XGoodFit port: the row of column headers is as high as the headers at their columns' widths (DataGridColumnHeaderHeight).
+            DataGridColumnHeaderHeight.Register();
 
         }
 
