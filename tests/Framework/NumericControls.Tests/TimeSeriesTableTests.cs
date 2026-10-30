@@ -34,8 +34,11 @@ public sealed class TimeSeriesTableTests
             Assert.IsFalse(grid.Columns[0].IsVisible, "no date selectors for a regular series");
             Assert.IsTrue(grid.Columns[1].IsReadOnly, "a regular series' dates follow its interval");
             Assert.AreSame(table.Resources["DateTime_CellStyleDisabled"], grid.Columns[1].CellTheme);
-            Assert.AreEqual("7/30/1980 12:00 AM", CellText(grid, 0, 1));
-            Assert.AreEqual("7/31/1980 12:00 AM", CellText(grid, 1, 1));
+            // The culture's own short date and time: ICU (macOS, Linux) puts a narrow no-break space
+            // before AM, Windows a plain space.
+            Assert.AreEqual(ShortDateTime(new DateTime(1980, 7, 30)), CellText(grid, 0, 1));
+            Assert.AreEqual(ShortDateTime(new DateTime(1980, 7, 31)), CellText(grid, 1, 1));
+            StringAssert.StartsWith(CellText(grid, 0, 1), "7/30/1980 12:00");
             Assert.AreEqual("10", CellText(grid, 0, 2));
             CollectionAssert.AreEqual(new object[] { "X Data", "Y Data" }, new[] { grid.Columns[1].Header, grid.Columns[2].Header });
             table.XColumnHeader = "Date";
@@ -98,7 +101,8 @@ public sealed class TimeSeriesTableTests
             series.Add(new SeriesOrdinate<DateTime, double>(new DateTime(1980, 7, 31, 8, 20, 17), 2));
             var (window, _, grid) = ShowTable(series);
             var changes = Record(series);
-            Assert.AreEqual("7/30/1980 6:15 AM", CellText(grid, 0, 1));
+            Assert.AreEqual(ShortDateTime(new DateTime(1980, 7, 30, 6, 15, 0)), CellText(grid, 0, 1));
+            StringAssert.StartsWith(CellText(grid, 0, 1), "7/30/1980 6:15");
             series.RaiseCollectionChangedReset();
             Settle();
             Assert.AreEqual(new DateTime(1980, 7, 30, 6, 15, 42), series[0].Index);
@@ -391,6 +395,13 @@ public sealed class TimeSeriesTableTests
     {
         editor.GetVisualDescendants().OfType<Button>().Single(b => Equals(b.DataContext, function)).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
         Settle();
+    }
+
+    // A date as the table shows it: the current culture's short date and short time.
+    private static string ShortDateTime(DateTime date)
+    {
+        var format = System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat;
+        return date.ToString($"{format.ShortDatePattern} {format.ShortTimePattern}", System.Globalization.CultureInfo.CurrentCulture);
     }
 
     // The collection changes the series raises.
