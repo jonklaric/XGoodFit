@@ -2,7 +2,7 @@
 
 XGoodFit ports USACE's RMC-BestFit from WPF to Avalonia. While porting it, and the WPF-Framework, Numerics and HEC-DSS code it depends on, we found problems in those upstream projects. Most affect upstream's own Windows application as well. Each file here is one issue, written for the upstream maintainers, who don't need to know XGoodFit. **Nothing has been posted anywhere.** Raising them is the project owner's decision.
 
-Each file has the same sections: target and version, type and severity, verification, summary, how to reproduce, why it's a bug rather than intended behaviour, where in the source (permalinks at the commits below), a suggested fix, and how XGoodFit handles it. Links to XGoodFit files are permalinks at [`fcb3902`](https://github.com/jonklaric/XGoodFit/tree/fcb3902c2937662ed5f1b3869e0ea019e88e3c63), or at [`a7aced1`](https://github.com/jonklaric/XGoodFit/tree/a7aced180aba4493b1f8f7b676db89543ae9a0a7) for the issues found while porting RMC.BestFit.App.
+Each file has the same sections: target and version, type and severity, verification, summary, how to reproduce, why it's a bug rather than intended behaviour, where in the source (permalinks at the commits below), a suggested fix, and how XGoodFit handles it. Links to XGoodFit files are permalinks at [`fcb3902`](https://github.com/jonklaric/XGoodFit/tree/fcb3902c2937662ed5f1b3869e0ea019e88e3c63), or at [`a7aced1`](https://github.com/jonklaric/XGoodFit/tree/a7aced180aba4493b1f8f7b676db89543ae9a0a7) for the issues found while porting RMC.BestFit.App's Input Data and Fitting views, or at [`5f913ad`](https://github.com/jonklaric/XGoodFit/tree/5f913ad063782422048c7cf2109b081417f85faa) for those found while porting its Bivariate and Time Series Data views.
 
 ## What was checked
 
@@ -14,7 +14,7 @@ Each file has the same sections: target and version, type and severity, verifica
 | [HydrologicEngineeringCenter/hec-dss-dotnet](https://github.com/HydrologicEngineeringCenter/hec-dss-dotnet) | 2.0.3 | [`f8f576f`](https://github.com/HydrologicEngineeringCenter/hec-dss-dotnet/tree/f8f576ff98b524a4a6b5a2f17735adf5f144b9fd) | yes (`main`) |
 | [HydrologicEngineeringCenter/hec-dss](https://github.com/HydrologicEngineeringCenter/hec-dss) | 7-JA-7 | [`1da5976`](https://github.com/HydrologicEngineeringCenter/hec-dss/tree/7-JA-7) | no: `main` is 11 commits ahead ([`f14554d`](https://github.com/HydrologicEngineeringCenter/hec-dss/tree/f14554de39a0bfe9c5c0b150e5fd66cfb78d289c), 2026-08-07). Every hec-dss issue here was checked against `main` too; leads already fixed there are listed under "Considered and excluded" |
 
-RMC-BestFit, WPF-Framework and Numerics were checked again on 2026-10-31, for the RMC.BestFit.App issues: `main` was unchanged.
+RMC-BestFit, WPF-Framework and Numerics were checked again on 2026-10-31, for the RMC.BestFit.App issues and the Messenger issue: `main` was unchanged.
 
 **Severity:** *high* means it changes or loses users' data or results, or corrupts memory. *medium* means a visible malfunction, or a wrong result in a narrower case. *low* means cosmetic, latent, a test or build problem, or cleanup.
 
@@ -31,16 +31,24 @@ RMC-BestFit, WPF-Framework and Numerics were checked again on 2026-10-31, for th
 | Editing XY ordinates during a background reprocess clears `IsEstimated` | [RMC-BestFit-reprocess-race-clears-isestimated.md](RMC-BestFit-reprocess-race-clears-isestimated.md) | bug, test reliability | medium | Reproduced (13/20 and 12/20 runs) |
 | The UI mixes the machine's culture and en-US | [RMC-BestFit-mixes-machine-culture-and-en-us.md](RMC-BestFit-mixes-machine-culture-and-en-us.md) | user interface | medium | Read; seen on en-AU |
 | The batch run window can be closed during a run, leaving the run going with no way to cancel it | [RMC-BestFit-batch-run-window-closes-during-run.md](RMC-BestFit-batch-run-window-closes-during-run.md) | bug | medium | Reproduced (WPF command routing); rest Read |
+| After undoing a bivariate model change, edits in the Output tab's XY editor are lost | [RMC-BestFit-bivariate-undo-detaches-xy-editor.md](RMC-BestFit-bivariate-undo-detaches-xy-editor.md) | data loss | medium | Read |
 | Two model tests depend on wall-clock timing | [RMC-BestFit-timing-dependent-model-tests.md](RMC-BestFit-timing-dependent-model-tests.md) | test reliability | low | Read; failed on CI, not locally |
 | Closed document views stay subscribed to their elements, so they're never released | [RMC-BestFit-views-not-released-after-close-or-replace.md](RMC-BestFit-views-not-released-after-close-or-replace.md) | bug (memory leak) | low | Read |
 | Grid column header styles are rebuilt on top of themselves | [RMC-BestFit-header-styles-based-on-themselves.md](RMC-BestFit-header-styles-based-on-themselves.md) | bug (resource growth) | low | Read |
 | The shell never sees the icon key of Time Series, Input Data and Fitting Analysis elements | [RMC-BestFit-element-icons-not-found-by-shell.md](RMC-BestFit-element-icons-not-found-by-shell.md) | user interface | low | Reproduced (C# rule); effect Read |
 | The prior distribution editor's title is "Select Distribution for :" for stationary distributions | [RMC-BestFit-prior-editor-title-empty-for-stationary-distributions.md](RMC-BestFit-prior-editor-title-empty-for-stationary-distributions.md) | user interface | low | Read |
 | The MCMC trace plot without warm-up still shows the last warm-up draw | [RMC-BestFit-trace-plot-includes-last-warm-up-draw.md](RMC-BestFit-trace-plot-includes-last-warm-up-draw.md) | user interface | low | Read |
-| The Input Data summary statistics separators are black, so they vanish in the Dark theme | [RMC-BestFit-summary-statistics-separators-black-in-dark.md](RMC-BestFit-summary-statistics-separators-black-in-dark.md) | user interface | low | Read |
+| The Input Data and Time Series summary statistics separators are black, so they vanish in the Dark theme | [RMC-BestFit-summary-statistics-separators-black-in-dark.md](RMC-BestFit-summary-statistics-separators-black-in-dark.md) | user interface | low | Read |
 | New element names suggested from the element count can already be taken | [RMC-BestFit-default-names-can-clash.md](RMC-BestFit-default-names-can-clash.md) | user interface | low | Read |
+| Analysis views report their main plot as current while a diagnostic tab is showing | [RMC-BestFit-current-plot-ignores-diagnostic-tabs.md](RMC-BestFit-current-plot-ignores-diagnostic-tabs.md) | user interface | low | Read |
+| The bivariate X-Y plot's contour levels come from a racy parallel maximum | [RMC-BestFit-bivariate-contour-levels-race.md](RMC-BestFit-bivariate-contour-levels-race.md) | bug (race condition) | low | Reproduced (same loop shape) |
+| The alternatives lists enable unestimated analyses, don't sort by name, and don't follow a time series' data | [RMC-BestFit-alternative-lists-bindings.md](RMC-BestFit-alternative-lists-bindings.md) | user interface | low | Read |
+| Time series plots repeat axis labels for small values and short records | [RMC-BestFit-time-series-axis-labels-repeat.md](RMC-BestFit-time-series-axis-labels-repeat.md) | user interface | low | Read; corrected by upstream's own exporter |
+| The DSS Pathname "…" button does nothing when the DSS file is missing, and DSS paths are stored absolute | [RMC-BestFit-dss-pathname-button-silent-when-file-missing.md](RMC-BestFit-dss-pathname-button-silent-when-file-missing.md) | user interface | low | Read (example project checked) |
+| Most properties panels compute the existing names but never give them to the name box | [RMC-BestFit-name-box-doesnt-flag-duplicates.md](RMC-BestFit-name-box-doesnt-flag-duplicates.md) | user interface | low | Read |
+| The examples' "native" figures don't show what the application shows | [RMC-BestFit-example-figures-differ-from-app.md](RMC-BestFit-example-figures-differ-from-app.md) | documentation | low | Read |
 | `Resources/BestFitStyles.xaml` is never used | [RMC-BestFit-unused-bestfitstyles-dictionary.md](RMC-BestFit-unused-bestfitstyles-dictionary.md) | bug (cleanup) | low | Read |
-| Small fixes in RMC.BestFit.App: two latent null dereferences, an unthemed progress bar, a two-way visibility binding, an unused converter and stale documentation | [RMC-BestFit-cleanup-latent-and-trivial.md](RMC-BestFit-cleanup-latent-and-trivial.md) | bug (cleanup) | low | Read |
+| Small fixes in RMC.BestFit.App: latent null dereferences and a stale-view reset, an unthemed progress bar, a two-way visibility binding, unused code, a copied progress name and stale documentation | [RMC-BestFit-cleanup-latent-and-trivial.md](RMC-BestFit-cleanup-latent-and-trivial.md) | bug (cleanup) | low | Read |
 
 ### USACE-RMC/WPF-Framework
 
@@ -53,6 +61,7 @@ RMC-BestFit, WPF-Framework and Numerics were checked again on 2026-10-31, for th
 | Time-series math functions ignore selected rows ("Applies to rows 0, 0.") | [WPF-Framework-math-editor-ignores-selected-rows.md](WPF-Framework-math-editor-ignores-selected-rows.md) | bug | medium | Read |
 | Terms "I agree" unlocks before the terms are loaded | [WPF-Framework-terms-agree-unlocks-before-scrolling.md](WPF-Framework-terms-agree-unlocks-before-scrolling.md) | bug | medium | Reproduced (WPF) |
 | The axis editor rewrites `StringFormat` just by showing an axis | [WPF-Framework-axis-editor-rewrites-stringformat.md](WPF-Framework-axis-editor-rewrites-stringformat.md) | bug | medium | Read |
+| The Messenger keeps every message source alive after its messages are removed (elements and their projects stay in memory) | [WPF-Framework-messenger-keeps-sources-alive.md](WPF-Framework-messenger-keeps-sources-alive.md) | bug (memory leak) | medium | Reproduced (1.0.5 package) |
 | NumericUpDown/NumericSlider lose their DecimalPlaces/ThousandsSeparator formatting | [WPF-Framework-numericupdown-formatting-replaced-by-binding-text.md](WPF-Framework-numericupdown-formatting-replaced-by-binding-text.md) | user interface | low | Reproduced (WPF) |
 | NumericUpDown's arrows don't repeat when held | [WPF-Framework-numericupdown-arrows-do-not-repeat.md](WPF-Framework-numericupdown-arrows-do-not-repeat.md) | user interface | low | Read |
 | NumericTextBox2's error border never shows | [WPF-Framework-numerictextbox2-error-border-never-shows.md](WPF-Framework-numerictextbox2-error-border-never-shows.md) | user interface | low | Reproduced (WPF) |
@@ -111,7 +120,20 @@ The cleanup checklist covers: implicit NameDialog/MessageBoxWindow styles that n
 
 ## Pending
 
-None. The reports of every porting agent that finished by 2026-10-30 are covered, including FrameworkUI's and OxyPlotControls', which arrived while this was being written. The 16 leads from the RMC.BestFit.App port's Input Data and Fitting Analysis work were added on 2026-10-31. Findings from later work can be added in the same format.
+The reports of every porting agent that finished by 2026-10-30 are covered, including FrameworkUI's and OxyPlotControls', which arrived while this was being written. The 16 leads from the RMC.BestFit.App port's Input Data and Fitting Analysis work were added on 2026-10-31, and the 15 from its Bivariate and Time Series Data work the same day.
+
+These leads, from the Univariate and Bulletin 17C port (2026-10-31), are still to be checked and written up. They'll go in with the leads of the remaining areas' ports. Paths are under `src/` at `bfce2dd`.
+
+| Lead | Where | Why it looks like a bug |
+|---|---|---|
+| B17C's penalty grids never flag invalid values | `RMC.BestFit.App/GUI/UnivariateAnalysis/B17C/B17CAnalysisPropertiesControl.xaml` lines 174-183, 201-210, 306-315, 333-342 | The multi-data triggers bind `IsMeanValid`, `IsMSEValid`, `MeanErrorMessage` and `MSEErrorMessage`, which `ParameterPenalty` and `QuantilePenalty` don't have, so the bindings fail silently. |
+| B17C's legend says "Computed" whatever the point estimator | `B17CAnalysisControl.xaml.cs` lines 446-454 and 557-562 | The table header (line 789) and summary column (line 844) say "Mean Parameters", and the Univariate view retitles its series (`UnivariateAnalysisControl.xaml.cs` line 641). |
+| B17C labels GMM results with Bayesian names | `KernelDensityControl.xaml.cs` line 387 ("Posterior Density"); `B17CAnalysisControl.xaml.cs` lines 498-508 ("Quantile Prior") | A GMM fit has no posterior or prior; the examples' own exports relabel both. |
+| The near-zero filter on uncertain and interval data is inverted | `UnivariateAnalysisControl.xaml.cs` lines 671 and 680; `B17CAnalysisControl.xaml.cs` lines 605 and 614 | `logAxis ? Series : Series.Where(x => x.Value > 1E-16)` is the opposite of the exact data's filter (lines 659 and 591), so zeros go onto log axes and are dropped from linear ones. |
+| One "Nonstationary" click makes two undo steps | `RMC.BestFit/Models/UnivariateDistribution/UnivariateDistribution.cs` lines 427-428; `RMC.BestFit.UI/Elements/UnivariateAnalysis/UnivariateAnalysis.cs` lines 1638-1656 | The setter also sets `ParameterTimeIndex`, and each notification is recorded on its own, so the first Undo leaves the model nonstationary with the old index. |
+| Bayes Example #1's walkthrough doesn't match what the app shows | the example's `bulletin-17c-bayesian-examples-moose.plotspec.json.gz` and walkthrough table | They give a 1% AEP of 5,231.9 cfs; the saved results, which 2.0.1 shows and exports, give 4,806.6 cfs. |
+
+Findings from later work can be added in the same format.
 
 ## Considered and excluded
 
@@ -146,10 +168,16 @@ None. The reports of every porting agent that finished by 2026-10-30 are covered
 | Numerics' `LiveServiceIntegration` tests | Numerics | Upstream's CI already excludes them. |
 | `BatchRunWindow`'s local `TextBlock` and `Image` styles have no `BasedOn` | RMC-BestFit | The Themes library defines no implicit style for those types, so nothing is lost. Only the progress bar's style drops a theme style; it's in the RMC.BestFit.App cleanup checklist. |
 | Trace control's unchecked `MarkovChains.Count()`; `QuantilePriorsControl`'s two-way `Visibility`; unguarded `Plot.Equals` in `GetPropertiesControl`; the batch window's unused converter; `DocumentClosed`'s summary | RMC-BestFit | Folded into the RMC.BestFit.App cleanup checklist: latent or trivial. |
+| `GetCurrentPlot` checks the inner X-Y tab before the diagnostic tabs (Bivariate, Univariate) | RMC-BestFit | Broader than reported: seven analysis views have the same order. One issue. |
+| The Time Series view's static black brush isn't frozen | RMC-BestFit | Harmless with one UI thread. Folded into the separators issue, since the same brush makes the Dark-theme separators invisible there too. |
+| The HEC-DSS example stores its author's absolute DSS path | RMC-BestFit | Partly excluded: the example's own instructions tell users to browse to the shipped file again. The silent "…" button and the absolute paths are filed. |
+| Time Series view's `_isLoaded` reset; the Bivariate panel's unused members, empty handler and copied progress name; the dead "Minimum" check | RMC-BestFit | Folded into the RMC.BestFit.App cleanup checklist: latent or trivial. The progress name is copied into six panels. |
+| The alternatives list's `IsEnabled` binding, its sort, and `HasData` | RMC-BestFit | Combined into one issue. |
+| The Y-axis `"N0"` format and the `"MMM-yyyy"` date format | RMC-BestFit | Combined into one issue. |
 | `ParameterSetsControl` never unsubscribes; closing Input Data or Fitting Analysis doesn't clear `Element` | RMC-BestFit | Combined into one issue. The second lead is broader than reported: 11 of the 12 document views aren't cleared. |
 | Prior grids' header styles and the summary statistics header styles | RMC-BestFit | Combined into one issue, with the three other places that use the same pattern. |
 | `BatchRunWindow` blocks only the close command, not Alt+F4 | RMC-BestFit | Broader than reported: the close command isn't blocked either, because `MetroWindow`'s own binding runs first. Written up in the batch run window issue. |
 
 ## Reproductions
 
-The throwaway programs used for the "Reproduced" entries aren't committed. Each issue shows the essential code and its output. They were run on Windows 11 x64, .NET 10.0.14, against: upstream source files compiled unchanged (dates); the `RMC.Wpf.Framework.Controls`/`Models` 1.0.5 NuGet packages (the WPF controls, the terms window and WAL); RMC-BestFit 2.0.0's shipped `Hec.Dss.dll` and 7-IU-6 `hecdss.dll`; hec-dss 7-JA-7 built from source; and RMC-BestFit's model built from `bfce2dd` (the race, and the grid row edits). WPF windows were created off-screen or laid out without being shown. For the element icons and the batch run window, small programs with the same type shapes as upstream's classes checked the C# rule for default interface members and WPF's command routing (.NET 10.0.14 and WindowsDesktop 10.0.14).
+The throwaway programs used for the "Reproduced" entries aren't committed. Each issue shows the essential code and its output. They were run on Windows 11 x64, .NET 10.0.14, against: upstream source files compiled unchanged (dates); the `RMC.Wpf.Framework.Controls`/`Models` 1.0.5 NuGet packages (the WPF controls, the terms window and WAL); RMC-BestFit 2.0.0's shipped `Hec.Dss.dll` and 7-IU-6 `hecdss.dll`; hec-dss 7-JA-7 built from source; and RMC-BestFit's model built from `bfce2dd` (the race, and the grid row edits). WPF windows were created off-screen or laid out without being shown. For the element icons and the batch run window, small programs with the same type shapes as upstream's classes checked the C# rule for default interface members and WPF's command routing (.NET 10.0.14 and WindowsDesktop 10.0.14). The Messenger leak was reproduced against the published `RMC.Wpf.Framework.Core` 1.0.5 package, and the bivariate maximum race with a program of the same loop shape. The bivariate undo issue wasn't run: it needs the WPF element and its undo manager.

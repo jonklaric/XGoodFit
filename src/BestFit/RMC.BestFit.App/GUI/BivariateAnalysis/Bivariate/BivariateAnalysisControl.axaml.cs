@@ -3,6 +3,7 @@
 // added in the constructor (WpfCompat's mouse events), and Avalonia's GetVisualAt is WPF's hit test. Avalonia's
 // XAML can't name grid columns, so upstream's named columns are found by position. The dispatcher's Post is
 // WPF's BeginInvoke, the cursors are WpfCompat's, and the plot area's background may be any solid colour brush.
+// The plot host takes the element's plot with WpfCompat's TakeContent (WPF's Content).
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -113,7 +114,9 @@ namespace RMC_BestFit
             // in XAML — no programmatic += needed.
             using (newElement.SuspendPlotBridges())
             {
-                thisControl.CopulaPlotHost.Content = newElement.CopulaPlot;
+                // XGoodFit port: TakeContent (WpfCompat's) is WPF's Content: it moves a plot that an earlier view
+                // of the element still shows (its document opened again), where Avalonia's Content throws.
+                thisControl.CopulaPlotHost.TakeContent(newElement.CopulaPlot);
                 thisControl.CopulaPlotToolbar.Plot = newElement.CopulaPlot;
 
                 thisControl.HistogramControl.SetPlot(newElement.BayesianPlots.HistogramPlot);

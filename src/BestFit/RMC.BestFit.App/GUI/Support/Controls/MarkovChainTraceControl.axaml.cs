@@ -485,7 +485,9 @@ namespace RMC_BestFit
             }
 #endif
             _plot = plot;
-            PlotHost.Content = _plot;
+            // XGoodFit port: TakeContent (WpfCompat's) is WPF's Content: it moves the plot from an earlier view of
+            // the element that still shows it (its document opened again), where Avalonia's Content throws.
+            PlotHost.TakeContent(_plot);
             PlotToolbar.Plot = _plot;
 
 #if DEBUG

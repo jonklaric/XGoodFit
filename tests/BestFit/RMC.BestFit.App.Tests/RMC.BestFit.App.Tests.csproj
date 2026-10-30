@@ -122,13 +122,27 @@
     <UpstreamCompileInclude Include="GUI/TimeSeriesData/TimeSeries/DssPathSelectorRowTests.cs" />
   </ItemGroup>
 
-  <!-- Upstream test files: Univariate Distribution Analysis: Univariate, Bulletin 17C, Point Process, Mixture, Composite. -->
+  <!-- Upstream test files: Univariate Distribution Analysis: Univariate, Bulletin 17C. -->
+  <ItemGroup>
+    <UpstreamCompileInclude Include="GUI/UnivariateChronologyPlotTests.cs" />
+    <!-- GUI/PointEstimatorControlContractTests.cs is a ported copy (Avalonia's controls, and only the families whose views are ported). -->
+  </ItemGroup>
+
+  <!-- Upstream test files: Univariate Distribution Analysis: Point Process, Mixture. -->
   <ItemGroup>
   </ItemGroup>
 
-  <!-- Upstream test files: Bivariate Distribution Analysis: Bivariate, Coincident Frequency. -->
+  <!-- Upstream test files: Univariate Distribution Analysis: Composite. -->
+  <ItemGroup>
+  </ItemGroup>
+
+  <!-- Upstream test files: Bivariate Distribution Analysis: Bivariate. -->
   <ItemGroup>
     <UpstreamCompileInclude Include="GUI/BivariateAnalysisControlCopulaTrackerTests.cs" />
+  </ItemGroup>
+
+  <!-- Upstream test files: Bivariate Distribution Analysis: Coincident Frequency. -->
+  <ItemGroup>
   </ItemGroup>
 
   <!-- Upstream test files: Rating Curve Analysis. -->
