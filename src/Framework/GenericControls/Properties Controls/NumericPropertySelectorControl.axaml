@@ -1,0 +1,62 @@
+<!--
+    XGoodFit port of upstream's Properties Controls/NumericPropertySelectorControl.xaml:
+    - The resource dictionary is included as an Avalonia resource; the title and dot leader styles
+      are ControlThemes, applied as dynamic resources. The dot leader is WpfCompat's Line, which
+      stretches as WPF's does, and Visibility bindings are WpfCompat's.
+    - PreviewMouseUp and MouseUp are pointer-release handlers, and PreviewTextInput and PreviewKeyDown
+      tunnelling handlers, all added in the code-behind.
+    - The item container style is a style for the combo box's items.
+-->
+<UserControl x:Class="GenericControls.NumericPropertySelectorControl" x:Name="NumericPropertySelector"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="using:GenericControls"
+             xmlns:wpf="using:WpfCompat"
+             xmlns:wpfs="using:WpfCompat.Shapes"
+             xmlns:glob="using:System.Globalization"
+             mc:Ignorable="d"
+             d:DesignHeight="450" d:DesignWidth="800">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceInclude Source="avares://GenericControls/Resources/ResourceDictionary.axaml"/>
+                <ResourceDictionary>
+                    <local:BooleanToVisibilityConverter x:Key="BoolToVisConverter" TrueValue="Visible" FalseValue="Collapsed"/>
+                    <local:DoubleConverter x:Key="DoubleConverter"/>
+                </ResourceDictionary>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <Grid Height="22" Background="Transparent">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width=".001*"/>
+            <ColumnDefinition Width="{Binding ElementName=NumericPropertySelector, Path=PropertyWidth, FallbackValue=10*}" 
+                              MaxWidth="{Binding ElementName=NumericPropertySelector, Path=MaxPropertyWidth, FallbackValue=200}"
+                              MinWidth="{Binding ElementName=NumericPropertySelector, Path=MinPropertyWidth, FallbackValue=10}"/>
+        </Grid.ColumnDefinitions>
+
+        <TextBlock Grid.Column="0" Theme="{DynamicResource TitleTextStyle}"
+                   Text="{Binding ElementName=NumericPropertySelector, Path=Title}" />
+        
+        <wpfs:Line Theme="{DynamicResource DotLeaderLineStyle}"
+              wpf:WpfElement.Visibility="{Binding ShowLeaderLine, ElementName=NumericPropertySelector, Converter={StaticResource BoolToVisConverter}}"/>
+        
+        
+        <ComboBox x:Name="NumericComboBox" Grid.Column="2" HorizontalAlignment="Stretch" IsTextSearchEnabled="True" 
+                  IsEditable="{Binding ElementName=NumericPropertySelector, Path=IsEditable}" 
+                  ItemsSource="{Binding ElementName=NumericPropertySelector, Path=NumericOptions}" 
+                  Text="{Binding Path=SelectedNumber, ElementName=NumericPropertySelector, UpdateSourceTrigger=PropertyChanged, StringFormat={}{0:0.#####}, Mode=TwoWay, TargetNullValue='N/A', FallbackValue='N/A', Converter={StaticResource DoubleConverter}, ConverterCulture={x:Static glob:CultureInfo.CurrentCulture}}"
+                  SizeChanged="ControlSizeChanged">
+                  <!--Width="{Binding Path=ComboBoxWidth, ElementName=NumericPropertySelector, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"-->
+            <ComboBox.Styles>
+                <Style Selector="ComboBoxItem">
+                    <Setter Property="HorizontalContentAlignment" Value="Right"/>
+                </Style>
+            </ComboBox.Styles>
+        </ComboBox>
+
+    </Grid>
+</UserControl>

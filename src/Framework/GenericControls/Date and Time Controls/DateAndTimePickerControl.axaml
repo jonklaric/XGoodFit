@@ -1,0 +1,33 @@
+<!--
+    XGoodFit port of upstream's Date and Time Controls/DateAndTimePickerControl.xaml: actual sizes are
+    the bounds' sizes. Not ported: the GotMouseCapture handler, which released the mouse capture WPF's
+    calendar keeps after a click; Avalonia's calendar doesn't keep it.
+-->
+<UserControl x:Class="GenericControls.DateAndTimePickerControl" x:Name="DateTimePicker"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="using:GenericControls"
+             mc:Ignorable="d" 
+             d:DesignHeight="250" Width="300">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <Viewbox x:Name="CalendarViewBox" Grid.Column="0" VerticalAlignment="Top">
+            <Calendar x:Name="CalendarSelector" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="0.5,-3.5,0.5,-3.5" DisplayDateChanged="CalendarSelector_DisplayDateChanged" SelectedDatesChanged="CalendarSelector_SelectedDatesChanged"></Calendar>
+        </Viewbox>
+        
+        <local:ClockControl x:Name="Clock" Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Top" TimeFontSize="20" SelectedTimeFontSize="20"
+                            Width="{Binding ElementName=CalendarViewBox, Path=Bounds.Width}"
+                            Height="{Binding ElementName=CalendarViewBox, Path=Bounds.Height}"
+                            BorderBrush="{DynamicResource Button.Static.Border}" BorderThickness="0.5"
+                            HasSeconds="{Binding ElementName=DateTimePicker, Path=HasSeconds, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                            Time="{Binding ElementName=DateTimePicker, Path=DateAndTime, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                            Is24Hour="{Binding ElementName=DateTimePicker, Path=Is24Hour, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"/>
+
+
+    </Grid>
+</UserControl>

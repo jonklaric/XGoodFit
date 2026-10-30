@@ -1,0 +1,36 @@
+<!--
+    XGoodFit port of upstream's General Controls/NumericSlider.xaml:
+    - Pressing the slider's track moves the thumb by LargeChange, WPF's default, rather than to the
+      pointer, Avalonia's (WpfCompat's WpfSlider.IsMoveToPointEnabled="False").
+    - The value converts to and from text with WPF's binding culture (WpfCompat's FormattingCulture,
+      en-US), as upstream's binding did.
+-->
+<UserControl x:Class="GenericControls.NumericSlider" x:Name="NumericSliderControl"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="using:GenericControls"
+             xmlns:wpf="using:WpfCompat"
+             mc:Ignorable="d"
+            d:DesignHeight="22" d:DesignWidth="120">
+    <Grid>
+
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!--Numeric Text box-->
+        <local:NumericTextBox x:Name="NumericTextBox" Height="22" Grid.Row="0" Grid.Column="0" Text="{Binding ElementName=NumericSliderControl, Path=Value, Mode=TwoWay, ConverterCulture={x:Static wpf:FormattingCulture.Current}}" />
+
+        <Slider x:Name="Slider" Grid.Row="0" Grid.Column="1" Orientation ="Horizontal" Margin="1" Height="22" 
+                Maximum="{Binding ElementName=NumericSliderControl, Path=Maximum, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                Minimum="{Binding ElementName=NumericSliderControl, Path=Minimum, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                Value="{Binding ElementName=NumericSliderControl, Path=Value, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                TickFrequency="{Binding ElementName=NumericSliderControl, Path=Increment, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                IsSnapToTickEnabled="True" TickPlacement="BottomRight"
+                wpf:WpfSlider.IsMoveToPointEnabled="False"
+                />
+    </Grid>
+</UserControl>

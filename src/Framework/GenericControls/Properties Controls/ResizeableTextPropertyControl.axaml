@@ -1,0 +1,55 @@
+<!--
+    XGoodFit port of upstream's Properties Controls/ResizeableTextPropertyControl.xaml:
+    - The resource dictionary is included as an Avalonia resource; the title and dot leader styles
+      are ControlThemes, applied as dynamic resources. The dot leader is WpfCompat's Line, which
+      stretches as WPF's does, and Visibility bindings are WpfCompat's.
+    - The hidden text box is transparent and invisible to the pointer, WPF's Hidden. Height="Auto"
+      is Avalonia's default height, so it isn't set.
+-->
+<UserControl x:Class="GenericControls.ResizeableTextPropertyControl" x:Name="ResizableTextProperty"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="using:GenericControls"
+             xmlns:wpf="using:WpfCompat"
+             xmlns:wpfs="using:WpfCompat.Shapes"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceInclude Source="avares://GenericControls/Resources/ResourceDictionary.axaml"/>
+                <ResourceDictionary>
+                    <local:BooleanToVisibilityConverter x:Key="BoolToVisConverter" TrueValue="Visible" FalseValue="Collapsed"/>
+                </ResourceDictionary>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <Grid Background="Transparent">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width=".001*"/>
+            <ColumnDefinition Width="{Binding ElementName=ResizableTextProperty, Path=PropertyWidth, FallbackValue=10*}" 
+                              MaxWidth="{Binding ElementName=ResizableTextProperty, Path=MaxPropertyWidth, FallbackValue=200}"
+                              MinWidth="{Binding ElementName=ResizableTextProperty, Path=MinPropertyWidth, FallbackValue=10}"/>
+        </Grid.ColumnDefinitions>
+
+        <TextBlock Grid.Column="0" Theme="{DynamicResource TitleTextStyle}"
+                   Text="{Binding ElementName=ResizableTextProperty, Path=Title}" />
+
+        <wpfs:Line Theme="{DynamicResource DotLeaderLineStyle}"
+              wpf:WpfElement.Visibility="{Binding ShowLeaderLine, ElementName=ResizableTextProperty, Converter={StaticResource BoolToVisConverter}}"/>
+
+        <!--Put hidden textbox here to force a default height -->
+        <TextBox Name="DefaultTextBoxHeight" IsHitTestVisible="False" Opacity="0" Focusable="False" Grid.Column="2" VerticalAlignment="Bottom" HorizontalAlignment="Stretch"/>
+
+        <local:ResizableTextBoxControl Grid.Column="2" SizeChanged="ControlSizeChanged"
+                                       HorizontalAlignment="Stretch" VerticalAlignment="Bottom"
+                                       MinHeight="22" MaxHeight="132"
+                                       Text="{Binding Path=Text, ElementName=ResizableTextProperty, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" 
+                                       IsReadOnly="{Binding IsReadOnly, ElementName=ResizableTextProperty, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"/>
+        <!--MinHeight="{Binding ElementName=DefaultTextBoxHeight, Path=ActualHeight}"-->
+        <!--Height="{Binding Path=TextBoxHeight, ElementName=ResizableTextProperty, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"-->
+    </Grid>
+</UserControl>

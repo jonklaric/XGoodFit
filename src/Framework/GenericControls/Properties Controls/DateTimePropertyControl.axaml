@@ -1,0 +1,54 @@
+<!--
+    XGoodFit port of upstream's Properties Controls/DateTimePropertyControl.xaml:
+    - The resource dictionary is included as an Avalonia resource; the title and dot leader styles
+      are ControlThemes, applied as dynamic resources. The dot leader is WpfCompat's Line, which
+      stretches as WPF's does, and Visibility bindings are WpfCompat's.
+-->
+<UserControl x:Class="GenericControls.DateTimePropertyControl"
+             x:Name="DateTimePropertyEditor"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="using:GenericControls"
+             xmlns:wpf="using:WpfCompat"
+             xmlns:wpfs="using:WpfCompat.Shapes"
+             mc:Ignorable="d" 
+             d:DesignHeight="22" 
+             d:DesignWidth="300">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceInclude Source="avares://GenericControls/Resources/ResourceDictionary.axaml"/>
+                <ResourceDictionary>
+                    <local:BooleanToVisibilityConverter x:Key="BoolToVisConverter" TrueValue="Visible" FalseValue="Collapsed"/>
+                </ResourceDictionary>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <Grid Height="22" Background="Transparent">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width=".001*"/>
+            <ColumnDefinition Width="{Binding ElementName=DateTimePropertyEditor, Path=PropertyWidth}"
+                              MaxWidth="{Binding ElementName=DateTimePropertyEditor, Path=MaxPropertyWidth, FallbackValue=200}"
+                              MinWidth="{Binding ElementName=DateTimePropertyEditor, Path=MinPropertyWidth, FallbackValue=10}"/>
+        </Grid.ColumnDefinitions>
+
+        <TextBlock
+            Theme="{DynamicResource TitleTextStyle}"
+            Text="{Binding ElementName=DateTimePropertyEditor, Path=Title}" />
+
+        <wpfs:Line 
+            Theme="{DynamicResource DotLeaderLineStyle}"
+            wpf:WpfElement.Visibility="{Binding ShowLeaderLine, ElementName=DateTimePropertyEditor, Converter={StaticResource BoolToVisConverter}}"/>
+
+        <local:DateAndTimeTextBoxControl 
+            x:Name="DateTimeControl" 
+            Grid.Column="2" 
+            SizeChanged="ControlSizeChanged" 
+            SelectedDateTime="{Binding SelectedDateTime, ElementName=DateTimePropertyEditor, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+            HorizontalAlignment="Stretch" 
+            VerticalAlignment="Stretch"/>
+    </Grid>
+</UserControl>

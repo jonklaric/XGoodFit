@@ -7,14 +7,16 @@
     - StackPanelButtonStyleBase and VerticalSeparatorStyle aren't ported. Themes defines both keys and
       is merged after this dictionary (by ThemeManager.SetTheme, as in upstream's App), so its
       definitions are the ones the app uses.
-    - Each control's theme is added here as the control is ported. Still to come: DataGridToolbar,
-      SeparatorWithHeader, NumericTextBox, NumericTextBox2, NumericUpDown, NumericSlider,
-      ThicknessControl, GridLengthControl, ColorPicker, ColorPickerPopup, ClockControl, the date and
-      time controls, ResizableTextBoxControl, the property controls and the DataGrid styles.
+    - Each control's theme is added here as the control is ported, in upstream's order. Still to come:
+      DataGridToolbar, StringListPropertyControl (with CopyPasteDataGrid) and the DataGrid styles. Not
+      ported, as nothing BestFit uses needs them (decision D10): the ThicknessControl,
+      GridLengthControl, Point3DPropertyControl, FolderSelectorControl, DirectorySelectorControl and
+      CalendarWeekRulePropertyControl styles.
 -->
 <ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:local="using:GenericControls">
+                    xmlns:local="using:GenericControls"
+                    xmlns:wpfs="using:WpfCompat.Shapes">
 
     <!--
     ╔═══════════════════════════════════════════════════════════════════════════════╗
@@ -60,10 +62,12 @@
     <SolidColorBrush x:Key="SeparatorBackground">#00FFFFFF</SolidColorBrush>
 
     <!-- Dot Leader Line Style for property controls -->
-    <ControlTheme TargetType="Line" x:Key="DotLeaderLineStyle">
+    <ControlTheme TargetType="wpfs:Line" x:Key="DotLeaderLineStyle">
         <Setter Property="Grid.Column" Value="1"/>
-        <Setter Property="StartPoint" Value="0,0"/>
-        <Setter Property="EndPoint" Value="1,0"/>
+        <Setter Property="X1" Value="0"/>
+        <Setter Property="Y1" Value="0"/>
+        <Setter Property="X2" Value="1"/>
+        <Setter Property="Y2" Value="0"/>
         <Setter Property="Stroke" Value="{DynamicResource Button.Static.Border}"/>
         <Setter Property="StrokeThickness" Value="1"/>
         <Setter Property="VerticalAlignment" Value="Bottom"/>
@@ -81,6 +85,40 @@
     </ControlTheme>
 
     <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+    <!-- SEPARATOR WITH HEADER                                                        -->
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+
+    <ControlTheme x:Key="SeparatorWithHeaderStyle" TargetType="local:SeparatorWithHeader">
+        <Setter Property="Foreground" Value="{DynamicResource EnvironmentWindowText}"/>
+    </ControlTheme>
+
+    <ControlTheme x:Key="{x:Type local:SeparatorWithHeader}" TargetType="local:SeparatorWithHeader" BasedOn="{StaticResource SeparatorWithHeaderStyle}"/>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+    <!-- NUMERIC TEXTBOX                                                              -->
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+
+    <ControlTheme x:Key="NumericTextBoxStyle" TargetType="local:NumericTextBox">
+        <Setter Property="Background" Value="{DynamicResource TextBox.Static.Background}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource TextBox.Static.Border}"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextBox.Static.Foreground}"/>
+    </ControlTheme>
+
+    <ControlTheme x:Key="{x:Type local:NumericTextBox}" TargetType="local:NumericTextBox" BasedOn="{StaticResource NumericTextBoxStyle}"/>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+    <!-- NUMERIC TEXTBOX 2                                                            -->
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+
+    <ControlTheme x:Key="NumericTextBox2Style" TargetType="local:NumericTextBox2">
+        <Setter Property="Background" Value="{DynamicResource TextBox.Static.Background}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource TextBox.Static.Border}"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextBox.Static.Foreground}"/>
+    </ControlTheme>
+
+    <ControlTheme x:Key="{x:Type local:NumericTextBox2}" TargetType="local:NumericTextBox2" BasedOn="{StaticResource NumericTextBox2Style}"/>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
     <!-- NAME TEXTBOX                                                                 -->
     <!-- ═══════════════════════════════════════════════════════════════════════════ -->
 
@@ -89,6 +127,86 @@
     </ControlTheme>
 
     <ControlTheme x:Key="{x:Type local:NameTextBox}" TargetType="local:NameTextBox" BasedOn="{StaticResource NameTextBoxStyle}"/>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+    <!-- NUMERIC UP DOWN                                                              -->
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+
+    <ControlTheme x:Key="NumericUpDownStyle" TargetType="local:NumericUpDown">
+        <Setter Property="Background" Value="{DynamicResource TextBox.Static.Background}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource TextBox.Static.Border}"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextBox.Static.Foreground}"/>
+    </ControlTheme>
+
+    <ControlTheme x:Key="{x:Type local:NumericUpDown}" TargetType="local:NumericUpDown" BasedOn="{StaticResource NumericUpDownStyle}"/>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+    <!-- NUMERIC SLIDER                                                               -->
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+
+    <ControlTheme x:Key="NumericSliderStyle" TargetType="local:NumericSlider">
+        <Setter Property="Foreground" Value="{DynamicResource EnvironmentWindowText}"/>
+    </ControlTheme>
+
+    <ControlTheme x:Key="{x:Type local:NumericSlider}" TargetType="local:NumericSlider" BasedOn="{StaticResource NumericSliderStyle}"/>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+    <!-- COLOR PICKER                                                                 -->
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+
+    <ControlTheme x:Key="ColorPickerStyle" TargetType="local:ColorPicker">
+        <Setter Property="Foreground" Value="{DynamicResource EnvironmentWindowText}"/>
+        <Setter Property="Background" Value="{DynamicResource EnvironmentWindowBackground}"/>
+    </ControlTheme>
+
+    <ControlTheme x:Key="{x:Type local:ColorPicker}" TargetType="local:ColorPicker" BasedOn="{StaticResource ColorPickerStyle}"/>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+    <!-- COLOR PICKER POPUP                                                           -->
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+
+    <ControlTheme x:Key="ColorPickerPopupStyle" TargetType="local:ColorPickerPopup">
+        <Setter Property="Foreground" Value="{DynamicResource EnvironmentWindowText}"/>
+        <Setter Property="Background" Value="{DynamicResource EnvironmentWindowBackground}"/>
+    </ControlTheme>
+
+    <ControlTheme x:Key="{x:Type local:ColorPickerPopup}" TargetType="local:ColorPickerPopup" BasedOn="{StaticResource ColorPickerPopupStyle}"/>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+    <!-- CLOCK CONTROL                                                                -->
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+
+    <ControlTheme x:Key="ClockControlStyle" TargetType="local:ClockControl">
+        <Setter Property="Foreground" Value="{DynamicResource EnvironmentWindowText}"/>
+    </ControlTheme>
+
+    <ControlTheme x:Key="{x:Type local:ClockControl}" TargetType="local:ClockControl" BasedOn="{StaticResource ClockControlStyle}"/>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+    <!-- DATE AND TIME CONTROLS                                                       -->
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+
+    <ControlTheme x:Key="DateAndTimePickerControlStyle" TargetType="local:DateAndTimePickerControl">
+        <Setter Property="Foreground" Value="{DynamicResource EnvironmentWindowText}"/>
+    </ControlTheme>
+
+    <ControlTheme x:Key="{x:Type local:DateAndTimePickerControl}" TargetType="local:DateAndTimePickerControl" BasedOn="{StaticResource DateAndTimePickerControlStyle}"/>
+
+    <ControlTheme x:Key="DateAndTimeTextBoxControlStyle" TargetType="local:DateAndTimeTextBoxControl">
+        <Setter Property="Foreground" Value="{DynamicResource EnvironmentWindowText}"/>
+    </ControlTheme>
+
+    <ControlTheme x:Key="{x:Type local:DateAndTimeTextBoxControl}" TargetType="local:DateAndTimeTextBoxControl" BasedOn="{StaticResource DateAndTimeTextBoxControlStyle}"/>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+    <!-- RESIZABLE TEXTBOX                                                            -->
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+
+    <ControlTheme x:Key="ResizableTextBoxControlStyle" TargetType="local:ResizableTextBoxControl">
+        <Setter Property="Foreground" Value="{DynamicResource EnvironmentWindowText}"/>
+    </ControlTheme>
+
+    <ControlTheme x:Key="{x:Type local:ResizableTextBoxControl}" TargetType="local:ResizableTextBoxControl" BasedOn="{StaticResource ResizableTextBoxControlStyle}"/>
 
     <!-- ═══════════════════════════════════════════════════════════════════════════ -->
     <!-- NAME DIALOG                                                                  -->
@@ -120,5 +238,119 @@
     <ControlTheme x:Key="PropertyControlBaseStyle" TargetType="UserControl">
         <Setter Property="Foreground" Value="{DynamicResource EnvironmentWindowText}"/>
     </ControlTheme>
+
+    <!-- Text Property Control -->
+    <ControlTheme x:Key="TextPropertyControlStyle" TargetType="local:TextPropertyControl">
+        <Setter Property="Foreground" Value="{DynamicResource EnvironmentWindowText}"/>
+    </ControlTheme>
+    <ControlTheme x:Key="{x:Type local:TextPropertyControl}" TargetType="local:TextPropertyControl" BasedOn="{StaticResource TextPropertyControlStyle}"/>
+
+    <!-- Name Text Property Control -->
+    <ControlTheme x:Key="NameTextPropertyControlStyle" TargetType="local:NameTextPropertyControl">
+        <Setter Property="Foreground" Value="{DynamicResource EnvironmentWindowText}"/>
+    </ControlTheme>
+    <ControlTheme x:Key="{x:Type local:NameTextPropertyControl}" TargetType="local:NameTextPropertyControl" BasedOn="{StaticResource NameTextPropertyControlStyle}"/>
+
+    <!-- Resizeable Text Property Control -->
+    <ControlTheme x:Key="ResizeableTextPropertyControlStyle" TargetType="local:ResizeableTextPropertyControl">
+        <Setter Property="Foreground" Value="{DynamicResource EnvironmentWindowText}"/>
+    </ControlTheme>
+    <ControlTheme x:Key="{x:Type local:ResizeableTextPropertyControl}" TargetType="local:ResizeableTextPropertyControl" BasedOn="{StaticResource ResizeableTextPropertyControlStyle}"/>
+
+    <!-- Boolean Property Control -->
+    <ControlTheme x:Key="BooleanPropertyControlStyle" TargetType="local:BooleanPropertyControl">
+        <Setter Property="Foreground" Value="{DynamicResource EnvironmentWindowText}"/>
+    </ControlTheme>
+    <ControlTheme x:Key="{x:Type local:BooleanPropertyControl}" TargetType="local:BooleanPropertyControl" BasedOn="{StaticResource BooleanPropertyControlStyle}"/>
+
+    <!-- Numeric Property Control -->
+    <ControlTheme x:Key="NumericPropertyControlStyle" TargetType="local:NumericPropertyControl">
+        <Setter Property="Foreground" Value="{DynamicResource EnvironmentWindowText}"/>
+    </ControlTheme>
+    <ControlTheme x:Key="{x:Type local:NumericPropertyControl}" TargetType="local:NumericPropertyControl" BasedOn="{StaticResource NumericPropertyControlStyle}"/>
+
+    <!-- Numeric Auto Property Control -->
+    <ControlTheme x:Key="NumericAutoPropertyControlStyle" TargetType="local:NumericAutoPropertyControl">
+        <Setter Property="Foreground" Value="{DynamicResource EnvironmentWindowText}"/>
+    </ControlTheme>
+    <ControlTheme x:Key="{x:Type local:NumericAutoPropertyControl}" TargetType="local:NumericAutoPropertyControl" BasedOn="{StaticResource NumericAutoPropertyControlStyle}"/>
+
+    <!-- Numeric Slider Property Control -->
+    <ControlTheme x:Key="NumericSliderPropertyControlStyle" TargetType="local:NumericSliderPropertyControl">
+        <Setter Property="Foreground" Value="{DynamicResource EnvironmentWindowText}"/>
+    </ControlTheme>
+    <ControlTheme x:Key="{x:Type local:NumericSliderPropertyControl}" TargetType="local:NumericSliderPropertyControl" BasedOn="{StaticResource NumericSliderPropertyControlStyle}"/>
+
+    <!-- Numeric Property Selector Control -->
+    <ControlTheme x:Key="NumericPropertySelectorControlStyle" TargetType="local:NumericPropertySelectorControl">
+        <Setter Property="Foreground" Value="{DynamicResource EnvironmentWindowText}"/>
+    </ControlTheme>
+    <ControlTheme x:Key="{x:Type local:NumericPropertySelectorControl}" TargetType="local:NumericPropertySelectorControl" BasedOn="{StaticResource NumericPropertySelectorControlStyle}"/>
+
+    <!-- Color Property Control -->
+    <ControlTheme x:Key="ColorPropertyControlStyle" TargetType="local:ColorPropertyControl">
+        <Setter Property="Foreground" Value="{DynamicResource EnvironmentWindowText}"/>
+    </ControlTheme>
+    <ControlTheme x:Key="{x:Type local:ColorPropertyControl}" TargetType="local:ColorPropertyControl" BasedOn="{StaticResource ColorPropertyControlStyle}"/>
+
+    <!-- DateTime Property Control -->
+    <ControlTheme x:Key="DateTimePropertyControlStyle" TargetType="local:DateTimePropertyControl">
+        <Setter Property="Foreground" Value="{DynamicResource EnvironmentWindowText}"/>
+    </ControlTheme>
+    <ControlTheme x:Key="{x:Type local:DateTimePropertyControl}" TargetType="local:DateTimePropertyControl" BasedOn="{StaticResource DateTimePropertyControlStyle}"/>
+
+    <!-- Font Selector Control -->
+    <ControlTheme x:Key="FontSelectorControlStyle" TargetType="local:FontSelectorControl">
+        <Setter Property="Foreground" Value="{DynamicResource EnvironmentWindowText}"/>
+    </ControlTheme>
+    <ControlTheme x:Key="{x:Type local:FontSelectorControl}" TargetType="local:FontSelectorControl" BasedOn="{StaticResource FontSelectorControlStyle}"/>
+
+    <!-- Font Weight Selector Control -->
+    <ControlTheme x:Key="FontWeightSelectorControlStyle" TargetType="local:FontWeightSelectorControl">
+        <Setter Property="Foreground" Value="{DynamicResource EnvironmentWindowText}"/>
+    </ControlTheme>
+    <ControlTheme x:Key="{x:Type local:FontWeightSelectorControl}" TargetType="local:FontWeightSelectorControl" BasedOn="{StaticResource FontWeightSelectorControlStyle}"/>
+
+    <!-- Line Style Selector Control -->
+    <ControlTheme x:Key="LineStyleSelectorControlStyle" TargetType="local:LineStyleSelectorControl">
+        <Setter Property="Foreground" Value="{DynamicResource EnvironmentWindowText}"/>
+    </ControlTheme>
+    <ControlTheme x:Key="{x:Type local:LineStyleSelectorControl}" TargetType="local:LineStyleSelectorControl" BasedOn="{StaticResource LineStyleSelectorControlStyle}"/>
+
+    <!-- Line Width Selector Control -->
+    <ControlTheme x:Key="LineWidthSelectorControlStyle" TargetType="local:LineWidthSelectorControl">
+        <Setter Property="Foreground" Value="{DynamicResource EnvironmentWindowText}"/>
+    </ControlTheme>
+    <ControlTheme x:Key="{x:Type local:LineWidthSelectorControl}" TargetType="local:LineWidthSelectorControl" BasedOn="{StaticResource LineWidthSelectorControlStyle}"/>
+
+    <!-- Horizontal Alignment Control -->
+    <ControlTheme x:Key="HorizontalAlignmentControlStyle" TargetType="local:HorizontalAlignmentControl">
+        <Setter Property="Foreground" Value="{DynamicResource EnvironmentWindowText}"/>
+    </ControlTheme>
+    <ControlTheme x:Key="{x:Type local:HorizontalAlignmentControl}" TargetType="local:HorizontalAlignmentControl" BasedOn="{StaticResource HorizontalAlignmentControlStyle}"/>
+
+    <!-- Vertical Alignment Control -->
+    <ControlTheme x:Key="VerticalAlignmentControlStyle" TargetType="local:VerticalAlignmentControl">
+        <Setter Property="Foreground" Value="{DynamicResource EnvironmentWindowText}"/>
+    </ControlTheme>
+    <ControlTheme x:Key="{x:Type local:VerticalAlignmentControl}" TargetType="local:VerticalAlignmentControl" BasedOn="{StaticResource VerticalAlignmentControlStyle}"/>
+
+    <!-- Content Property Control -->
+    <ControlTheme x:Key="ContentPropertyControlStyle" TargetType="local:ContentPropertyControl">
+        <Setter Property="Foreground" Value="{DynamicResource EnvironmentWindowText}"/>
+    </ControlTheme>
+    <ControlTheme x:Key="{x:Type local:ContentPropertyControl}" TargetType="local:ContentPropertyControl" BasedOn="{StaticResource ContentPropertyControlStyle}"/>
+
+    <!-- Point Property Control -->
+    <ControlTheme x:Key="PointPropertyControlStyle" TargetType="local:PointPropertyControl">
+        <Setter Property="Foreground" Value="{DynamicResource EnvironmentWindowText}"/>
+    </ControlTheme>
+    <ControlTheme x:Key="{x:Type local:PointPropertyControl}" TargetType="local:PointPropertyControl" BasedOn="{StaticResource PointPropertyControlStyle}"/>
+
+    <!-- File Selector Control -->
+    <ControlTheme x:Key="FileSelectorControlStyle" TargetType="local:FileSelectorControl">
+        <Setter Property="Foreground" Value="{DynamicResource EnvironmentWindowText}"/>
+    </ControlTheme>
+    <ControlTheme x:Key="{x:Type local:FileSelectorControl}" TargetType="local:FileSelectorControl" BasedOn="{StaticResource FileSelectorControlStyle}"/>
 
 </ResourceDictionary>

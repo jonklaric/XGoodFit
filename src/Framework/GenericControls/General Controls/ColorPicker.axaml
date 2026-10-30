@@ -1,0 +1,453 @@
+<!--
+    XGoodFit port of upstream's General Controls/ColorPicker.xaml:
+    - The slider templates bind their track to the slider, as WPF does by itself, and their thumbs'
+      mouse-over triggers are nested styles. WPF's SizeWE and SizeNS cursors are Avalonia's SizeWestEast
+      and SizeNorthSouth.
+    - IsMoveToPointEnabled is WpfCompat's WpfSlider.IsMoveToPointEnabled, which moves the thumb to the
+      pointer as WPF does: once, without dragging it.
+    - Gradient and drawing-brush points are relative (with %), Avalonia's form; a brush's Viewport is
+      its DestinationRect, and the drawing brushes stretch to Fill, WPF's default (Avalonia's is
+      Uniform). Rectangles are written with commas. PresentationOptions:Freeze and SnapsToDevicePixels aren't ported.
+    - The implicit Rectangle style, which WPF doesn't apply inside templates, is a style for the common
+      colours' rectangles, in the panel that holds them. Its MouseLeftButtonUp EventSetter is a handler
+      the code-behind adds to each one (the panel is named QuickColorsPanel for that).
+    - Avalonia names only controls, so the code-behind finds the named brushes and gradient stops through
+      the controls that hold them; the alpha slider is named ASlider for that.
+    - The preview border's mouse events are pointer events.
+-->
+<UserControl x:Class="GenericControls.ColorPicker" x:Name="ColorPickerRoot"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="using:GenericControls"
+             xmlns:wpf="using:WpfCompat"
+             mc:Ignorable="d" 
+             d:DesignHeight="200" d:DesignWidth="126">
+    <UserControl.Resources>
+        <local:ColorToByteConverter x:Key="AlphaColorConverter" Component="A"/>
+        <local:ColorToByteConverter x:Key="RedColorConverter" Component="R"/>
+        <local:ColorToByteConverter x:Key="GreenColorConverter" Component="G"/>
+        <local:ColorToByteConverter x:Key="BlueColorConverter" Component="B"/>
+
+        <ControlTemplate x:Key="ColorSliderTemplate" TargetType="Slider">
+            <Border Cursor="SizeWestEast" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}">
+                <Grid>
+                    <Track x:Name="PART_Track"
+                           Minimum="{TemplateBinding Minimum}" Maximum="{TemplateBinding Maximum}"
+                           Value="{TemplateBinding Value, Mode=TwoWay}" Orientation="{TemplateBinding Orientation}"
+                           IsDirectionReversed="{TemplateBinding IsDirectionReversed}">
+                        <Track.Thumb>
+                            <Thumb x:Name="Thumb">
+                                <Thumb.Template>
+                                    <ControlTemplate TargetType="Thumb">
+                                        <Grid Height="18">
+                                            <Rectangle StrokeThickness="1" Width="10">
+                                                <Rectangle.Styles>
+                                                    <Style Selector="Rectangle">
+                                                        <Setter Property="Stroke" Value="{DynamicResource Button.Static.Border}"/>
+                                                        <Setter Property="Fill" Value="{DynamicResource TextBox.Static.Background}"/>
+                                                    </Style>
+                                                    <Style Selector="Rectangle:pointerover">
+                                                        <Setter Property="Stroke" Value="{DynamicResource Button.MouseOver.Border}"/>
+                                                        <Setter Property="Fill" Value="{DynamicResource Button.MouseOver.Background}"/>
+                                                    </Style>
+                                                </Rectangle.Styles>
+                                            </Rectangle>
+                                        </Grid>
+                                    </ControlTemplate>
+                                </Thumb.Template>
+                            </Thumb>
+                        </Track.Thumb>
+                    </Track>
+                </Grid>
+            </Border>
+        </ControlTemplate>
+
+        <ControlTemplate x:Key="VerticalColorSliderTemplate" TargetType="Slider">
+            <Border Cursor="SizeNorthSouth" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}">
+                <Grid>
+                    <Track x:Name="PART_Track"
+                           Minimum="{TemplateBinding Minimum}" Maximum="{TemplateBinding Maximum}"
+                           Value="{TemplateBinding Value, Mode=TwoWay}" Orientation="{TemplateBinding Orientation}"
+                           IsDirectionReversed="{TemplateBinding IsDirectionReversed}">
+                        <Track.Thumb>
+                            <Thumb x:Name="Thumb">
+                                <Thumb.Template>
+                                    <ControlTemplate TargetType="Thumb">
+                                        <Grid Width="18">
+                                            <Rectangle StrokeThickness="1" Height="10">
+                                                <Rectangle.Styles>
+                                                    <Style Selector="Rectangle">
+                                                        <Setter Property="Stroke" Value="{DynamicResource Button.Static.Border}"/>
+                                                        <Setter Property="Fill" Value="{DynamicResource TextBox.Static.Background}"/>
+                                                    </Style>
+                                                    <Style Selector="Rectangle:pointerover">
+                                                        <Setter Property="Stroke" Value="{DynamicResource Button.MouseOver.Border}"/>
+                                                        <Setter Property="Fill" Value="{DynamicResource Button.MouseOver.Background}"/>
+                                                    </Style>
+                                                </Rectangle.Styles>
+                                            </Rectangle>
+                                        </Grid>
+                                    </ControlTemplate>
+                                </Thumb.Template>
+                            </Thumb>
+                        </Track.Thumb>
+                    </Track>
+                </Grid>
+            </Border>
+        </ControlTemplate>
+
+        <DrawingBrush x:Key="CheckerBrush" DestinationRect="0,0,10,10" TileMode="Tile" Stretch="Fill">
+            <DrawingBrush.Drawing>
+                <DrawingGroup>
+                    <GeometryDrawing Brush="White">
+                        <GeometryDrawing.Geometry>
+                            <RectangleGeometry Rect="0,0,50,50" />
+                        </GeometryDrawing.Geometry>
+                    </GeometryDrawing>
+                    <GeometryDrawing Brush="LightGray">
+                        <GeometryDrawing.Geometry>
+                            <GeometryGroup>
+                                <RectangleGeometry Rect="0,0,50,50" />
+                                <RectangleGeometry Rect="50,50,50,50" />
+                            </GeometryGroup>
+                        </GeometryDrawing.Geometry>
+                    </GeometryDrawing>
+                </DrawingGroup>
+            </DrawingBrush.Drawing>
+        </DrawingBrush>
+
+    </UserControl.Resources>
+    <Grid Background="{Binding Background, ElementName=ColorPickerRoot}">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="1*"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="1*" MinHeight="30"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!--Color Tone Window-->
+        <Border
+            Grid.Row="0"
+            Grid.Column="0"
+            Background="{DynamicResource EnvironmentWindowBackground}"
+            BorderBrush="{DynamicResource Button.Static.Border}"
+            BorderThickness="1">
+            <Border
+                Name="PreviewBorderBackground"
+                Background="{StaticResource CheckerBrush}">
+            <Border 
+                Name="PreviewBorder" 
+                HorizontalAlignment="Stretch" 
+                VerticalAlignment="Stretch" 
+                Cursor="Cross"
+                PointerPressed="PreviewBorder_MouseLeftButtonDown"
+                PointerReleased="PreviewBorder_MouseUp"
+                PointerMoved="PreviewBorder_MouseMove"
+                PointerExited="PreviewBorder_MouseLeave"
+                SizeChanged="PreviewBorder_SizeChanged">
+                <Border.Background>
+                    <DrawingBrush Stretch="Fill">
+                        <DrawingBrush.Drawing>
+                            <DrawingGroup>
+                                <GeometryDrawing>
+                                    <GeometryDrawing.Geometry>
+                                        <RectangleGeometry Rect="0,0,50,50" />
+                                    </GeometryDrawing.Geometry>
+                                    <GeometryDrawing.Brush>
+                                        <SolidColorBrush/>
+                                    </GeometryDrawing.Brush>
+                                </GeometryDrawing>
+                                <GeometryDrawing>
+                                    <GeometryDrawing.Geometry>
+                                        <RectangleGeometry Rect="0,0,50,50" />
+                                    </GeometryDrawing.Geometry>
+                                    <GeometryDrawing.Brush>
+                                        <LinearGradientBrush StartPoint="50%,100%" EndPoint="50%,0%">
+                                            <GradientStop Offset="0.0" Color="Black" />
+                                            <GradientStop Offset="1.0" Color="Transparent"/>
+                                        </LinearGradientBrush>
+                                    </GeometryDrawing.Brush>
+                                </GeometryDrawing>
+                                <DrawingGroup>
+                                    <GeometryDrawing>
+                                        <GeometryDrawing.Geometry>
+                                            <RectangleGeometry Rect="0,0,50,50" />
+                                        </GeometryDrawing.Geometry>
+                                        <GeometryDrawing.Brush>
+                                            <LinearGradientBrush StartPoint="50%,0%" EndPoint="50%,100%">
+                                                <GradientStop Offset="0.0" Color="White" />
+                                                <GradientStop Offset="1" Color="Black" />
+                                            </LinearGradientBrush>
+                                        </GeometryDrawing.Brush>
+                                    </GeometryDrawing>
+                                    <DrawingGroup.OpacityMask>
+                                        <LinearGradientBrush StartPoint="0%,50%" EndPoint="100%,50%">
+                                            <GradientStop Offset="0.0" Color="#FF000000" />
+                                            <GradientStop Offset="1" Color="#00000000" />
+                                        </LinearGradientBrush>
+                                    </DrawingGroup.OpacityMask>
+                                </DrawingGroup>
+                            </DrawingGroup>
+                        </DrawingBrush.Drawing>
+                    </DrawingBrush>
+                </Border.Background>
+                <Grid>
+                    <Path Name="PART_ColorMarker1" StrokeThickness="2" Fill="Transparent" Stroke="White">
+                        <Path.Data>
+                            <EllipseGeometry RadiusX="5" RadiusY="5"/>
+                        </Path.Data>
+                    </Path>
+                    <Path Name="PART_ColorMarker2" StrokeThickness="1" Fill="Transparent" Stroke="Black">
+                        <Path.Data>
+                            <EllipseGeometry RadiusX="3.5" RadiusY="3.5"/>
+                        </Path.Data>
+                    </Path>
+                </Grid>
+            </Border>
+            </Border>
+        </Border>
+
+        <!--Vertical Slider-->
+        <Slider
+            x:Name="PART_ColorSlider"
+                Cursor="SizeNorthSouth"
+                Margin="2,0,0,0"
+                Grid.Column="1"
+                Value="0" 
+                wpf:WpfSlider.IsMoveToPointEnabled="True"
+                IsSnapToTickEnabled="False"  
+                Maximum="360" 
+                Orientation="Vertical" 
+                HorizontalAlignment="Center" 
+                Template="{StaticResource VerticalColorSliderTemplate}"
+                ValueChanged="PART_ColorSlider_ValueChanged">
+        </Slider>
+
+        <!--Opacity Slider-->
+        <Grid Grid.Row="1" Grid.ColumnSpan="2" Margin="0,1,0,1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0" Text="A" HorizontalAlignment="Center" TextAlignment="Center" Width="12" VerticalAlignment="Center"
+                       Foreground="{DynamicResource EnvironmentWindowText}"/>
+            <Border 
+                Grid.Column="1" 
+                BorderThickness="0" 
+                Padding="0"
+                Background="{StaticResource CheckerBrush}" 
+                VerticalAlignment="Stretch">
+                <Slider 
+                    x:Name="ASlider"
+                    Orientation="Horizontal"
+                    Minimum="0" 
+                    Maximum="255" 
+                    TickFrequency="2.55" 
+                    SmallChange="2.55" 
+                    LargeChange="5.1" 
+                    VerticalAlignment="Stretch" 
+                    wpf:WpfSlider.IsMoveToPointEnabled="True"
+                    Template="{StaticResource ColorSliderTemplate}"
+                    Value="{Binding ElementName=ColorPickerRoot, Path=Color, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay, Converter={StaticResource AlphaColorConverter}}">
+                    <Slider.Background>
+                        <LinearGradientBrush StartPoint="0%,50%" EndPoint="100%,50%">
+                            <GradientStop Offset="0.0" Color="Transparent" />
+                            <GradientStop Offset="1.0" Color="Black" />
+                        </LinearGradientBrush>
+                    </Slider.Background>
+                </Slider>
+            </Border>
+
+            <local:NumericTextBox2
+                x:Name="AlphaTextBox"
+                Grid.Column="2"
+                Margin="1,0,0,0"
+                Width="30" 
+                MinValue="0"
+                MaxValue="255"
+                IsWholeNumber="True"
+                Value="{Binding ElementName=ColorPickerRoot, Path=Color, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay, Converter={StaticResource AlphaColorConverter}}"/>
+        </Grid>
+
+        <!--Red Slider-->
+        <Grid Grid.Row="2" Grid.ColumnSpan="2" Margin="0,1,0,1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0" Text="R" HorizontalAlignment="Center" TextAlignment="Center" Width="12" VerticalAlignment="Center"
+                       Foreground="{DynamicResource EnvironmentWindowText}"/>
+            <Slider 
+                x:Name="RSlider" 
+                Grid.Column="1"
+                Orientation="Horizontal"
+                Minimum="0" 
+                Maximum="255" 
+                TickFrequency="2.55" 
+                SmallChange="2.55" 
+                LargeChange="5.1" 
+                VerticalAlignment="Stretch"
+                wpf:WpfSlider.IsMoveToPointEnabled="True"
+                Template="{StaticResource ColorSliderTemplate}"
+                Value="{Binding ElementName=ColorPickerRoot, Path=Color, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay, Converter={StaticResource RedColorConverter}}"
+            >
+                <Slider.Background>
+                    <LinearGradientBrush StartPoint="0%,50%" EndPoint="100%,50%">
+                        <GradientStop Offset="0.0" Color="Black" />
+                        <GradientStop Offset="1.0" Color="Red" />
+                    </LinearGradientBrush>
+                </Slider.Background>
+            </Slider>
+
+            <local:NumericTextBox2
+                x:Name="RedTextBox"
+                Grid.Column="2"
+                Margin="1,0,0,0"
+                Width="30" 
+                MinValue="0"
+                MaxValue="255"
+                IsWholeNumber="True"
+                Value="{Binding ElementName=ColorPickerRoot, Path=Color, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay, Converter={StaticResource RedColorConverter}}"/>
+        </Grid>
+
+        <!--Green Slider-->
+        <Grid Grid.Row="3" Grid.ColumnSpan="2" Margin="0,1,0,1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <TextBlock Grid.Column="0" Text="G" HorizontalAlignment="Center" TextAlignment="Center" Width="12" VerticalAlignment="Center"
+                       Foreground="{DynamicResource EnvironmentWindowText}"/>
+
+            <Slider 
+                x:Name="GSlider" 
+                Grid.Column="1"
+                Orientation="Horizontal"
+                Minimum="0" 
+                Maximum="255" 
+                TickFrequency="2.55" 
+                SmallChange="2.55" 
+                LargeChange="5.1" 
+                VerticalAlignment="Stretch"
+                wpf:WpfSlider.IsMoveToPointEnabled="True"
+                Template="{StaticResource ColorSliderTemplate}"
+                Value="{Binding ElementName=ColorPickerRoot, Path=Color, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay, Converter={StaticResource GreenColorConverter}}"
+            >
+                <Slider.Background>
+                    <LinearGradientBrush StartPoint="0%,50%" EndPoint="100%,50%">
+                        <GradientStop Offset="0.0" Color="Black" />
+                        <GradientStop Offset="1.0" Color="Green" />
+                    </LinearGradientBrush>
+                </Slider.Background>
+            </Slider>
+
+            <local:NumericTextBox2
+                x:Name="GreenTextBox"
+                Grid.Column="2"
+                Margin="1,0,0,0"
+                Width="30" 
+                MinValue="0"
+                MaxValue="255"
+                IsWholeNumber="True"
+                Value="{Binding ElementName=ColorPickerRoot, Path=Color, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay, Converter={StaticResource GreenColorConverter}}"/>
+        </Grid>
+
+        <!--Blue Slider-->
+        <Grid Grid.Row="4" Grid.ColumnSpan="2" Margin="0,1,0,1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <TextBlock Grid.Column="0" Text="B" HorizontalAlignment="Center" TextAlignment="Center" Width="12" VerticalAlignment="Center"
+                       Foreground="{DynamicResource EnvironmentWindowText}"/>
+
+            <Slider 
+                x:Name="BSlider" 
+                Grid.Column="1"
+                Orientation="Horizontal"
+                Minimum="0" 
+                Maximum="255" 
+                TickFrequency="2.55" 
+                SmallChange="2.55" 
+                LargeChange="5.1" 
+                VerticalAlignment="Stretch"
+                wpf:WpfSlider.IsMoveToPointEnabled="True"
+                Template="{StaticResource ColorSliderTemplate}"
+                Value="{Binding ElementName=ColorPickerRoot, Path=Color, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay, Converter={StaticResource BlueColorConverter}}"
+            >
+                <Slider.Background>
+                    <LinearGradientBrush StartPoint="0%,50%" EndPoint="100%,50%">
+                        <GradientStop Offset="0.0" Color="Black" />
+                        <GradientStop Offset="1.0" Color="Blue" />
+                    </LinearGradientBrush>
+                </Slider.Background>
+            </Slider>
+
+            <local:NumericTextBox2
+                x:Name="BlueTextBox"
+                Grid.Column="2"
+                Margin="1,0,0,0"
+                Width="30" 
+                MinValue="0"
+                MaxValue="255"
+                IsWholeNumber="True"
+                Value="{Binding ElementName=ColorPickerRoot, Path=Color, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay, Converter={StaticResource BlueColorConverter}}"/>
+        </Grid>
+
+
+        <!--Quick Select Colors-->
+        <Grid Grid.Row="5" Grid.ColumnSpan="2">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <local:SeparatorWithHeader Header="Common Colors" Grid.Row="0"/>
+            <WrapPanel x:Name="QuickColorsPanel" Orientation="Horizontal" Grid.Row="1" HorizontalAlignment="Left">
+                <WrapPanel.Styles>
+                    <Style Selector="WrapPanel > Rectangle">
+                        <Setter Property="Height" Value="22"/>
+                        <Setter Property="Width" Value="22"/>
+                        <Setter Property="Margin" Value="1,1,1,1"/>
+                        <Setter Property="Stroke" Value="{DynamicResource Button.Static.Border}"/>
+                        <Setter Property="StrokeThickness" Value="1"/>
+                    </Style>
+                    <Style Selector="WrapPanel > Rectangle:pointerover">
+                        <Setter Property="Stroke" Value="{DynamicResource Button.MouseOver.Border}"/>
+                        <Setter Property="StrokeThickness" Value="2"/>
+                    </Style>
+                </WrapPanel.Styles>
+                <Rectangle Fill="White" ToolTip.Tip="White"/>
+                <Rectangle Fill="Black" ToolTip.Tip="Black"/>
+                <Rectangle Fill="DarkRed" ToolTip.Tip="Dark Red"/>
+                <Rectangle Fill="Red" ToolTip.Tip="Red"/>
+                <Rectangle Fill="Orange" ToolTip.Tip="Orange"/>
+                <Rectangle Fill="Yellow" ToolTip.Tip="Yellow"/>
+
+                <Rectangle Fill="LightGreen" ToolTip.Tip="Light Green"/>
+                <Rectangle Fill="Green" ToolTip.Tip="Green"/>
+                <Rectangle Fill="Turquoise" ToolTip.Tip="Turquoise"/>
+
+                <Rectangle Fill="LightBlue" ToolTip.Tip="Light Blue"/>
+                <Rectangle Fill="Blue" ToolTip.Tip="Blue"/>
+                <Rectangle Fill="DarkBlue" ToolTip.Tip="Dark Blue"/>
+                <Rectangle Fill="Purple" ToolTip.Tip="Purple"/>
+                <Rectangle Fill="Maroon" ToolTip.Tip="Maroon"/>
+            </WrapPanel>
+        </Grid>
+    </Grid>
+</UserControl>

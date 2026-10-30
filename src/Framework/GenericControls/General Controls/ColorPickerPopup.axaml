@@ -1,0 +1,133 @@
+<!--
+    XGoodFit port of upstream's General Controls/ColorPickerPopup.xaml:
+    - The toggle button's style is a ControlTheme; Avalonia finds its content presenter by name, and its
+      mouse-over trigger is a nested style. SnapsToDevicePixels isn't ported.
+    - The colour rectangle's triggers are nested styles in the same order. Its disabled colours are
+      WPF's SystemColors, as Themes' resources. Its colour binding's null value is a black brush, which
+      Avalonia doesn't convert from the text "Black".
+    - The arrow's visibility binding is WpfCompat's. The hidden placement anchor is transparent (and
+      already invisible to the pointer), WPF's Hidden.
+    - The popup: StaysOpen="False" is Avalonia's IsLightDismissEnabled, and WPF's Left placement (the
+      popup's top-right corner at the anchor) is Avalonia's LeftEdgeAlignedTop. Not ported: the slide
+      animation and AllowsTransparency, which Avalonia's popups don't have.
+-->
+<UserControl x:Class="GenericControls.ColorPickerPopup" x:Name="ColorPickerPopupRoot"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="using:GenericControls"
+             xmlns:wpf="using:WpfCompat"
+             mc:Ignorable="d"
+             d:DesignHeight="30"
+             d:DesignWidth="44">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary>
+                    <local:ReverseBooleanConverter x:Key="ReverseBoolConverter"/>
+                </ResourceDictionary>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <Grid>
+        <ToggleButton
+            x:Name="PopupToggleButton"
+            VerticalAlignment="Stretch"
+            HorizontalAlignment="Stretch"
+            HorizontalContentAlignment="Stretch"
+            VerticalContentAlignment="Stretch"
+            BorderThickness="1"
+            Padding="0"
+            Background="{DynamicResource TextBox.Static.Background}"
+            BorderBrush="{DynamicResource Button.Static.Border}"
+            IsHitTestVisible="{Binding ElementName=PickerPopup, Path=IsOpen, Converter={StaticResource ReverseBoolConverter}}">
+            <ToggleButton.Theme>
+                <ControlTheme TargetType="ToggleButton">
+                    <Setter Property="Template">
+                        <ControlTemplate TargetType="ToggleButton">
+                            <Border
+                                x:Name="Border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}">
+                                <ContentPresenter
+                                    x:Name="PART_ContentPresenter"
+                                    Content="{TemplateBinding Content}"
+                                    ContentTemplate="{TemplateBinding ContentTemplate}"
+                                    HorizontalAlignment="Stretch"
+                                    VerticalAlignment="Stretch"/>
+                            </Border>
+                        </ControlTemplate>
+                    </Setter>
+                    <Style Selector="^:pointerover /template/ Border#Border">
+                        <Setter Property="BorderBrush" Value="{DynamicResource Button.MouseOver.Border}"/>
+                    </Style>
+                </ControlTheme>
+            </ToggleButton.Theme>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <Rectangle
+                    x:Name="ColorRectangle"
+                    Height="14"
+                    Width="14"
+                    VerticalAlignment="Center"
+                    HorizontalAlignment="Left"
+                    Margin="3,0,0,0">
+                    <Rectangle.Styles>
+                        <Style Selector="Rectangle:disabled">
+                            <Setter Property="Fill" Value="{DynamicResource SystemColors.ControlBrush}"/>
+                            <Setter Property="Stroke" Value="{DynamicResource SystemColors.ControlDarkBrush}"/>
+                        </Style>
+                        <Style Selector="Rectangle:not(:disabled)">
+                            <Setter Property="Fill" Value="{Binding ElementName=ColorPickerPopupRoot, Path=Color, UpdateSourceTrigger=PropertyChanged, TargetNullValue={x:Static Brushes.Black}}"/>
+                        </Style>
+                        <Style Selector="Rectangle:pointerover:not(:disabled)">
+                            <Setter Property="Stroke" Value="{DynamicResource Button.MouseOver.Border}"/>
+                            <Setter Property="StrokeThickness" Value="2"/>
+                        </Style>
+                        <Style Selector="Rectangle:not(:pointerover):not(:disabled)">
+                            <Setter Property="Stroke" Value="{DynamicResource Button.Static.Border}"/>
+                            <Setter Property="StrokeThickness" Value="1"/>
+                        </Style>
+                    </Rectangle.Styles>
+                </Rectangle>
+                
+                <Path
+                    Grid.Column="1"
+                    VerticalAlignment="Center"
+                    HorizontalAlignment="Center"
+                    wpf:WpfElement.Visibility="{Binding ElementName=ColorPickerPopupRoot, Path=ArrowButtonVisibility, UpdateSourceTrigger=PropertyChanged}"
+                    Margin="4 0"
+                    Fill="{DynamicResource EnvironmentWindowText}" Data="M 0,0 L 3,5 L 6,0 Z"/>
+            </Grid>
+
+        </ToggleButton>
+
+        <!-- Invisible anchor element for popup placement relative to the toggle button's bottom-right corner -->
+        <Rectangle x:Name="PART_PopPlacer" Fill="Transparent" Width="0" Height="0" HorizontalAlignment="Right" VerticalAlignment="Bottom" 
+                   Focusable="False" Opacity="0" IsHitTestVisible="False"/>
+
+        <Popup
+            x:Name="PickerPopup"
+            IsLightDismissEnabled="True"
+            Placement="LeftEdgeAlignedTop"
+            Height="250"
+            Width="175"
+            IsOpen="{Binding ElementName=PopupToggleButton, Path=IsChecked, Mode=TwoWay}"
+            PlacementTarget="{Binding ElementName=PART_PopPlacer}">
+                <local:ColorPicker
+                    x:Name="ColorPicker"
+                    Padding="2"
+                    BorderBrush ="{DynamicResource Button.Static.Border}" 
+                    BorderThickness="1" 
+                    Background="{DynamicResource EnvironmentWindowBackground}"
+                    Color="{Binding ElementName=ColorPickerPopupRoot, Path=Color, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"/>
+
+        </Popup>
+    </Grid>
+</UserControl>
