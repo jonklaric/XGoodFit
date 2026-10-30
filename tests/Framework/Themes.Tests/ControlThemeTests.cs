@@ -83,6 +83,47 @@ public sealed class ControlThemeTests
         });
     }
 
+    // A grid's row.
+    public sealed record GridRow(string Name, double Value);
+
+    [TestMethod]
+    public void DataGrid_ShowsScrollBars_WhenItsRowsDontFit_AsWpfDoes()
+    {
+        HeadlessSession.Run(() =>
+        {
+            var grid = new DataGrid { ItemsSource = Enumerable.Range(1, 50).Select(i => new GridRow("Item " + i, i)).ToList() };
+            var window = Show(grid);
+
+            Assert.AreEqual(ScrollBarVisibility.Auto, grid.VerticalScrollBarVisibility, "WPF's default");
+            Assert.AreEqual(ScrollBarVisibility.Auto, grid.HorizontalScrollBarVisibility, "WPF's default");
+            Assert.IsTrue(TemplatePart<ScrollBar>(grid, "PART_VerticalScrollbar").IsVisible, "fifty rows don't fit in 300 pixels");
+            Assert.IsFalse(TemplatePart<ScrollBar>(grid, "PART_HorizontalScrollbar").IsVisible, "the two columns fit");
+            window.Close();
+        });
+    }
+
+    [TestMethod]
+    public void DataGrid_HidesItsRowOfHeaders_WithTheColumnHeaders()
+    {
+        HeadlessSession.Run(() =>
+        {
+            var grid = new DataGrid { ItemsSource = new List<GridRow> { new("Item", 1) } };
+            var window = Show(grid);
+            var filler = TemplatePart<DataGridColumnHeader>(grid, "FillerColumnHeader");
+            Assert.IsTrue(filler.IsVisible, "the header behind the column headers");
+
+            grid.HeadersVisibility = DataGridHeadersVisibility.None;
+            Dispatcher.UIThread.RunJobs();
+            Assert.IsFalse(filler.IsVisible, "WPF's is in the column headers' presenter, which is hidden");
+            Assert.AreEqual(0, TemplatePart<DataGridRowsPresenter>(grid, "PART_RowsPresenter").Bounds.Top, "the rows start at the top");
+
+            grid.HeadersVisibility = DataGridHeadersVisibility.Column;
+            Dispatcher.UIThread.RunJobs();
+            Assert.IsTrue(filler.IsVisible);
+            window.Close();
+        });
+    }
+
     [TestMethod]
     public void TreeViewItem_CollapsedWithChildren_ShowsItsExpander()
     {

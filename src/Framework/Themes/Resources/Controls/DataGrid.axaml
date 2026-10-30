@@ -446,8 +446,9 @@
 
     <!--
     XGoodFit port: WPF's own DataGrid style (Aero2) and the DataGrid defaults that differ from
-    ProDataGrid's (every header shown, all grid lines, auto-generated columns sized to their headers,
-    columns the user can resize and reorder), which upstream's grid styles build on. The template is
+    ProDataGrid's (every header shown, all grid lines, scroll bars when the rows or columns don't fit,
+    auto-generated columns sized to their headers, columns the user can resize and reorder), which
+    upstream's grid styles build on. The template is
     Aero2's: the select-all corner, the column headers, the rows under both, and the scroll bars.
     ProDataGrid scrolls the rows itself, so the parts are ProDataGrid's (PART_RowsPresenter and the
     legacy scroll bars) rather than a ScrollViewer. The grid's IsKeyboardFocusWithin is WPF's
@@ -460,6 +461,8 @@
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="HeadersVisibility" Value="All"/>
         <Setter Property="GridLinesVisibility" Value="All"/>
+        <Setter Property="HorizontalScrollBarVisibility" Value="Auto"/>
+        <Setter Property="VerticalScrollBarVisibility" Value="Auto"/>
         <Setter Property="HorizontalGridLinesBrush" Value="Black"/>
         <Setter Property="VerticalGridLinesBrush" Value="Black"/>
         <Setter Property="AutoGenerateColumns" Value="True"/>
@@ -484,11 +487,13 @@
                         XGoodFit port: WPF's column headers presenter has a filler header behind the
                         headers, across the whole row of headers (PART_FillerColumnHeader). It is as wide as
                         the rows' cells, which leaves its right edge out of view; the margin does that here.
+                        It is in view when the headers are, as it is in the presenter in WPF.
                         ProDataGrid's own filler header, to the right of the columns, is hidden by the header
                         styles (it is the one header that is IsEnabled="False").
                         -->
                         <DataGridColumnHeader Name="FillerColumnHeader" Grid.Column="1" Margin="0,0,-1,0"
                                               IsHitTestVisible="False" Focusable="False"
+                                              IsVisible="{Binding #PART_ColumnHeadersPresenter.IsVisible}"
                                               Theme="{TemplateBinding ColumnHeaderTheme}"/>
                         <DataGridColumnHeadersPresenter Name="PART_ColumnHeadersPresenter" Grid.Column="1"/>
                         <!--DataGrid content-->
