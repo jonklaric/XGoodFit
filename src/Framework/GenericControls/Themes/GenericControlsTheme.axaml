@@ -7,8 +7,7 @@
     - StackPanelButtonStyleBase and VerticalSeparatorStyle aren't ported. Themes defines both keys and
       is merged after this dictionary (by ThemeManager.SetTheme, as in upstream's App), so its
       definitions are the ones the app uses.
-    - Each control's theme is added here as the control is ported, in upstream's order. Still to come:
-      StringListPropertyControl (with CopyPasteDataGrid). Not ported, as nothing BestFit uses needs
+    - Each control's theme is here, in upstream's order. Not ported, as nothing BestFit uses needs
       them (decision D10): the ThicknessControl, GridLengthControl, Point3DPropertyControl,
       FolderSelectorControl, DirectorySelectorControl and CalendarWeekRulePropertyControl styles.
     - Themes' DataGrid.axaml and TextBox.axaml are merged too: the DataGrid styles are based on the
@@ -366,6 +365,12 @@
         <Setter Property="Foreground" Value="{DynamicResource EnvironmentWindowText}"/>
     </ControlTheme>
     <ControlTheme x:Key="{x:Type local:PointPropertyControl}" TargetType="local:PointPropertyControl" BasedOn="{StaticResource PointPropertyControlStyle}"/>
+
+    <!-- String List Property Control -->
+    <ControlTheme x:Key="StringListPropertyControlStyle" TargetType="local:StringListPropertyControl">
+        <Setter Property="Foreground" Value="{DynamicResource EnvironmentWindowText}"/>
+    </ControlTheme>
+    <ControlTheme x:Key="{x:Type local:StringListPropertyControl}" TargetType="local:StringListPropertyControl" BasedOn="{StaticResource StringListPropertyControlStyle}"/>
 
     <!-- File Selector Control -->
     <ControlTheme x:Key="FileSelectorControlStyle" TargetType="local:FileSelectorControl">

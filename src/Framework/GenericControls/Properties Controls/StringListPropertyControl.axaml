@@ -1,0 +1,63 @@
+<!--
+    XGoodFit port of upstream's Properties Controls/StringListPropertyControl.xaml:
+    - The grid is GenericControls' CopyPasteDataGrid on ProDataGrid. Its width follows the enclosing
+      ScrollContentPresenter's Bounds (WPF's ActualWidth), and its column has no name, which Avalonia
+      can't give a column: the code-behind's StringColumn is the grid's first column.
+    - The title's MouseUp is PointerReleased, which every button raises, as WPF's MouseUp. The title
+      has a transparent background so a click anywhere on it counts, as on WPF's TextBlock.
+-->
+<UserControl x:Class="GenericControls.StringListPropertyControl"
+             x:Name="StringListEditor"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="using:GenericControls"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+    <UserControl.Resources>
+        <local:DataGridWidthConverter x:Key="dgWidthConverter"/>
+    </UserControl.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        
+        <TextBlock
+            TextWrapping="Wrap"
+            TextAlignment="Center"
+            VerticalAlignment="Bottom"
+            FontWeight="Bold"
+            HorizontalAlignment="Stretch"
+            Foreground="{DynamicResource EnvironmentWindowText}"
+            Text="{Binding ElementName=StringListEditor, Path=Title}"
+            Background="Transparent"
+            PointerReleased="TextBlock_MouseUp"/>
+
+        <local:CopyPasteDataGrid
+            x:Name="StringListDataGrid"
+            Width="{Binding Path=Bounds.Width, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ScrollContentPresenter}}, Converter={StaticResource dgWidthConverter}}"
+            MinWidth="30"
+            GridLinesVisibility="Horizontal"
+            Grid.Row="1"
+            HeadersVisibility="None"
+            CanUserResizeColumns="False"
+            AutoGenerateColumns="False"
+            SelectionMode="Extended"
+            SelectionUnit="Cell"
+            CanUserDeleteRows="False"
+            CanUserAddRows="False"
+            CanUserResizeRows="False"
+            CanUserSortColumns="False"
+            CanUserReorderColumns="False"
+            CellEditEnding="StringListDataGrid_CellEditEnding"
+            RowsAdded="StringListDataGrid_RowsAdded" DataPasted="StringListDataGrid_DataPasted">
+
+            <local:CopyPasteDataGrid.Columns>
+                <DataGridTextColumn Width="*" Binding="{Binding Path=TheString, Mode=TwoWay}" IsReadOnly="False"/>
+            </local:CopyPasteDataGrid.Columns>
+        </local:CopyPasteDataGrid>  
+
+    </Grid>
+</UserControl>
