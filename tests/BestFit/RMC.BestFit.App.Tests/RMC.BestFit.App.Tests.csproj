@@ -23,6 +23,12 @@
     <TestingPlatformShowTestsFailure>true</TestingPlatformShowTestsFailure>
     <UpstreamProjectDir>$(UpstreamBestFitSrc)RMC.BestFit.App.Tests/</UpstreamProjectDir>
     <UpstreamCompileMode>OptIn</UpstreamCompileMode>
+    <!--
+      Tests in category External use live web services (USGS, NOAA GHCN and others) and fail whenever
+      one is down. dotnet test leaves them out, as in RMC.BestFit.UI.Tests. Run them with the test
+      executable and its filter option set to TestCategory=External.
+    -->
+    <TestingPlatformCommandLineArguments>$(TestingPlatformCommandLineArguments) --filter TestCategory!=External</TestingPlatformCommandLineArguments>
   </PropertyGroup>
 
   <ItemGroup>
