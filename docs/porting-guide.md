@@ -68,6 +68,7 @@ compared with its upstream original.
 | `x:Array` | `<wpfm:ArrayExtension Type="{x:Type sys:Double}">` (`xmlns:wpfm="using:WpfCompat.Markup"`, `xmlns:sys="using:System"`) |
 | `x:FieldModifier="public"` | `internal` unless another assembly uses the field: Avalonia's generated fields have no doc comments (a warning) |
 | `StrokeStartLineCap` / `StrokeEndLineCap` | `StrokeLineCap` (one for both) |
+| `RenderOptions.BitmapScalingMode` | `RenderOptions.BitmapInterpolationMode` |
 | `Line X1 Y1 X2 Y2` | `StartPoint="x1,y1"` `EndPoint="x2,y2"` |
 | `LayoutTransform` | wrap in `LayoutTransformControl` |
 | `RenderTransformOrigin="0.5,0.5"` | `RenderTransformOrigin="50%,50%"`: Avalonia reads numbers without `%` as pixels |
@@ -102,7 +103,9 @@ Templates and themes:
 | `PreviewMouseLeftButtonDown += H` and the other WPF mouse events | `this.AddPreviewMouseLeftButtonDownHandler(H)` (WpfCompat.Input's `MouseEvents`: WPF's button filter and routing). `H` takes Avalonia's pointer arguments, with WPF's `ChangedButton`, `LeftButton`, `RightButton` and `OriginalSource` as extension properties. Wheel deltas are notches (WPF: 120 per notch) |
 | `Keyboard.Modifiers`, `ModifierKeys` | WpfCompat.Input's (Command counts as Control on macOS) |
 | `Checked="H"` / `Unchecked="H"` on toggle buttons and check boxes | `toggle.AddCheckedHandler(H)` / `AddUncheckedHandler(H)` in the code-behind (WpfCompat): Avalonia 12 only has `IsCheckedChanged` |
-| `RichTextBox` | AvaloniaEdit's `TextEditor` (see ExpressionParserControls' `ExpressionControl`), or `SelectableTextBlock` for read-only text |
+| `RichTextBox` (editable) | AvaloniaEdit's `TextEditor` (see ExpressionParserControls' `ExpressionControl`) |
+| `RichTextBox` (read-only), `FlowDocument`, `Paragraph`, `Run`, `Hyperlink`, `TextRange` | WpfCompat's `Controls.RichTextBox` and `Documents` (`xmlns:wpfc="using:WpfCompat.Controls"`), which keep the document-building code as it is |
+| `Dispatcher.HasShutdownStarted` / `HasShutdownFinished` | unchanged, with `using WpfCompat;` |
 | `x.SetResourceReference(P, key)` | unchanged, with `using WpfCompat;` |
 | `Dispatcher.Invoke` / `BeginInvoke` | `Dispatcher.UIThread.Invoke` / `Post` |
 | `VisualTreeHelper` | `GetVisualParent`, `GetVisualChildren`, `FindAncestorOfType<T>` (`Avalonia.VisualTree`) |

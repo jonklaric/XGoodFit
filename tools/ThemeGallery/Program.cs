@@ -98,6 +98,9 @@ internal static class Program
             textArea.Caret.Offset = calculator.GetExpressionText().Length;
             Save(calculatorWindow, folder, "expression-calculator", theme);
             calculatorWindow.Close();
+
+            Save(new FrameworkUI.AboutWindow { SoftwareName = "XGoodFit", SoftwareDescription = "A cross-platform port of RMC-BestFit." }, folder, "about", theme, show: true);
+            Save(new FrameworkUI.TermsAndConditionsWindow(), folder, "terms", theme, show: true);
         }
         window.Close();
         return 0;

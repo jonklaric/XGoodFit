@@ -1,0 +1,42 @@
+<!-- Ported from upstream/WPF-Framework/src/Themes/Resources/Controls/RichTextBox.xaml. Conversion rules: Button.axaml. -->
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:wpfc="using:WpfCompat.Controls">
+
+    <!--
+    XGoodFit port notes:
+    - Avalonia has no RichTextBox. Upstream's read-only rich text boxes are WpfCompat's RichTextBox,
+      which shows a WpfCompat FlowDocument; this theme gives it upstream's colours. (The rich text that
+      upstream edits, in the expression editors, is AvaloniaEdit's, styled where it's ported.)
+    - Upstream's style kept WPF's default (Aero2) template, whose triggers turn the border Aero2's fixed
+      blue on hover (#7EB4EA) and keyboard focus (#569DE5) in every theme; so does this one.
+    - Not ported: the Cut/Copy/Paste/Select All context menu, which editing needs. Each paragraph's
+      text can be selected and copied.
+    - Not ported: IsInactiveSelectionHighlightEnabled, which Avalonia lacks.
+    -->
+
+    <!--
+    Themed RichTextBox Style
+
+    Applies theme-aware colors to RichTextBox controls.
+    Unlike TextBox, we do NOT replace the ControlTemplate because
+    RichTextBox has a complex internal template for FlowDocument
+    rendering and context menus that must be preserved.
+    Only visual properties are set via DynamicResource bindings.
+    -->
+    <ControlTheme x:Key="{x:Type wpfc:RichTextBox}" TargetType="wpfc:RichTextBox">
+        <Setter Property="Background" Value="{DynamicResource TextBox.Static.Background}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource TextBox.Static.Border}"/>
+        <Setter Property="Foreground" Value="{DynamicResource EnvironmentToolWindowText}"/>
+        <Setter Property="SelectionBrush" Value="{DynamicResource TextBox.Selection.Background}"/>
+        <Setter Property="CaretBrush" Value="{DynamicResource TextBox.Caret}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Style Selector="^:pointerover">
+            <Setter Property="BorderBrush" Value="#FF7EB4EA"/>
+        </Style>
+        <Style Selector="^:focus-within">
+            <Setter Property="BorderBrush" Value="#FF569DE5"/>
+        </Style>
+    </ControlTheme>
+
+</ResourceDictionary>

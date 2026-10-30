@@ -129,3 +129,35 @@ public sealed class ShellTests
         return manager;
     }
 }
+
+/// <summary>The Terms and Conditions window: agreeing and pressing OK closes it with the agreement.</summary>
+[TestClass]
+public sealed class TermsAndConditionsTests
+{
+    [TestMethod]
+    public void ReadingToTheEnd_AndAgreeing_ClosesWithTheAgreement()
+    {
+        HeadlessSession.Run(() =>
+        {
+            ThemeManager.SetTheme(ThemeColor.Light);
+            var window = new TermsAndConditionsWindow();
+            bool? result = null;
+            bool enabledAtTheEnd = false;
+            Dispatcher.UIThread.Post(() =>
+            {
+                window.TCURichTextBox.ScrollToEnd();
+                Dispatcher.UIThread.RunJobs();
+                window.UpdateLayout();
+                enabledAtTheEnd = window.IAgreeCheckbox.IsEnabled;
+                window.IAgreeCheckbox.IsChecked = true;
+                window.OKButton.RaiseEvent(new Avalonia.Interactivity.RoutedEventArgs(Button.ClickEvent));
+            }, DispatcherPriority.Background);
+            result = WpfCompat.DialogWindows.ShowDialog(window);
+
+            Assert.IsTrue(window.TCURichTextBox.ExtentHeight > window.TCURichTextBox.ViewportHeight, "the default terms are longer than the box");
+            Assert.IsTrue(enabledAtTheEnd, "reading to the end enables the agreement");
+            Assert.IsTrue(window.UserAgreed);
+            Assert.IsTrue(result);
+        });
+    }
+}

@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <ProjectReference Include="../../src/Framework/ExpressionParserControls/ExpressionParserControls.csproj" />
+    <ProjectReference Include="../../src/Framework/FrameworkUI/FrameworkUI.csproj" />
     <ProjectReference Include="../../src/Framework/GenericControls/GenericControls.csproj" />
     <ProjectReference Include="../../src/Framework/Themes/Themes.csproj" />
   </ItemGroup>

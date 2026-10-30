@@ -83,8 +83,8 @@
     <!-- CONTROL TEMPLATES                                                            -->
     <!-- Ported control themes are merged here as they land, in upstream's order      -->
     <!-- (docs/migration-plan.md §6, Phase 3). Not yet here: DataGrid (with           -->
-    <!-- ProDataGrid) and RichTextBox (with its replacements). StatusBar isn't        -->
-    <!-- ported: nothing upstream uses one.                                           -->
+    <!-- ProDataGrid). RichTextBox styles WpfCompat's read-only RichTextBox.          -->
+    <!-- StatusBar isn't ported: nothing upstream uses one.                           -->
     <!-- ═══════════════════════════════════════════════════════════════════════════ -->
 
     <ResourceDictionary.MergedDictionaries>
@@ -92,6 +92,7 @@
         <ResourceInclude Source="avares://Themes/Resources/Controls/Calendar.axaml"/>
         <ResourceInclude Source="avares://Themes/Resources/Controls/CheckBox.axaml"/>
         <ResourceInclude Source="avares://Themes/Resources/Controls/RadioButton.axaml"/>
+        <ResourceInclude Source="avares://Themes/Resources/Controls/RichTextBox.axaml"/>
         <ResourceInclude Source="avares://Themes/Resources/Controls/ComboBox.axaml"/>
         <ResourceInclude Source="avares://Themes/Resources/Controls/Expander.axaml"/>
         <ResourceInclude Source="avares://Themes/Resources/Controls/GridSplitter.axaml"/>

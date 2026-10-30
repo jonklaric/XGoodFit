@@ -499,6 +499,7 @@ Sizes are relative, for one developer with AI-assisted porting: S ≈ ≤2 wk, M
 - Docking uses `Dock.Avalonia.AvalonDock`, which keeps AvalonDock's API and its layout XML. A prototype loaded the layout stored in a sample project (pixel and star pane sizes, a pane group, documents) and saved it back byte for byte, apart from the encoding declaration of the string writer used.
 - `FrameworkUI` has started (opt-in overlay): its VS2013 palettes and icons, `ThemeManager`, user settings, utilities and the default dock layout. Settings live in the per-user application data folder on every OS (`WpfCompat.AppPaths`): upstream preferred a folder next to the executable, which Velopack replaces on update and which macOS bundles and AppImages make read-only.
 - `SoftwareUpdate` compiles from upstream unchanged; installing through Velopack comes with packaging.
+- Also ported: auto-backup, file compaction and its progress window, and the About and Terms and Conditions windows. Upstream's read-only rich text (the terms, the GMM and MCMC reports, USGS raw text) shows in WpfCompat's `RichTextBox`, a small flow-document viewer (paragraphs, runs, line breaks, links), which Themes styles.
 
 ### Phase 3: Control library (`Themes` templates + `GenericControls`) (XL)
 - Restyle every standard control; add the new `ToolBar`, `StatusBar` and `GroupBox` look-alikes.
