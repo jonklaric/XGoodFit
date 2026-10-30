@@ -77,6 +77,9 @@ internal static class Program
             Save(window, folder, "combo-box", theme);
             window.SampleComboBox.IsDropDownOpen = false;
 
+            window.Pages.SelectedItem = window.DataGridPage;
+            Save(window, folder, "datagrid", theme);
+
             window.Pages.SelectedItem = window.PalettePage;
             Save(window, folder, "palette", theme);
 

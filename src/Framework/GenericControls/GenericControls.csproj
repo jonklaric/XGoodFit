@@ -9,13 +9,13 @@
     Ported so far: the Metro windows, MessageBox and its window, NameDialog; the general controls
     (NameTextBox, the numeric text boxes, up-down and slider, the colour picker and its popup,
     ResizableTextBoxControl, SeparatorWithHeader); the property controls and PropertyAttributes; the
-    date and time controls; InsertionAdorner; the converters and utilities (Utilities/,
-    BooleanToVisibilityConverter, ColorToByteConverter); FolderBrowser; the icon and resource
-    dictionaries; and the theme's control styles. Still to come: the DataGrid folder and
-    StringListPropertyControl, which uses CopyPasteDataGrid. Not ported, as nothing BestFit uses needs
-    them: Utilities/ValidationRules.cs, GridLengthControl, ThicknessControl, Point3DPropertyControl,
-    CalendarWeekRulePropertyControl, DirectorySelectorControl, FolderSelectorControl, DragAdorner and
-    File Management/RecentFileList.cs.
+    date and time controls; InsertionAdorner; the data grids and their toolbar (DataGrid/, on
+    ProDataGrid); the converters and utilities (Utilities/, BooleanToVisibilityConverter,
+    ColorToByteConverter); FolderBrowser; the icon and resource dictionaries; and the theme's control
+    styles. Still to come: StringListPropertyControl, which uses CopyPasteDataGrid. Not ported, as
+    nothing BestFit uses needs them: Utilities/ValidationRules.cs, GridLengthControl, ThicknessControl,
+    Point3DPropertyControl, CalendarWeekRulePropertyControl, DirectorySelectorControl,
+    FolderSelectorControl, DragAdorner and File Management/RecentFileList.cs.
   -->
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
@@ -30,6 +30,12 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="GenericControls.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- The validation data grid's row items and rules compile as upstream wrote them. -->
+    <UpstreamCompileInclude Include="DataGrid/ValidationDataGridObjects/DataGridRowItem.cs" />
+    <UpstreamCompileInclude Include="DataGrid/ValidationDataGridObjects/PropertyRule.cs" />
   </ItemGroup>
 
   <ItemGroup>

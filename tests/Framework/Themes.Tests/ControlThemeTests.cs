@@ -36,6 +36,7 @@ public sealed class ControlThemeTests
         typeof(TabControl), typeof(TabItem), typeof(TreeView), typeof(TreeViewItem), typeof(ToolTip),
         typeof(Label), typeof(GroupBox), typeof(Slider), typeof(ProgressBar), typeof(Calendar),
         typeof(CalendarItem), typeof(CalendarDayButton), typeof(CalendarButton),
+        typeof(DataGrid), typeof(DataGridRow), typeof(DataGridCell),
     ];
 
     // The template a theme sets, following BasedOn: the implicit themes are mostly based on keyed ones.
@@ -68,7 +69,7 @@ public sealed class ControlThemeTests
                     $"{type.Name} has no ported implicit theme");
                 var theme = (ControlTheme)found!;
                 if (type == typeof(CalendarItem) || type == typeof(CalendarDayButton) || type == typeof(CalendarButton)
-                    || type == typeof(ContextMenu) || type == typeof(ToolTip))
+                    || type == typeof(ContextMenu) || type == typeof(ToolTip) || type == typeof(DataGridRow) || type == typeof(DataGridCell))
                 {
                     continue; // created and hosted by their owners
                 }

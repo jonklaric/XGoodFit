@@ -274,6 +274,56 @@
             <TabItem x:Name="InputsPage" Header="Generic inputs"><local:GenericInputPage/></TabItem>
             <TabItem x:Name="DateTimeColorPage" Header="Date, time and colour"><local:GenericDateTimeColorPage x:Name="DateTimeColor"/></TabItem>
             <TabItem x:Name="PropertyEditorsPage" Header="Property editors"><local:GenericPropertyEditorsPage/></TabItem>
+            <!--
+            GenericControls' data grids, laid out as upstream's GenericControls.Demo shows them
+            (docs/assets/gallery/generic-datagrid-blue.png), with a ValidationDataGrid beside the copy-paste grid.
+            -->
+            <TabItem x:Name="DataGridPage" Header="DataGrid">
+                <Grid Margin="15" ColumnDefinitions="*,20,*" Background="{DynamicResource EnvironmentWindowBackground}">
+                    <Grid.Styles>
+                        <Style Selector="TextBlock.section">
+                            <Setter Property="FontSize" Value="14"/>
+                            <Setter Property="FontWeight" Value="SemiBold"/>
+                            <Setter Property="Foreground" Value="{DynamicResource EnvironmentWindowText}"/>
+                            <Setter Property="Margin" Value="0,10,0,8"/>
+                        </Style>
+                        <Style Selector="TextBlock.description">
+                            <Setter Property="FontSize" Value="11"/>
+                            <Setter Property="Foreground" Value="{DynamicResource EnvironmentWindowText}"/>
+                            <Setter Property="Opacity" Value="0.7"/>
+                            <Setter Property="TextWrapping" Value="Wrap"/>
+                            <Setter Property="Margin" Value="0,0,0,8"/>
+                        </Style>
+                    </Grid.Styles>
+                    <DockPanel x:Name="CopyPastePanel" Grid.Column="0">
+                        <TextBlock DockPanel.Dock="Top" Classes="section" Text="CopyPasteDataGrid"/>
+                        <TextBlock DockPanel.Dock="Top" Classes="description"
+                                   Text="DataGrid with built-in copy/paste support (Ctrl+C, Ctrl+V). Right-click for context menu."/>
+                        <gc:DataGridToolbar x:Name="CPToolbar" DockPanel.Dock="Top"
+                                            DataGrid="{Binding #CPDataGrid}"
+                                            ToolOrientation="Horizontal" Margin="0,0,0,5"/>
+                        <gc:CopyPasteDataGrid x:Name="CPDataGrid"
+                                              CanUserAddRows="False"
+                                              IsReadOnly="False"
+                                              SelectionMode="Extended"
+                                              SelectionUnit="CellOrRowHeader"
+                                              CanUserAddInsertDeleteRows="True"/>
+                    </DockPanel>
+                    <DockPanel x:Name="ValidationPanel" Grid.Column="2">
+                        <TextBlock DockPanel.Dock="Top" Classes="section" Text="ValidationDataGrid"/>
+                        <TextBlock DockPanel.Dock="Top" Classes="description"
+                                   Text="Each row checks its values: names must be unique, and values must be positive and increasing."/>
+                        <gc:DataGridToolbar DockPanel.Dock="Top"
+                                            DataGrid="{Binding #ValidationGrid}"
+                                            ToolOrientation="Horizontal" Margin="0,0,0,5"/>
+                        <gc:ValidationDataGrid x:Name="ValidationGrid"
+                                               CanUserAddRows="False"
+                                               SelectionMode="Extended"
+                                               SelectionUnit="CellOrRowHeader"
+                                               CanUserAddInsertDeleteRows="True"/>
+                    </DockPanel>
+                </Grid>
+            </TabItem>
 
             <!-- Every palette key, as a live swatch. -->
             <TabItem x:Name="PalettePage" Header="Palette">

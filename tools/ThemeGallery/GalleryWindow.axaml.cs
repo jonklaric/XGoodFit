@@ -9,14 +9,18 @@ using Themes;
 namespace ThemeGallery;
 
 /// <summary>
-/// Shows the standard controls in the ported theme, and every palette key as a live swatch grouped by the
-/// control it styles, on two tabs. The menu bar is a live sample of the Menu theme.
+/// Shows the standard controls in the ported theme, GenericControls' data grids, and every palette key as a
+/// live swatch grouped by the control it styles, on three tabs. The menu bar is a live sample of the Menu theme.
 /// </summary>
 public partial class GalleryWindow : GenericControls.MetroWindow
 {
     public GalleryWindow()
     {
         InitializeComponent();
+
+        CPDataGrid.ItemsSource = DataGridSamples.CreateSampleDataItems();
+        ValidationGrid.RowType = typeof(SampleRuleRow);
+        ValidationGrid.ItemsSource = DataGridSamples.CreateRuleRows(ValidationGrid);
 
         // The keys are the same in every palette; take them from the Light one.
         var palette = (ResourceDictionary)AvaloniaXamlLoader.Load(new Uri(ThemeResourceHelper.LightColorsUri));
