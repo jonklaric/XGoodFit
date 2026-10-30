@@ -227,12 +227,18 @@ public sealed class Hyperlink : Inline
     /// <summary>Where the link goes.</summary>
     public Uri? NavigateUri { get; set; }
 
+    /// <summary>
+    /// Whether the link can be clicked, as WPF's <c>ContentElement.IsEnabled</c>: a disabled link doesn't
+    /// raise <see cref="RequestNavigate"/>. Unlike WPF's, it isn't greyed out.
+    /// </summary>
+    public bool IsEnabled { get; set; } = true;
+
     /// <summary>Raised when the link is clicked, in a rich text box whose document is enabled.</summary>
     public event RequestNavigateEventHandler? RequestNavigate;
 
     internal void RaiseRequestNavigate(object sender)
     {
-        if (NavigateUri != null)
+        if (NavigateUri != null && IsEnabled)
         {
             RequestNavigate?.Invoke(sender, new RequestNavigateEventArgs(NavigateUri, null));
         }

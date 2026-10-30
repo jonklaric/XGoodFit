@@ -27,9 +27,8 @@
 #   XGF_MAC_KEYCHAIN               the keychain that holds them
 set -euo pipefail
 
-# The application to package. RMC.BestFit.App isn't ported yet, so the theme gallery stands in for
-# it; switch to src/BestFit/RMC.BestFit.App/RMC.BestFit.App.csproj when it is.
-APP_PROJECT="tools/ThemeGallery/ThemeGallery.csproj"
+# The application to package: XGoodFit, the port of RMC.BestFit.App.
+APP_PROJECT="src/BestFit/RMC.BestFit.App/RMC.BestFit.App.csproj"
 
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 start_dir="$(pwd)"

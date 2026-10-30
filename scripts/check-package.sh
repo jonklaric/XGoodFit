@@ -36,14 +36,14 @@ native_path() {
 }
 
 # The same branding scripts/package.sh packs with.
-property() { dotnet msbuild tools/ThemeGallery/ThemeGallery.csproj -getProperty:"$1" | tr -d '\r'; }
+property() { dotnet msbuild src/BestFit/RMC.BestFit.App/RMC.BestFit.App.csproj -getProperty:"$1" | tr -d '\r'; }
 app_id="$(property XGoodFitAppId)"
 product="$(property XGoodFitProductName)"
 version="$(property Version)"
 
-# Runs the packaged application headlessly: the stand-in's capture mode, which renders the theme
-# gallery to PNG files and reports whether the HEC-DSS library loads. RMC.BestFit.App will need a
-# headless mode of its own here. Arguments: the command that starts the packaged application.
+# Runs the packaged application headlessly: its capture mode, which renders the main window, its
+# menus and the About window in each theme to PNG files and reports whether the HEC-DSS library loads.
+# Arguments: the command that starts the packaged application.
 run_headless() {
   local capture="$work/capture" log="$work/run.log"
   mkdir -p "$capture" "$work/home" "$work/tmp"
