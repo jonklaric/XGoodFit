@@ -5,6 +5,9 @@ using System.Runtime.InteropServices;
 // Grant internal visibility to the UI test project.
 [assembly: InternalsVisibleTo("RMC.BestFit.UI.Tests")]
 [assembly: InternalsVisibleTo("RMC-BestFit")]
+// XGoodFit port: the application's assembly is XGoodFit's executable (XGoodFitProductName in
+// Directory.Build.props), where upstream's is RMC-BestFit.
+[assembly: InternalsVisibleTo("XGoodFit")]
 
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information

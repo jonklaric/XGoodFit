@@ -1,0 +1,51 @@
+<!--
+    XGoodFit port of upstream's App.xaml:
+    - Startup, ShutdownMode and DispatcherUnhandledException are set in code (App.axaml.cs), where
+      Avalonia's desktop lifetime and dispatcher have them.
+    - The application's styles are Avalonia's base control themes, where WPF had its own, and the dock's
+      controls (AvalonDockTheme), which the shell gives the VS2013 look (DockThemeSwitcher).
+    - The resources merge in upstream's order. The BestFit and USACE pictures are bitmaps, which
+      App.axaml.cs adds: Avalonia's XAML has no bitmap resource made from a URI.
+-->
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:dock="using:AvalonDock.Themes"
+             x:Class="RMC_BestFit.App">
+    <Application.Styles>
+        <SimpleTheme/>
+        <dock:AvalonDockTheme/>
+    </Application.Styles>
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <!-- Icon resources -->
+                <ResourceInclude Source="avares://FrameworkUI/Icons/IconDictionary.axaml"/>
+
+                <!-- Theme resources are loaded by ThemeManager.SetTheme() in App.axaml.cs -->
+                <!-- This ensures proper loading order and enables runtime theme switching -->
+
+                <!-- Component theme resources -->
+                <ResourceInclude Source="avares://GenericControls/Themes/GenericControlsTheme.axaml"/>
+                <ResourceInclude Source="avares://OxyPlotControls/Themes/OxyPlotControlsTheme.axaml"/>
+                <ResourceInclude Source="avares://NumericControls/Themes/NumericControlsTheme.axaml"/>
+                <ResourceInclude Source="avares://DatabaseControls/Themes/DatabaseControlsTheme.axaml"/>
+
+                <!-- BestFit UI icon resources -->
+                <ResourceInclude Source="avares://RMC.BestFit.UI/Resources/IconDictionary.axaml"/>
+
+                <!-- App-specific icon resources -->
+                <ResourceInclude Source="avares://XGoodFit/Resources/IconDictionary.axaml"/>
+
+                <!-- GenericControls shared resources (includes PlusMinusToggleStyle) -->
+                <ResourceInclude Source="avares://GenericControls/Resources/ResourceDictionary.axaml"/>
+            </ResourceDictionary.MergedDictionaries>
+
+            <!--RMC-BestFit Icons: BestFit and USACE, added in App.axaml.cs. -->
+            <!-- Bayes icon now provided as BayesianAnalysisIcon DrawingImage from RMC.BestFit.UI IconDictionary -->
+            <!-- BatchRun icon now provided as BatchRunIcon DrawingImage from RMC.BestFit.UI IconDictionary -->
+            <!-- Run, Stop, Download icons now provided as Viewbox resources (RunIcon, StopIcon, DownloadIcon) from GenericControls IconDictionary -->
+            <!-- Process icon provided as ProcessIcon from FrameworkUI IconDictionary -->
+
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

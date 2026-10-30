@@ -1,0 +1,144 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Avalonia port of upstream/RMC-BestFit/src/RMC.BestFit.App, RMC-BestFit's desktop application, as
+    XGoodFit (docs/migration-plan.md, Phase 7). Nearly every upstream file is WPF code, so the project
+    opts in to upstream files (Directory.Build.targets): only the ported copies and the upstream files
+    listed in UpstreamCompileInclude compile.
+
+    Branding (plan §1.1): the executable is XGoodFitProductName, and the window title, About box and
+    file filters show that name (ShellPublicVariables.SoftwareName is the assembly title). Projects
+    save upstream's version, 2.0.1 (App.ProductVersion), as RMC-BestFit 2.0.1 does, so files stay
+    compatible both ways. The namespace stays upstream's RMC_BestFit.
+
+    Not ported:
+    - AssemblyResolver.cs: it loads the Windows installer's libraries folder; .NET's dependency
+      manifest finds the libraries.
+    - Properties/AssemblyInfo.cs: the SDK writes the assembly attributes from the branding properties;
+      upstream's ThemeInfo and SupportedOSPlatform have no equivalent here.
+    - Properties/Resources.* and Properties/Settings.*: WPF project resources and settings nothing uses.
+    - App.config: a .NET Framework startup section, which .NET ignores.
+    - Resources/BestFitStyles.xaml: nothing merges it or uses its keys (upstream dead code, D10).
+    - The post-build step that moves the libraries to a libraries folder (for AssemblyResolver) and
+      deletes AvalonDock's satellite folders.
+
+    PORT IN PROGRESS: the views of the GUI areas not ported yet are placeholders, marked
+    "XGoodFit port: placeholder".
+  -->
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>RMC_BestFit</RootNamespace>
+    <AssemblyName>$(XGoodFitProductName)</AssemblyName>
+    <AssemblyTitle>$(XGoodFitProductName)</AssemblyTitle>
+    <Description>XGoodFit, a cross-platform community port of RMC-BestFit, the Bayesian estimation and fitting software the USACE Risk Management Center developed to enhance and expedite flood hazard assessments.</Description>
+    <ApplicationIcon>$(XGoodFitIcon)</ApplicationIcon>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+    <!-- As upstream: OxyPlot 2.x has no replacement for PlotModel.Updated, which adaptive date formatting needs. -->
+    <NoWarn>$(NoWarn);CS0618</NoWarn>
+    <UpstreamProjectDir>$(UpstreamBestFitSrc)RMC.BestFit.App/</UpstreamProjectDir>
+    <UpstreamCompileMode>OptIn</UpstreamCompileMode>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="RMC.BestFit.App.Tests" />
+    <!-- As in FrameworkUI: WPF's UIElement is Avalonia's Control, keeping upstream's name in the shell's API. -->
+    <Using Include="Avalonia.Controls.Control" Alias="UIElement" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia.Desktop" />
+    <PackageReference Include="Avalonia.Headless" />
+    <PackageReference Include="Avalonia.Themes.Simple" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!--
+      Upstream's framework packages are the projects they contain: RMC.Wpf.Framework.Core is
+      FrameworkInterfaces and Themes; .Models includes DatabaseManager and OxyPlot; .Controls is
+      GenericControls, NumericControls, DatabaseControls and OxyPlotControls; .Support is FrameworkUI
+      and SoftwareUpdate. RMC.Numerics comes with RMC.BestFit, and Hec.Dss with RMC.BestFit.UI.
+    -->
+    <ProjectReference Include="$(UpstreamBestFitSrc)RMC.BestFit/RMC.BestFit.csproj" />
+    <ProjectReference Include="$(UpstreamFrameworkSrc)DatabaseManager/DatabaseManager.csproj" />
+    <ProjectReference Include="../RMC.BestFit.UI/RMC.BestFit.UI.csproj" />
+    <ProjectReference Include="../../Framework/DatabaseControls/DatabaseControls.csproj" />
+    <ProjectReference Include="../../Framework/FrameworkInterfaces/FrameworkInterfaces.csproj" />
+    <ProjectReference Include="../../Framework/FrameworkUI/FrameworkUI.csproj" />
+    <ProjectReference Include="../../Framework/GenericControls/GenericControls.csproj" />
+    <ProjectReference Include="../../Framework/NumericControls/NumericControls.csproj" />
+    <ProjectReference Include="../../Framework/OxyPlot/OxyPlot.Wpf/OxyPlot.Wpf.csproj" />
+    <ProjectReference Include="../../Framework/OxyPlotControls/OxyPlotControls.csproj" />
+    <ProjectReference Include="../../Framework/SoftwareUpdate/SoftwareUpdate.csproj" />
+    <ProjectReference Include="../../Framework/Themes/Themes.csproj" />
+    <ProjectReference Include="../../Framework/WpfCompat/WpfCompat.csproj" />
+    <ProjectReference Include="../../XGoodFit.Platform/XGoodFit.Platform.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Upstream files that compile unchanged. -->
+    <UpstreamCompileInclude Include="GUI/Support/CoincidentFrequencyResponseGridValidator.cs" />
+    <UpstreamCompileInclude Include="GUI/Support/CoincidentFrequencyTablePoint.cs" />
+    <UpstreamCompileInclude Include="GUI/Support/ComboBoxItems/AverageMethodItem.cs" />
+    <UpstreamCompileInclude Include="GUI/Support/ComboBoxItems/B17CUncertaintyOptionItem.cs" />
+    <UpstreamCompileInclude Include="GUI/Support/ComboBoxItems/BlockFunctionItem.cs" />
+    <UpstreamCompileInclude Include="GUI/Support/ComboBoxItems/CompositeTypeItem.cs" />
+    <UpstreamCompileInclude Include="GUI/Support/ComboBoxItems/CopulaEstimationItem.cs" />
+    <UpstreamCompileInclude Include="GUI/Support/ComboBoxItems/CopulaItem.cs" />
+    <UpstreamCompileInclude Include="GUI/Support/ComboBoxItems/CovariateExtensionItem.cs" />
+    <UpstreamCompileInclude Include="GUI/Support/ComboBoxItems/CredibleIntervalItem.cs" />
+    <UpstreamCompileInclude Include="GUI/Support/ComboBoxItems/DependencyItem.cs" />
+    <UpstreamCompileInclude Include="GUI/Support/ComboBoxItems/DepthUnitItem.cs" />
+    <UpstreamCompileInclude Include="GUI/Support/ComboBoxItems/ExactDataMethodItem.cs" />
+    <UpstreamCompileInclude Include="GUI/Support/ComboBoxItems/GMMEstimationTypeItem.cs" />
+    <UpstreamCompileInclude Include="GUI/Support/ComboBoxItems/InputDataSelectionItem.cs" />
+    <UpstreamCompileInclude Include="GUI/Support/ComboBoxItems/MathFunctionItem.cs" />
+    <UpstreamCompileInclude Include="GUI/Support/ComboBoxItems/MonthItem.cs" />
+    <UpstreamCompileInclude Include="GUI/Support/ComboBoxItems/ParameterPriorItem.cs" />
+    <UpstreamCompileInclude Include="GUI/Support/ComboBoxItems/PlottingPositionItem.cs" />
+    <UpstreamCompileInclude Include="GUI/Support/ComboBoxItems/PointEstimatorItem.cs" />
+    <UpstreamCompileInclude Include="GUI/Support/ComboBoxItems/SamplerTypeItem.cs" />
+    <UpstreamCompileInclude Include="GUI/Support/ComboBoxItems/SmoothingFunctionItem.cs" />
+    <UpstreamCompileInclude Include="GUI/Support/ComboBoxItems/TimeBlockItem.cs" />
+    <UpstreamCompileInclude Include="GUI/Support/ComboBoxItems/TimeIntervalItem.cs" />
+    <UpstreamCompileInclude Include="GUI/Support/ComboBoxItems/TimeSeriesAlternativeItem.cs" />
+    <UpstreamCompileInclude Include="GUI/Support/ComboBoxItems/TimeSeriesEntryMethodItem.cs" />
+    <UpstreamCompileInclude Include="GUI/Support/ComboBoxItems/TimeSeriesTypeItem.cs" />
+    <UpstreamCompileInclude Include="GUI/Support/ComboBoxItems/TransformTypeItem.cs" />
+    <UpstreamCompileInclude Include="GUI/Support/ComboBoxItems/TrendModelItem.cs" />
+    <UpstreamCompileInclude Include="GUI/Support/ComboBoxItems/TrendTypeItem.cs" />
+    <UpstreamCompileInclude Include="GUI/Support/ComboBoxItems/UnivariateDistributionItem.cs" />
+    <UpstreamCompileInclude Include="GUI/Support/DataGrids/DSSPathnameItem.cs" />
+    <UpstreamCompileInclude Include="GUI/Support/DataGrids/ExactDataRowItem.cs" />
+    <UpstreamCompileInclude Include="GUI/Support/DataGrids/IntervalDataRowItem.cs" />
+    <UpstreamCompileInclude Include="GUI/Support/DataGrids/OrdinateRowItem.cs" />
+    <UpstreamCompileInclude Include="GUI/Support/DataGrids/ThresholdDataRowItem.cs" />
+    <UpstreamCompileInclude Include="GUI/Support/DataGrids/TrendModelRowItem.cs" />
+    <UpstreamCompileInclude Include="GUI/Support/DataGrids/UncertainDataRowItem.cs" />
+    <UpstreamCompileInclude Include="GUI/Support/DataGrids/XOrdinateRowItem.cs" />
+    <UpstreamCompileInclude Include="GUI/Support/DataGrids/YOrdinateRowItem.cs" />
+    <UpstreamCompileInclude Include="GUI/Support/DateValuePoint.cs" />
+    <UpstreamCompileInclude Include="GUI/Support/FittedDistributionStatistic.cs" />
+    <UpstreamCompileInclude Include="GUI/Support/FrequencyCurvePoint.cs" />
+    <UpstreamCompileInclude Include="GUI/Support/HypothesisTestResult.cs" />
+    <UpstreamCompileInclude Include="GUI/Support/OnlineHelpLauncher.cs" />
+    <UpstreamCompileInclude Include="GUI/Support/SummaryStatistic.cs" />
+    <UpstreamCompileInclude Include="GUI/Support/TimeSeriesResultTimeline.cs" />
+    <UpstreamCompileInclude Include="GUI/TimeSeriesData/TimeSeries/DssPathRangeResolver.cs" />
+    <UpstreamCompileInclude Include="GUI/TimeSeriesData/TimeSeries/DssPathRangeResult.cs" />
+    <UpstreamCompileInclude Include="GUI/TimeSeriesData/TimeSeries/DssPathSelectorRow.cs" />
+    <UpstreamCompileInclude Include="GUI/UnivariateAnalysis/Mixture/MixtureDistributionRow.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!--
+      App.xaml's BestFit and USACE pictures. BestFit is the application's icon (XGoodFitIcon), which the
+      About box shows; upstream's is RMC-BestFit's own, which XGoodFitIcon is until XGoodFit has one.
+    -->
+    <AvaloniaResource Include="$(XGoodFitIcon)" Link="Resources/BestFit_Icon.ico" />
+    <AvaloniaResource Include="$(UpstreamProjectDir)Resources/USACE.png" Link="Resources/USACE.png" />
+  </ItemGroup>
+
+</Project>

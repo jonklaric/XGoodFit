@@ -615,6 +615,11 @@ Each slice includes its XAML and code-behind, its share of `RMC.BestFit.App.Test
 
 **Exit:** every examples walkthrough completes on 3 OSes, and App tests are green.
 
+**Progress (2026-10-30):** the application's skeleton is in place, so the GUI areas can be ported in parallel.
+- `src/BestFit/RMC.BestFit.App` (opt-in overlay) builds `XGoodFit` (the executable; namespace `RMC_BestFit` as upstream): `Program` (Velopack's hook, then Avalonia), `App` ported (theme, version 2.0.1 written to projects as upstream's, the version 1.0 warning, files to open through `FileOpenRequests`, Velopack updates when installed, the auto-check), the application's icon dictionary, and the 51 upstream support files that compile unchanged (combo box items, grid rows, result points). `RMC.BestFit.UI` grants its internals to `XGoodFit` as it does to `RMC-BestFit`.
+- Placeholders (marked "XGoodFit port: placeholder") stand in for `MainProjectNode` and each area's document and properties views, with the members `MainProjectNode` uses, until those are ported. `Resources/BestFitStyles.xaml` isn't ported: nothing merges it or uses its keys.
+- `tests/BestFit/RMC.BestFit.App.Tests` (opt-in): 271 of upstream's tests (the support classes) pass unchanged, with the ported `WpfTestHost` and a headless `[STATestMethod]`, and a startup test makes the main window.
+
 ### Phase 8: Platform integration & distribution (L)
 - Self-contained publish per RID (trimming off: reflection-heavy). ReadyToRun is optional.
 - **Windows:** Velopack `Setup.exe` plus a portable zip; `.bestfit` registered as an extra handler (§1.1); import of MRU and settings from an existing RMC-BestFit install.

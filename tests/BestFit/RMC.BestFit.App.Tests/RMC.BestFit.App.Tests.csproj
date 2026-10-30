@@ -1,0 +1,96 @@
+<Project Sdk="MSTest.Sdk/3.6.4">
+
+  <!--
+    Upstream's RMC.BestFit.App tests (upstream/RMC-BestFit/src/RMC.BestFit.App.Tests), run against the
+    Avalonia port (src/BestFit/RMC.BestFit.App). Most test the application's views, which are ported one
+    GUI area at a time, so the project opts in to upstream files (Directory.Build.targets): only the
+    upstream test files listed in UpstreamCompileInclude compile, unchanged, besides ported copies.
+    - [STATestMethod]: as in RMC.BestFit.UI.Tests, this project's STATestMethodAttribute runs those
+      tests on the headless Avalonia session's UI thread (HeadlessSession.cs). It is declared in the
+      RMC.BestFit.App.Tests namespace, which the test files' own namespaces search before MSTest's.
+    - GUI/Support/WpfTestHost.cs is ported: it merges the same resource dictionaries, as Avalonia
+      resources, into the headless application.
+
+    PORT IN PROGRESS: add each GUI area's upstream tests with the area.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <!-- As upstream. -->
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+    <TestingPlatformShowTestsFailure>true</TestingPlatformShowTestsFailure>
+    <UpstreamProjectDir>$(UpstreamBestFitSrc)RMC.BestFit.App.Tests/</UpstreamProjectDir>
+    <UpstreamCompileMode>OptIn</UpstreamCompileMode>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- As upstream: the shared MSTest settings (method-level parallelism) and API snapshot helper. -->
+    <Compile Include="$(UpstreamBestFitSrc)TestCommon/MSTestSettings.cs" Link="upstream/MSTestSettings.cs" />
+    <Compile Include="$(UpstreamBestFitSrc)TestCommon/PublicApiContractSnapshot.cs" Link="upstream/CoreInfrastructure/PublicApiContractSnapshot.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia.HarfBuzz" />
+    <PackageReference Include="Avalonia.Headless" />
+    <PackageReference Include="Avalonia.Skia" />
+    <PackageReference Include="Avalonia.Themes.Simple" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="$(UpstreamBestFitSrc)RMC.BestFit/RMC.BestFit.csproj" />
+    <ProjectReference Include="../../../src/BestFit/RMC.BestFit.UI/RMC.BestFit.UI.csproj" />
+    <ProjectReference Include="../../../src/BestFit/RMC.BestFit.App/RMC.BestFit.App.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Upstream test files that compile unchanged. -->
+    <UpstreamCompileInclude Include="GUI/Support/ComboBoxItems/AverageMethodItemTests.cs" />
+    <UpstreamCompileInclude Include="GUI/Support/ComboBoxItems/B17CUncertaintyOptionItemTests.cs" />
+    <UpstreamCompileInclude Include="GUI/Support/ComboBoxItems/BlockFunctionItemTests.cs" />
+    <UpstreamCompileInclude Include="GUI/Support/ComboBoxItems/CompositeTypeItemTests.cs" />
+    <UpstreamCompileInclude Include="GUI/Support/ComboBoxItems/CopulaEstimationItemTests.cs" />
+    <UpstreamCompileInclude Include="GUI/Support/ComboBoxItems/CopulaItemTests.cs" />
+    <UpstreamCompileInclude Include="GUI/Support/ComboBoxItems/CovariateExtensionItemTests.cs" />
+    <UpstreamCompileInclude Include="GUI/Support/ComboBoxItems/CredibleIntervalItemTests.cs" />
+    <UpstreamCompileInclude Include="GUI/Support/ComboBoxItems/DependencyItemTests.cs" />
+    <UpstreamCompileInclude Include="GUI/Support/ComboBoxItems/DepthUnitItemTests.cs" />
+    <UpstreamCompileInclude Include="GUI/Support/ComboBoxItems/ExactDataMethodItemTests.cs" />
+    <UpstreamCompileInclude Include="GUI/Support/ComboBoxItems/GMMEstimationTypeItemTests.cs" />
+    <UpstreamCompileInclude Include="GUI/Support/ComboBoxItems/InputDataSelectionItemTests.cs" />
+    <UpstreamCompileInclude Include="GUI/Support/ComboBoxItems/MathFunctionItemTests.cs" />
+    <UpstreamCompileInclude Include="GUI/Support/ComboBoxItems/MonthItemTests.cs" />
+    <UpstreamCompileInclude Include="GUI/Support/ComboBoxItems/ParameterPriorItemTests.cs" />
+    <UpstreamCompileInclude Include="GUI/Support/ComboBoxItems/PlottingPositionItemTests.cs" />
+    <UpstreamCompileInclude Include="GUI/Support/ComboBoxItems/PointEstimatorItemTests.cs" />
+    <UpstreamCompileInclude Include="GUI/Support/ComboBoxItems/SamplerTypeItemTests.cs" />
+    <UpstreamCompileInclude Include="GUI/Support/ComboBoxItems/SmoothingFunctionItemTests.cs" />
+    <UpstreamCompileInclude Include="GUI/Support/ComboBoxItems/TimeBlockItemTests.cs" />
+    <UpstreamCompileInclude Include="GUI/Support/ComboBoxItems/TimeIntervalItemTests.cs" />
+    <UpstreamCompileInclude Include="GUI/Support/ComboBoxItems/TimeSeriesAlternativeItemTests.cs" />
+    <UpstreamCompileInclude Include="GUI/Support/ComboBoxItems/TimeSeriesEntryMethodItemTests.cs" />
+    <UpstreamCompileInclude Include="GUI/Support/ComboBoxItems/TimeSeriesTypeItemTests.cs" />
+    <UpstreamCompileInclude Include="GUI/Support/ComboBoxItems/TransformTypeItemTests.cs" />
+    <UpstreamCompileInclude Include="GUI/Support/ComboBoxItems/TrendModelItemTests.cs" />
+    <UpstreamCompileInclude Include="GUI/Support/ComboBoxItems/TrendTypeItemTests.cs" />
+    <UpstreamCompileInclude Include="GUI/Support/ComboBoxItems/UnivariateDistributionItemTests.cs" />
+    <UpstreamCompileInclude Include="GUI/Support/DataGrids/DSSPathnameItemTests.cs" />
+    <UpstreamCompileInclude Include="GUI/Support/DataGrids/ExactDataRowItemTests.cs" />
+    <UpstreamCompileInclude Include="GUI/Support/DataGrids/IntervalDataRowItemTests.cs" />
+    <UpstreamCompileInclude Include="GUI/Support/DataGrids/OrdinateRowItemTests.cs" />
+    <UpstreamCompileInclude Include="GUI/Support/DataGrids/ThresholdDataRowItemTests.cs" />
+    <UpstreamCompileInclude Include="GUI/Support/DataGrids/TrendModelRowItemTests.cs" />
+    <UpstreamCompileInclude Include="GUI/Support/DataGrids/UncertainDataRowItemTests.cs" />
+    <UpstreamCompileInclude Include="GUI/Support/DataGrids/XOrdinateRowItemTests.cs" />
+    <UpstreamCompileInclude Include="GUI/Support/DataGrids/YOrdinateRowItemTests.cs" />
+    <UpstreamCompileInclude Include="GUI/Support/CoincidentFrequencyResponseGridValidatorTests.cs" />
+    <UpstreamCompileInclude Include="GUI/Support/CoincidentFrequencyTablePointTests.cs" />
+    <UpstreamCompileInclude Include="GUI/Support/DateValuePointTests.cs" />
+    <UpstreamCompileInclude Include="GUI/Support/FittedDistributionStatisticTests.cs" />
+    <UpstreamCompileInclude Include="GUI/Support/FrequencyCurvePointTests.cs" />
+    <UpstreamCompileInclude Include="GUI/Support/HypothesisTestResultTests.cs" />
+    <UpstreamCompileInclude Include="GUI/Support/SummaryStatisticTests.cs" />
+    <UpstreamCompileInclude Include="GUI/Support/TimeSeriesResultTimelineTests.cs" />
+  </ItemGroup>
+
+</Project>
