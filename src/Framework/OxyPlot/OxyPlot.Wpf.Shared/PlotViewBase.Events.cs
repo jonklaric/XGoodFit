@@ -186,12 +186,15 @@ namespace OxyPlot.Wpf
         /// </summary>
         /// <param name="e">The <see cref="PointerReleasedEventArgs" /> that contains the event data. The event data reports that the mouse button was released.</param>
         /// <remarks>XGoodFit port: Avalonia's context menu opens with <c>Open</c> and closes with
-        /// <c>Close</c>, and shows with <c>IsVisible</c>, where WPF's had IsOpen and Visibility.</remarks>
+        /// <c>Close</c>, and shows with <c>IsVisible</c>, where WPF's had IsOpen and Visibility. Avalonia's
+        /// own handling (the base method) asks for the context menu on a right-button release, and the
+        /// request's handled state becomes the release's; so it runs after this control's handling, where
+        /// WPF's ran first and left context menus to the code below.</remarks>
         protected override void OnPointerReleased(PointerReleasedEventArgs e)
         {
-            base.OnPointerReleased(e);
             if (e.Handled)
             {
+                base.OnPointerReleased(e);
                 return;
             }
 
@@ -219,6 +222,8 @@ namespace OxyPlot.Wpf
                     this.ContextMenu.Close();
                 }
             }
+
+            base.OnPointerReleased(e);
         }
 
         /// <summary>
