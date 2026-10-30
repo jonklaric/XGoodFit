@@ -41,8 +41,7 @@ namespace DatabaseControls
     /// <para>
     /// XGoodFit port: the dependency properties are Avalonia styled properties with upstream's defaults and
     /// callbacks; the cursor and Visibility are WpfCompat's. The check box's Checked and Unchecked handlers
-    /// are added in the constructor. The plot toolbar and properties control wait for OxyPlotControls' port
-    /// (see PlotToolbar_PropertiesCalled).
+    /// are added in the constructor.
     /// </para>
     /// </remarks>
     public partial class NumericColumnStats : UserControl
@@ -447,10 +446,6 @@ namespace DatabaseControls
             }
         }
 
-        // XGoodFit port: the plot toolbar's and properties control's handlers wait for OxyPlotControls' port
-        // (OxyPlotToolbar.PropertiesCalled, OxyPlotPropertiesControl.ClosePropertiesCalled, ExpandProperty and
-        // PropertyEXP); the XAML has the elements in a comment. Define OXYPLOTCONTROLS_TOOLBAR once they exist.
-#if OXYPLOTCONTROLS_TOOLBAR
         /// <summary>
         /// Handles the properties panel toggle from the plot toolbar.
         /// </summary>
@@ -498,7 +493,6 @@ namespace DatabaseControls
         {
             propertiesControl.Visibility = Visibility.Collapsed;
         }
-#endif
 
         /// <summary>
         /// Toggles the visibility of the background histogram series.

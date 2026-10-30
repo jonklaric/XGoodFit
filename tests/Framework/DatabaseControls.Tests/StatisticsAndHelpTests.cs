@@ -2,13 +2,15 @@ using System.Globalization;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.VisualTree;
+using OxyPlotControls;
 using WpfCompat;
 
 namespace DatabaseControls.Tests;
 
 /// <summary>
-/// The column statistics window (numeric and text columns, and the selected rows only), upstream's
-/// classification methods, and the calculator help pages in HtmlRenderer's panel.
+/// The column statistics window (numeric and text columns, the selected rows only, and the plot toolbar
+/// with its properties panel), upstream's classification methods, and the calculator help pages in
+/// HtmlRenderer's panel.
 /// </summary>
 [TestClass]
 public sealed class StatisticsAndHelpTests
@@ -101,6 +103,45 @@ public sealed class StatisticsAndHelpTests
             Assert.AreEqual(5, pie.Slices.Count, "the top four values and All Other");
             Assert.AreEqual("All Other", pie.Slices[4].Label);
             stats.Close();
+            window.Close();
+        });
+    }
+
+    [TestMethod]
+    public void PlotToolbar_OpensAndClosesThePlotProperties_InBothViews()
+    {
+        HeadlessSession.Run(() =>
+        {
+            var (viewer, window) = TestSupport.ShowViewer(TestSupport.InMemory(TestSupport.SampleTable(20)));
+            foreach (int column in new[] { 1, 0 })
+            {
+                var stats = new ColumnStatsWindow(viewer, column);
+                stats.Show();
+                TestSupport.Settle();
+                (OxyPlotToolbar toolbar, OxyPlotPropertiesControl properties, OxyPlot.Wpf.Plot plot) = column == 1
+                    ? (stats.NumericColumnViewer.PlotToolbar, stats.NumericColumnViewer.PropertiesControl, stats.NumericColumnViewer.StatsPlot)
+                    : (stats.AlphabeticColumnViewer.PlotToolbar, stats.AlphabeticColumnViewer.PropertiesControl, stats.AlphabeticColumnViewer.StatsPlot);
+
+                Assert.AreSame(plot, toolbar.Plot, "the toolbar works on the statistics plot");
+                Assert.AreSame(plot, properties.Plot);
+                Assert.IsTrue(toolbar.IsEffectivelyVisible && toolbar.Bounds.Width > 0, "the toolbar has its column");
+                Assert.AreEqual(Visibility.Collapsed, properties.Visibility, "the properties start hidden");
+
+                // Upstream's PlotToolbar_PropertiesCalled: the toolbar's button shows and hides the panel,
+                // and the panel's own close button hides it.
+                Button propertiesButton = toolbar.GetVisualDescendants().OfType<Button>().Single(b => b.Name == "PropertiesButton");
+                stats.Click(propertiesButton);
+                Assert.AreEqual(Visibility.Visible, properties.Visibility);
+                Assert.AreEqual(300, properties.Bounds.Width);
+                stats.Click(propertiesButton);
+                Assert.AreEqual(Visibility.Collapsed, properties.Visibility, "the toolbar's button toggles the panel");
+
+                stats.Click(propertiesButton);
+                Button close = properties.GetVisualDescendants().OfType<Button>().Single(b => Equals(ToolTip.GetTip(b), "Close Plot Properties"));
+                stats.Click(close);
+                Assert.AreEqual(Visibility.Collapsed, properties.Visibility, "the panel's close button hides it");
+                stats.Close();
+            }
             window.Close();
         });
     }

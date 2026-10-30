@@ -10,8 +10,8 @@ namespace DatabaseControls.Tests;
 
 /// <summary>
 /// The headless Avalonia application the tests run in (see Themes.Tests), with the resources RMC-BestFit's
-/// App.xaml merges for these controls: GenericControls' and DatabaseControls' themes, then the theme
-/// palettes and control themes that ThemeService adds after them.
+/// App.xaml merges for these controls: GenericControls', OxyPlotControls' and DatabaseControls' themes,
+/// then the theme palettes and control themes that ThemeService adds after them.
 /// </summary>
 public sealed class TestApp : Application
 {
@@ -26,6 +26,7 @@ public sealed class TestApp : Application
         foreach (string theme in new[]
         {
             "avares://GenericControls/Themes/GenericControlsTheme.axaml",
+            "avares://OxyPlotControls/Themes/OxyPlotControlsTheme.axaml",
             "avares://DatabaseControls/Themes/DatabaseControlsTheme.axaml",
         })
         {

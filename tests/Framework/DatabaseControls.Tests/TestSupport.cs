@@ -101,6 +101,41 @@ internal static class TestSupport
         Settle();
     }
 
+    /// <summary>
+    /// Clicks a control with the left button, at the point nearest its centre that hits it: the plot
+    /// toolbar's buttons, as upstream's, have no background, so only their icons take the pointer.
+    /// </summary>
+    public static void Click(this Window window, Control control)
+    {
+        Settle();
+        Point centre = control.Centre();
+        Point? hit = null;
+        for (double radius = 0; hit is null && radius < Math.Max(control.Bounds.Width, control.Bounds.Height) / 2; radius++)
+        {
+            for (double dx = -radius; hit is null && dx <= radius; dx++)
+            {
+                foreach (double dy in new[] { -radius, radius })
+                {
+                    foreach (Point candidate in new[] { centre + new Vector(dx, dy), centre + new Vector(dy, dx) })
+                    {
+                        if (window.InputHitTest(candidate) is Visual visual && (visual == control || visual.GetVisualAncestors().Contains(control)))
+                        {
+                            hit = candidate;
+                            break;
+                        }
+                    }
+                    if (hit is not null)
+                    {
+                        break;
+                    }
+                }
+            }
+        }
+        Assert.IsNotNull(hit, $"nothing in {control} takes the pointer");
+        window.MouseMove(hit.Value);
+        window.Click(hit.Value);
+    }
+
     /// <summary>Double-clicks the left button at a point of the window.</summary>
     public static void DoubleClick(this Window window, Point at)
     {

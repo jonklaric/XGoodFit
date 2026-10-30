@@ -7,6 +7,7 @@ using Avalonia.Styling;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using Themes;
+using WpfCompat;
 
 namespace DatabaseControls.Tests;
 
@@ -100,6 +101,9 @@ public sealed class Captures
                 var numericStats = new ColumnStatsWindow(viewer, 2);
                 numericStats.Show();
                 Save(numericStats, Path.Combine(folder, $"database-column-stats-numeric-{theme}.png"));
+                numericStats.NumericColumnViewer.PropertiesControl.Visibility = Visibility.Visible;
+                Settle();
+                Save(numericStats, Path.Combine(folder, $"database-column-stats-numeric-properties-{theme}.png"));
                 numericStats.Close();
 
                 var textStats = new ColumnStatsWindow(viewer, 1);

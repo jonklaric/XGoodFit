@@ -4,8 +4,6 @@
     - ToolTip is ToolTip.Tip and Visibility="Collapsed" is IsVisible="False" (the code-behind shows the
       controls with WpfCompat's Visibility). The check box's Checked and Unchecked handlers are added in
       the code-behind.
-    - The plot toolbar and properties control wait for OxyPlotControls' port (see the comment at their
-      place); until then the plot also takes their two columns.
 -->
 <UserControl x:Class="DatabaseControls.NumericColumnStats" x:Name="NumericStats"
              xmlns="https://github.com/avaloniaui"
@@ -250,7 +248,6 @@
 
         </oxy:Plot>
 
-        <!-- XGoodFit port: the plot toolbar and properties control wait for OxyPlotControls' port (OxyPlotToolbar, OxyPlotPropertiesControl). Upstream's elements, unchanged:
         <oxyCntrls:OxyPlotToolbar
             x:Name="PlotToolbar"
             Grid.Column="2"
@@ -263,11 +260,10 @@
             x:Name="PropertiesControl"
             Plot="{Binding ElementName=StatsPlot, Mode=OneWay}"
             ClosePropertiesCalled="PropertiesControl_ClosePropertiesCalled"
-            Visibility="Collapsed"
+            IsVisible="False"
             Width="300"
             Grid.Column="3"
             Margin="5,0,0,0"/>
-        -->
 
         <CheckBox x:Name="ShowBackgroundCheckbox"
             Grid.Column="1"

@@ -8,6 +8,7 @@ using DatabaseManager;
 using OxyPlot;
 using OxyPlot.Series;
 using OxyPlot.Wpf;
+using WpfCompat;
 
 namespace DatabaseControls
 {
@@ -26,8 +27,7 @@ namespace DatabaseControls
     /// </para>
     /// <para>
     /// XGoodFit port: the dependency properties are Avalonia styled properties with upstream's defaults and
-    /// callbacks. The plot toolbar and properties control wait for OxyPlotControls' port (see
-    /// PlotToolbar_PropertiesCalled).
+    /// callbacks; Visibility is WpfCompat's.
     /// </para>
     /// </remarks>
     public partial class AlphabeticColumnStats : UserControl
@@ -113,10 +113,6 @@ namespace DatabaseControls
 
         #region Event Handlers
 
-        // XGoodFit port: the plot toolbar's and properties control's handlers wait for OxyPlotControls' port
-        // (OxyPlotToolbar.PropertiesCalled, OxyPlotPropertiesControl.ClosePropertiesCalled, ExpandProperty and
-        // PropertyEXP); the XAML has the elements in a comment. Define OXYPLOTCONTROLS_TOOLBAR once they exist.
-#if OXYPLOTCONTROLS_TOOLBAR
         /// <summary>
         /// Handles the properties panel toggle from the plot toolbar.
         /// </summary>
@@ -164,7 +160,6 @@ namespace DatabaseControls
         {
             propertiesControl.Visibility = Visibility.Collapsed;
         }
-#endif
 
         #endregion
 

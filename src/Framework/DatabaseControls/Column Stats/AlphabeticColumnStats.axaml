@@ -1,8 +1,7 @@
 <!--
     XGoodFit port of upstream's Column Stats/AlphabeticColumnStats.xaml: the resource dictionary is merged
-    with a ResourceInclude, and the separator's Style is its Theme. The plot toolbar and properties
-    control wait for OxyPlotControls' port (see the comment at their place); until then the plot also
-    takes their two columns.
+    with a ResourceInclude, the separator's Style is its Theme, and the properties control's
+    Visibility="Collapsed" is IsVisible="False" (the code-behind shows it with WpfCompat's Visibility).
 -->
 <UserControl x:Class="DatabaseControls.AlphabeticColumnStats" x:Name="AlphabeticStats"
              xmlns="https://github.com/avaloniaui"
@@ -70,7 +69,6 @@
             </oxy:Plot.Series>
         </oxy:Plot>
 
-        <!-- XGoodFit port: the plot toolbar and properties control wait for OxyPlotControls' port (OxyPlotToolbar, OxyPlotPropertiesControl). Upstream's elements, unchanged:
         <oxyCntrls:OxyPlotToolbar
             x:Name="PlotToolbar"
             Grid.Column="2"
@@ -83,11 +81,10 @@
             x:Name="PropertiesControl"
             Plot="{Binding ElementName=StatsPlot, Mode=OneWay}"
             ClosePropertiesCalled="PropertiesControl_ClosePropertiesCalled"
-            Visibility="Collapsed"
+            IsVisible="False"
             Width="300"
             Grid.Column="3"
             Margin="5,0,0,0"/>
-        -->
 
     </Grid>
 </UserControl>
