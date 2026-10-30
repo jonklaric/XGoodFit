@@ -82,32 +82,16 @@ namespace OxyPlot.Wpf
         /// <see cref="BitmapCache.RenderAtScale"/> is set to the current per-monitor DPI scale
         /// to keep the cached bitmap sharp. <see cref="BitmapCache.SnapsToDevicePixels"/> is
         /// enabled to align with the existing pixel-snapping configuration.
-        /// XGoodFit port: Avalonia's cache already renders at the top level's scaling, so
-        /// <see cref="BitmapCache.RenderAtScale"/> stays 1.
+        /// </para>
+        /// <para>
+        /// XGoodFit port: the preference is kept, but no bitmap cache is set. Avalonia 12's
+        /// <see cref="BitmapCache"/> keeps the first bitmap of a visual that draws itself, as this host
+        /// does, so a cached plot never showed what changed after it first showed (BestFit's Markov chain
+        /// traces stayed empty). Avalonia's compositor keeps the plot's drawing between frames, so an
+        /// overlay dragged over the plot doesn't run its rendering again.
         /// </para>
         /// </remarks>
-        public bool UseBitmapCache
-        {
-            get => this.CacheMode is BitmapCache;
-            set
-            {
-                if (value)
-                {
-                    // XGoodFit port: Avalonia's cache already renders at the top level's scaling, which
-                    // WPF's needed RenderAtScale for; so the scale here is 1.
-                    this.CacheMode = new BitmapCache
-                    {
-                        RenderAtScale = 1.0,
-                        SnapsToDevicePixels = true,
-                        EnableClearType = false,
-                    };
-                }
-                else
-                {
-                    this.CacheMode = null;
-                }
-            }
-        }
+        public bool UseBitmapCache { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether anti-aliasing is disabled for shape rendering
