@@ -644,7 +644,12 @@
         </DrawingImage.Drawing>
     </DrawingImage>
 
-    <Viewbox x:Key="TCUIcon" Width="16" Height="16">
+    <!--
+        XGoodFit port: x:Shared="False", as AboutIcon. FrameworkUIController and BestFit's MainProjectNode give this
+        resource to their Help menus' Terms & Conditions items, and an Avalonia element has one parent: a shared one
+        kept the item, and through its Click handler the explorer's project node and its main window, alive.
+    -->
+    <Viewbox x:Key="TCUIcon" Width="16" Height="16" x:Shared="False">
         <Rectangle Width="16" Height="16">
             <Rectangle.Fill>
                 <DrawingBrush>
@@ -663,7 +668,8 @@
         </Rectangle>
     </Viewbox>
 
-    <Viewbox x:Key="AboutIcon" Width="16" Height="16">
+    <!-- XGoodFit port: x:Shared="False", as TCUIcon (the Help menus' About items). -->
+    <Viewbox x:Key="AboutIcon" Width="16" Height="16" x:Shared="False">
         <Rectangle Width="16" Height="16">
             <Rectangle.Fill>
                 <DrawingBrush>

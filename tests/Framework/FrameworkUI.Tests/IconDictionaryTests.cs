@@ -23,4 +23,23 @@ public sealed class IconDictionaryTests
             Assert.AreNotSame(first, second);
         });
     }
+
+    [TestMethod]
+    [DataRow("TCUIcon")]
+    [DataRow("AboutIcon")]
+    public void HelpMenuIcons_AreANewElementForEachLookup(string key)
+    {
+        HeadlessSession.Run(() =>
+        {
+            // FrameworkUIController and BestFit's MainProjectNode put these resources in their Help menus' items. A
+            // single shared element kept the first item, and through its Click handler the explorer's project node and
+            // the main window, alive.
+            var source = new Uri("avares://FrameworkUI/Icons/IconDictionary.axaml");
+            var icons = new ResourceInclude(source) { Source = source };
+            Assert.IsTrue(icons.TryGetResource(key, null, out object? first));
+            Assert.IsTrue(icons.TryGetResource(key, null, out object? second));
+            Assert.IsInstanceOfType<Viewbox>(first);
+            Assert.AreNotSame(first, second);
+        });
+    }
 }
