@@ -153,15 +153,15 @@ state	01 Input Data/05 InputData 'Example #6'	1029246a50c505fe	823622b1f3a02008
 state	01 Input Data/06 InputData 'Example #7'	85cbf2b9693fd80e	9a3ac4c961584685
 state	02 Distribution Fitting Analysis	22c9cdb7873ae49a	4a4ead4bf90c0837
 state	03 Univariate Distribution Analysis	2819fe3e48a56986	0e3a3c46961dd428
-state	03 Univariate Distribution Analysis/00 UnivariateAnalysis 'Bayes Example #1'	5ef5f777cd4f86fb	55866d5b85ebe4b0
-state	03 Univariate Distribution Analysis/01 UnivariateAnalysis 'Bayes Example #2'	22c74df6ab547520	84098f683fb4674b
-state	03 Univariate Distribution Analysis/02 UnivariateAnalysis 'Bayes Example #4'	6958e663a9c9a761	9ebcfe27d42dc572
-state	03 Univariate Distribution Analysis/03 UnivariateAnalysis 'Bayes Example #5'	befe24a38715bac1	c937b27bd24ab579
-state	03 Univariate Distribution Analysis/04 UnivariateAnalysis 'Bayes Example #6'	56a8fcf31ec9cd71	1d1097eee1835d85
-state	03 Univariate Distribution Analysis/05 UnivariateAnalysis 'Bayes Example #7'	88f8bd64a8582061	0c6be3dfd7156fbe
-state	03 Univariate Distribution Analysis/06 B17CAnalysis 'B17C Example #3'	ab33b2c59fbc3345	5d89b981856d8586
+state	03 Univariate Distribution Analysis/00 UnivariateAnalysis 'Bayes Example #1'	5ef5f777cd4f86fb	e05e6cf843985823
+state	03 Univariate Distribution Analysis/01 UnivariateAnalysis 'Bayes Example #2'	22c74df6ab547520	b60c5f28091dcd33
+state	03 Univariate Distribution Analysis/02 UnivariateAnalysis 'Bayes Example #4'	6958e663a9c9a761	c6788c1b440b3f2c
+state	03 Univariate Distribution Analysis/03 UnivariateAnalysis 'Bayes Example #5'	befe24a38715bac1	79f9431b5293de13
+state	03 Univariate Distribution Analysis/04 UnivariateAnalysis 'Bayes Example #6'	56a8fcf31ec9cd71	73803e1bd81b394e
+state	03 Univariate Distribution Analysis/05 UnivariateAnalysis 'Bayes Example #7'	88f8bd64a8582061	f8e55afee8546537
+state	03 Univariate Distribution Analysis/06 B17CAnalysis 'B17C Example #3'	ab33b2c59fbc3345	1bd6694596e8b397
 state	04 Bivariate Distribution Analysis	2df996a968e4df10	85c24dd973e8dafa
 state	05 Rating Curve Analysis	5b9e46ee16c64e96	771f60dc9817d061
 state	06 Time Series Analysis	2f4a1830d606047e	0e6e4ee694390acc
-state	Project	bc1cc90d1ff62d5a	bc1cc90d1ff62d5a
+state	Project	ceffee4622fe5719	ceffee4622fe5719
 end

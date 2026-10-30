@@ -129,22 +129,22 @@ row	7	t:NSFFA - Step - Logistic	t:RMC.BestFit.UI.UnivariateAnalysis
 row	8	t:Bayesian Model Average	t:RMC.BestFit.UI.CompositeAnalysis
 state	00 Time Series Data	7c890208af994c26	66eae0f9e86047a2
 state	01 Input Data	f8c32979e3e7940f	7138759d2d2c7b9f
-state	01 Input Data/00 InputData 'USGS 08075000 Brays Bayou'	ec228dd6ca51c1df	850bb3717fd7fa6b
+state	01 Input Data/00 InputData 'USGS 08075000 Brays Bayou'	3bf8615c348f0fb1	9be21a8dcbf5d712
 state	01 Input Data/01 InputData 'USGS 08075000 Brays Bayou - Metric'	db9bdf8767625760	33716a240a479a40
-state	01 Input Data/02 InputData 'USGS 08075000 Brays Bayou_copy'	38e533ca4275488f	578517092798a107
-state	01 Input Data/03 InputData 'USGS 08075000 Brays Bayou_copy_copy'	5307ed10716e6e12	29ed79fa70c9a42a
+state	01 Input Data/02 InputData 'USGS 08075000 Brays Bayou_copy'	496102b25b67e863	f90950badb71cb45
+state	01 Input Data/03 InputData 'USGS 08075000 Brays Bayou_copy_copy'	a5bf39e07446401c	38ed9f1dac2f9c2c
 state	02 Distribution Fitting Analysis	22c9cdb7873ae49a	4a4ead4bf90c0837
 state	03 Univariate Distribution Analysis	b477e218684dc188	0e3a3c46961dd428
-state	03 Univariate Distribution Analysis/00 UnivariateAnalysis 'NSFFA - Constant'	d1c761649c9d2d10	f46ff8018cb3f403
-state	03 Univariate Distribution Analysis/01 UnivariateAnalysis 'NSFFA - Linear'	f8a729473dec1718	f68f43a10b137dd7
-state	03 Univariate Distribution Analysis/02 UnivariateAnalysis 'NSFFA - Logistic'	6e74206ef6bc0284	46e08a7383e5c2ee
-state	03 Univariate Distribution Analysis/03 UnivariateAnalysis 'NSFFA - Step'	8c4b719f8e238bf5	4d2fc3151c7f0255
-state	03 Univariate Distribution Analysis/04 UnivariateAnalysis 'NSFFA - Linear - Logistic'	f4ca27b28bc59fc1	06dd5273e05f3732
-state	03 Univariate Distribution Analysis/05 UnivariateAnalysis 'NSFFA - Logistic - Logistic'	0444eac26998171c	d13c6a4b5aa1ade4
-state	03 Univariate Distribution Analysis/06 UnivariateAnalysis 'NSFFA - Step - Logistic'	ec5ba5717febc17b	8cb3ee9c768c4e6c
-state	03 Univariate Distribution Analysis/07 CompositeAnalysis 'Bayesian Model Average'	c98d2294cc830300	576002098ef7d28a
+state	03 Univariate Distribution Analysis/00 UnivariateAnalysis 'NSFFA - Constant'	d1c761649c9d2d10	1bb92f44be23230e
+state	03 Univariate Distribution Analysis/01 UnivariateAnalysis 'NSFFA - Linear'	f8a729473dec1718	f4a7dd2e97107dd1
+state	03 Univariate Distribution Analysis/02 UnivariateAnalysis 'NSFFA - Logistic'	6e74206ef6bc0284	2b4feb127404d020
+state	03 Univariate Distribution Analysis/03 UnivariateAnalysis 'NSFFA - Step'	8c4b719f8e238bf5	56bbc0ed520bc852
+state	03 Univariate Distribution Analysis/04 UnivariateAnalysis 'NSFFA - Linear - Logistic'	f4ca27b28bc59fc1	285dc546e0ab0336
+state	03 Univariate Distribution Analysis/05 UnivariateAnalysis 'NSFFA - Logistic - Logistic'	0444eac26998171c	944e905225053f84
+state	03 Univariate Distribution Analysis/06 UnivariateAnalysis 'NSFFA - Step - Logistic'	ec5ba5717febc17b	2745befafda858b2
+state	03 Univariate Distribution Analysis/07 CompositeAnalysis 'Bayesian Model Average'	c98d2294cc830300	a4d644070a3a3a4e
 state	04 Bivariate Distribution Analysis	2df996a968e4df10	85c24dd973e8dafa
 state	05 Rating Curve Analysis	5b9e46ee16c64e96	771f60dc9817d061
 state	06 Time Series Analysis	2f4a1830d606047e	0e6e4ee694390acc
-state	Project	c292d8f7377fa2e7	c292d8f7377fa2e7
+state	Project	35e5f55bd6541cbe	35e5f55bd6541cbe
 end

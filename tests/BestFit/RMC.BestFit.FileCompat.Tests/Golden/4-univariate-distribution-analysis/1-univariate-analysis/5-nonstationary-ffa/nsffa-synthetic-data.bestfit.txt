@@ -115,17 +115,17 @@ state	01 Input Data/07 InputData 'Sinusoidal Trend Data'	95b5a580a6705f30	a89958
 state	01 Input Data/08 InputData 'Step Function Data'	767d15d3064568dc	2c5ddcb41f236d1f
 state	02 Distribution Fitting Analysis	22c9cdb7873ae49a	4a4ead4bf90c0837
 state	03 Univariate Distribution Analysis	3d67eac2404f88e1	0e3a3c46961dd428
-state	03 Univariate Distribution Analysis/00 UnivariateAnalysis 'NSFFA - Constant Trend'	7a3b0f203122f1e7	bbaa4f26f38b703c
-state	03 Univariate Distribution Analysis/01 UnivariateAnalysis 'NSFFA - Cubic Trend'	b620ebcebd71b9d3	ee183e66a29c8300
-state	03 Univariate Distribution Analysis/02 UnivariateAnalysis 'NSFFA - Exponential Trend'	6f68d4251de089b5	109e7ba756fd648d
-state	03 Univariate Distribution Analysis/03 UnivariateAnalysis 'NSFFA - Linear Trend'	f6c567ce6cef018f	06e5725444cb7e9f
-state	03 Univariate Distribution Analysis/04 UnivariateAnalysis 'NSFFA - Logistic Trend'	351068cff4e8877f	7a33c265c4e29a2d
-state	03 Univariate Distribution Analysis/05 UnivariateAnalysis 'NSFFA - Power Trend'	337df90d1cd7e6db	37d03321cdcbe2d9
-state	03 Univariate Distribution Analysis/06 UnivariateAnalysis 'NSFFA - Quadratic Trend'	2a0e185cf3cb1d5d	ea59b50389a5539a
-state	03 Univariate Distribution Analysis/07 UnivariateAnalysis 'NSFFA - Sinusoidal Trend'	002b649d9d14f34d	b3cf396bf1b0bbd8
-state	03 Univariate Distribution Analysis/08 UnivariateAnalysis 'NSFFA - Step Function'	2728b80c15298c80	39c4741a706f2ec3
+state	03 Univariate Distribution Analysis/00 UnivariateAnalysis 'NSFFA - Constant Trend'	7a3b0f203122f1e7	bdbb2a8fde9f08f6
+state	03 Univariate Distribution Analysis/01 UnivariateAnalysis 'NSFFA - Cubic Trend'	b620ebcebd71b9d3	3a516df343c2c423
+state	03 Univariate Distribution Analysis/02 UnivariateAnalysis 'NSFFA - Exponential Trend'	6f68d4251de089b5	9cef9c9aa5f9e222
+state	03 Univariate Distribution Analysis/03 UnivariateAnalysis 'NSFFA - Linear Trend'	f6c567ce6cef018f	3d2689f7042f8d94
+state	03 Univariate Distribution Analysis/04 UnivariateAnalysis 'NSFFA - Logistic Trend'	351068cff4e8877f	2d8457eba3b02959
+state	03 Univariate Distribution Analysis/05 UnivariateAnalysis 'NSFFA - Power Trend'	337df90d1cd7e6db	d10e4b543513a27b
+state	03 Univariate Distribution Analysis/06 UnivariateAnalysis 'NSFFA - Quadratic Trend'	2a0e185cf3cb1d5d	a1a8b1c3416cd69e
+state	03 Univariate Distribution Analysis/07 UnivariateAnalysis 'NSFFA - Sinusoidal Trend'	002b649d9d14f34d	bea1223cb0c945c8
+state	03 Univariate Distribution Analysis/08 UnivariateAnalysis 'NSFFA - Step Function'	2728b80c15298c80	457953dc1f058451
 state	04 Bivariate Distribution Analysis	2df996a968e4df10	85c24dd973e8dafa
 state	05 Rating Curve Analysis	5b9e46ee16c64e96	771f60dc9817d061
 state	06 Time Series Analysis	2f4a1830d606047e	0e6e4ee694390acc
-state	Project	3ff9956cb44cb0f9	3ff9956cb44cb0f9
+state	Project	1760aa4840a45fe2	1760aa4840a45fe2
 end

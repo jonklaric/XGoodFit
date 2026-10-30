@@ -94,7 +94,7 @@ state	03 Univariate Distribution Analysis	468896e1b6f7e6c8	0e3a3c46961dd428
 state	04 Bivariate Distribution Analysis	2df996a968e4df10	85c24dd973e8dafa
 state	05 Rating Curve Analysis	5b9e46ee16c64e96	771f60dc9817d061
 state	06 Time Series Analysis	8a90b0f46ff94254	0e6e4ee694390acc
-state	06 Time Series Analysis/00 TimeSeriesAnalysis 'Simple Linear Regression'	d64a13f29921e415	629c03635c8b3286
-state	06 Time Series Analysis/01 TimeSeriesAnalysis 'Multiple Linear Regression'	53984e84c9d3ead6	cd9c9c9c91a255dd
-state	Project	43ca8e59e615eedf	43ca8e59e615eedf
+state	06 Time Series Analysis/00 TimeSeriesAnalysis 'Simple Linear Regression'	d64a13f29921e415	e5a178186b2d69e5
+state	06 Time Series Analysis/01 TimeSeriesAnalysis 'Multiple Linear Regression'	53984e84c9d3ead6	0e9b16f55508303e
+state	Project	d74330f6ef73fbbe	d74330f6ef73fbbe
 end

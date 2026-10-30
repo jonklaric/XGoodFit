@@ -231,25 +231,25 @@ state	01 Input Data/01 InputData '16036000_Makaweli_Peaks'	a5fff5aaac308ea7	441c
 state	01 Input Data/02 InputData '16036000_Makaweli_Conditional_Peaks'	a60885bf28866595	d27afdd6ad36519b
 state	01 Input Data/03 InputData 'Simulated Proof'	13cef2be88cdaf08	1d0fa690a75be178
 state	02 Distribution Fitting Analysis	ea4b3556765a11ab	4a4ead4bf90c0837
-state	02 Distribution Fitting Analysis/00 FittingAnalysis '16031000_WaimeaPk'	920f5c02300e30a4	920f5c02300e30a4
+state	02 Distribution Fitting Analysis/00 FittingAnalysis '16031000_WaimeaPk'	920f5c02300e30a4	ef22285cc2391fd5
 state	03 Univariate Distribution Analysis	2819fe3e48a56986	0e3a3c46961dd428
-state	03 Univariate Distribution Analysis/00 UnivariateAnalysis 'MakaweliPk - Exact'	b7a42d3e9893b625	5a0e6027676ad35f
-state	03 Univariate Distribution Analysis/01 UnivariateAnalysis 'WaimeaPk - Exact + Historical + RR Prior'	ca694161e046570b	f9c04b7f0855546d
-state	03 Univariate Distribution Analysis/02 UnivariateAnalysis 'WaimeaPk - Exact + Historical'	4afeeade9e48f42a	818b3656151bb3f9
-state	03 Univariate Distribution Analysis/03 UnivariateAnalysis 'MakaweliPk - Exact + RR Prior'	078fc2d55e99c71a	20f8472ac718af6e
-state	03 Univariate Distribution Analysis/04 UnivariateAnalysis 'MakaweliPk - Exact + RR Prior_RSkew'	6e75c76674fdcaf5	b3fdcc9723a5de61
-state	03 Univariate Distribution Analysis/05 UnivariateAnalysis 'WaimeaPk - Exact + Historical + RR Prior_RSkew'	bc6418c9efea44ce	28dbd440cff923f6
-state	03 Univariate Distribution Analysis/06 UnivariateAnalysis 'MakaweliPk - Cond - Exact'	b3450c9738989b23	84d02cef7de76075
+state	03 Univariate Distribution Analysis/00 UnivariateAnalysis 'MakaweliPk - Exact'	b7a42d3e9893b625	7a883f6d33819c22
+state	03 Univariate Distribution Analysis/01 UnivariateAnalysis 'WaimeaPk - Exact + Historical + RR Prior'	ca694161e046570b	84eff17854ce67c0
+state	03 Univariate Distribution Analysis/02 UnivariateAnalysis 'WaimeaPk - Exact + Historical'	4afeeade9e48f42a	97fcfb1d2f5f876d
+state	03 Univariate Distribution Analysis/03 UnivariateAnalysis 'MakaweliPk - Exact + RR Prior'	078fc2d55e99c71a	9d74ec22e994bf2d
+state	03 Univariate Distribution Analysis/04 UnivariateAnalysis 'MakaweliPk - Exact + RR Prior_RSkew'	6e75c76674fdcaf5	24dfabaf6849a49b
+state	03 Univariate Distribution Analysis/05 UnivariateAnalysis 'WaimeaPk - Exact + Historical + RR Prior_RSkew'	bc6418c9efea44ce	527b59b62c937c35
+state	03 Univariate Distribution Analysis/06 UnivariateAnalysis 'MakaweliPk - Cond - Exact'	b3450c9738989b23	9e5893261768f7fa
 state	04 Bivariate Distribution Analysis	9c69553269ac615c	85c24dd973e8dafa
-state	04 Bivariate Distribution Analysis/00 BivariateAnalysis 'Normal Copula'	5920c30382c6cf78	54eb400133a71f89
-state	04 Bivariate Distribution Analysis/01 BivariateAnalysis 'Gumbel Copula'	c42150b7f76dadc1	8bdf24096b7631b9
-state	04 Bivariate Distribution Analysis/02 BivariateAnalysis 'Clayton Copula'	9a79520206475849	fe21beda29e5ea34
-state	04 Bivariate Distribution Analysis/03 BivariateAnalysis 'Joe Copula'	ea3dc6763b2de7c2	f339fab9381d5a54
-state	04 Bivariate Distribution Analysis/04 BivariateAnalysis 'Frank Copula'	e931bcd5fb53705b	1b9c2e08ea97f4d3
-state	04 Bivariate Distribution Analysis/05 BivariateAnalysis 'AMH Copula'	cbc9f60184778462	517209f43ccbf2ce
-state	04 Bivariate Distribution Analysis/06 BivariateAnalysis 'Normal Copula - Conditional'	300828241fdf07d8	929bb19f2bb766d8
-state	04 Bivariate Distribution Analysis/07 CoincidentFrequencyAnalysis 'CFA - Normal - Conditional'	a079009753a4cc63	3f8aa533da0fbd0b
+state	04 Bivariate Distribution Analysis/00 BivariateAnalysis 'Normal Copula'	5920c30382c6cf78	cb05c5334ab676a2
+state	04 Bivariate Distribution Analysis/01 BivariateAnalysis 'Gumbel Copula'	c42150b7f76dadc1	c2fe55ddac7823d8
+state	04 Bivariate Distribution Analysis/02 BivariateAnalysis 'Clayton Copula'	9a79520206475849	aba6a795f5c6ee91
+state	04 Bivariate Distribution Analysis/03 BivariateAnalysis 'Joe Copula'	ea3dc6763b2de7c2	101ef588d5a10f42
+state	04 Bivariate Distribution Analysis/04 BivariateAnalysis 'Frank Copula'	e931bcd5fb53705b	3d00f71a0e8e80eb
+state	04 Bivariate Distribution Analysis/05 BivariateAnalysis 'AMH Copula'	cbc9f60184778462	f6598a7bfa7ad0b2
+state	04 Bivariate Distribution Analysis/06 BivariateAnalysis 'Normal Copula - Conditional'	300828241fdf07d8	cb25248aee748d25
+state	04 Bivariate Distribution Analysis/07 CoincidentFrequencyAnalysis 'CFA - Normal - Conditional'	a079009753a4cc63	872b2635dcb6a066
 state	05 Rating Curve Analysis	5b9e46ee16c64e96	771f60dc9817d061
 state	06 Time Series Analysis	2f4a1830d606047e	0e6e4ee694390acc
-state	Project	fd689e927c78044c	fd689e927c78044c
+state	Project	c44e37df8d7aa577	c44e37df8d7aa577
 end

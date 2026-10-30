@@ -3,8 +3,8 @@
 What upstream's WPF RMC-BestFit 2.0.1 saves when it opens and saves each of RMC-BestFit's 32 example
 projects (`sample-data/RMC-BestFit/examples`), described table by table and cell by cell. A `.bestfit`
 file is a SQLite database, and the port must save exactly what the original saves
-([migration plan](../../../../docs/migration-plan.md), Phase 6). `FileCompatibilityTests` does the same with the
-port, on every OS, and compares.
+([migration plan](../../../../docs/migration-plan.md), Phase 6). `FileCompatibilityTests` does the same
+with the port, on every OS, and compares.
 
 `tools/BestFitFileCompat.Wpf` writes these files with upstream's own code: `upstream/RMC-BestFit/src/
 RMC.BestFit.UI`, built as upstream builds it against the `RMC.Wpf.Framework.*` 1.0.5 packages from
@@ -27,8 +27,8 @@ One file per example, at the example's path plus `.txt`:
 - **`reopen`**: what differed in memory after the saved file was opened again, property by property
   (`StateSnapshot`). Upstream itself has three differences, all in one example (below).
 - **`state`**: a hash of each element's in-memory state after the example was opened: its public
-  properties, plots as their saved XML, models as their XML, MCMC results as their bytes. A second hash
-  leaves numbers out.
+  properties, plots as their saved XML, models as their XML, MCMC results as their bytes, with text
+  and XML in "\n" line ends. A second hash leaves numbers out, also those in lists.
 - A cell or state that changed between two saves of the same file would start with `~` (volatile). There
   are none: upstream saved every example identically twice.
 
@@ -85,11 +85,24 @@ artifacts/filecompat-nuget/bin/BestFitFileCompat.Wpf/release/BestFitFileCompat.W
 ## What upstream itself does to the examples
 
 Saving rewrites 30 of the 32 examples beyond their own path (`Project.FullFileName`), in upstream as in
-the port, because 2.0 betas saved them:
-`SoftwareVersion` becomes 2.0.1, plot settings are rewritten in the current serializer's format (newer
-attributes such as `Layer` and `ClipTitle`), data frames write numbers with 17 significant digits and
-dates in ISO form, booleans stored as text become integers, and time series move into compressed columns.
-`tools/BestFitFileCompat.Wpf describe` and `compare` show it cell by cell.
+the port, because 2.0 betas saved them: `SoftwareVersion` becomes 2.0.1, plot settings are rewritten in
+the current serializer's format (newer attributes such as `Layer` and `ClipTitle`), data frames write
+numbers with 17 significant digits and dates in ISO form, booleans stored as text become integers, and
+time series move into compressed columns. `tools/BestFitFileCompat.Wpf describe` and `compare` show it
+cell by cell.
+
+Two more upstream behaviours, found with the tool:
+
+- **Dates follow the current culture.** Upstream reads and writes the project's and elements' dates
+  with `DateTime.TryParse` and `ToString()` in the current culture (FrameworkInterfaces'
+  `Tools.DateFromString` and `DateToUniversalString`), so the suite pins en-US. Run under en-AU
+  (`--culture en-AU`), upstream misreads the examples' US dates: those it can't parse, such as
+  3/26/2026, it saves as `1/01/0001 12:00:00 AM`, and one like 3/1/2026 would become 3 January. The
+  port keeps this.
+- **The project's `LastModified` is written one save late.** Saving a collection stamps the project's
+  `LastModified` in memory after the project's row has been written, so one save of an opened project
+  keeps the stored time (which is why the suite's runs are identical), and a second save in the same
+  session writes the time of the first.
 
 One example loses data. In `bulletin-17c-bayesian-examples`, the Bulletin 17C analysis "B17C Example #3"
 opens with an empty distribution (no data, sample size 0, `IsValid` false), because its row, from a

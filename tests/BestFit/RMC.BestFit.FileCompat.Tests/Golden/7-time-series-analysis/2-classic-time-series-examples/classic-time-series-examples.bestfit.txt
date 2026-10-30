@@ -120,8 +120,8 @@ state	03 Univariate Distribution Analysis	468896e1b6f7e6c8	0e3a3c46961dd428
 state	04 Bivariate Distribution Analysis	2df996a968e4df10	85c24dd973e8dafa
 state	05 Rating Curve Analysis	5b9e46ee16c64e96	771f60dc9817d061
 state	06 Time Series Analysis	90cb1742b3e2ea4e	0e6e4ee694390acc
-state	06 Time Series Analysis/00 TimeSeriesAnalysis 'Airline Passengers - TSA'	87c116c4e633f604	c798ec4a27aa3b9c
-state	06 Time Series Analysis/01 TimeSeriesAnalysis 'Nile River Flows - TSA'	e52ed499602b1cc1	a2a7737e12ca477a
-state	06 Time Series Analysis/02 TimeSeriesAnalysis 'Mauna Loa - CO2'	db9bb982dff44fdb	81e8ed9fc6c4f75e
-state	Project	eb2c6e02818d3912	eb2c6e02818d3912
+state	06 Time Series Analysis/00 TimeSeriesAnalysis 'Airline Passengers - TSA'	87c116c4e633f604	c8592efe9c6cab7b
+state	06 Time Series Analysis/01 TimeSeriesAnalysis 'Nile River Flows - TSA'	e52ed499602b1cc1	48193c3e95f7cd2a
+state	06 Time Series Analysis/02 TimeSeriesAnalysis 'Mauna Loa - CO2'	db9bb982dff44fdb	e648b950df544150
+state	Project	3fffef21f31e9012	3fffef21f31e9012
 end

@@ -118,17 +118,17 @@ state	03 Univariate Distribution Analysis	468896e1b6f7e6c8	0e3a3c46961dd428
 state	04 Bivariate Distribution Analysis	2df996a968e4df10	85c24dd973e8dafa
 state	05 Rating Curve Analysis	5b9e46ee16c64e96	771f60dc9817d061
 state	06 Time Series Analysis	909a37dca076a40d	0e6e4ee694390acc
-state	06 Time Series Analysis/00 TimeSeriesAnalysis 'Intercept'	2533015be4c5767b	b8a325e9c50861bb
-state	06 Time Series Analysis/01 TimeSeriesAnalysis 'Intercept + Linear Trend'	c1fab4440cd2b5e3	3531019ee952268b
-state	06 Time Series Analysis/02 TimeSeriesAnalysis 'Intercept + Quadratic Trend'	bded3b2365121c23	f40ce1cf2be02cc5
-state	06 Time Series Analysis/03 TimeSeriesAnalysis 'Intercept + Cubic Trend'	89cf4ca855729983	8ef7e3858589b4c2
-state	06 Time Series Analysis/04 TimeSeriesAnalysis 'AR(1)'	2af858618a1cce27	ed05176cd73712f3
-state	06 Time Series Analysis/05 TimeSeriesAnalysis 'AR(3)'	117a0307d5e07f1d	6cb8623c12a5e08d
-state	06 Time Series Analysis/06 TimeSeriesAnalysis 'MA(1)'	0b6d0ba29a166470	0baca4cdbbc04176
-state	06 Time Series Analysis/07 TimeSeriesAnalysis 'MA(3)'	d754dc2969f32f09	2b13d344ba91e2b8
-state	06 Time Series Analysis/08 TimeSeriesAnalysis 'ARMA(1,1)'	15f6d7912a14f33a	a3b5cca6555064c1
-state	06 Time Series Analysis/09 TimeSeriesAnalysis 'ARMA(2,2)'	cc6495706bcb2c8c	f881f4fe7e770881
-state	06 Time Series Analysis/10 TimeSeriesAnalysis 'Intercept + Linear Trend + ARMA(1,1)'	a8467cbd271f80e3	57cb89ea87b3ce57
-state	06 Time Series Analysis/11 TimeSeriesAnalysis 'Intercept + Linear Trend + LogTransform'	cfb2569820c385cc	a94c0bb8ed3c8af0
-state	Project	78804ed7c979ac93	78804ed7c979ac93
+state	06 Time Series Analysis/00 TimeSeriesAnalysis 'Intercept'	2533015be4c5767b	248ac2f8abb03d13
+state	06 Time Series Analysis/01 TimeSeriesAnalysis 'Intercept + Linear Trend'	c1fab4440cd2b5e3	c41f6efcc3cb5241
+state	06 Time Series Analysis/02 TimeSeriesAnalysis 'Intercept + Quadratic Trend'	bded3b2365121c23	84cbca614c3d11cf
+state	06 Time Series Analysis/03 TimeSeriesAnalysis 'Intercept + Cubic Trend'	89cf4ca855729983	f174db3e1083d9a2
+state	06 Time Series Analysis/04 TimeSeriesAnalysis 'AR(1)'	2af858618a1cce27	7dd387b91e76a870
+state	06 Time Series Analysis/05 TimeSeriesAnalysis 'AR(3)'	117a0307d5e07f1d	7f4b22a2ea3fe4cb
+state	06 Time Series Analysis/06 TimeSeriesAnalysis 'MA(1)'	0b6d0ba29a166470	3d13b7cfbdb50dd6
+state	06 Time Series Analysis/07 TimeSeriesAnalysis 'MA(3)'	d754dc2969f32f09	758ce1978fc786ff
+state	06 Time Series Analysis/08 TimeSeriesAnalysis 'ARMA(1,1)'	15f6d7912a14f33a	4177bd808497e530
+state	06 Time Series Analysis/09 TimeSeriesAnalysis 'ARMA(2,2)'	cc6495706bcb2c8c	b69bddb50b34a57b
+state	06 Time Series Analysis/10 TimeSeriesAnalysis 'Intercept + Linear Trend + ARMA(1,1)'	a8467cbd271f80e3	de5a20c905abcda0
+state	06 Time Series Analysis/11 TimeSeriesAnalysis 'Intercept + Linear Trend + LogTransform'	cfb2569820c385cc	9ab623916b424291
+state	Project	2e84d9114611ae5f	2e84d9114611ae5f
 end

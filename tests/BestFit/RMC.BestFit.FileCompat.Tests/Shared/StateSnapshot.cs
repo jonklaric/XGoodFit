@@ -32,7 +32,9 @@ namespace BestFitFileCompat;
 /// lists of simple values in full. Other objects of RMC-BestFit's UI layer (such as an analysis's
 /// <c>BayesianPlots</c>) are walked one level down; anything else is recorded by type. Images (the element
 /// icons) are skipped: they come from the running application. Text naming the folder the project was
-/// opened from shows it as <c>{dir}</c>, with '/' separators.
+/// opened from shows it as <c>{dir}</c>, with '/' separators. Text and XML are compared in canonical
+/// form (<see cref="FileDescription.Canonical"/>): XML text nodes get the platform's line ends, and the
+/// saved files' comparison already checks line ends exactly.
 /// </para>
 /// </remarks>
 public sealed class StateSnapshot
@@ -69,9 +71,9 @@ public sealed class StateSnapshot
             .ToList();
 
     /// <summary>
-    /// A hash of each group's values, and a second one with every number left out: two runs whose
-    /// computed statistics differ only in the last bits, as different maths libraries round them, have
-    /// the same second hash.
+    /// A hash of each group's values, and a second one with numbers left out (numeric values, and the
+    /// numbers in lists): two runs whose computed statistics differ only in the last bits, as different
+    /// maths libraries round them, have the same second hash.
     /// </summary>
     public SortedDictionary<string, (string Full, string WithoutNumbers)> GroupHashes()
     {
@@ -83,13 +85,22 @@ public sealed class StateSnapshot
             foreach (KeyValuePair<string, string> entry in group)
             {
                 full.Append(entry.Key).Append('\t').Append(entry.Value).Append('\n');
-                bool isNumber = double.TryParse(entry.Value, NumberStyles.Float, CultureInfo.InvariantCulture, out _);
-                withoutNumbers.Append(entry.Key).Append('\t').Append(isNumber ? "#" : entry.Value).Append('\n');
+                withoutNumbers.Append(entry.Key).Append('\t').Append(WithoutNumbers(entry.Value)).Append('\n');
             }
             hashes[group.Key] = (FileDescription.Sha(full.ToString()), FileDescription.Sha(withoutNumbers.ToString()));
         }
         return hashes;
     }
+
+    // "#" for a number, and for each number in a list ("[1.5, 2]"); text and hashes stay as they are.
+    private static string WithoutNumbers(string value)
+    {
+        if (IsNumber(value)) return "#";
+        if (!value.StartsWith('[') || !value.EndsWith(']')) return value;
+        return "[" + string.Join(", ", value[1..^1].Split(", ").Select(item => IsNumber(item) ? "#" : item)) + "]";
+    }
+
+    private static bool IsNumber(string value) => double.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out _);
 
     private void AddCollection(string path, IElementCollection collection)
     {
@@ -161,7 +172,7 @@ public sealed class StateSnapshot
             case string text:
                 if (!string.IsNullOrEmpty(_openedFrom) && text.Contains(_openedFrom, StringComparison.Ordinal))
                     text = text.Replace(_openedFrom, "{dir}", StringComparison.Ordinal).Replace('\\', '/');
-                return "\"" + FileDescription.Escape(text) + "\"";
+                return "\"" + FileDescription.Escape(FileDescription.Canonical(text)) + "\"";
             case double number:
                 return number.ToString("R", CultureInfo.InvariantCulture);
             case float number:
@@ -170,13 +181,13 @@ public sealed class StateSnapshot
                 // Upstream reads its UTC dates into local time; as UTC again they don't depend on the time zone.
                 return (date.Kind == DateTimeKind.Local ? date.ToUniversalTime() : date).ToString("o", CultureInfo.InvariantCulture) + " " + date.Kind;
             case Plot plot:
-                return "plot " + FileDescription.Sha(PlotSerializer.ToXElement(plot).ToString(SaveOptions.DisableFormatting));
+                return "plot " + XmlHash(PlotSerializer.ToXElement(plot));
             case IElement element:
                 return "element " + element.GetType().Name + " '" + element.Name + "'";
             case IElementCollection collection:
                 return "collection '" + collection.Name + "'";
             case XElement xml:
-                return "xml " + FileDescription.Sha(xml.ToString(SaveOptions.DisableFormatting));
+                return "xml " + XmlHash(xml);
             case IFormattable formattable when value.GetType().IsPrimitive || value.GetType().IsEnum || value is decimal or TimeSpan or Guid:
                 return formattable.ToString(null, CultureInfo.InvariantCulture);
             case bool flag:
@@ -206,7 +217,7 @@ public sealed class StateSnapshot
             try
             {
                 var xml = (XElement?)toXElement.Invoke(value, null);
-                return "xml " + (xml == null ? "null" : FileDescription.Sha(xml.ToString(SaveOptions.DisableFormatting)));
+                return "xml " + (xml == null ? "null" : XmlHash(xml));
             }
             catch (TargetInvocationException ex)
             {
@@ -229,4 +240,8 @@ public sealed class StateSnapshot
         MethodInfo? method = type.GetMethod("ToXElement", BindingFlags.Public | BindingFlags.Instance, null, Type.EmptyTypes, null);
         return method != null && method.ReturnType == typeof(XElement) ? method : null;
     }
+
+    // The XML's hash, with "\n" line ends: XML writes text nodes' line ends as Environment.NewLine.
+    private static string XmlHash(XElement xml) =>
+        FileDescription.Sha(FileDescription.Canonical(xml.ToString(SaveOptions.DisableFormatting)));
 }

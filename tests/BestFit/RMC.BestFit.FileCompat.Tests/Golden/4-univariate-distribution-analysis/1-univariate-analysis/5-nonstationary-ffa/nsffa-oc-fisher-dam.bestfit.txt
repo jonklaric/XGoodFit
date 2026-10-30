@@ -129,14 +129,14 @@ state	01 Input Data	c45e74c546527ca2	7138759d2d2c7b9f
 state	01 Input Data/00 InputData 'OC Fisher Inflows'	28acadcaf2f693f9	308a8d0020899790
 state	02 Distribution Fitting Analysis	22c9cdb7873ae49a	4a4ead4bf90c0837
 state	03 Univariate Distribution Analysis	089a864d64be65ef	0e3a3c46961dd428
-state	03 Univariate Distribution Analysis/00 UnivariateAnalysis 'SFFA'	06cf1903e2d62069	7b82eca40ddc6f37
-state	03 Univariate Distribution Analysis/01 UnivariateAnalysis 'NSFFA - Constant'	f00487c9ee923db2	41e4c0f949763696
-state	03 Univariate Distribution Analysis/02 UnivariateAnalysis 'NSFFA - Linear Trend'	abd3dda81d10541f	157e906781355aff
-state	03 Univariate Distribution Analysis/03 UnivariateAnalysis 'NSFFA - Step Function'	db2d3a4c9ee3fad6	859f8b46967d6eaa
-state	03 Univariate Distribution Analysis/04 UnivariateAnalysis 'NSFFA - Sinusoidal Trend'	981a8251bb486e37	fe788997a49b9402
-state	03 Univariate Distribution Analysis/05 CompositeAnalysis 'Bayesian Model Average'	3ba1af3485a3f43c	da69f22b9b4816cd
+state	03 Univariate Distribution Analysis/00 UnivariateAnalysis 'SFFA'	06cf1903e2d62069	d9432c06e602639e
+state	03 Univariate Distribution Analysis/01 UnivariateAnalysis 'NSFFA - Constant'	f00487c9ee923db2	b76420553230aa04
+state	03 Univariate Distribution Analysis/02 UnivariateAnalysis 'NSFFA - Linear Trend'	abd3dda81d10541f	481fa152ce2aac48
+state	03 Univariate Distribution Analysis/03 UnivariateAnalysis 'NSFFA - Step Function'	db2d3a4c9ee3fad6	6778109edbc913ce
+state	03 Univariate Distribution Analysis/04 UnivariateAnalysis 'NSFFA - Sinusoidal Trend'	981a8251bb486e37	0ae673a64f8d0565
+state	03 Univariate Distribution Analysis/05 CompositeAnalysis 'Bayesian Model Average'	3ba1af3485a3f43c	a5b22e4397fd7fee
 state	04 Bivariate Distribution Analysis	2df996a968e4df10	85c24dd973e8dafa
 state	05 Rating Curve Analysis	5b9e46ee16c64e96	771f60dc9817d061
 state	06 Time Series Analysis	2f4a1830d606047e	0e6e4ee694390acc
-state	Project	41e4c987f5004c7a	41e4c987f5004c7a
+state	Project	b7e7b331264dfa93	b7e7b331264dfa93
 end
