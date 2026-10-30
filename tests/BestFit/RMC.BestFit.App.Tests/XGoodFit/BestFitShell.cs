@@ -309,6 +309,27 @@ namespace RMC.BestFit.App.Tests.XGoodFit
             Dispatcher.UIThread.RunJobs();
         }
 
+        /// <summary>FrameworkUI's Node._timer, _tickCount and StopTimer: the slow-click timer after which a click on the node starts renaming it.</summary>
+        private static readonly FieldInfo RenameTimer = NodeMember<FieldInfo>("_timer");
+        private static readonly FieldInfo RenameTicks = NodeMember<FieldInfo>("_tickCount");
+        private static readonly MethodInfo StopRenameTimer = NodeMember<MethodInfo>("StopTimer");
+
+        private static T NodeMember<T>(string name) where T : MemberInfo =>
+            typeof(FrameworkUI.ProjectExplorer.Node).GetMember(name, BindingFlags.Instance | BindingFlags.NonPublic).OfType<T>().SingleOrDefault()
+            ?? throw new InvalidOperationException("FrameworkUI's Node has no " + name + ".");
+
+        /// <summary>
+        /// Lets <paramref name="node"/>'s slow-click rename timer, which its last left-button release started, run
+        /// out, as a user's pause does: it stops it as its second tick does (Node.Timer_Tick). The headless tests'
+        /// job runs don't run the dispatcher's timers, so the timer would otherwise run for as long as the test.
+        /// </summary>
+        private static void WaitOutRenameTimer(FrameworkUI.ProjectExplorer.Node node)
+        {
+            if (RenameTimer.GetValue(node) is not DispatcherTimer { IsEnabled: true }) return;
+            StopRenameTimer.Invoke(node, null);
+            RenameTicks.SetValue(node, 0);
+        }
+
         /// <summary>
         /// Clicks the left button at the centre of <paramref name="visual"/>, moving the pointer there first,
         /// as a mouse does: the shell notes which pane the pointer is over on mouse moves (MainWindow's
@@ -343,9 +364,32 @@ namespace RMC.BestFit.App.Tests.XGoodFit
         /// Double-clicks the left button at the centre of <paramref name="visual"/>, moving the pointer there
         /// first (see <see cref="Click(TopLevel, Visual)"/>).
         /// </summary>
+        /// <remarks>
+        /// Headless input is stamped with the real time, so two things a user's pauses take care of need help:
+        /// <list type="bullet">
+        /// <item>The explorer starts renaming a node that is clicked again while the slow-click timer its last
+        /// left-button release started is running (FrameworkUI's Node.Me_MouseLeftButtonUp: two ticks of the
+        /// double-click time), and a node being renamed opens nothing on a double click. A user's pause lets the
+        /// timer run out, but the headless tests don't run the dispatcher's timers, so it would run on. So a
+        /// double click on a node whose timer runs (to open a closed document again, say) lets it run out
+        /// first.</item>
+        /// <item>A second press counts as a double click only within the double-click time (500 ms) of the first.
+        /// Selecting a node opens its properties, and on a busy or slower machine the first press's handlers can
+        /// take longer than that. So a node that isn't selected is selected first, and its handlers run, before
+        /// the double click: then the clicks are quick, as when a user double-clicks a selected node.</item>
+        /// </list>
+        /// </remarks>
         public static void DoubleClick(this TopLevel window, Visual visual)
         {
             Frame();
+            TreeViewItem item = visual.FindAncestorOfType<TreeViewItem>(includeSelf: true);
+            if (item is FrameworkUI.ProjectExplorer.Node timed)
+                WaitOutRenameTimer(timed);
+            if (item is { IsSelected: false })
+            {
+                item.IsSelected = true;
+                Frame();
+            }
             Point at = visual.TranslatePoint(new Point(visual.Bounds.Width / 2, visual.Bounds.Height / 2), window)!.Value;
             window.MouseMove(at);
             window.MouseDown(at, MouseButton.Left);
@@ -353,6 +397,8 @@ namespace RMC.BestFit.App.Tests.XGoodFit
             window.MouseDown(at, MouseButton.Left);
             window.MouseUp(at, MouseButton.Left);
             Frame();
+            if (item is FrameworkUI.ProjectExplorer.Node { IsInEditMode: true })
+                throw new InvalidOperationException("The double click started renaming the explorer node instead of opening it.");
         }
 
         /// <summary>
