@@ -89,6 +89,10 @@ namespace RMC.BestFit.App.Tests.XGoodFit
                     AssertNative(element.FrequencyPlot, capture, file);
                     compared++;
                 }
+                // Upstream's tracker formats: the curves' values in the user's format, the data's probabilities to nine
+                // places.
+                foreach (var series in element.FrequencyPlot.Series)
+                    AssertTrackerFormat(series.Name == "ExactData" ? DataTracker : CurveTracker, series);
             }
             Assert.AreEqual(3, compared);
         }
@@ -435,9 +439,13 @@ namespace RMC.BestFit.App.Tests.XGoodFit
             UseAppResources(ThemeColor.Light);
             OverlayPopups();
             var project = OpenProject(Example);
-            foreach (string name in new[] { Competing, Mixture })
+            // The two walkthrough composites, and the example's third, which isn't estimated.
+            var composites = Elements(project).OfType<CompositeAnalysis>().ToList();
+            Assert.AreEqual(3, composites.Count);
+            foreach (var element in composites)
             {
-                var element = Element<CompositeAnalysis>(project, name);
+                string name = element.Name;
+                bool estimated = element.IsEstimated;
                 var changes = new List<string>();
                 Watch(element, changes);
                 Watch(element.BayesianAnalysis, changes);
@@ -459,25 +467,47 @@ namespace RMC.BestFit.App.Tests.XGoodFit
                     view.SubDistCheckbox.IsChecked = true;
                     BivariateAnalysisViewTests.Select(Tab(view, 1));
                     BivariateAnalysisViewTests.Select(Tab(view, 0));
+                    if (document == 0) ChangeThemes();
                     CloseDocument(window);
                 }
                 Assert.AreSame(element.FrequencyPlot, views[1].FrequencyPlotHost.Content, name);
 
-                // The properties panel, on each of its tabs.
+                // The properties panel, on each of its tabs, and in each theme.
                 var properties = new CompositeAnalysisPropertiesControl { Element = element };
                 Window panel = Show(properties, 420, 1100);
                 BivariateAnalysisViewTests.Select(properties.Options_TabItem);
                 BivariateAnalysisViewTests.Select(properties.General_TabItem);
+                ChangeThemes();
                 CloseDocument(panel);
                 properties.Element = null;
 
                 Assert.AreEqual(0, changes.Count, $"{name}: showing the views changed " + string.Join(", ", changes));
                 Assert.IsFalse(element.UndoManager.CanUndo, $"{name}: showing the views recorded an undo");
                 Assert.IsFalse(element.IsDirty, $"{name}: showing the views made the element dirty");
-                Assert.IsTrue(element.IsEstimated, name);
+                Assert.AreEqual(estimated, element.IsEstimated, name);
                 foreach (var view in views) view.Element = null;
             }
         }
+
+        // Shows the views in the Dark, Blue and Light themes in turn, as the theme menu does: a theme restyles the
+        // views, which mustn't write to the element (upstream's AnalysisSourceSelectionLifecycleTests).
+        internal static void ChangeThemes()
+        {
+            foreach (ThemeColor theme in new[] { ThemeColor.Dark, ThemeColor.Blue, ThemeColor.Light })
+            {
+                ThemeManager.SetTheme(theme);
+                Settle();
+            }
+        }
+
+        // Upstream's tracker formats, built with Environment.NewLine.
+        internal static string CurveTracker => "{0}" + Environment.NewLine + "{1}: {2}" + Environment.NewLine + "{3}: {4:" + UserSettings.ValueStringFormat + "}";
+        internal static string DataTracker => "{0}" + Environment.NewLine + "{1}: {2:0.000000000}" + Environment.NewLine + "{3}: {4:" + UserSettings.ValueStringFormat + "}";
+
+        // A series keeps a saved format that differs only in its line breaks (OxyPlot.Wpf's Series), so off Windows a
+        // series read from a project keeps its CRLFs: compare line by line.
+        internal static void AssertTrackerFormat(string expected, Wpf.Series series) =>
+            Assert.AreEqual(expected.Replace("\r\n", "\n"), series.TrackerFormatString?.Replace("\r\n", "\n"), series.Name);
 
         // The view's tabs: Frequency Plot (0) and Tabular Results (1).
         internal static TabItem Tab(CompositeAnalysisControl view, int index) =>

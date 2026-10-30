@@ -100,6 +100,8 @@ namespace RMC.BestFit.App.Tests.XGoodFit
                     AssertNativeSeries(element.FrequencyPlot, capture, file);
                     compared++;
                 }
+                foreach (var series in element.FrequencyPlot.Series)
+                    CompositeAnalysisViewTests.AssertTrackerFormat(series.Name == "ExactData" ? CompositeAnalysisViewTests.DataTracker : CompositeAnalysisViewTests.CurveTracker, series);
                 // The export was made from a factory-reset plot: the saved plot keeps the annotation its user drew,
                 // Waimea's levee line, as RMC-BestFit shows it.
                 if (element.Name == Conditional)
@@ -445,15 +447,17 @@ namespace RMC.BestFit.App.Tests.XGoodFit
                     Settle();
                     Select(view, 2);
                     Select(view, 0);
+                    if (document == 0) CompositeAnalysisViewTests.ChangeThemes();
                     CompositeAnalysisViewTests.CloseDocument(window);
                 }
                 Assert.AreSame(element.FrequencyPlot, views[1].FrequencyPlotHost.Content, name);
 
-                // The properties panel, on each of its tabs.
+                // The properties panel, on each of its tabs, and in each theme.
                 var properties = new CoincidentFrequencyPropertiesControl { Element = element };
                 Window panel = Show(properties, 420, 1100);
                 BivariateAnalysisViewTests.Select(properties.Output_TabItem);
                 BivariateAnalysisViewTests.Select(properties.General_TabItem);
+                CompositeAnalysisViewTests.ChangeThemes();
                 CompositeAnalysisViewTests.CloseDocument(panel);
                 properties.Element = null;
 
