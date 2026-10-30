@@ -403,10 +403,25 @@ Watch for others when porting:
 - **In the main window,** moving the headless pointer over a plot toolbar re-lays the document out, so a
   press can land on another button: raise `Click` on shell buttons, test pointer clicks on a view hosted
   directly, and guard dialogs with `BestFitShell.WhenOpened`.
-- **Memory:** tests that open example projects must close them, and the windows showing them, in
-  `finally`. A view costs about 1 KB per observation, so keep the largest records out of default runs
-  (`[TestCategory("Large")]`). FrameworkInterfaces' Messenger forgets a source once it has no messages
-  (upstream kept it, and with it the element and its project).
+- **Memory:** close what a test opens through the helpers, in `finally` or `[TestCleanup]`. The whole App
+  project in one process peaks around 1.7 GB, and each class (CI's unit) well under that.
+  - `BestFitShell.Close(window)` releases the main window (`BestFitShell.Release`: the window, its explorer,
+    its menus and any control still listening to the singleton project) and collects. To open several
+    examples in one window, use `BestFitShell.OpenExample(window, example)`.
+  - Dispose `ViewTesting.Open`'s project, and call `SharedControlsTesting.Close(project)` and
+    `ReleaseAppResources()`: they clear the Messenger, which keeps every message's source (an element, so
+    its project and views), and collect (`ViewTesting.Collect`).
+  - Show views with `ViewTesting.Show` or `SharedControlsTesting.Show`. For a window you make yourself, call
+    `ViewTesting.ReleaseContentOnClose(window)`: a closed window still in memory keeps re-resolving its
+    resources on every resource change (it made the Input Data class take 212 s instead of 37 s).
+  - Clear fields that hold windows, projects or views in `[TestCleanup]`: MSTest keeps the test class's
+    instance. Merge resource dictionaries fresh for each test; don't cache them across tests.
+  - A view costs about 1 KB per observation, so keep the largest records out of default runs
+    (`[TestCategory("Large")]`). FrameworkInterfaces' Messenger forgets a source once it has no messages
+    (upstream kept it, and with it the element and its project).
+- **Leak checks:** follow `ReleaseTests`. Make the objects in a `[MethodImpl(MethodImplOptions.NoInlining)]`
+  method, sleep about 150 ms, tick the render timer, run the dispatcher's jobs, collect, and check the weak
+  references.
 - **The headless UI thread is a thread-pool thread,** so `Task.Run(…).GetAwaiter().GetResult()` on it runs
   inline: use `new Thread`. Click async handlers in `[STATestMethod]`s with
   `AvaloniaSynchronizationContext.InstallIfNeeded()`. In tests, set a combo box's `SelectedItem`, not its
@@ -426,11 +441,15 @@ Watch for others when porting:
   title), not only for `Mouse.OverrideCursor`.
 - **Double-clicking the same spot again** within 500 ms continues the click count (headless input uses real
   time), and a third click opens nothing: wait before double-clicking an explorer node again.
-- **Shell test classes and memory:** shell sessions add up (`BestFitShell.Close` leaves the project open, and
-  a closed session's memory stays reachable). Open each example once per class (see
-  `PointProcessMixtureTesting.SharedExample`), close the shell's project, clear the Messenger and collect
-  after each test, and declare the main-window captures first: their theme switches restyle whatever
-  earlier shell tests left alive.
+- **Shell test classes:** open each example once per class where you can (see
+  `PointProcessMixtureTesting.SharedExample`), and declare the main-window captures first: their theme
+  switches restyle whatever earlier shell tests left alive.
+- **Headless time:** input is stamped with the real time, and the dispatcher's timers don't run during the
+  tests' job runs. `BestFitShell.DoubleClick` therefore selects an explorer node before double-clicking it
+  (a slow first press would outlast the double-click time) and lets the node's slow-click rename timer run
+  out (a click while it runs starts renaming the node, which then opens nothing). The capture waits
+  (150-300 ms) are needed, and captures aren't byte-comparable between runs: window titles show temporary
+  paths, the batch window shows elapsed time, and the bivariate contours race.
 - **Factory-reset exports** lack the annotations users saved (Waimea's levee line), and the mixture
   walkthrough's figures use logarithmic value axes where the saved plots are linear: compare series data.
 - **Standalone captures** have no value format set: set `UserSettings.DefaultValueDigits = 2`, and restore
