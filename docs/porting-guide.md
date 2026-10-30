@@ -184,7 +184,9 @@ Templates and themes:
 | `DataGrid.UnselectAll()` | `SelectedItem = null`: ProDataGrid's `SelectedItems.Clear()` raises no `SelectionChanged` |
 | `VisualTreeHelper.HitTest(v, p).VisualHit` | `v.GetVisualAt(p)` |
 | A generated column's `((Binding)c.Binding).StringFormat` / `.Converter` | `((ReflectionBinding)c.Binding)…`: Avalonia 12's `BindingBase` has neither |
-| A `CollectionViewSource` with `SortDescriptions` as a combo box's items | `WpfCompat.Data.CollectionViewSource`, set with `combo.SetItemsSourceKeepingSelection(view)` (a plain set lets a two-way `SelectedValue` write null back) |
+| A `CollectionViewSource` with `SortDescriptions` as a combo box's items | `WpfCompat.Data.CollectionViewSource` (its `View` is a `ListCollectionView`), set with `combo.SetItemsSourceKeepingSelection(view)`: a plain set lets a two-way `SelectedValue` write null back. The helper takes the selector's data context away while the items change; don't hold the value at animation priority instead, which pins it |
+| `column.Binding.StringFormat = …` in code | cast to `ReflectionBinding`; GenericControls' display copy then applies the format |
+| `Application.Current.MainWindow = w` without a desktop lifetime (tests) | WpfCompat keeps it, as WPF's property does |
 | `host.Content = element.Plot`, for a plot several documents show | `host.TakeContent(element.Plot)` (WpfCompat): Avalonia throws while the plot still has a parent |
 
 - Dialogs wait, as in WPF (plan §5.3): `ShowDialog()` and `DialogResult` (WpfCompat's), WpfCompat's
@@ -314,6 +316,12 @@ Watch for others when porting:
 - **Inherited properties change when a control joins or leaves the tree** (`FontFamily`, say): handlers
   that set a dirty flag or record undo must ignore changes that don't change what's saved (see
   OxyPlot.Wpf's `Series`).
+- **Avalonia's selectors drop a moved item from their selection:** WpfCompat's live-sorted view
+  announces the moves of the items the moved one passes instead.
+- **A two-way target that can't keep a null it's shown gives back its default** (a value type's default,
+  a brush of the default colour): `TwoWayConverter` treats that as an echo.
+- **Closing a test window brings `SimpleTheme`'s window font back,** and plots on hidden tabs inherit it:
+  take the content out first, as the shell does.
 - **A plain ProDataGrid** shows no rows when given unlimited height (in a ScrollViewer or an Auto row),
   and its generated columns ignore a `StringFormat` set in `AutoGeneratingColumn`: `CopyPasteDataGrid`
   handles both.
@@ -354,6 +362,14 @@ Watch for others when porting:
   windows and projects between tests: a full App run should stay within a few GB.
 - **View tests** merge Themes' `Defaults.axaml` and `Controls/Merged.axaml` as ThemeService does, and
   use the examples' en-US culture.
+- **MSTest runs `[TestCleanup]` on its own thread** for `[TestMethod]` tests (which use
+  `HeadlessSession.Run`), so a cleanup that touches Avalonia hangs there: don't mix those with
+  `[STATestMethod]` tests in a class whose cleanup does UI work.
+- **In the main window,** moving the headless pointer over a plot toolbar re-lays the document out, so a
+  press can land on another button: raise `Click` on shell buttons, test pointer clicks on a view hosted
+  directly, and guard dialogs with `BestFitShell.WhenOpened`.
+- **Git Bash's `timeout` doesn't stop a test `.exe`** (hung runs kept going at several GB): stop it by its
+  renamed image name.
 
 - **Tests that need natives or downloads:** `tests/Hec.Dss.Tests` skips when the natives or sample
   data are missing, and fails instead under an environment variable that CI sets
