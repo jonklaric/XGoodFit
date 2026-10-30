@@ -38,20 +38,33 @@ public sealed class DefaultsTests
     }
 
     [TestMethod]
-    public void ThemeFonts_RegisterSelawik_AndStandItInForSegoeUiOffWindows()
+    public void ThemeFonts_RegisterTheSubstitutes_AndStandThemInForWindowsFontsOffWindows()
     {
         HeadlessSession.Run(() =>
         {
             FontManager fonts = FontManager.Current;
-            Assert.IsTrue(fonts.TryGetGlyphTypeface(new Typeface(ThemeFonts.Selawik), out GlyphTypeface? selawik), "the embedded collection is registered");
-            Assert.AreEqual("Selawik", selawik.FamilyName);
+            foreach ((string windowsFont, string substitute) in ThemeFonts.Substitutes)
+            {
+                string family = new FontFamily(substitute).Name;
+                Assert.IsTrue(fonts.TryGetGlyphTypeface(new Typeface(substitute), out GlyphTypeface? embedded), $"{family} is embedded");
+                Assert.AreEqual(family, embedded.FamilyName);
+                Assert.IsTrue(fonts.TryGetGlyphTypeface(new Typeface(substitute, FontStyle.Normal, FontWeight.Bold), out GlyphTypeface? bold));
+                Assert.AreEqual(FontWeight.Bold, bold.Weight, $"{family} has a bold style");
 
-            // Outside Windows, upstream's "Segoe UI", and text that names no font, draw in Selawik.
+                // Outside Windows, upstream's Windows font names draw in their substitutes.
+                if (!OperatingSystem.IsWindows())
+                {
+                    Assert.IsTrue(fonts.TryGetGlyphTypeface(new Typeface(windowsFont), out GlyphTypeface? standIn));
+                    Assert.AreEqual(family, standIn.FamilyName, windowsFont);
+                }
+            }
+
+            // Cambria's italic f(x) in the function icons.
+            Assert.IsTrue(fonts.TryGetGlyphTypeface(new Typeface(ThemeFonts.Caladea, FontStyle.Italic, FontWeight.SemiBold), out GlyphTypeface? italic));
+            Assert.AreEqual(FontStyle.Italic, italic.Style);
             if (!OperatingSystem.IsWindows())
             {
-                Assert.AreEqual("Selawik", fonts.DefaultFontFamily.Name);
-                Assert.IsTrue(fonts.TryGetGlyphTypeface(new Typeface("Segoe UI"), out GlyphTypeface? segoe));
-                Assert.AreEqual("Selawik", segoe.FamilyName);
+                Assert.AreEqual("Selawik", fonts.DefaultFontFamily.Name, "text that names no font");
             }
         });
     }

@@ -25,6 +25,9 @@ download's SHA-256 first:
 | Folder | Original project | Release | Licence | What was copied |
 |---|---|---|---|---|
 | [`Selawik`](Selawik) | [microsoft/Selawik](https://github.com/microsoft/Selawik) | [1.01](https://github.com/microsoft/Selawik/releases/tag/1.01) | [OFL-1.1](Selawik/LICENSE.txt) | The five TrueType fonts and the licence. Selawik is Microsoft's open-source, metric-compatible substitute for Segoe UI, used where Segoe UI isn't installed (macOS, Linux) |
+| [`CascadiaCode`](CascadiaCode) | [microsoft/cascadia-code](https://github.com/microsoft/cascadia-code) | [2407.24](https://github.com/microsoft/cascadia-code/releases/tag/v2407.24) | [OFL-1.1](CascadiaCode/LICENSE) | The four static TrueType Cascadia Mono styles and the licence: the stand-in for Consolas where it isn't installed |
+| [`Caladea`](Caladea) | [Caladea](https://github.com/huertatipografica/Caladea), from [google/fonts](https://github.com/google/fonts/tree/6157dfaa640ca5738b4d1a7070fe389c3036d7fc/ofl/caladea) | [`6157dfa`](https://github.com/google/fonts/tree/6157dfaa640ca5738b4d1a7070fe389c3036d7fc/ofl/caladea) | [OFL-1.1](Caladea/OFL.txt) | The four TrueType styles and the licence: the metric-compatible stand-in for Cambria where it isn't installed |
+| [`Carlito`](Carlito) | [Carlito](https://github.com/googlefonts/carlito), from [google/fonts](https://github.com/google/fonts/tree/6157dfaa640ca5738b4d1a7070fe389c3036d7fc/ofl/carlito) | [`6157dfa`](https://github.com/google/fonts/tree/6157dfaa640ca5738b4d1a7070fe389c3036d7fc/ofl/carlito) | [OFL-1.1](Carlito/OFL.txt) | The regular and bold TrueType styles and the licence: the metric-compatible stand-in for Calibri where it isn't installed |
 
 Each folder keeps its upstream licence file, and the USACE projects keep their `CITATION.cff`.
 Please cite the original projects when you use or describe this work:
@@ -62,4 +65,4 @@ Please cite the original projects when you use or describe this work:
 
 `Directory.Build.props`, `Directory.Build.targets`, `Directory.Packages.props` and `.editorconfig`
 are XGoodFit's, not upstream's. They contain no settings, so XGoodFit's own build and editor settings
-never reach upstream code. `.gitattributes` keeps one zlib file and the Selawik files byte-identical.
+never reach upstream code. `.gitattributes` keeps one zlib file and the font files byte-identical.

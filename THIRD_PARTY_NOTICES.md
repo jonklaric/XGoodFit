@@ -23,3 +23,6 @@ added as dependencies are adopted.
 | [ProDataGrid](https://github.com/wieslawsoltes/ProDataGrid) | The data grids (NuGet) | MIT |
 | [SkiaSharp](https://github.com/mono/SkiaSharp) | Avalonia's renderer; also gives the glyph outlines of the plots' PDF and SVG exports (NuGet, through Avalonia.Skia) | MIT |
 | [Selawik](https://github.com/microsoft/Selawik) (Microsoft) | Substitute for Segoe UI where it isn't installed (macOS, Linux). Vendored in `upstream/Selawik` and embedded in the app | [OFL-1.1](upstream/Selawik/LICENSE.txt) |
+| [Cascadia Mono](https://github.com/microsoft/cascadia-code) (Microsoft) | Substitute for Consolas where it isn't installed (macOS, Linux). Vendored in `upstream/CascadiaCode` and embedded in the app | [OFL-1.1](upstream/CascadiaCode/LICENSE) |
+| [Caladea](https://github.com/huertatipografica/Caladea) (Huerta Tipográfica, via Google Fonts) | Metric-compatible substitute for Cambria where it isn't installed (macOS, Linux). Vendored in `upstream/Caladea` and embedded in the app | [OFL-1.1](upstream/Caladea/OFL.txt) |
+| [Carlito](https://github.com/googlefonts/carlito) (tyPoland, via Google Fonts) | Metric-compatible substitute for Calibri where it isn't installed (macOS, Linux). Vendored in `upstream/Carlito` and embedded in the app | [OFL-1.1](upstream/Carlito/OFL.txt) |

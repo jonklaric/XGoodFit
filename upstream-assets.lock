@@ -9,3 +9,20 @@
 #   Segoe UI isn't installed (macOS, Linux). Only the TrueType fonts and the licence are kept.
 Selawik  https://github.com/microsoft/Selawik/releases/download/1.01/Selawik_Release.zip  3f62c51e05e3b5a1e6241cf92a371f0be2ea1183aa87b30718bbd40832a8d423  selawk.ttf,selawkb.ttf,selawkl.ttf,selawksb.ttf,selawksl.ttf
 Selawik  https://raw.githubusercontent.com/microsoft/Selawik/1.01/LICENSE.txt                    77b7c2506d4efb22e09c8ccf10159f4956eab3ef7c007fef95de136bcf45300c  -
+#
+# - Cascadia Mono 2407.24: Microsoft's open-source monospaced font, the stand-in for Consolas where it
+#   isn't installed (macOS, Linux). Only the four static TrueType Cascadia Mono styles and the licence.
+CascadiaCode  https://github.com/microsoft/cascadia-code/releases/download/v2407.24/CascadiaCode-2407.24.zip  e67a68ee3386db63f48b9054bd196ea752bc6a4ebb4df35adce6733da50c8474  ttf/static/CascadiaMono-Regular.ttf,ttf/static/CascadiaMono-Bold.ttf,ttf/static/CascadiaMono-Italic.ttf,ttf/static/CascadiaMono-BoldItalic.ttf
+CascadiaCode  https://raw.githubusercontent.com/microsoft/cascadia-code/v2407.24/LICENSE  51882cd3cdba4e16f220f44ddb08a635c38c44ea6e0975db2574f4be6f958238  -
+#
+# - Caladea and Carlito, from Google Fonts at commit 6157dfa: metric-compatible substitutes for Cambria
+#   and Calibri where those aren't installed (macOS, Linux). Upstream uses Cambria for the italic f(x)
+#   glyphs in its function icons and Calibri for one expander header. Each with its licence.
+Caladea  https://raw.githubusercontent.com/google/fonts/6157dfaa640ca5738b4d1a7070fe389c3036d7fc/ofl/caladea/Caladea-Regular.ttf     f1e899278b7b4491aba5b6a8253c4b04c050cc59b21865be5c37559a775153cd  -
+Caladea  https://raw.githubusercontent.com/google/fonts/6157dfaa640ca5738b4d1a7070fe389c3036d7fc/ofl/caladea/Caladea-Bold.ttf        ae3cb2dcbc925809dd29d2a44e9802211cab66be541bacbfc9c08c74b27c3742  -
+Caladea  https://raw.githubusercontent.com/google/fonts/6157dfaa640ca5738b4d1a7070fe389c3036d7fc/ofl/caladea/Caladea-Italic.ttf      4359a8e24f748b6447b1ff6d7a174febe70961d29f8bb8634b56dacd740a3deb  -
+Caladea  https://raw.githubusercontent.com/google/fonts/6157dfaa640ca5738b4d1a7070fe389c3036d7fc/ofl/caladea/Caladea-BoldItalic.ttf  ccabaa7b7e2fdf253d2b1a5fa699dd8a3df8d835a9eb285ad82631a677eb76c0  -
+Caladea  https://raw.githubusercontent.com/google/fonts/6157dfaa640ca5738b4d1a7070fe389c3036d7fc/ofl/caladea/OFL.txt                 ccdab61d371d8c8683a128a92cd7d498dbdb1d37689f7cb21f1bf6b16658d213  -
+Carlito  https://raw.githubusercontent.com/google/fonts/6157dfaa640ca5738b4d1a7070fe389c3036d7fc/ofl/carlito/Carlito-Regular.ttf     f6418f708baede9789daef5d458c0f53d2a888af9820e8062934e504fedc6595  -
+Carlito  https://raw.githubusercontent.com/google/fonts/6157dfaa640ca5738b4d1a7070fe389c3036d7fc/ofl/carlito/Carlito-Bold.ttf        bb5d20f79b82599ec72983597437373a80f2d2085fa91fc144fd74e876a594db  -
+Carlito  https://raw.githubusercontent.com/google/fonts/6157dfaa640ca5738b4d1a7070fe389c3036d7fc/ofl/carlito/OFL.txt                 58402f82a7c332a700294988fe7554fbb0a63a8d27ccc1ee3bbc640311990a00  -
