@@ -101,6 +101,8 @@ Templates and themes:
 | `RoutedEvent` / `EventManager.RegisterRoutedEvent` | `RoutedEvent.Register<TOwner, TArgs>` |
 | `PreviewMouseLeftButtonDown += H` and the other WPF mouse events | `this.AddPreviewMouseLeftButtonDownHandler(H)` (WpfCompat.Input's `MouseEvents`: WPF's button filter and routing). `H` takes Avalonia's pointer arguments, with WPF's `ChangedButton`, `LeftButton`, `RightButton` and `OriginalSource` as extension properties. Wheel deltas are notches (WPF: 120 per notch) |
 | `Keyboard.Modifiers`, `ModifierKeys` | WpfCompat.Input's (Command counts as Control on macOS) |
+| `Checked="H"` / `Unchecked="H"` on toggle buttons and check boxes | `toggle.AddCheckedHandler(H)` / `AddUncheckedHandler(H)` in the code-behind (WpfCompat): Avalonia 12 only has `IsCheckedChanged` |
+| `RichTextBox` | AvaloniaEdit's `TextEditor` (see ExpressionParserControls' `ExpressionControl`), or `SelectableTextBlock` for read-only text |
 | `x.SetResourceReference(P, key)` | unchanged, with `using WpfCompat;` |
 | `Dispatcher.Invoke` / `BeginInvoke` | `Dispatcher.UIThread.Invoke` / `Post` |
 | `VisualTreeHelper` | `GetVisualParent`, `GetVisualChildren`, `FindAncestorOfType<T>` (`Avalonia.VisualTree`) |

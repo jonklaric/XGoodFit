@@ -1,0 +1,166 @@
+<!--
+    XGoodFit port of upstream's AvailableFunctions.xaml:
+    - The local tree styles are ControlThemes, copied from Themes' TreeView.axaml port, of which
+      upstream's are copies. Its focus visual, which drew nothing, is the items' absent focus adorner.
+    - The tree's SelectedItemChanged is SelectionChanged; Visibility="Collapsed" is IsVisible="False".
+    - Avalonia doesn't name column definitions, so the grid is named and the code-behind finds its
+      columns (TreeColumn, DetailColumn) by position.
+-->
+<UserControl x:Class="ExpressionParserControls.AvailableFunctions"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="using:ExpressionParserControls"
+             mc:Ignorable="d"
+             d:DesignHeight="450" d:DesignWidth="700">
+    <UserControl.Resources>
+        <!-- The tree's styles, as Themes' TreeView.axaml ports them (upstream repeats them here). -->
+        <StreamGeometry x:Key="TreeArrow">M0,0 L0,6 L6,0 z</StreamGeometry>
+
+        <ControlTheme x:Key="ExpandCollapseToggleStyle" TargetType="ToggleButton">
+            <Setter Property="Focusable" Value="False"/>
+            <Setter Property="Width" Value="16"/>
+            <Setter Property="Height" Value="16"/>
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Border Background="Transparent" Height="16" Padding="5,5,5,5" Width="16">
+                        <Path x:Name="ExpandPath" Data="{StaticResource TreeArrow}" Fill="{DynamicResource TreeViewItem.TreeArrow.Static.Fill}" Stroke="{DynamicResource TreeViewItem.TreeArrow.Static.Stroke}"
+                              RenderTransformOrigin="0,0">
+                            <Path.RenderTransform>
+                                <RotateTransform Angle="135" CenterY="3" CenterX="3"/>
+                            </Path.RenderTransform>
+                        </Path>
+                    </Border>
+                </ControlTemplate>
+            </Setter>
+
+            <Style Selector="^:checked /template/ Path#ExpandPath">
+                <Setter Property="RenderTransform">
+                    <RotateTransform Angle="180" CenterY="3" CenterX="3"/>
+                </Setter>
+                <Setter Property="Fill" Value="{DynamicResource TreeViewItem.TreeArrow.Static.Checked.Fill}"/>
+                <Setter Property="Stroke" Value="{DynamicResource TreeViewItem.TreeArrow.Static.Checked.Stroke}"/>
+            </Style>
+            <Style Selector="^:pointerover /template/ Path#ExpandPath">
+                <Setter Property="Stroke" Value="{DynamicResource TreeViewItem.TreeArrow.MouseOver.Stroke}"/>
+                <Setter Property="Fill" Value="{DynamicResource TreeViewItem.TreeArrow.MouseOver.Fill}"/>
+            </Style>
+            <Style Selector="^:pointerover:checked /template/ Path#ExpandPath">
+                <Setter Property="Stroke" Value="{DynamicResource TreeViewItem.TreeArrow.MouseOver.Checked.Stroke}"/>
+                <Setter Property="Fill" Value="{DynamicResource TreeViewItem.TreeArrow.MouseOver.Checked.Fill}"/>
+            </Style>
+        </ControlTheme>
+
+        <ControlTheme x:Key="TreeViewItemStyle" TargetType="TreeViewItem">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Padding" Value="1,0,0,0"/>
+            <Setter Property="Foreground" Value="{DynamicResource TreeViewItem.Static.Text}"/>
+            <Setter Property="FocusAdorner" Value="{x:Null}"/>
+            <Setter Property="IsExpanded" Value="True"/>
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <StackPanel>
+                        <Border x:Name="Bd" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}">
+                            <Grid x:Name="PART_Header" Margin="{TemplateBinding Margin}" ColumnDefinitions="19,*">
+                                <ToggleButton x:Name="Expander" ClickMode="Press" IsChecked="{TemplateBinding IsExpanded, Mode=TwoWay}" Theme="{StaticResource ExpandCollapseToggleStyle}"/>
+                                <ContentPresenter Grid.Column="1" x:Name="PART_HeaderPresenter"
+                                                  Content="{TemplateBinding Header}"
+                                                  ContentTemplate="{TemplateBinding HeaderTemplate}"
+                                                  HorizontalAlignment="Stretch"/>
+                            </Grid>
+                        </Border>
+                        <ItemsPresenter x:Name="PART_ItemsPresenter" ItemsPanel="{TemplateBinding ItemsPanel}" Margin="16,0,0,0"/>
+                    </StackPanel>
+                </ControlTemplate>
+            </Setter>
+
+            <Style Selector="^[IsExpanded=False] /template/ ItemsPresenter#PART_ItemsPresenter">
+                <Setter Property="IsVisible" Value="False"/>
+            </Style>
+            <!-- HasItems=false: Visibility Hidden -->
+            <Style Selector="^:empty /template/ ToggleButton#Expander">
+                <Setter Property="Opacity" Value="0"/>
+                <Setter Property="IsHitTestVisible" Value="False"/>
+            </Style>
+            <Style Selector="^:selected">
+                <Setter Property="Foreground" Value="{DynamicResource TreeViewItem.Highlight.Static.Text}"/>
+                <Style Selector="^ /template/ Border#Bd">
+                    <Setter Property="Background" Value="{DynamicResource TreeViewItem.Highlight.Static}"/>
+                </Style>
+            </Style>
+            <Style Selector="^:disabled">
+                <Setter Property="Foreground" Value="{DynamicResource TreeViewItem.Disabled.Text}"/>
+            </Style>
+        </ControlTheme>
+    </UserControl.Resources>
+
+    <Grid x:Name="LayoutGrid">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="200" MinWidth="100"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Function List -->
+        <Grid Grid.Column="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <TreeView x:Name="AvailableFunctionsProp" Grid.Row="0" SelectionChanged="AvailableFunctions_SelectedItemChanged"/>
+            <Button Name="InsertFunctionButton" Grid.Row="1" Margin="0,5,0,0" IsEnabled="False" Click="InsertButton_Click" Height="24">Insert</Button>
+        </Grid>
+
+        <!-- Splitter -->
+        <GridSplitter x:Name="DetailSplitter" Grid.Column="1" Width="5" HorizontalAlignment="Center" VerticalAlignment="Stretch" ResizeBehavior="PreviousAndNext" Background="{DynamicResource EnvironmentWindowBackground}"/>
+
+        <!-- Detail Panel -->
+        <Border x:Name="DetailBorder" Grid.Column="2" Margin="5,0,0,0" BorderBrush="{DynamicResource SeparatorBorder}" BorderThickness="1" Background="{DynamicResource TextBox.Static.Background}">
+            <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="12">
+                <StackPanel x:Name="DetailPanel" IsVisible="False">
+
+                    <!-- Function Name Header -->
+                    <TextBlock x:Name="DetailFunctionName" FontSize="18" FontWeight="Bold" Margin="0,0,0,8"
+                               Foreground="{DynamicResource AvailableFunctions.DetailHeader}"/>
+
+                    <!-- Syntax -->
+                    <TextBlock Text="SYNTAX" FontSize="10" FontWeight="Bold" Margin="0,4,0,2"
+                               Foreground="{DynamicResource AvailableFunctions.DetailLabel}"/>
+                    <Border Background="{DynamicResource EnvironmentWindowBackground}" CornerRadius="3" Padding="8,6" Margin="0,0,0,8">
+                        <TextBlock x:Name="DetailSyntax" FontFamily="Consolas" FontSize="13"
+                                   Foreground="{DynamicResource AvailableFunctions.SyntaxText}" TextWrapping="Wrap"/>
+                    </Border>
+
+                    <!-- Returns -->
+                    <TextBlock Text="RETURNS" FontSize="10" FontWeight="Bold" Margin="0,4,0,2"
+                               Foreground="{DynamicResource AvailableFunctions.DetailLabel}"/>
+                    <TextBlock x:Name="DetailReturns" Margin="0,0,0,8" TextWrapping="Wrap"
+                               Foreground="{DynamicResource EnvironmentWindowText}"/>
+
+                    <!-- Description -->
+                    <TextBlock Text="DESCRIPTION" FontSize="10" FontWeight="Bold" Margin="0,4,0,2"
+                               Foreground="{DynamicResource AvailableFunctions.DetailLabel}"/>
+                    <TextBlock x:Name="DetailDescription" Margin="0,0,0,8" TextWrapping="Wrap"
+                               Foreground="{DynamicResource EnvironmentWindowText}"/>
+
+                    <!-- Example -->
+                    <TextBlock Text="EXAMPLE" FontSize="10" FontWeight="Bold" Margin="0,4,0,2"
+                               Foreground="{DynamicResource AvailableFunctions.DetailLabel}"/>
+                    <Border Background="{DynamicResource EnvironmentWindowBackground}" CornerRadius="3" Padding="8,6" Margin="0,0,0,8">
+                        <TextBlock x:Name="DetailExample" FontFamily="Consolas" FontSize="13"
+                                   Foreground="{DynamicResource AvailableFunctions.ExampleText}" TextWrapping="Wrap"/>
+                    </Border>
+
+                    <!-- Aliases -->
+                    <StackPanel x:Name="AliasesPanel" Margin="0,4,0,0">
+                        <TextBlock Text="ALIASES" FontSize="10" FontWeight="Bold" Margin="0,0,0,2"
+                                   Foreground="{DynamicResource AvailableFunctions.DetailLabel}"/>
+                        <TextBlock x:Name="DetailAliases" Foreground="{DynamicResource EnvironmentWindowText}" TextWrapping="Wrap"/>
+                    </StackPanel>
+
+                </StackPanel>
+            </ScrollViewer>
+        </Border>
+    </Grid>
+</UserControl>

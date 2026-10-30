@@ -1,0 +1,61 @@
+<!--
+    XGoodFit port of upstream's ExpressionControl.xaml. Upstream edits the expression in a WPF
+    RichTextBox, rebuilding its FlowDocument from coloured runs and hyperlinks on every change. Avalonia
+    has no RichTextBox, so the editor is AvaloniaEdit's TextEditor, which keeps the text and colours it
+    through a colorizer (see the code-behind):
+    - It looks as Themes' RichTextBox style made upstream's editor: the text box colours and border, its
+      selection and caret brushes, and the Cut/Copy/Paste/Select All context menu. It wraps lines, as a
+      FlowDocument does, inset by the document's 5-pixel page padding.
+    - Function names with help are underlined and coloured as upstream's hyperlinks, and open their help
+      when clicked.
+    - AvaloniaEdit's theme comes in with the control, so the application needn't include it.
+    - On hover and focus the border takes Aero2's fixed TextBox colours (#7EB4EA, #569DE5), as upstream's
+      did: Themes' RichTextBox style kept WPF's default template, whose triggers use them in every theme.
+-->
+<UserControl x:Class="ExpressionParserControls.ExpressionControl"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="using:ExpressionParserControls"
+             xmlns:ae="using:AvaloniaEdit"
+             mc:Ignorable="d"
+             d:DesignHeight="450" d:DesignWidth="800">
+    <UserControl.Styles>
+        <StyleInclude Source="avares://AvaloniaEdit/Themes/Simple/AvaloniaEdit.xaml"/>
+        <Style Selector="ae|TextEditor#ExpressionTextBox">
+            <Setter Property="BorderBrush" Value="{DynamicResource TextBox.Static.Border}"/>
+        </Style>
+        <Style Selector="ae|TextEditor#ExpressionTextBox:pointerover">
+            <Setter Property="BorderBrush" Value="#FF7EB4EA"/>
+        </Style>
+        <Style Selector="ae|TextEditor#ExpressionTextBox:focus-within">
+            <Setter Property="BorderBrush" Value="#FF569DE5"/>
+        </Style>
+    </UserControl.Styles>
+    <Grid DataContext="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}}">
+        <ae:TextEditor x:Name="ExpressionTextBox"
+                       Background="{DynamicResource TextBox.Static.Background}"
+                       BorderThickness="1"
+                       Foreground="{DynamicResource EnvironmentToolWindowText}"
+                       FontFamily="{Binding FontFamily}"
+                       FontSize="{Binding FontSize}"
+                       FontStyle="{Binding FontStyle}"
+                       FontWeight="{Binding FontWeight}"
+                       Padding="5,0"
+                       WordWrap="True"
+                       ShowLineNumbers="False"
+                       HorizontalScrollBarVisibility="Disabled"
+                       VerticalScrollBarVisibility="Hidden">
+            <ae:TextEditor.ContextMenu>
+                <ContextMenu Theme="{DynamicResource MetroContextMenu}">
+                    <MenuItem Header="Cut" InputGesture="Ctrl+X" Command="{Binding #ExpressionTextBox.Cut}" IsEnabled="{Binding #ExpressionTextBox.CanCut}"/>
+                    <MenuItem Header="Copy" InputGesture="Ctrl+C" Command="{Binding #ExpressionTextBox.Copy}" IsEnabled="{Binding #ExpressionTextBox.CanCopy}"/>
+                    <MenuItem Header="Paste" InputGesture="Ctrl+V" Command="{Binding #ExpressionTextBox.Paste}" IsEnabled="{Binding #ExpressionTextBox.CanPaste}"/>
+                    <Separator/>
+                    <MenuItem Header="Select All" InputGesture="Ctrl+A" Command="{Binding #ExpressionTextBox.SelectAll}"/>
+                </ContextMenu>
+            </ae:TextEditor.ContextMenu>
+        </ae:TextEditor>
+    </Grid>
+</UserControl>

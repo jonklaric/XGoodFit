@@ -1,6 +1,7 @@
 <Solution>
   <Folder Name="/src/" />
   <Folder Name="/src/Framework/">
+    <Project Path="src/Framework/ExpressionParserControls/ExpressionParserControls.csproj" />
     <Project Path="src/Framework/FrameworkInterfaces/FrameworkInterfaces.csproj" />
     <Project Path="src/Framework/FrameworkUI/FrameworkUI.csproj" />
     <Project Path="src/Framework/GenericControls/GenericControls.csproj" />
@@ -10,6 +11,7 @@
   </Folder>
   <Folder Name="/tests/" />
   <Folder Name="/tests/Framework/">
+    <Project Path="tests/Framework/ExpressionParserControls.Tests/ExpressionParserControls.Tests.csproj" />
     <Project Path="tests/Framework/FrameworkUI.Tests/FrameworkUI.Tests.csproj" />
     <Project Path="tests/Framework/GenericControls.Tests/GenericControls.Tests.csproj" />
     <Project Path="tests/Framework/Themes.Tests/Themes.Tests.csproj" />
@@ -21,5 +23,6 @@
   </Folder>
   <Folder Name="/upstream/">
     <Project Path="upstream/WPF-Framework/src/DatabaseManager/DatabaseManager.csproj" />
+    <Project Path="upstream/WPF-Framework/src/ExpressionParser/ExpressionParser.csproj" />
   </Folder>
 </Solution>

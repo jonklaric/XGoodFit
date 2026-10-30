@@ -1,13 +1,28 @@
+using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Data;
 
 namespace WpfCompat;
 
 /// <summary>
-/// WPF properties that Avalonia controls lack or keep elsewhere, so ported code-behind can keep
-/// writing them: <c>ToolTip</c> on every control, and a text box's <c>SelectionLength</c>.
+/// WPF members that Avalonia controls lack or keep elsewhere, so ported code-behind can keep writing
+/// them: <c>ToolTip</c> on every control, a text box's <c>SelectionLength</c>, an items control's
+/// <c>HasItems</c>, and <c>SetBinding</c>.
 /// </summary>
 public static class ControlExtensions
 {
+    extension(AvaloniaObject target)
+    {
+        /// <summary>Binds <paramref name="property"/>, as WPF's <c>SetBinding</c> (Avalonia's <c>Bind</c>).</summary>
+        public BindingExpressionBase SetBinding(AvaloniaProperty property, BindingBase binding) => target.Bind(property, binding);
+    }
+
+    extension(ItemsControl itemsControl)
+    {
+        /// <summary>Whether the control has items, as WPF's <c>ItemsControl.HasItems</c>.</summary>
+        public bool HasItems => itemsControl.ItemCount > 0;
+    }
+
     extension(Control control)
     {
         /// <summary>The control's tool tip: WPF's <c>FrameworkElement.ToolTip</c>, Avalonia's <c>ToolTip.Tip</c>.</summary>

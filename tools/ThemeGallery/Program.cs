@@ -86,6 +86,18 @@ internal static class Program
 
             // An existing name: the dialog shows it's invalid.
             Save(new NameDialog(64, "Analysis 1", false, ["Analysis 1"]), folder, "name-dialog", theme, show: true);
+
+            // As upstream's gallery screenshot: an expression in the focused editor.
+            var calculator = new ExpressionParserControls.CalculatorControl();
+            var calculatorWindow = new Window { Width = 770, Height = 390, Content = calculator, Background = (Avalonia.Media.IBrush?)Application.Current!.FindResource("EnvironmentWindowBackground") };
+            calculatorWindow.Show();
+            Settle();
+            calculator.SetExpressionText("((120 + 80) / 2) ^ 2");
+            var textArea = Avalonia.VisualTree.VisualExtensions.GetVisualDescendants(calculator).OfType<AvaloniaEdit.Editing.TextArea>().First();
+            textArea.Focus();
+            textArea.Caret.Offset = calculator.GetExpressionText().Length;
+            Save(calculatorWindow, folder, "expression-calculator", theme);
+            calculatorWindow.Close();
         }
         window.Close();
         return 0;

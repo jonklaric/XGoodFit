@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Avalonia port of upstream/WPF-Framework/src/ExpressionParserControls: the expression editor with
+    syntax colouring, the calculator panel and the function reference, used by DatabaseControls' field
+    calculator. Its files are WPF code, so the project opts in to upstream files
+    (Directory.Build.targets). The editor's WPF RichTextBox is AvaloniaEdit's TextEditor.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>ExpressionParserControls</RootNamespace>
+    <AssemblyName>ExpressionParserControls</AssemblyName>
+    <Nullable>enable</Nullable>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <UpstreamProjectDir>$(UpstreamFrameworkSrc)ExpressionParserControls/</UpstreamProjectDir>
+    <UpstreamCompileMode>OptIn</UpstreamCompileMode>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="ExpressionParserControls.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" />
+    <PackageReference Include="Avalonia.AvaloniaEdit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="$(UpstreamFrameworkSrc)ExpressionParser/ExpressionParser.csproj" />
+    <ProjectReference Include="../WpfCompat/WpfCompat.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Upstream files that compile unchanged. -->
+    <UpstreamCompileInclude Include="FunctionInfo.cs" />
+  </ItemGroup>
+
+</Project>

@@ -548,6 +548,8 @@ Sizes are relative, for one developer with AI-assisted porting: S ≈ ≤2 wk, M
 - `DatabaseControls.TableViewer`, plus Field Calculator, Find & Replace, Column Stats and Select-by-Attribute.
 - `ExpressionControl` on AvaloniaEdit, and Calculator Help (HTML).
 
+**Progress (2026-10-30):** `ExpressionParserControls` is ported. The expression editor runs on AvaloniaEdit, colouring the same tokens as upstream's RichTextBox runs (parentheses by depth, functions with help as links), with the calculator panel and the function reference. Headless tests cover typing, paste, the buttons and errors, and the gallery's capture matches upstream's screenshot.
+
 **Exit:** demo-page parity and `TableViewer` edit/undo tests.
 
 ### Phase 6: BestFit project layer (`RMC.BestFit.UI`) (M)
