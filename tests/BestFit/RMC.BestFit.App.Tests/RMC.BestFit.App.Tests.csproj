@@ -124,6 +124,8 @@
 
   <!-- Upstream test files: Univariate Distribution Analysis: Univariate, Bulletin 17C, Point Process, Mixture, Composite. -->
   <ItemGroup>
+    <UpstreamCompileInclude Include="GUI/UnivariateChronologyPlotTests.cs" />
+    <!-- GUI/PointEstimatorControlContractTests.cs is a ported copy (Avalonia's controls, and only the families whose views are ported). -->
   </ItemGroup>
 
   <!-- Upstream test files: Bivariate Distribution Analysis: Bivariate, Coincident Frequency. -->
