@@ -216,16 +216,20 @@ namespace RMC.BestFit.App.Tests.XGoodFit
                 Assert.AreEqual(Application.Current.FindResource("EnvironmentWindowText"), statistics.GetRow(distribution.Parameters.Count).BorderBrush);
 
                 // A new credible interval: the headers at once, and the curves once the element has reprocessed them
-                // (on a worker thread, as upstream's model layer does), with the wait cursor until then.
+                // (on a worker thread, as upstream's model layer does), with the wait cursor until then. The model
+                // sets its new results before it announces them, and an earlier announcement still queued can clear
+                // the cursor, so wait for the table to show them too (a Linux run read the table in between).
                 var saved = element.AnalysisResults.ConfidenceIntervals[0, 1];
                 element.BayesianAnalysis.CredibleIntervalWidth = 0.99;
                 AssertIntervalHeaders(table, 0.99);
-                PumpUntil(() => Upper(element) is double upper && upper != saved && Mouse.OverrideCursor == null, "the reprocessed curves");
+                PumpUntil(() => Upper(element) is double upper && upper != saved && Mouse.OverrideCursor == null
+                    && CellText(table, 0, 1) == string.Format(Us, value, upper), "the reprocessed curves");
                 Assert.AreEqual(string.Format(Us, value, element.AnalysisResults.ConfidenceIntervals[0, 1]), CellText(table, 0, 1));
                 Assert.AreEqual("99% Credible Intervals", element.FrequencyPlot.Series.Single(s => s.Name == "CredibleIntervals").Title);
                 element.UndoManager.Undo();
                 AssertIntervalHeaders(table, 0.9);
-                PumpUntil(() => Upper(element) == saved && Mouse.OverrideCursor == null, "the curves back");
+                PumpUntil(() => Upper(element) == saved && Mouse.OverrideCursor == null
+                    && CellText(table, 0, 1) == string.Format(Us, value, saved), "the curves back");
                 Assert.AreEqual(string.Format(Us, value, saved), CellText(table, 0, 1));
             }
             finally

@@ -31,6 +31,16 @@
     <TestingPlatformCommandLineArguments>$(TestingPlatformCommandLineArguments) --filter TestCategory!=External</TestingPlatformCommandLineArguments>
   </PropertyGroup>
 
+  <!--
+    CI runs these tests with scripts/run-app-tests.sh, in several processes (one process can't hold
+    every class's views and example projects on a CI runner), and passes this property to dotnet test,
+    which then leaves the project out.
+  -->
+  <PropertyGroup Condition="'$(XGoodFitAppTestsInScript)' == 'true'">
+    <IsTestProject>false</IsTestProject>
+    <TestingPlatformDotnetTestSupport>false</TestingPlatformDotnetTestSupport>
+  </PropertyGroup>
+
   <ItemGroup>
     <!-- As upstream: the shared MSTest settings (method-level parallelism) and API snapshot helper. -->
     <Compile Include="$(UpstreamBestFitSrc)TestCommon/MSTestSettings.cs" Link="upstream/MSTestSettings.cs" />

@@ -56,11 +56,18 @@ jobs:
         run: dotnet build XGoodFit.slnx -c Release
 
       # The ported UI's own tests, run headlessly, and the HEC-DSS wrapper's tests, which must find
-      # the natives and the sample data here.
+      # the natives and the sample data here. The application's view tests run in the next step.
       - name: XGoodFit tests
-        run: dotnet test XGoodFit.slnx -c Release --no-build
+        run: dotnet test XGoodFit.slnx -c Release --no-build -p:XGoodFitAppTestsInScript=true
         env:
           XGOODFIT_REQUIRE_HECDSS: '1'
+
+      # The application's view tests (RMC.BestFit.App.Tests), each of XGoodFit's test classes in its
+      # own process: in one process they need more memory than the runners have.
+      - name: App tests
+        if: ${{ !cancelled() }}
+        shell: bash
+        run: bash scripts/run-app-tests.sh Release
 
       # The tests above include the file-compatibility suite (tests/BestFit/RMC.BestFit.FileCompat.Tests):
       # every example opened and saved by the port, compared with what upstream's WPF RMC-BestFit saves.
