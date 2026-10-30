@@ -11,21 +11,28 @@ namespace WpfCompat;
 /// <remarks>
 /// WPF makes the first window an application creates its main window; Avalonia needs the main window
 /// set, which the ported App does at startup. Without a desktop lifetime (as in tests) there is no
-/// main window and no window list.
+/// window list, and the main window is the one last set, as WPF's property holds it.
 /// </remarks>
 public static class ApplicationExtensions
 {
+    // The main window set without a desktop lifetime.
+    private static Window? s_mainWindow;
+
     extension(Application application)
     {
         /// <summary>The application's main window.</summary>
         public Window? MainWindow
         {
-            get => Desktop(application)?.MainWindow;
+            get => Desktop(application) is { } desktop ? desktop.MainWindow : s_mainWindow;
             set
             {
                 if (Desktop(application) is { } desktop)
                 {
                     desktop.MainWindow = value;
+                }
+                else
+                {
+                    s_mainWindow = value;
                 }
             }
         }
