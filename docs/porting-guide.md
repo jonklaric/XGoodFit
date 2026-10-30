@@ -286,6 +286,14 @@ Watch for others when porting:
 - **Tests:** each ported project gets a headless MSTest project in `tests/`, copying
   `HeadlessSession.cs` from an existing one. Test what a screenshot can't show: commands, state, layout
   rules.
+- **File compatibility:** `tests/BestFit/RMC.BestFit.FileCompat.Tests` opens and saves every example
+  project with the port and compares each saved file, cell by cell, with what upstream's WPF
+  RMC-BestFit saves (golden data from `tools/BestFitFileCompat.Wpf`, Windows only; see its
+  `Golden/README.md` to regenerate). XML that RMC-BestFit stores has the OS's line ends, so cross-OS
+  comparisons normalise them. To build a WPF reference tool, compile shared source into both it and the
+  tests, build the upstream WPF project in place with `AdditionalProperties` and
+  `DisableTransitiveProjectReferences`, and give builds with other global properties their own
+  `--artifacts-path`.
 - **Gallery:** `tools/ThemeGallery` shows controls in all three themes, and `capture <dir>` renders
   PNGs for review. Captures that need a test's setup are tests in category `Capture` (e.g.
   `FrameworkUI.Tests --filter "TestCategory=Capture"` for the docking chrome), writing to
