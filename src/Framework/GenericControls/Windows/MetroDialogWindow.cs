@@ -71,6 +71,19 @@ namespace GenericControls
         }
 
         /// <summary>
+        /// Gets or sets the window that owns this one, as WPF's <c>Window.Owner</c>.
+        /// </summary>
+        /// <remarks>
+        /// XGoodFit port: Avalonia sets a window's owner only when it's shown. Setting this records the
+        /// owner that <c>ShowDialog()</c> (WpfCompat's <see cref="DialogWindows"/>) shows the window for.
+        /// </remarks>
+        public new WindowBase Owner
+        {
+            get => base.Owner ?? DialogWindows.GetRequestedOwner(this);
+            set => DialogWindows.SetRequestedOwner(this, value as Window);
+        }
+
+        /// <summary>
         /// Handles the close window command.
         /// </summary>
         /// <param name="sender">The command source.</param>

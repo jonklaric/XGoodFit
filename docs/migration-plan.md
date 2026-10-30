@@ -334,12 +334,14 @@ Shims are for **high-frequency, semantically equivalent** APIs only. Everything 
 | `Loaded`, focus scopes, keyboard navigation, mouse-wheel routing | Subtly different | Covered by ported tests + UAT scripts |
 | DataGrid edit-commit timing (`CommitEdit` 6×, `BeginEdit` 2×) | ProDataGrid semantics | Explicit tests per grid |
 
-### 5.3 Dialog strategy (decided by Phase 0 Spike D)
-- **Default: async.** UI event handlers become `async void` and the code reads the same top to bottom. This covers most of the 105 `MessageBox` + 35 `ShowDialog` + 56 picker call sites.
-- **Fallback: sync-compat** for sites where async would change control flow (property setters, deep call chains, `Closing` handlers). Use a nested-frame wait (`Dispatcher.UIThread.MainLoop(token)`), which is the same mechanism WPF uses internally.
-  - It's supported on Win32, macOS, X11 and Wayland, but Avalonia maintainers advise against it.
-  - It has one open X11 repaint issue (#22195).
-- Window `Closing`: cancel → `await` the "save changes?" prompt → `Close()` again.
+### 5.3 Dialog strategy (decided by Phase 0 Spike D; revised 2026-10-30)
+- **Default: synchronous, as in WPF.** WpfCompat gives the ported code WPF's blocking calls:
+  - `ShowDialog()` returning `DialogResult`, `MessageBox.Show`, the file and folder dialogs, and the clipboard.
+  - They wait in a nested dispatcher frame: Avalonia 12's public `Dispatcher.PushFrame`, the mechanism WPF itself uses.
+  - The volume decided it: 604 `Visibility` assignments, 103 `MessageBox.Show`, 33 `ShowDialog()`, 40 file dialogs and 18 clipboard calls. Upstream's control flow (property setters, deep call chains, `Closing` handlers) stays as it is.
+  - Nested frames work on Win32, macOS, X11 and Wayland. One X11 repaint issue is open (#22195), and the Linux test pass must cover it.
+- **Async where it's natural:** new code, and sites where a nested loop causes trouble, can await Avalonia's APIs directly.
+- **Window `Closing`:** cancel, then show the "save changes?" prompt, then call `Close()` again if needed.
 
 ---
 
@@ -481,7 +483,7 @@ Sizes are relative, for one developer with AI-assisted porting: S ≈ ≤2 wk, M
 | `Themes.Tests` (headless, MSTest): every palette key matches upstream in all 3 themes; theme switching updates open windows; WPF's default font | ✅ 10/10 on Windows |
 | WPF-equivalent defaults: every window gets Segoe UI at 12 DIP, falling back to the embedded Selawik where Segoe UI isn't installed. Selawik 1.01 is vendored from its release download (`upstream-assets.lock`, SHA-256-checked) | ✅ `ThemeService.Initialize` adds the styles (`Resources/Defaults.axaml`) |
 | Theme gallery (`tools/ThemeGallery`): all 322 palette keys as live swatches next to standard controls, with a theme switcher. `ThemeGallery capture <folder>` renders it in each theme headlessly | ✅ Phase 1 exit: the demo window switches Light/Blue/Dark |
-| `WpfCompat` shims | Started (`src/Framework/WpfCompat`, 8 tests). WPF's routed commands: `RoutedCommand`, `CommandBinding` and every element's `CommandBindings`, `ApplicationCommands` with WPF's key gestures (Cmd on macOS), and `SystemCommands`; also `ResizeMode`. The `{wpf:Command …}` markup extension routes a button's command from the button and a menu item's from the focused element, as WPF does. The rest follow as Phase 2–3 code needs them |
+| `WpfCompat` shims | Started (`src/Framework/WpfCompat`, 12 tests):<ul><li>WPF's routed commands: `RoutedCommand`, `CommandBinding` and every element's `CommandBindings`; `ApplicationCommands` with WPF's key gestures (Cmd on macOS), and `SystemCommands`. The `{wpf:Command …}` markup extension routes a button's command from the button and a menu item's from the focused element, as WPF does.</li><li>`ResizeMode`, and `Visibility` (with Hidden) as an attached and an extension property.</li><li>Synchronous `ShowDialog()` and `DialogResult`, WPF's message-box enums, the file and folder dialogs, and the clipboard (§5.3).</li></ul>The rest follow as Phase 2–3 code needs them |
 
 ### Phase 2: Walking-skeleton shell (`FrameworkUI`) (L)
 - `MainWindow` with menus, a toolbar with undo/redo history drop-downs, key bindings, recent files, auto-backup and file compaction.
