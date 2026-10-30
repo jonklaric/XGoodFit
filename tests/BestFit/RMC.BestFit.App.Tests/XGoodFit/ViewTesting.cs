@@ -183,10 +183,15 @@ namespace RMC.BestFit.App.Tests.XGoodFit
             /// <returns>The element.</returns>
             internal T Element<T>(string name) where T : IElement => Elements<T>().Single(e => e.Name == name);
 
-            /// <inheritdoc/>
+            /// <summary>
+            /// Closes the project, has the Messenger forget its messages (which keep their sources, the elements, and
+            /// so the project and the views on it), as the application does when it opens the next project
+            /// (MainWindow.OpenProject), and deletes the copy.
+            /// </summary>
             public void Dispose()
             {
                 Project.Close();
+                FrameworkInterfaces.Messaging.Messenger.GetInstance().Clear();
                 SQLiteConnection.ClearAllPools();
                 for (int attempt = 0; attempt < 20 && Directory.Exists(_folder); attempt++)
                 {

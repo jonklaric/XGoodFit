@@ -83,11 +83,16 @@ namespace RMC.BestFit.App.Tests.XGoodFit
             return project;
         }
 
-        /// <summary>Closes a project <see cref="Open"/> opened and deletes its copy.</summary>
+        /// <summary>
+        /// Closes a project <see cref="Open"/> opened, has the Messenger forget its messages (which keep their sources,
+        /// the elements, and so the project and the views on it), as the application does when it opens the next
+        /// project (MainWindow.OpenProject), and deletes its copy.
+        /// </summary>
         public static void Close(BestFitProject project)
         {
             string folder = Path.GetDirectoryName(project.FullFileName);
             project.Close();
+            FrameworkInterfaces.Messaging.Messenger.GetInstance().Clear();
             SQLiteConnection.ClearAllPools();
             for (int attempt = 0; attempt < 10 && Directory.Exists(folder); attempt++)
             {
