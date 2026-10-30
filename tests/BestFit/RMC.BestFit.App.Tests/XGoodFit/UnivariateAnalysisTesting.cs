@@ -74,6 +74,9 @@ namespace RMC.BestFit.App.Tests.XGoodFit
         internal static void AssertNative(Wpf.Plot plot, JsonElement capture, string label)
         {
             ((IPlotModel)plot.ActualModel).Update(true);
+            // Some exports relabel what RMC-BestFit shows (their "display corrections"): their titles aren't compared.
+            bool relabelled = capture.TryGetProperty("displayCorrections", out JsonElement corrections) && corrections.ValueKind == JsonValueKind.Array
+                && corrections.EnumerateArray().Any(c => c.GetString().Contains("labelled", StringComparison.Ordinal));
             var expectedSeries = capture.GetProperty("series").EnumerateArray().ToList();
             Assert.AreEqual(string.Join(",", expectedSeries.Select(s => s.GetProperty("name").GetString())),
                 string.Join(",", plot.Series.Select(s => s.Name)), label + ": the series");
@@ -81,7 +84,8 @@ namespace RMC.BestFit.App.Tests.XGoodFit
             {
                 string name = expected.GetProperty("name").GetString();
                 var series = plot.Series.Single(s => s.Name == name);
-                Assert.AreEqual(expected.GetProperty("Title").GetString(), series.Title, label + ": " + name + "'s title");
+                if (!relabelled)
+                    Assert.AreEqual(expected.GetProperty("Title").GetString(), series.Title, label + ": " + name + "'s title");
                 if (series is Wpf.HistogramSeries histogram)
                 {
                     // The bars the series shows: its items.
@@ -120,12 +124,21 @@ namespace RMC.BestFit.App.Tests.XGoodFit
         internal static void AssertFigure(Wpf.Plot plot, JsonElement figure, string label)
         {
             ((IPlotModel)plot.ActualModel).Update(true);
+            // A figure's display corrections can relabel a series ("... labeled X rather than Y."): it's RMC-BestFit's Y.
+            var relabelled = new Dictionary<string, string>();
+            if (figure.TryGetProperty("displayCorrections", out JsonElement corrections) && corrections.ValueKind == JsonValueKind.Array)
+                foreach (JsonElement correction in corrections.EnumerateArray())
+                {
+                    var match = System.Text.RegularExpressions.Regex.Match(correction.GetString(), @"labeled (.+) rather than (.+)\.$");
+                    if (match.Success) relabelled[match.Groups[1].Value] = match.Groups[2].Value;
+                }
+            string Title(JsonElement series) => relabelled.TryGetValue(series.GetProperty("name").GetString(), out string original) ? original : series.GetProperty("name").GetString();
             var figureSeries = figure.GetProperty("series").EnumerateArray().ToList();
-            CollectionAssert.AreEquivalent(figureSeries.Select(s => s.GetProperty("name").GetString()).ToList(),
+            CollectionAssert.AreEquivalent(figureSeries.Select(Title).ToList(),
                 plot.Series.Select(s => s.Title).ToList(), label + ": the series " + string.Join(", ", plot.Series.Select(s => s.Title)));
             foreach (JsonElement expected in figureSeries)
             {
-                string title = expected.GetProperty("name").GetString();
+                string title = Title(expected);
                 var series = plot.Series.Where(s => s.Title == title).ToList();
                 Assert.AreEqual(1, series.Count, label + ": one series titled " + title);
                 var points = Points(series[0].InternalSeries, "ActualPoints");
