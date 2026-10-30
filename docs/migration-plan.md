@@ -571,6 +571,10 @@ Sizes are relative, for one developer with AI-assisted porting: S ≈ ≤2 wk, M
 - `ExpressionControl` on AvaloniaEdit, and Calculator Help (HTML).
 
 **Progress (2026-10-30):** `ExpressionParserControls` is ported. The expression editor runs on AvaloniaEdit, colouring the same tokens as upstream's RichTextBox runs (parentheses by depth, functions with help as links), with the calculator panel and the function reference. Headless tests cover typing, paste, the buttons and errors, and the gallery's capture matches upstream's screenshot.
+- `NumericControls` has what BestFit uses: `ProbabilityOrdinatesControl`, `TimeSeriesTable` (with `MathEditorControl` and `NumericEntryDialog`), `UncertainOrderedTableEditor` and `DistributionSelectorControl`, with 46 tests and captures in three themes that match upstream's gallery (the distribution selector differs only in its unseeded sample data). Not ported (D10): the ordered and uncertain data selectors and table editors that wrap a plot, `Selector`, the selector popups (BestFit builds its own), `BivariateEmpiricalControl` and the bin definition control.
+  - Upstream bugs kept: `ExpandPlot` is never read; the math button binds to a missing `PresetsPopup`; the math popup reads "Applies to rows 0, 0." and changes nothing when value cells are selected; validation messages after the first start with a newline; an invalid distribution set from code doesn't flag its parameter cells.
+  - Found while porting, fixed in the shared grids: scroll bars were disabled in every grid, the filler header stayed with hidden column headers, wrapped headers kept a stale height, and two-way cell bindings wrote formatted (rounded) values back into the data.
+  - The time-series date column formats in the machine's culture, as upstream, while numbers use en-US (§13, with D8).
 
 **Exit:** demo-page parity and `TableViewer` edit/undo tests.
 

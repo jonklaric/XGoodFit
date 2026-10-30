@@ -240,6 +240,14 @@ Watch for others when porting:
   WPF not capturing (the colour picker, the clock).
 - **Two-way bindings:** a target set from the source property's own change handler isn't written back
   when it equals the source's old value. Write it back explicitly (see `NumericUpDown`).
+- **Lossy two-way bindings:** Avalonia writes a two-way binding's formatted value back when the data
+  context changes, so a value shown rounded loses its digits. Grid cells display through one-way
+  bindings (`DataGridDisplayBinding`); use one-way bindings wherever the display format loses
+  information.
+- **Grid themes:** set scroll bar visibility to `Auto`, WPF's default (ProDataGrid's is `Disabled`). A
+  bare `DataGrid` gets the header-height fix only once a `CopyPasteDataGrid` exists: another reason to
+  always use `CopyPasteDataGrid`. Grids laid out with unbounded height log layout-cycle warnings; that
+  is ProDataGrid's, with or without the port's code.
 - **ProDataGrid:** it moves the current cell after your KeyDown handlers have run, so react in
   `CurrentCellChanged`. It commits an edit in progress when its items source changes, so don't reset
   the items from `CellEditEnding` (see `StringListPropertyControl`).
