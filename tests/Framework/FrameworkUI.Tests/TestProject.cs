@@ -190,6 +190,9 @@ public sealed class TestElementCollection(string name, IProject project) : IElem
     /// <inheritdoc/>
     public event ElementAddedEventHandler? ElementAdded;
 
+    /// <summary>How many handlers listen to <see cref="ElementAdded"/>.</summary>
+    public int ElementAddedListeners => ElementAdded?.GetInvocationList().Length ?? 0;
+
     /// <inheritdoc/>
     public event ElementRemovedEventHandler? ElementRemoved;
 
