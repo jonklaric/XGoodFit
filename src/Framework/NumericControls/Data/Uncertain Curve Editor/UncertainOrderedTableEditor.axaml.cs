@@ -659,13 +659,14 @@ namespace NumericControls
         /// <param name="sender">The data grid that raised the event.</param>
         /// <param name="e">The mouse button event arguments.</param>
         /// <remarks>
-        /// XGoodFit port: ProDataGrid scrolls its rows itself: the empty space below the bottom row is its rows
-        /// presenter, where WPF's is the grid's ScrollViewer.
+        /// XGoodFit port: ProDataGrid scrolls its rows itself, and its rows presenter has no background: the
+        /// empty space below the bottom row is the border of the grid's template, where WPF's is the grid's
+        /// ScrollViewer.
         /// </remarks>
         private void ValidationGrid_MouseDown(object sender, PointerPressedEventArgs e)
         {
             //Exit if not clicked in empty space below bottom row.
-            if (e.OriginalSource.GetType() != typeof(DataGridRowsPresenter)) { return; }
+            if (e.OriginalSource is not Border border || border.TemplatedParent != ValidationGrid) { return; }
             //Commit edits
             ValidationGrid.CommitEdit();
             //Clear Selection

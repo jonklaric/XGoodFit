@@ -15,12 +15,13 @@ namespace NumericControls
     /// </remarks>
     internal static class CellSelection
     {
-        /// <summary>Selects <paramref name="cells"/> of <paramref name="grid"/>, and only them.</summary>
+        /// <summary>Selects <paramref name="cells"/> of <paramref name="grid"/>, and only them (each once).</summary>
         /// <param name="grid">The grid.</param>
         /// <param name="cells">The cells to select.</param>
         public static void Select(CopyPasteDataGrid grid, IEnumerable<DataGridCellInfo> cells)
         {
             var selection = new List<DataGridCellInfo>();
+            var selected = new HashSet<(int, DataGridColumn)>();
             foreach (DataGridCellInfo cell in cells)
             {
                 int row = grid.Items.IndexOf(cell.Item);
@@ -28,7 +29,7 @@ namespace NumericControls
                 {
                     row = cell.RowIndex;
                 }
-                if (row < 0 || row >= grid.Items.Count || cell.Column == null || !grid.Columns.Contains(cell.Column))
+                if (row < 0 || row >= grid.Items.Count || cell.Column == null || !grid.Columns.Contains(cell.Column) || !selected.Add((row, cell.Column)))
                 {
                     continue;
                 }

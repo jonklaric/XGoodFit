@@ -189,6 +189,7 @@ public sealed class ProbabilityOrdinatesControlTests
     // The control showing these ordinates.
     private static (Window Window, ProbabilityOrdinatesControl Control, ValidationDataGrid Grid, ProbabilityOrdinates Ordinates) ShowOrdinates(params double[] values)
     {
+        UseAppResources();
         var ordinates = new ProbabilityOrdinates(values);
         var control = new ProbabilityOrdinatesControl { ProbabilityOrdinates = ordinates };
         var window = Show(control);
