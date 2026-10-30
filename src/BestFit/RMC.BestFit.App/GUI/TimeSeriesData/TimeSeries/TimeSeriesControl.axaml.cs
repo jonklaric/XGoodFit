@@ -282,7 +282,12 @@ namespace RMC_BestFit
         /// <summary>Cached zero-thickness border for normal summary statistics rows.</summary>
         private static readonly Thickness _noBorderThickness = new Thickness(0);
         /// <summary>Cached black brush for summary statistics row separators.</summary>
-        private static readonly SolidColorBrush _borderBrush = new SolidColorBrush(Colors.Black);
+        /// <remarks>
+        /// XGoodFit port: an immutable brush. A mutable Avalonia brush belongs to the thread that made it, and this
+        /// static one is made by whichever thread first uses the class (upstream's row edit tests call its static
+        /// helpers from a test thread), so drawing it on the UI thread would fail.
+        /// </remarks>
+        private static readonly IBrush _borderBrush = new Avalonia.Media.Immutable.ImmutableSolidColorBrush(Colors.Black);
 
         #endregion
 
