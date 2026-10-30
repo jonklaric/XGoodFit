@@ -28,8 +28,10 @@ namespace WpfCompat.Data;
 /// (<see cref="BindingOperations.DoNothing"/>); any other value is an edit, converted back as usual. Values
 /// match when they're equal, are brushes or colours of the same colour, are sequences of the same
 /// numbers (dash arrays), are date-times in the same second, or are a value and its text (a text
-/// box's): the forms a target may give back what it was shown in. A shared instance would mistake one
-/// binding's echo for another's edit, hence <c>x:Shared="False"</c>.
+/// box's): the forms a target may give back what it was shown in. A target that doesn't keep a null it
+/// was shown gives back its stand-in for none, its type's default or a brush of the default colour (the
+/// colour editors' pickers, shown a plot's missing border brush), which is an echo too. A shared
+/// instance would mistake one binding's echo for another's edit, hence <c>x:Shared="False"</c>.
 /// </para>
 /// <para>
 /// WPF ignores every change its binding's target makes while the value is transferred, even to another
@@ -61,13 +63,19 @@ public sealed class TwoWayConverter : IValueConverter
     {
         // The target can echo more than once: a control that swaps the value for its own copy changes it
         // again while the first change is reported. The shown value stays until an edit replaces it.
-        if (_hasShown && SameValue(value, _shown))
+        if (_hasShown && (SameValue(value, _shown) || (_shown is null && IsDefault(value))))
         {
             return BindingOperations.DoNothing;
         }
         _hasShown = false;
         return Converter is null ? value : Converter.ConvertBack(value, targetType, parameter, culture);
     }
+
+    // Whether the value is a target's stand-in for null: its value type's default, or a brush of the default
+    // colour.
+    private static bool IsDefault(object? value) =>
+        (value is not null && value.GetType().IsValueType && value.Equals(Activator.CreateInstance(value.GetType())))
+        || (value is ISolidColorBrush && ColorOf(value) == default(Color));
 
     /// <summary>
     /// Whether a target's value is the one a binding gave it: equal, the same colour (a brush may be

@@ -38,6 +38,36 @@ public sealed class DefaultsTests
     }
 
     [TestMethod]
+    public void ControlsOutsideAWindow_HaveTheWindowsFont_SoRemovingOneChangesNoFont()
+    {
+        HeadlessSession.Run(() =>
+        {
+            // WPF's controls default to the system font, Segoe UI 12, in a window or not. Avalonia's inherit the
+            // window's and fall back to its own default, so removing a control from its window (closing a
+            // document) changed its font: a plot series reported the change, and its element's undo recorded
+            // it as an edit.
+            ThemeService.Instance.Initialize(Theme.Light);
+            var text = new TextBlock { Text = "Flood frequency" };
+            var changes = new List<string>();
+            text.PropertyChanged += (_, e) =>
+            {
+                if (e.Property.Name is "FontFamily" or "FontSize") changes.Add($"{e.Property.Name} {e.OldValue} -> {e.NewValue}");
+            };
+            Assert.AreEqual(12d, text.FontSize);
+            CollectionAssert.AreEqual(new[] { "Segoe UI", "Selawik" }, text.FontFamily.FamilyNames.ToArray());
+
+            var window = new Window { Content = text };
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+            window.Content = null;
+            Dispatcher.UIThread.RunJobs();
+            window.Close();
+
+            Assert.AreEqual(0, changes.Count, "the font changed: " + string.Join(", ", changes));
+        });
+    }
+
+    [TestMethod]
     public void ThemeFonts_RegisterTheSubstitutes_AndStandThemInForWindowsFontsOffWindows()
     {
         HeadlessSession.Run(() =>

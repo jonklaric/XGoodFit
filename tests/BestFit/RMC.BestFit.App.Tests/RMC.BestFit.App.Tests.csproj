@@ -127,6 +127,7 @@
 
   <!-- Upstream test files: Bivariate Distribution Analysis: Bivariate, Coincident Frequency. -->
   <ItemGroup>
+    <UpstreamCompileInclude Include="GUI/BivariateAnalysisControlCopulaTrackerTests.cs" />
   </ItemGroup>
 
   <!-- Upstream test files: Rating Curve Analysis. -->

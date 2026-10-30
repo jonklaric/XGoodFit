@@ -4,7 +4,8 @@
 
     WPF draws text in the system message font, Segoe UI, at 12 device-independent pixels. Avalonia's
     defaults are the platform font at 14. Segoe UI isn't installed on macOS or Linux, so they fall back
-    to Selawik, Microsoft's open-source substitute with the same metrics (upstream/Selawik).
+    to Selawik, Microsoft's open-source substitute with the same metrics (upstream/Selawik). WpfDefaults gives
+    controls the same font outside windows, as WPF's have.
 -->
 <Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -12,8 +13,8 @@
 
     <!-- :is() matches every kind of top-level window (Window, popups), not just the TopLevel type. -->
     <Style Selector=":is(TopLevel)">
-        <Setter Property="FontFamily" Value="Segoe UI, avares://Themes/Assets/Fonts#Selawik"/>
-        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="FontFamily" Value="{x:Static themes:WpfDefaults.SystemFontFamily}"/>
+        <Setter Property="FontSize" Value="{x:Static themes:WpfDefaults.SystemFontSize}"/>
     </Style>
 
     <!--
