@@ -51,17 +51,21 @@ namespace RMC.BestFit.App.Tests.XGoodFit
             _ = typeof(InputDataControl).Assembly;
             WpfTestHost.EnsureResources();
             _themeDefaults = ViewTesting.ApplyThemeDefaults();
+            _culture = ViewTesting.UseExamplesCulture();
         }
 
         /// <summary>Releases the shared resources.</summary>
         [TestCleanup]
         public void Cleanup()
         {
+            _culture?.Dispose();
             _themeDefaults?.Dispose();
             WpfTestHost.ReleaseResources();
         }
 
         private IDisposable _themeDefaults;
+
+        private IDisposable _culture;
 
         /// <summary>
         /// Showing an input data element's document and properties, every tab and plot of them, changes nothing:

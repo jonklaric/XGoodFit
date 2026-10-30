@@ -82,6 +82,22 @@ namespace RMC.BestFit.App.Tests.XGoodFit
             return new Removal(() => Application.Current.Styles.Remove(defaults));
         }
 
+        /// <summary>
+        /// Sets the thread's culture to en-US, in which the examples were saved, as the file-compatibility tests do:
+        /// upstream reads saved dates in the current culture (a project saved in en-US loses its dates in en-AU).
+        /// </summary>
+        /// <returns>Dispose it to restore the culture.</returns>
+        internal static IDisposable UseExamplesCulture()
+        {
+            System.Globalization.CultureInfo culture = System.Globalization.CultureInfo.CurrentCulture, uiCulture = System.Globalization.CultureInfo.CurrentUICulture;
+            System.Globalization.CultureInfo.CurrentCulture = System.Globalization.CultureInfo.CurrentUICulture = new System.Globalization.CultureInfo("en-US");
+            return new Removal(() =>
+            {
+                System.Globalization.CultureInfo.CurrentCulture = culture;
+                System.Globalization.CultureInfo.CurrentUICulture = uiCulture;
+            });
+        }
+
         private sealed class Removal : IDisposable
         {
             private Action _remove;

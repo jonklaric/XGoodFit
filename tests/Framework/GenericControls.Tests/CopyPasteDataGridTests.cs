@@ -160,6 +160,27 @@ public sealed class CopyPasteDataGridTests
     }
 
     [TestMethod]
+    public void AGridWithUnlimitedHeight_ShowsEveryRow_WhenItsItemsArriveAfterItsFirstLayout()
+    {
+        HeadlessSession.Run(() =>
+        {
+            // As RMC-BestFit's fitting analysis table: declared columns, in an Auto row of a scroll viewer, given its
+            // items when it has loaded. WPF's grid sizes to its rows; ProDataGrid's made none.
+            var rows = Rows(5);
+            var grid = new CopyPasteDataGrid { AutoGenerateColumns = false };
+            grid.Columns.Add(new DataGridTextColumn { Header = "Name", Width = new DataGridLength(150), Binding = new ReflectionBinding(nameof(GridRow.Name)) });
+            grid.Columns.Add(new DataGridTextColumn { Header = "Value", Width = new DataGridLength(1, DataGridLengthUnitType.Star), Binding = new ReflectionBinding(nameof(GridRow.Value)) });
+            grid.Loaded += (_, _) => grid.ItemsSource = rows;
+            var layout = new Grid { RowDefinitions = new RowDefinitions("Auto,*"), Children = { grid } };
+            var window = Show(new ScrollViewer { Content = layout });
+            Settle();
+            Assert.AreEqual(rows.Count, Avalonia.VisualTree.VisualExtensions.GetVisualDescendants(grid).OfType<DataGridRow>().Count(r => r.IsVisible), "every row is made");
+            Assert.IsTrue(grid.Bounds.Height > rows.Count * 20, "the grid is as tall as its rows: " + grid.Bounds.Height);
+            window.Close();
+        });
+    }
+
+    [TestMethod]
     public void AGeneratedColumnsStringFormat_SetWhileGenerating_IsShown_AndEditsConvertBack()
     {
         HeadlessSession.Run(() =>
