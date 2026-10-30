@@ -120,7 +120,20 @@ The cleanup checklist covers: implicit NameDialog/MessageBoxWindow styles that n
 
 ## Pending
 
-None. The reports of every porting agent that finished by 2026-10-30 are covered, including FrameworkUI's and OxyPlotControls', which arrived while this was being written. The 16 leads from the RMC.BestFit.App port's Input Data and Fitting Analysis work were added on 2026-10-31, and the 15 from its Bivariate and Time Series Data work the same day. Findings from later work can be added in the same format.
+The reports of every porting agent that finished by 2026-10-30 are covered, including FrameworkUI's and OxyPlotControls', which arrived while this was being written. The 16 leads from the RMC.BestFit.App port's Input Data and Fitting Analysis work were added on 2026-10-31, and the 15 from its Bivariate and Time Series Data work the same day.
+
+These leads, from the Univariate and Bulletin 17C port (2026-10-31), are still to be checked and written up. They'll go in with the leads of the remaining areas' ports. Paths are under `src/` at `bfce2dd`.
+
+| Lead | Where | Why it looks like a bug |
+|---|---|---|
+| B17C's penalty grids never flag invalid values | `RMC.BestFit.App/GUI/UnivariateAnalysis/B17C/B17CAnalysisPropertiesControl.xaml` lines 174-183, 201-210, 306-315, 333-342 | The multi-data triggers bind `IsMeanValid`, `IsMSEValid`, `MeanErrorMessage` and `MSEErrorMessage`, which `ParameterPenalty` and `QuantilePenalty` don't have, so the bindings fail silently. |
+| B17C's legend says "Computed" whatever the point estimator | `B17CAnalysisControl.xaml.cs` lines 446-454 and 557-562 | The table header (line 789) and summary column (line 844) say "Mean Parameters", and the Univariate view retitles its series (`UnivariateAnalysisControl.xaml.cs` line 641). |
+| B17C labels GMM results with Bayesian names | `KernelDensityControl.xaml.cs` line 387 ("Posterior Density"); `B17CAnalysisControl.xaml.cs` lines 498-508 ("Quantile Prior") | A GMM fit has no posterior or prior; the examples' own exports relabel both. |
+| The near-zero filter on uncertain and interval data is inverted | `UnivariateAnalysisControl.xaml.cs` lines 671 and 680; `B17CAnalysisControl.xaml.cs` lines 605 and 614 | `logAxis ? Series : Series.Where(x => x.Value > 1E-16)` is the opposite of the exact data's filter (lines 659 and 591), so zeros go onto log axes and are dropped from linear ones. |
+| One "Nonstationary" click makes two undo steps | `RMC.BestFit/Models/UnivariateDistribution/UnivariateDistribution.cs` lines 427-428; `RMC.BestFit.UI/Elements/UnivariateAnalysis/UnivariateAnalysis.cs` lines 1638-1656 | The setter also sets `ParameterTimeIndex`, and each notification is recorded on its own, so the first Undo leaves the model nonstationary with the old index. |
+| Bayes Example #1's walkthrough doesn't match what the app shows | the example's `bulletin-17c-bayesian-examples-moose.plotspec.json.gz` and walkthrough table | They give a 1% AEP of 5,231.9 cfs; the saved results, which 2.0.1 shows and exports, give 4,806.6 cfs. |
+
+Findings from later work can be added in the same format.
 
 ## Considered and excluded
 
