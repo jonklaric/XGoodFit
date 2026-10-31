@@ -484,6 +484,33 @@ Watch for others when porting:
 - **Settling a WPF question on Windows:** a package-free experiment works: a `net9.0-windows` console project
   in `%TEMP%` with `RollForward=Major`, a NuGet.config with no sources and `NUGET_PACKAGES` in temp uses the
   local WPF targeting pack and the 10.0 runtime.
+- **Walkthrough tests** (`XGoodFit/Walkthrough*Tests.cs`, the opt-in Walkthroughs group): each follows one
+  example's walkthrough through the main window, and `docs/walkthrough-coverage/` maps every claim to a test.
+  - `WalkthroughSession` opens one copy of an example per class, starts each test with no documents open,
+    and fails a test on any window it didn't `Expect<T>()`: a modal dialog nobody answers hangs a headless
+    test for good. Tests that change the example close the session in `finally`; tests that add elements
+    delete them with the explorer's Delete. The shell's project is a singleton: close one example before
+    opening another.
+  - Closing a document whose element changed asks to save it: answer Don't Save. Just closing the dialog
+    cancels the document's close, and a later File > Open then waits on a question nobody answers.
+  - After an Estimate in the main window, check that the document is still shown
+    (`TopLevel.GetTopLevel(view) != null`) before reading the view, then wait for the view's new list (its
+    `FrequencyCurveTable`), not the cursor: a check of the model alone passed while the document pane was
+    empty.
+  - Set `UserSettings.DefaultValueDigits = 3` after the main window opens (it loads the user's settings when
+    it's made), as Tools > Options does, so the frequency tables show the walkthroughs' rounding.
+  - Input Data's interval and threshold grids keep upstream's dummy row until their tab is first shown, as
+    in WPF: select the tab before counting rows. The Time Series table's dates are in the machine's culture
+    (NumericControls' `DateToStringConverter`, as upstream); bound fields stay en-US.
+  - When a walkthrough's value differs from the application's, the saved results and the native exports are
+    RMC-BestFit's reference. Estimate with the saved seed (MCMC 5-20 s, a bias-corrected bootstrap about
+    5 s) shows whether the saved results are what the saved settings give.
+- **Closed documents in one long-lived main window** stay alive through upstream's roots (views stay
+  subscribed to their elements; OxyPlotToolbar never detaches its annotation handlers) besides the docking
+  package's, which the port releases (`MainWindow.ReleaseClosedContent`). Long test sessions close documents
+  with `WalkthroughSession.CloseDocuments`, which releases them all.
+- **Don't build while a test run holds the test executable** (MSB3021): the run's later classes can load a
+  half-copied build.
 - **Headless time:** input is stamped with the real time, and the dispatcher's timers don't run during the
   tests' job runs. `BestFitShell.DoubleClick` therefore selects an explorer node before double-clicking it
   (a slow first press would outlast the double-click time) and lets the node's slow-click rename timer run
