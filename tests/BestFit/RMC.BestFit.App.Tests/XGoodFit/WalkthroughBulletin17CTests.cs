@@ -157,14 +157,14 @@ namespace RMC.BestFit.App.Tests.XGoodFit
             var element = Example.Element<B17CAnalysis>(expected.Name);
             var (view, properties) = Example.Open<B17CAnalysisControl, B17CAnalysisPropertiesControl>(element);
             Assert.AreEqual(saved, element.IsEstimated, expected.Name + ": a saved result");
-            // "All fourteen parent fits retain iterative GMM, BFGS, ...": settings, which an unestimated fit keeps too.
-            AssertGmmSettings(element);
             SelectTab(view, "GMM Report");
             Assert.AreEqual(saved, ReportText(view.GMMReportControl).Length > 0, expected.Name + ": a saved GMM report");
             SelectTab(view, "Distribution Results");
             Example.Estimate(view, view.FrequencyCurveTable, properties.EstimateButton, TimeSpan.FromMinutes(3));
             Assert.IsTrue(element.IsEstimated, expected.Name + ": estimated");
             Assert.AreSame(view, Example.Shown<B17CAnalysisControl, B17CAnalysisPropertiesControl>(element).View, expected.Name + ": the document's view");
+            // "All fourteen parent fits retain iterative GMM, BFGS, ...": an unestimated fit has no GMM until it runs.
+            AssertGmmSettings(element);
             AssertGmmResult(view, properties, expected);
             SelectTab(view, "GMM Report");
             AssertBootstrapReport(ReportText(view.GMMReportControl), bootstrap.Fallbacks, bootstrap.Limits, bootstrap.Clips, expected.Name);

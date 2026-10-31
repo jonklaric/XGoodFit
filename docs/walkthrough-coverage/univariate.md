@@ -178,7 +178,7 @@ examples and gives no results, settings or figures: nothing to check. Its one-da
 | Input table: the seven datasets (as in the Bayesian walkthrough); manual low-outlier thresholds of Examples 3 and 5 | `Inputs_HoldTheWalkthroughsRecords` |
 | Results table, thirteen saved fits: uncertainty method, draws, status, 1% AEP computed, limits; seed, 90% | `Analyses_ShowTheSavedResults` |
 | Iterative GMM, Success, converged within tolerance | `Analyses_ShowTheSavedResults` (GMM Report; convergence from the model) |
-| BFGS, at most 100 GMM iterations, tolerances 1e-8 | `Analyses_ShowTheSavedResults` (not shown: read from the model) |
+| BFGS, at most 100 GMM iterations, tolerances 1e-8 ("all fourteen parent fits") | `Analyses_ShowTheSavedResults` (not shown: read from the model); Example #2 - BCB's once it has run (`Example2Bcb_HasNoSavedResult_AndItsEstimateIsntTheWalkthroughs`: an unestimated fit has no GMM yet) |
 | Step 3: the BCB copies' computed curve is their parents' | `Analyses_ShowTheSavedResults` |
 | Step 2: Example #1's skew penalty, mean 0.44, MSE 0.078; no other example's | `Example1_HasTheRegionalSkewPenalty` |
 | Select Parameter: Mean (of log) (µ) in Kernel Density | `Example1_HasTheRegionalSkewPenalty` |

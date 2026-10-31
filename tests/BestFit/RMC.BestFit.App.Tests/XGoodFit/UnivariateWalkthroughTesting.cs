@@ -75,13 +75,21 @@ namespace RMC.BestFit.App.Tests.XGoodFit
                     // Upstream's Estimate button disables the main window's menus and panes while an analysis runs.
                     Application.Current!.MainWindow = Window;
                 }
+                bool done = false;
                 try
                 {
                     steps();
+                    done = true;
                 }
                 finally
                 {
-                    CloseDocuments();
+                    if (done)
+                        CloseDocuments();
+                    else
+                    {
+                        // The test's own failure is the one to report.
+                        try { CloseDocuments(); } catch (Exception) { }
+                    }
                 }
             });
         }
