@@ -452,6 +452,9 @@ Watch for others when porting:
   line annotations (a vertical line's X, a horizontal line's Y, or a sloped line's equation); dates are ISO
   strings (compare their OLE dates); bands are titled "Prediction Intervals" where the plots say "Credible
   Intervals". `RatingCurveTimeSeriesTesting.AssertWalkthroughFigure` reads all of this.
+- **Times on Linux and macOS:** ICU's en-US time format puts a narrow no-break space (U+202F) before AM and
+  PM, where Windows has a plain space. Build expected dates with the same culture (`ToString(Us)`), or replace
+  `(char)0x202F` before comparing with a literal.
 - **Undo and the fit:** a model or prior change clears the fit, and undo restores the model but not its
   results, so test result-dependent edits first.
 - **Unload and reload:** taking a window's content out and back in unloads and reloads it, as a docked

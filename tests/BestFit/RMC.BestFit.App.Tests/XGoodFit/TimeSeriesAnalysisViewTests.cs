@@ -167,7 +167,8 @@ namespace RMC.BestFit.App.Tests.XGoodFit
                     for (int column = 0; column < expected.Length; column++)
                         Assert.AreEqual(expected[column], CellText(table, i, column), $"row {i}, column {column}");
                 }
-                Assert.AreEqual("1/1/1897 12:00:00 AM", CellText(table, 0, 0), "a US date");
+                // ICU's en-US time format on Linux and macOS puts a narrow no-break space (U+202F) before AM.
+                Assert.AreEqual("1/1/1897 12:00:00 AM", CellText(table, 0, 0).Replace((char)0x202F, ' '), "a US date");
                 UnivariateAnalysisViewTests.AssertIntervalHeaders(table, element.BayesianAnalysis.CredibleIntervalWidth);
                 Assert.AreEqual("Date Time", table.Columns[0].Header);
                 Assert.AreEqual("Posterior Mean", table.Columns[4].Header);
