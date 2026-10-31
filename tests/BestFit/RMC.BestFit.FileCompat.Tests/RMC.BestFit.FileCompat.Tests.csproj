@@ -11,7 +11,10 @@
     The steps, the description and the comparison are Shared/*.cs, which the WPF tool compiles too. The
     tests are in category FileCompat and need the example projects (scripts/fetch-sample-data.sh
     RMC-BestFit). Without them every test is reported as skipped, unless XGOODFIT_REQUIRE_HECDSS=1, as in
-    CI, makes that a failure. Each test writes the port's description to artifacts/filecompat/<rid>/.
+    CI, makes that a failure. Each test writes the port's description and the file it saved to
+    artifacts/filecompat/<rid>/. ChangedFileTests saves a few examples the port changed first, under
+    changed/. tools/BestFitFileCompat.Wpf's open-saved command then opens all of them with upstream's WPF
+    RMC-BestFit (CI's file matrix, Golden/README.md).
   -->
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
