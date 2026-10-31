@@ -522,6 +522,11 @@ namespace RMC.BestFit.App.Tests.XGoodFit
                     window.DoubleClick(ElementNode.FindElementNode(inputData, node).NodeHeader);
                     Assert.AreSame(inputView, Shown<InputDataControl>(window), "the open document is activated, not opened again");
                     Assert.AreSame(inputData, Shown<InputDataPropertiesControl>(window).Element);
+                    // And at once again, faster than a user could: Avalonia would count these presses on from the last
+                    // two, which would start renaming the node (BestFitShell.DoubleClick starts a new count, and throws
+                    // if the node is renamed).
+                    window.DoubleClick(ElementNode.FindElementNode(inputData, node).NodeHeader);
+                    Assert.AreSame(inputView, Shown<InputDataControl>(window), "a second double click at once activates it too");
                     Assert.IsFalse(project.IsDirty, "showing views doesn't change the project");
 
                     // Every kind of element has its view and properties.

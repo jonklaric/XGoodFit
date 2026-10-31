@@ -449,9 +449,18 @@ namespace RMC.BestFit.App.Tests.XGoodFit
             Frame();
             Point at = visual.TranslatePoint(new Point(visual.Bounds.Width / 2, visual.Bounds.Height / 2), window)!.Value;
             window.MouseMove(at);
-            window.MouseDown(at, MouseButton.Left);
+            Press(window, at, MouseButton.Left);
             window.MouseUp(at, MouseButton.Left);
             Frame();
+        }
+
+        // Where and when these helpers last pressed a button (see DoubleClick).
+        private static (Point At, long Time) _lastPress;
+
+        private static void Press(TopLevel window, Point at, MouseButton button)
+        {
+            window.MouseDown(at, button);
+            _lastPress = (at, Environment.TickCount64);
         }
 
         /// <summary>
@@ -463,7 +472,7 @@ namespace RMC.BestFit.App.Tests.XGoodFit
             Frame();
             Point at = visual.TranslatePoint(new Point(visual.Bounds.Width / 2, visual.Bounds.Height / 2), window)!.Value;
             window.MouseMove(at);
-            window.MouseDown(at, MouseButton.Right);
+            Press(window, at, MouseButton.Right);
             window.MouseUp(at, MouseButton.Right);
             Frame();
         }
@@ -485,10 +494,15 @@ namespace RMC.BestFit.App.Tests.XGoodFit
         /// Selecting a node opens its properties, and on a busy or slower machine the first press's handlers can
         /// take longer than that. So a node that isn't selected is selected first, and its handlers run, before
         /// the double click: then the clicks are quick, as when a user double-clicks a selected node.</item>
-        /// <item>Even so, a slow runner (a garbage collection, say) can take longer than the double-click time
-        /// between the two presses. The second click is then a slow second click, which starts renaming the node
-        /// and opens nothing. The rename is left, as Escape leaves it, and the node double-clicked again (seen on
-        /// CI's macOS runner).</item>
+        /// <item>A double click is a press whose click count is 2 (WpfCompat's MouseDoubleClick, as WPF's), and
+        /// Avalonia counts on from the last press for any press within the double-click time and size (4 px) of
+        /// it. A test that double-clicks the node an earlier test (or attempt) just double-clicked, faster than a
+        /// user could, would make its third and fourth clicks, which open nothing: the second is then a slow
+        /// second click, which starts renaming the node (seen on CI's macOS runner, the fastest). So a press so
+        /// soon after one of these helpers' presses at the same place goes 6 px to the side of it, which starts
+        /// a new count.</item>
+        /// <item>Should the double click still start renaming the node (a garbage collection between the presses,
+        /// say), the rename is left, as Escape leaves it, and the node double-clicked again.</item>
         /// </list>
         /// </remarks>
         public static void DoubleClick(this TopLevel window, Visual visual)
@@ -502,13 +516,16 @@ namespace RMC.BestFit.App.Tests.XGoodFit
                 item.IsSelected = true;
                 Frame();
             }
-            Point at = visual.TranslatePoint(new Point(visual.Bounds.Width / 2, visual.Bounds.Height / 2), window)!.Value;
+            Point centre = visual.TranslatePoint(new Point(visual.Bounds.Width / 2, visual.Bounds.Height / 2), window)!.Value;
             for (int attempt = 1; ; attempt++)
             {
+                bool continuesCount = Environment.TickCount64 - _lastPress.Time < 1000
+                    && Math.Abs(_lastPress.At.X - centre.X) < 5 && Math.Abs(_lastPress.At.Y - centre.Y) < 5;
+                Point at = continuesCount ? centre + new Vector(_lastPress.At.X <= centre.X ? 6 : -6, 0) : centre;
                 window.MouseMove(at);
-                window.MouseDown(at, MouseButton.Left);
+                Press(window, at, MouseButton.Left);
                 window.MouseUp(at, MouseButton.Left);
-                window.MouseDown(at, MouseButton.Left);
+                Press(window, at, MouseButton.Left);
                 window.MouseUp(at, MouseButton.Left);
                 Frame();
                 if (item is not FrameworkUI.ProjectExplorer.Node { IsInEditMode: true } renaming)
