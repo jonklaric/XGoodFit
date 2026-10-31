@@ -167,7 +167,7 @@ namespace RMC.BestFit.App.Tests.XGoodFit
         }
 
         // The (X, Y) of a core series' points: data points or scatter points, from a property that may be protected.
-        private static List<(double X, double Y)> Points(object series, string property)
+        internal static List<(double X, double Y)> Points(object series, string property)
         {
             PropertyInfo info = null;
             for (Type type = series.GetType(); type != null && info == null; type = type.BaseType)
