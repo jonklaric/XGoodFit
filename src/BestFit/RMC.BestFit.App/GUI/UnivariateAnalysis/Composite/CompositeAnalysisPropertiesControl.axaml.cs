@@ -134,10 +134,42 @@ namespace RMC_BestFit
             newElement.PropertyChanged += thisControl.Element_PropertyChanged;
             thisControl._previousName = newElement.Name;
             thisControl.PropertyAttributes.GetClassAttributes(newElement);
-            thisControl.LoadInputData();
-            thisControl.LoadUnivariateAnalyses();
+            // XGoodFit port: without the previous element in the input data selector (see ReconcileWithoutPreviousElement).
+            thisControl.ReconcileWithoutPreviousElement(e.OldValue, () =>
+            {
+                thisControl.LoadInputData();
+                thisControl.LoadUnivariateAnalyses();
+            }, (ComboBox)((Border)thisControl.InputDataComboBox.InnerContent).Child);
             thisControl.UpdateInputDataValidationBorder();
             thisControl.SelectCurrentInputDataItem(thisControl._inputDataInnerComboBox);
+        }
+
+        /// <summary>
+        /// XGoodFit port: reconciles the source lists for a new element with the source selectors' data context gone,
+        /// so that the previous element, which their two-way bindings still have as their source until the Element
+        /// change reaches them, isn't written. When the reconciliation takes the previous project's selected input data
+        /// from the list, Avalonia's selector writes the new selection back into the previous element; WPF's binding
+        /// writes nothing into a source its path has left.
+        /// </summary>
+        /// <param name="previous">The previous element; without one, no binding has a stale source.</param>
+        /// <param name="reconcile">The reconciliation.</param>
+        /// <param name="selectors">The selectors whose selection is bound to the element's sources.</param>
+        private void ReconcileWithoutPreviousElement(object previous, Action reconcile, params ComboBox[] selectors)
+        {
+            if (previous == null)
+            {
+                reconcile();
+                return;
+            }
+            foreach (ComboBox selector in selectors) selector.DataContext = null;
+            try
+            {
+                reconcile();
+            }
+            finally
+            {
+                foreach (ComboBox selector in selectors) selector.ClearValue(DataContextProperty);
+            }
         }
 
         /// <summary>
