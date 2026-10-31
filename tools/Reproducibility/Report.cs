@@ -121,6 +121,9 @@ public sealed class Report
         md.AppendLine(HasUnexplained
             ? $"**{rows.Count(r => r.Class == ValueClass.Unexplained)} analyses are unexplained: see the notable cases.**"
             : "Nothing is unexplained.");
+        int knownCount = rows.Count(r => r.All().Any(x => x.Comparison.Class == ValueClass.Known));
+        if (knownCount > 0)
+            md.AppendLine().AppendLine($"**{knownCount} analyses differ as known upstream issues: see the notable cases.**");
         md.AppendLine();
 
         md.AppendLine("## Against the saved results");
@@ -198,6 +201,23 @@ public sealed class Report
                     foreach (Difference d in c.Unexplained.Take(NotableCount))
                         md.AppendLine($"  - {what}: `{Escape(d.Name)}` {Value(d.Left)} against {Value(d.Right)} ({Number(d.Relative)})");
             }
+            md.AppendLine();
+        }
+
+        var known = rows.Where(r => r.All().Any(x => x.Comparison.Class == ValueClass.Known)).ToList();
+        if (known.Count > 0)
+        {
+            md.AppendLine("### Known issues");
+            md.AppendLine();
+            md.AppendLine("Differences already explained as upstream issues (tools/Reproducibility/KnownIssues.cs): reported, not failed.");
+            md.AppendLine();
+            foreach (AnalysisRow row in known)
+                foreach (var (platform, issue) in row.Known)
+                {
+                    Comparison? c = row.VsBaseline.GetValueOrDefault(platform) is { Class: ValueClass.Known } b ? b : row.VsSaved.GetValueOrDefault(platform);
+                    string farthest = c?.Largest is { } d ? $": `{Escape(d.Name)}` {Value(d.Left)} against {Value(d.Right)} ({Number(d.Relative)})" : "";
+                    md.AppendLine($"- **{Escape(row.Name)}** ({Short(row.Example)}), {platform}{farthest}. See {issue}.");
+                }
             md.AppendLine();
         }
 
@@ -291,8 +311,10 @@ public sealed class Report
             // Against the saved results: only the values the project holds (some results are never saved, such as a
             // run's timings), and the rerun must have each of them.
             var saved = record.Values.Where(v => v.Saved != null).ToList();
+            string? known = KnownIssues.For(row.Example, row.Name, platform);
             row.VsSaved[platform] = Comparison.Of(Side(saved, v => v.Saved), Side(saved, v => v.Rerun),
-                d => sinceSaved.Contains(d.Name) ? ValueClass.SinceSaved : null);
+                d => sinceSaved.Contains(d.Name) ? ValueClass.SinceSaved : known != null ? ValueClass.Known : null);
+            if (known != null) row.Known[platform] = known;
         }
 
         // The saved results are read from the same file everywhere, so every run must read them alike: the stored
@@ -312,7 +334,9 @@ public sealed class Report
             foreach (var (platform, record) in records)
             {
                 if (platform == _baseline || record.Status != AnalysisStatus.Rerun || record.Values == null) continue;
-                row.VsBaseline[platform] = Comparison.Of(Side(baseline.Values, v => v.Rerun), Side(record.Values, v => v.Rerun));
+                string? known = KnownIssues.For(row.Example, row.Name, platform);
+                row.VsBaseline[platform] = Comparison.Of(Side(baseline.Values, v => v.Rerun), Side(record.Values, v => v.Rerun),
+                    d => known != null ? ValueClass.Known : null);
             }
         }
 
@@ -369,6 +393,7 @@ public sealed class Report
         public string Method { get; } = method;
         public Dictionary<string, AnalysisRecord> Records { get; } = records;
         public Dictionary<string, Comparison> VsSaved { get; } = new();
+        public Dictionary<string, string> Known { get; } = new();
         public Dictionary<string, Comparison> VsBaseline { get; } = new();
         public List<string> Problems { get; } = new();
         public ValueClass Class { get; set; }

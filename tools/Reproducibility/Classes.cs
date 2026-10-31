@@ -29,6 +29,12 @@ public enum ValueClass
     /// </summary>
     SinceSaved,
 
+    /// <summary>
+    /// Unexplained, but a known upstream issue on that platform (<see cref="KnownIssues"/>): the report names the issue,
+    /// and it doesn't fail the check. The same difference in another analysis, or on another platform, still does.
+    /// </summary>
+    Known,
+
     /// <summary>Anything else: a deterministic value farther than <see cref="Classes.Small"/> apart, a value one run has and the other hasn't, or a Monte Carlo value beyond the bound.</summary>
     Unexplained,
 }
@@ -99,6 +105,7 @@ public static class Classes
         ValueClass.Optimizer => "optimizer",
         ValueClass.MonteCarlo => "Monte Carlo",
         ValueClass.SinceSaved => "since saved",
+        ValueClass.Known => "known issue",
         _ => "unexplained",
     };
 }
