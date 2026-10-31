@@ -39,10 +39,12 @@
     <!-- The update feed: Velopack reads this repository's GitHub Releases (plan §9.3, decision D7). -->
     <XGoodFitUpdateRepository>https://github.com/jonklaric/XGoodFit</XGoodFitUpdateRepository>
     <!--
-      The application icon (.ico, up to 256 px), from which scripts/package.sh renders each OS's icons.
-      PLACEHOLDER: RMC-BestFit's own icon, until XGoodFit has one of its own.
+      The application icon (.ico, up to 256 px), from which scripts/package.sh renders each OS's icons,
+      and the same icon at 1024 px (PNG) for macOS's sizes above 256 px. tools/Branding draws both
+      (branding/README.md).
     -->
-    <XGoodFitIcon>$(UpstreamBestFitSrc)RMC.BestFit.App/Resources/BestFit_Icon.ico</XGoodFitIcon>
+    <XGoodFitIcon>$(RepositoryRoot)branding/XGoodFit.ico</XGoodFitIcon>
+    <XGoodFitLargeIcon>$(RepositoryRoot)branding/xgoodfit-1024.png</XGoodFitLargeIcon>
   </PropertyGroup>
 
 </Project>

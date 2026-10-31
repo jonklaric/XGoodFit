@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <None Include="$(XGoodFitIcon)" Link="TestData/app.ico" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="$(XGoodFitLargeIcon)" Link="TestData/app-large.png" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

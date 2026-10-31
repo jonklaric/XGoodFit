@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    XGoodFit tool: draws XGoodFit's logo concepts and its application icon (branding/README.md): each
+    drawing once, in code, rendered with SkiaSharp and written out with the same geometry as SVG.
+    Running it rewrites branding/ (from the repository root: dotnet run with project tools/Branding).
+  -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- For SkiaSharp, with its natives for every OS. -->
+    <PackageReference Include="Avalonia.Skia" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- IconSet, to read RMC-BestFit's icon for the previews. -->
+    <ProjectReference Include="../AppIcons/AppIcons.csproj" />
+  </ItemGroup>
+
+</Project>
