@@ -102,8 +102,10 @@ public static class ProjectRoundTrip
     /// <param name="store">If given, receives the content of every hashed cell (<see cref="FileDescription.Describe"/>).</param>
     /// <param name="reopenDetails">If given, receives each reopen difference with its values before and after.</param>
     /// <param name="opened">If given, receives the state the example opened to.</param>
+    /// <param name="keepAs">If given, the saved file is copied there (before it is opened again).</param>
     public static FileDescription SaveAndDescribe(string name, string example, string workRoot,
-        Action<string, byte[]>? store = null, List<string>? reopenDetails = null, Action<StateSnapshot>? opened = null)
+        Action<string, byte[]>? store = null, List<string>? reopenDetails = null, Action<StateSnapshot>? opened = null,
+        string? keepAs = null)
     {
         string copy = CopyToWorkFolder(example, workRoot);
         string folder = Path.GetDirectoryName(copy)!;
@@ -117,11 +119,12 @@ public static class ProjectRoundTrip
 
             FileDescription description = FileDescription.Describe(copy, name, folder, store);
             description.States.AddRange(openedState.GroupHashes().Select(group => new[] { group.Key, group.Value.Full, group.Value.WithoutNumbers }));
+            if (keepAs != null) Keep(copy, keepAs);
 
             BestFitProject reopened = Open(copy);
             StateSnapshot reopenedState = StateSnapshot.Take(reopened, folder);
             Close(reopened);
-            description.ReopenDifferences.AddRange(openedState.Differences(reopenedState));
+            AddReopened(description, openedState, reopenedState);
             reopenDetails?.AddRange(description.ReopenDifferences.Select(path =>
                 $"{path}: {openedState.Values.GetValueOrDefault(path, "(none)")} -> {reopenedState.Values.GetValueOrDefault(path, "(none)")}"));
             return description;
@@ -130,6 +133,30 @@ public static class ProjectRoundTrip
         {
             DeleteWorkFolder(copy);
         }
+    }
+
+    /// <summary>
+    /// Records in a description what differed between the state a project had (<paramref name="before"/>)
+    /// and the state its saved file opened to (<paramref name="after"/>): the paths, and the hashes of the
+    /// groups they belong to (<see cref="FileDescription.ReopenedStates"/>).
+    /// </summary>
+    public static void AddReopened(FileDescription description, StateSnapshot before, StateSnapshot after)
+    {
+        description.ReopenDifferences.AddRange(before.Differences(after));
+        SortedDictionary<string, (string Full, string WithoutNumbers)> beforeHashes = before.GroupHashes(), afterHashes = after.GroupHashes();
+        foreach (string group in beforeHashes.Keys.Union(afterHashes.Keys).OrderBy(g => g, StringComparer.Ordinal))
+        {
+            bool had = beforeHashes.TryGetValue(group, out var b), has = afterHashes.TryGetValue(group, out var a);
+            if (had && has && b == a) continue;
+            description.ReopenedStates.Add(has ? new[] { group, a.Full, a.WithoutNumbers } : new[] { group, "-", "-" });
+        }
+    }
+
+    /// <summary>Copies a saved project file to <paramref name="path"/>, replacing any file there.</summary>
+    public static void Keep(string file, string path)
+    {
+        Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+        File.Copy(file, path, overwrite: true);
     }
 
     /// <summary>Deletes a work folder made by <see cref="CopyToWorkFolder"/>, retrying while SQLite lets go of it.</summary>

@@ -40,8 +40,9 @@ namespace BestFitFileCompat;
 /// </para>
 /// <para>
 /// Besides the file, a description records the in-memory state: a hash per element after the project
-/// was opened (<see cref="States"/>), and what differed after the saved file was opened again
-/// (<see cref="ReopenDifferences"/>).
+/// was opened (<see cref="States"/>), what differed after the saved file was opened again
+/// (<see cref="ReopenDifferences"/>), and the hashes of the elements that differed then
+/// (<see cref="ReopenedStates"/>).
 /// </para>
 /// </remarks>
 public sealed class FileDescription
@@ -75,6 +76,22 @@ public sealed class FileDescription
     /// the group, the hash of its values, and the hash with numbers left out.
     /// </summary>
     public List<string[]> States { get; } = new();
+
+    /// <summary>
+    /// The groups whose in-memory state differed after the saved file was opened again, with the hashes
+    /// they had then (as in <see cref="States"/>; <c>-</c> for a group that was gone). Every other group
+    /// reopened to its <see cref="States"/> hash: <see cref="StatesAfterReopening"/> combines the two.
+    /// </summary>
+    public List<string[]> ReopenedStates { get; } = new();
+
+    /// <summary>The in-memory state the saved file opened to, a hash per group: <see cref="States"/> updated with <see cref="ReopenedStates"/>.</summary>
+    public List<string[]> StatesAfterReopening()
+    {
+        var reopened = ReopenedStates.ToDictionary(s => s[0], StringComparer.Ordinal);
+        var states = States.Select(s => reopened.Remove(s[0], out string[]? changed) ? changed : s).ToList();
+        states.AddRange(reopened.Values);
+        return states.Where(s => s[1] != "-").ToList();
+    }
 
     /// <summary>A fingerprint of the whole file: its pragmas, schema and every table's fingerprint.</summary>
     public string Fingerprint
@@ -343,6 +360,8 @@ public sealed class FileDescription
             writer.Write($"reopen\t{Escape(path)}\n");
         foreach (string[] state in States)
             writer.Write($"state\t{Escape(state[0])}\t{state[1]}\t{state[2]}\n");
+        foreach (string[] state in ReopenedStates)
+            writer.Write($"reopened\t{Escape(state[0])}\t{state[1]}\t{state[2]}\n");
         writer.Write("end\n");
     }
 
@@ -392,6 +411,9 @@ public sealed class FileDescription
                     break;
                 case "state":
                     description.States.Add(new[] { Unescape(fields[1]), fields[2], fields[3] });
+                    break;
+                case "reopened":
+                    description.ReopenedStates.Add(new[] { Unescape(fields[1]), fields[2], fields[3] });
                     break;
                 case "end":
                     return description;
