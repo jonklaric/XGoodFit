@@ -657,6 +657,7 @@ Each slice includes its XAML and code-behind, its share of `RMC.BestFit.App.Test
 
 ### Phase 9: Verification & release (M)
 - Numerical reproducibility report across RIDs (model tests + scoped verification runs).
+  - First finding (2026-10-31, the walkthrough tests on CI): a rerun of Example #1 - BCB, a bias-corrected bootstrap with a fixed seed, gives the same 1% AEP and limits to the digits shown on all three OSes. Its counts of replicates whose optimizer fell back differ, though: 77 on Windows (as saved by RMC-BestFit), 82 on Linux x64 and 78 on macOS arm64. .NET's maths functions come from each OS's maths library, so last-bit differences arise even between Windows and Linux on x64. The test checks the counters exactly only on Windows.
 - Visual parity sign-off (view × theme × OS).
 - **Bidirectional file matrix** (WPF 2.0.x ↔ port).
 - Performance benchmarks versus WPF: large time-series grids, MCMC plots, startup.

@@ -485,6 +485,10 @@ namespace RMC.BestFit.App.Tests.XGoodFit
         /// Selecting a node opens its properties, and on a busy or slower machine the first press's handlers can
         /// take longer than that. So a node that isn't selected is selected first, and its handlers run, before
         /// the double click: then the clicks are quick, as when a user double-clicks a selected node.</item>
+        /// <item>Even so, a slow runner (a garbage collection, say) can take longer than the double-click time
+        /// between the two presses. The second click is then a slow second click, which starts renaming the node
+        /// and opens nothing. The rename is left, as Escape leaves it, and the node double-clicked again (seen on
+        /// CI's macOS runner).</item>
         /// </list>
         /// </remarks>
         public static void DoubleClick(this TopLevel window, Visual visual)
@@ -499,14 +503,22 @@ namespace RMC.BestFit.App.Tests.XGoodFit
                 Frame();
             }
             Point at = visual.TranslatePoint(new Point(visual.Bounds.Width / 2, visual.Bounds.Height / 2), window)!.Value;
-            window.MouseMove(at);
-            window.MouseDown(at, MouseButton.Left);
-            window.MouseUp(at, MouseButton.Left);
-            window.MouseDown(at, MouseButton.Left);
-            window.MouseUp(at, MouseButton.Left);
-            Frame();
-            if (item is FrameworkUI.ProjectExplorer.Node { IsInEditMode: true })
-                throw new InvalidOperationException("The double click started renaming the explorer node instead of opening it.");
+            for (int attempt = 1; ; attempt++)
+            {
+                window.MouseMove(at);
+                window.MouseDown(at, MouseButton.Left);
+                window.MouseUp(at, MouseButton.Left);
+                window.MouseDown(at, MouseButton.Left);
+                window.MouseUp(at, MouseButton.Left);
+                Frame();
+                if (item is not FrameworkUI.ProjectExplorer.Node { IsInEditMode: true } renaming)
+                    return;
+                if (attempt == 3)
+                    throw new InvalidOperationException("The double click started renaming the explorer node instead of opening it, three times.");
+                renaming.IsInEditMode = false;
+                WaitOutRenameTimer(renaming);
+                Frame();
+            }
         }
 
         /// <summary>

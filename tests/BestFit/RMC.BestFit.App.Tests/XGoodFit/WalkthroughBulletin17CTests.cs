@@ -129,7 +129,8 @@ namespace RMC.BestFit.App.Tests.XGoodFit
         /// XGoodFit does. Its Estimate button (the saved settings: seed 12345, 1,000 replicates) gives the parent's computed
         /// 13,823.815 cfs but limits of 8,582.358-17,706.822, with 39 fallbacks, 3 evaluation-limit statuses and 10 clips,
         /// while Example #1 - BCB's gives its saved fit exactly: the bootstrap reproduces a saved run, so the walkthrough's
-        /// values come from a run the project doesn't hold. While the analysis runs its document stays shown, disabled, and
+        /// values come from a run the project doesn't hold. (On macOS and Linux the fits agree to the digits shown, but the
+        /// counters can differ: see AssertBootstrapReport.) While the analysis runs its document stays shown, disabled, and
         /// it shows the new fit when the run ends (FrameworkUI's OpenWindows.DisableAllWindows keeps the selection, as WPF's
         /// AvalonDock does). About 15 seconds.
         /// </summary>
@@ -167,7 +168,8 @@ namespace RMC.BestFit.App.Tests.XGoodFit
             AssertGmmSettings(element);
             AssertGmmResult(view, properties, expected);
             SelectTab(view, "GMM Report");
-            AssertBootstrapReport(ReportText(view.GMMReportControl), bootstrap.Fallbacks, bootstrap.Limits, bootstrap.Clips, expected.Name);
+            AssertBootstrapReport(ReportText(view.GMMReportControl), bootstrap.Fallbacks, bootstrap.Limits, bootstrap.Clips, expected.Name,
+                countersExact: OperatingSystem.IsWindows());
             Example.CloseDocuments();
         }
 
@@ -192,12 +194,24 @@ namespace RMC.BestFit.App.Tests.XGoodFit
             });
         }
 
-        private static void AssertBootstrapReport(string report, string fallbacks, string limits, string clips, string label)
+        // A report's replicates, and its counters: exactly the given ones, or, for a run on macOS or Linux (countersExact
+        // false), only written out. The counters count replicates whose optimizer took another path (a fallback, the
+        // evaluation limit, a clipped pivot), which a difference in the last bit of a result can change, and .NET's maths
+        // functions come from each OS's own maths library: a rerun of Example #1 - BCB on CI counted 82 fallbacks on Linux
+        // and 78 on macOS, where Windows, like the saved run, counts 77, while its fit agreed to the digits shown.
+        private static void AssertBootstrapReport(string report, string fallbacks, string limits, string clips, string label, bool countersExact = true)
         {
             Assert.AreEqual("1,000", ReportWord(report, "Replicates Requested:"), label + ": replicates requested");
             Assert.AreEqual("1,000", ReportWord(report, "Replicates Used:"), label + ": replicates used");
             Assert.AreEqual("0", ReportWord(report, "Substituted (parent fit):"), label + ": parent-fit substitutions");
             Assert.AreEqual("0", ReportWord(report, "Total Retries:"), label + ": retries");
+            if (!countersExact)
+            {
+                Console.WriteLine($"{label}: {ReportWord(report, "Optimizer Fallbacks:")} optimizer fallbacks (Windows: {fallbacks}), " +
+                    $"{ReportWord(report, "Maximum Evaluations:")} evaluation-limit statuses (Windows: {limits}), " +
+                    $"pivot clips {(report.Contains("Pivot z-limit Clips:", StringComparison.Ordinal) ? ReportWord(report, "Pivot z-limit Clips:") : "not reported")} (Windows: {clips ?? "not reported"})");
+                return;
+            }
             Assert.AreEqual(fallbacks, ReportWord(report, "Optimizer Fallbacks:"), label + ": optimizer fallbacks");
             Assert.AreEqual(limits, ReportWord(report, "Maximum Evaluations:"), label + ": candidate evaluation-limit statuses");
             if (clips == null)
