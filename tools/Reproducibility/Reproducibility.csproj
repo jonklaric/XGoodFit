@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    The numerical reproducibility tool (docs/reproducibility.md, docs/migration-plan.md Phase 9). `run` opens each of
+    RMC-BestFit's example projects with the port's element layer (src/BestFit/RMC.BestFit.UI, over upstream's model
+    library RMC.BestFit and RMC.Numerics compiled unchanged), estimates every analysis the project holds as estimated
+    again, with its saved settings and seed, and writes the saved and the new results as JSON. `compare` reads the
+    JSON of several machines and writes a markdown report of how far each analysis moved, against the saved results
+    and between OSes. No windows: the port's plots are Avalonia objects, so the projects are opened on the UI thread
+    of a headless Avalonia session, as the file-compatibility suite does.
+  -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia.HarfBuzz" />
+    <PackageReference Include="Avalonia.Headless" />
+    <PackageReference Include="Avalonia.Skia" />
+    <PackageReference Include="Avalonia.Themes.Simple" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../src/BestFit/RMC.BestFit.UI/RMC.BestFit.UI.csproj" />
+  </ItemGroup>
+
+</Project>
