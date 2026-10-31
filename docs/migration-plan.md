@@ -789,12 +789,23 @@ USACE is actively developing BestFit (2.0.1 shipped recently).
 | Remote access | SSH with a dedicated, revocable key; all test files live under `~/xgoodfit-dev` (private .NET SDK, no system changes) |
 | HEC-DSS .NET wrapper licence | Treat it as MIT, like the HEC-DSS C library, for now (R17) |
 
+### 12.2 Decisions of 2026-10-31
+
+| # | Decision | Answer | What it changes |
+|---|---|---|---|
+| D12 | Upstream bugs that lose data | Fix them in the port, and document every such change | The fixes (and every other deliberate difference) are listed in `docs/differences-from-rmc-bestfit.md`; upstream's other bugs stay as they are and are documented in `IssuesToRaise/` |
+| D13 | Dates in project files | A fixed format for now: what RMC-BestFit writes on a US machine (`M/d/yyyy h:mm:ss tt`, UTC) | Project and element dates load and save the same in every culture; choosing an import's date format comes after the port (§13) |
+| D14 | Icon | An XGoodFit logo broadly like RMC-BestFit's, with an X: distinct, and cross-platform | Replaces the stand-in icon in the packages and the window |
+| D15 | Upstream issues | Keep collecting them in `IssuesToRaise/`; the user contacts USACE/HEC-RMC about how to report them | Nothing is posted upstream |
+
 ---
 
 ## 13. Post-1.0 backlog
 
 - **macOS-native conventions (D4):** global menu bar (`NativeMenu`), the app menu (About, Settings, Quit), standard Mac shortcuts and window behaviour.
 - **OS locale for dates and numbers (D8), with a user override.** First test parsing and formatting under e.g. en-AU and de-DE, including grid paste and CSV import.
+- **Importing data (the user's request, 2026-10-31):** choose the date format of an imported file, and a dedicated CSV importer that selects which columns to import and their formats.
+- **A humorous title** such as "GoodEnoughFit" (the user's idea, 2026-10-31; not now).
 - **More architectures (D2):** Linux arm64 and Windows arm64, which need HEC-DSS natives for those RIDs.
 - **The rest of WPF-Framework (D10)**, reusing the BestFit lessons, for RMC-RFA, TotalRisk and LifeSim.
 - **Avalonia's native Wayland backend**, once it's no longer experimental.
