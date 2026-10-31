@@ -1,0 +1,228 @@
+name: Reproducibility
+
+# Phase 9's numerical reproducibility check (docs/reproducibility.md). On each OS, XGoodFit estimates again every
+# analysis that RMC-BestFit's example projects hold as estimated, with its saved settings and seed
+# (tools/Reproducibility); on Windows, upstream's own WPF RMC-BestFit 2.0.1 does the same (tools/BestFitFileCompat.Wpf
+# rerun). A last job compares every run with the saved results (RMC-BestFit 2.0.x, Windows), with XGoodFit's Windows
+# run, and XGoodFit with RMC-BestFit on Windows, and writes the report to the job summary and an artifact; it fails if
+# any difference is unexplained. Upstream's long verification suite runs beside them on each OS. Long, so weekly and by
+# hand, not on every push.
+
+on:
+  workflow_dispatch:
+    inputs:
+      only:
+        description: 'Re-estimate only the analyses whose "<example path> | <analysis name>" contains this (empty: all)'
+        required: false
+        default: ''
+  schedule:
+    # Mondays, 04:23 UTC.
+    - cron: '23 4 * * 1'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: reproducibility-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+  VSTEST_CONNECTION_TIMEOUT: '600'
+
+jobs:
+  # Each OS's rerun in two parts of about equal length (on a 16-thread laptop the whole took 12 minutes): the
+  # Bayesian univariate examples, and the rest. Each part writes its own JSON; the report adds them up.
+  rerun:
+    name: Re-estimate the examples (${{ matrix.platform.name }}, ${{ matrix.part.name }})
+    runs-on: ${{ matrix.platform.os }}
+    timeout-minutes: 75
+    strategy:
+      fail-fast: false
+      matrix:
+        platform:
+          - { name: windows-x64, os: windows-latest }
+          - { name: linux-x64, os: ubuntu-latest }
+          - { name: macos-arm64, os: macos-latest }
+          # GitHub's last Intel macOS image (until the macOS 15 images retire, in 2027).
+          - { name: macos-x64, os: macos-15-intel }
+        part:
+          - { name: univariate, only: '4-univariate-distribution-analysis/1-univariate-analysis/' }
+          - { name: others, only: '4-univariate-distribution-analysis/2-;4-univariate-distribution-analysis/3-;4-univariate-distribution-analysis/4-;4-univariate-distribution-analysis/5-;5-bivariate-distribution-analysis/;6-rating-curve-analysis/;7-time-series-analysis/' }
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.x'
+
+      # No HEC-DSS natives: estimating never reads a DSS file (only a time series' import does).
+      - name: Fetch sample data
+        shell: bash
+        run: bash scripts/fetch-sample-data.sh RMC-BestFit
+
+      - name: Build the reproducibility tool
+        run: dotnet build tools/Reproducibility -c Release
+
+      # A run's `only` input replaces the parts: the first part runs it, the other nothing.
+      - name: Re-estimate every estimated analysis
+        shell: bash
+        env:
+          ONLY: ${{ github.event.inputs.only }}
+          PART: ${{ matrix.part.name }}
+          PART_ONLY: ${{ matrix.part.only }}
+        run: |
+          args=()
+          if [ -n "$ONLY" ]; then
+            if [ "$PART" != univariate ]; then echo "The run's only input is rerun by the univariate part."; exit 0; fi
+            args+=(--only "$ONLY")
+          else
+            IFS=';' read -r -a parts <<< "$PART_ONLY"
+            for p in "${parts[@]}"; do args+=(--only "$p"); done
+          fi
+          dotnet run -c Release --no-build --project tools/Reproducibility -- run sample-data/RMC-BestFit/examples \
+            --out "artifacts/reproducibility/${{ matrix.platform.name }}-$PART.json" "${args[@]}"
+
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: reproducibility-${{ matrix.platform.name }}-${{ matrix.part.name }}
+          path: artifacts/reproducibility/
+          if-no-files-found: ignore
+
+  # The reference: upstream's own WPF RMC-BestFit 2.0.1 (built from upstream/, unedited) does the same on Windows, with
+  # the same files of tools/Reproducibility. XGoodFit's Windows run must equal it, value for value.
+  rmc-bestfit:
+    name: RMC-BestFit re-estimates the examples (${{ matrix.part.name }})
+    runs-on: windows-latest
+    timeout-minutes: 75
+    strategy:
+      fail-fast: false
+      matrix:
+        part:
+          - { name: univariate, only: '4-univariate-distribution-analysis/1-univariate-analysis/' }
+          - { name: others, only: '4-univariate-distribution-analysis/2-;4-univariate-distribution-analysis/3-;4-univariate-distribution-analysis/4-;4-univariate-distribution-analysis/5-;5-bivariate-distribution-analysis/;6-rating-curve-analysis/;7-time-series-analysis/' }
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Fetch sample data
+        shell: bash
+        run: bash scripts/fetch-sample-data.sh RMC-BestFit
+
+      - name: Build upstream's WPF RMC-BestFit
+        run: dotnet build tools/BestFitFileCompat.Wpf -c Release
+
+      - name: RMC-BestFit re-estimates every estimated analysis
+        shell: bash
+        env:
+          ONLY: ${{ github.event.inputs.only }}
+          PART: ${{ matrix.part.name }}
+          PART_ONLY: ${{ matrix.part.only }}
+        run: |
+          args=()
+          if [ -n "$ONLY" ]; then
+            if [ "$PART" != univariate ]; then echo "The run's only input is rerun by the univariate part."; exit 0; fi
+            args+=(--only "$ONLY")
+          else
+            IFS=';' read -r -a parts <<< "$PART_ONLY"
+            for p in "${parts[@]}"; do args+=(--only "$p"); done
+          fi
+          dotnet run -c Release --no-build --project tools/BestFitFileCompat.Wpf -- rerun sample-data/RMC-BestFit/examples \
+            "artifacts/reproducibility/windows-x64-rmc-bestfit-$PART.json" "${args[@]}"
+
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: reproducibility-rmc-bestfit-windows-x64-${{ matrix.part.name }}
+          path: artifacts/reproducibility/
+          if-no-files-found: ignore
+
+  report:
+    name: Reproducibility report
+    needs: [rerun, rmc-bestfit]
+    # Compare whatever the runs that finished wrote.
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.x'
+
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: reproducibility-*
+          path: artifacts/reproducibility
+          merge-multiple: true
+
+      - name: Build the reproducibility tool
+        run: dotnet build tools/Reproducibility -c Release
+
+      # Fails if any analysis is unexplained; the report is written either way. The summary takes the report up to its
+      # per-analysis tables (GitHub limits a step summary to 1 MiB); the artifact has all of it.
+      - name: Compare the runs with the saved results and each other
+        shell: bash
+        run: |
+          status=0
+          dotnet run -c Release --no-build --project tools/Reproducibility -- compare artifacts/reproducibility \
+            --report artifacts/reproducibility-report/report.md > /dev/null || status=$?
+          if [ -f artifacts/reproducibility-report/report.md ]; then
+            sed '/^## Against the saved results/,$d' artifacts/reproducibility-report/report.md >> "$GITHUB_STEP_SUMMARY"
+            sed -n '/^## Notable cases/,$p' artifacts/reproducibility-report/report.md >> "$GITHUB_STEP_SUMMARY"
+            echo "The per-analysis tables are in the reproducibility-report artifact." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "No report was written." >> "$GITHUB_STEP_SUMMARY"
+          fi
+          exit $status
+
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: reproducibility-report
+          path: |
+            artifacts/reproducibility-report/
+            artifacts/reproducibility/
+          if-no-files-found: ignore
+
+  # Upstream's verification suite (RMC.BestFit.Verification: the model against published results, R and Python
+  # packages, and Bulletin 17C's reference data), which takes too long for every push: in two parts, the Univariate
+  # tests (half its time) and the rest. Exclusions, if any, are documented in the script.
+  verification:
+    name: Upstream verification suite (${{ matrix.platform.name }}, ${{ matrix.part.name }})
+    runs-on: ${{ matrix.platform.os }}
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        platform:
+          - { name: windows-x64, os: windows-latest }
+          - { name: linux-x64, os: ubuntu-latest }
+          - { name: macos-arm64, os: macos-latest }
+          - { name: macos-x64, os: macos-15-intel }
+        part:
+          - { name: univariate, filter: 'FullyQualifiedName~RMC.BestFit.Verification.Univariate.' }
+          - { name: others, filter: 'FullyQualifiedName!~RMC.BestFit.Verification.Univariate.' }
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Upstream verification suite
+        shell: bash
+        run: bash scripts/run-upstream-tests.sh --verification '${{ matrix.part.filter }}'
+
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: verification-logs-${{ matrix.platform.name }}-${{ matrix.part.name }}
+          path: artifacts/logs/
+          if-no-files-found: ignore

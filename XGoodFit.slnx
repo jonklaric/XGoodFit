@@ -46,6 +46,7 @@
     <Project Path="tools/Branding/Branding.csproj" />
     <Project Path="tools/FrameworkUI.Demo/FrameworkUI.Demo.csproj" />
     <Project Path="tools/ProjectProbe/ProjectProbe.csproj" />
+    <Project Path="tools/Reproducibility/Reproducibility.csproj" />
     <Project Path="tools/ThemeGallery/ThemeGallery.csproj" />
   </Folder>
   <Folder Name="/upstream/">

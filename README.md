@@ -64,6 +64,12 @@ dotnet run --project tools/ProjectProbe/ProjectProbe.csproj -- sample-data/RMC-B
 # then the end-to-end tests: every element of every example, and the walkthroughs.
 scripts/run-app-tests.sh Release
 scripts/run-app-tests.sh Release Tour Walkthroughs
+
+# Estimate every example analysis again and compare the results with the saved ones (10 to 15
+# minutes), and run upstream's long verification suite (20 to 25 minutes): docs/reproducibility.md.
+dotnet run -c Release --project tools/Reproducibility -- run sample-data/RMC-BestFit/examples --out artifacts/reproducibility/mine.json
+dotnet run -c Release --project tools/Reproducibility -- compare artifacts/reproducibility --report artifacts/reproducibility.md
+scripts/run-upstream-tests.sh --verification
 ```
 
 ## Where the source code comes from
