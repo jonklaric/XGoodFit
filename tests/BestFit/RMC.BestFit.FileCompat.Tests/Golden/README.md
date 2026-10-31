@@ -26,6 +26,9 @@ One file per example, at the example's path plus `.txt`:
   Text with Windows line ends also has `/sha:r`, the hash of its form with "\n" line ends.
 - **`reopen`**: what differed in memory after the saved file was opened again, property by property
   (`StateSnapshot`). Upstream itself has three differences, all in one example (below).
+- **`reopened`**: the hashes (as in `state`) of the elements that differed then, so that the state RMC-BestFit's
+  own save opens to is known for every element: the `state` hashes, with these instead. One line, for that
+  example.
 - **`state`**: a hash of each element's in-memory state after the example was opened: its public
   properties, plots as their saved XML, models as their XML, MCMC results as their bytes, with text
   and XML in "\n" line ends. A second hash leaves numbers out, also those in lists.
@@ -36,20 +39,62 @@ The whole set is about 400 KB of text for 455 MB of examples; the saved database
 
 ## What the tests accept
 
-- **Everything compares exactly** on Windows: every cell, the in-memory state after opening and after
-  reopening. The port matches upstream on all 32 examples (2026-10-30).
+- **Everything compares exactly** on Windows: every cell, the in-memory state after opening, and the
+  state the saved file opens to. The port matches upstream on all 32 examples (2026-10-30, and the
+  reopened states 2026-10-31).
 - **On macOS and Linux**, the tests report and accept differences that disappear in canonical form:
   - line ends: RMC-BestFit stores `XElement.ToString()`, which ends lines with `Environment.NewLine`, so
     XML written there has "\n" where Windows has "\r\n" (3,450 text cells and 60 compressed ones here
-    have Windows line ends; those RMC-BestFit writes rather than copies change);
-  - the narrow no-break space ICU may put before AM and PM in dates (none expected: .NET normalises it);
+    have Windows line ends; the 3,258 that RMC-BestFit writes rather than copies change);
+  - the narrow no-break space ICU puts before AM and PM in en-US dates (710 dates in the examples' saves
+    on macOS and Linux; .NET on Windows writes a plain space);
   - the path separator in `Project.FullFileName`, which holds the project's own path;
   - in-memory statistics that differ only in their numbers, as each platform's maths library rounds.
 - **Compressed bytes** may differ everywhere if the runtime's zlib does, as long as what they hold doesn't.
+  So far they haven't.
 
-Each run writes the port's descriptions and a `summary.txt` to `artifacts/filecompat/<rid>/`, which CI
-uploads. When a test fails, the content of the port's differing cells is in `cells/<sha>.txt`, and the
-port's in-memory state in `<example>.state.txt`.
+Each run writes to `artifacts/filecompat/<rid>/`, which CI uploads:
+- the port's descriptions and a `summary.txt`;
+- the files it saved, beside their descriptions: `<example>` (CI's `filecompat-saved-<os>` artifact);
+- under `changed/<case>/`, the files `ChangedFileTests` changed before saving (re-estimated, edited, added
+  to). Each has its description, with the state the port had after saving, and that state's values
+  before and after reopening (`.state.txt`, `.reopened.state.txt`).
+
+When a test fails, the content of the port's differing cells is in `cells/<sha>.txt`, and the port's
+in-memory state in `<example>.state.txt`.
+
+## RMC-BestFit opens the port's files (the file matrix)
+
+`tools/BestFitFileCompat.Wpf open-saved` checks the other direction, with upstream's own WPF code. It
+opens each file the port saved, saves it again and opens that save, and compares each step with this
+folder: RMC-BestFit's save of the same example, and the state that save opens to. For the changed files
+it compares with the port's own description and state instead, value by value. Files saved on Windows
+must match exactly; from macOS and Linux the platform differences above are accepted, and reported with
+how many of them are still in RMC-BestFit's save. CI's job "RMC-BestFit opens the port's files from
+every OS" runs it for each OS's files:
+
+```sh
+dotnet run -c Release --project tools/BestFitFileCompat.Wpf -- open-saved artifacts/filecompat/win-x64 tests/BestFit/RMC.BestFit.FileCompat.Tests/Golden artifacts/filecompat-matrix/win-x64
+```
+
+Found (2026-10-31): RMC-BestFit opens every example the port saves to the state its own save opens to,
+and saves it exactly as it saves the example. That holds for the Windows files, and for macOS's and
+Linux's as simulated from their CI runs' descriptions (below). The Windows files are identical to
+RMC-BestFit's. From macOS and Linux, RMC-BestFit reads the "\n" line ends, the dates' narrow no-break
+spaces and the Unix paths, and writes none of them back. The four changed files from Windows open to
+the port's state and save unchanged.
+
+To try macOS's or Linux's files on Windows without those OSes, download that OS's `filecompat-<os>`
+artifact from a CI run, and rewrite the port's Windows saves into what it describes. `simulate` checks
+that every cell then matches, and fails if one doesn't:
+
+```sh
+dotnet run -c Release --project tools/BestFitFileCompat.Wpf -- simulate artifacts/filecompat/win-x64 <download>/linux-x64 artifacts/filecompat-sim/linux-x64
+dotnet run -c Release --no-build --project tools/BestFitFileCompat.Wpf -- open-saved artifacts/filecompat-sim/linux-x64 tests/BestFit/RMC.BestFit.FileCompat.Tests/Golden artifacts/filecompat-matrix/linux-x64
+```
+
+The changed files can't be simulated (their results are computed on each OS), so only CI checks
+those from macOS and Linux.
 
 ## Regenerating
 

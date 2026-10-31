@@ -540,7 +540,15 @@ Watch for others when porting:
   project with the port and compares each saved file, cell by cell, with what upstream's WPF
   RMC-BestFit saves (golden data from `tools/BestFitFileCompat.Wpf`, Windows only; see its
   `Golden/README.md` to regenerate). XML that RMC-BestFit stores has the OS's line ends, so cross-OS
-  comparisons normalise them. To build a WPF reference tool, compile shared source into both it and the
+  comparisons normalise them. The suite keeps every file it saves beside its description
+  (`artifacts/filecompat/<rid>/`), with four it changed first (`ChangedFileTests`, under `changed/`).
+  Upstream's WPF RMC-BestFit then opens, saves and reopens them (`tools/BestFitFileCompat.Wpf open-saved`, CI's
+  file-matrix job). Files from Windows must match exactly. Elsewhere, line ends, dates' narrow no-break
+  spaces, `FullFileName`'s separator and last-bit numbers are accepted, and RMC-BestFit's save removes all
+  of them. A change to what the port writes, such as D13's date format, must keep that job green. To try
+  macOS's or Linux's files on Windows, `simulate` rewrites the Windows saves from that OS's CI
+  descriptions. A new changed-file case needs only an `Apply` and a `Check`. Its `Unsaved` list names what
+  upstream's elements don't save. To build a WPF reference tool, compile shared source into both it and the
   tests, build the upstream WPF project in place with `AdditionalProperties` and
   `DisableTransitiveProjectReferences`, and give builds with other global properties their own
   `--artifacts-path`.
