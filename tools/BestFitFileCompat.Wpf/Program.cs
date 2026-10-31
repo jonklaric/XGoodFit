@@ -36,6 +36,10 @@ public static class Program
         "  BestFitFileCompat.Wpf simulate <port's saved files on Windows> <another OS's descriptions> <output folder> [--only TEXT]\n" +
         "      Rewrites the port's Windows saves as the port saved them on another OS, from that OS's\n" +
         "      descriptions (a CI run's artifacts/filecompat/<rid>), to try open-saved on them here.\n" +
+        "  BestFitFileCompat.Wpf rerun <examples folder> <run file.json> [--only TEXT]... [--limit MINUTES]\n" +
+        "      Estimates every analysis the examples hold as estimated again, with upstream's WPF RMC.BestFit.UI,\n" +
+        "      and writes the saved and the new results as tools/Reproducibility's run does with the port\n" +
+        "      (docs/reproducibility.md), for its compare step.\n" +
         "Every command runs in the en-US culture, the examples', unless --culture NAME names another.";
 
     /// <summary>Runs a command (see <see cref="Usage"/>).</summary>
@@ -59,6 +63,7 @@ public static class Program
             "state" => State(args[1], args[2], only),
             "open-saved" when args.Length >= 4 => OpenSaved.Run(args[1], args[2], args[3], Option(args, "--rid"), only),
             "simulate" when args.Length >= 4 => Simulate.Run(args[1], args[2], args[3], only),
+            "rerun" => Rerun.Run(args[1], args[2], Options(args, "--only"), TimeSpan.FromMinutes(double.Parse(Option(args, "--limit") ?? "10", CultureInfo.InvariantCulture))),
             _ => Fail(Usage),
         };
     }
@@ -221,6 +226,10 @@ public static class Program
         int index = Array.IndexOf(args, name);
         return index >= 0 && index + 1 < args.Length ? args[index + 1] : null;
     }
+
+    // Every value of an option that may be given several times.
+    private static string[] Options(string[] args, string name) =>
+        Enumerable.Range(0, args.Length - 1).Where(i => args[i] == name).Select(i => args[i + 1]).ToArray();
 
     private static int Fail(string message)
     {

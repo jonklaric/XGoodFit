@@ -8,7 +8,9 @@
     The steps, the description and the comparison are the tests' own Shared/*.cs files, compiled here too.
     It also checks the other direction (docs/migration-plan.md, Phase 9): open-saved opens the files the
     port saved on each OS with the same upstream code (OpenSaved.cs), and simulate makes macOS's and
-    Linux's from the Windows ones to try that here (Simulate.cs).
+    Linux's from the Windows ones to try that here (Simulate.cs). And for the reproducibility check
+    (docs/reproducibility.md), rerun estimates the examples' analyses again with the same upstream code,
+    as tools/Reproducibility does with the port, with that tool's own files (Rerun.cs).
 
     Upstream's project builds as upstream's does, against the RMC.Wpf.Framework.* 1.0.5 packages from
     nuget.org (upstream/RMC-BestFit/Directory.Packages.props). Two inputs come from XGoodFit:
@@ -40,10 +42,20 @@
 
   <ItemGroup>
     <Compile Include="../../tests/BestFit/RMC.BestFit.FileCompat.Tests/Shared/*.cs" LinkBase="Shared" />
+    <Compile Include="../Reproducibility/Records.cs;../Reproducibility/Classes.cs;../Reproducibility/Extract.cs;../Reproducibility/Runner.cs;../Reproducibility/Skips.cs"
+             LinkBase="Reproducibility" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="$(UpstreamBestFitSrc)RMC.BestFit.UI/RMC.BestFit.UI.csproj"
+                      AdditionalProperties="HecDssAssemblyPath=$(HecDssAssemblyPath)" />
+    <!--
+      The model library and Numerics, which the reproducibility files read results from. With the same property as
+      RMC.BestFit.UI's own references to them, so each is still built once.
+    -->
+    <ProjectReference Include="$(UpstreamBestFitSrc)RMC.BestFit/RMC.BestFit.csproj"
+                      AdditionalProperties="HecDssAssemblyPath=$(HecDssAssemblyPath)" />
+    <ProjectReference Include="$(UpstreamRoot)Numerics/Numerics/Numerics.csproj"
                       AdditionalProperties="HecDssAssemblyPath=$(HecDssAssemblyPath)" />
     <!-- Only so that restoring this project restores Hec.Dss too; upstream's reference brings its assembly. -->
     <ProjectReference Include="$(HecDssProject)" ReferenceOutputAssembly="false" />
