@@ -86,9 +86,20 @@ product (`XGoodFit.exe`), which shortcuts and the file association use.
 | `XGoodFitAppId` (`io.github.jonklaric.xgoodfit`) | Velopack pack ID, macOS bundle ID, Windows install folder, `.bestfit`'s ProgID and UTI, Linux desktop entry and icon names |
 | `Version` | Package version (SemVer 2); a release tag must be `v` + it |
 | `XGoodFitUpdateRepository` | The GitHub repository whose releases are the update feed |
-| `XGoodFitIcon` | The icon, an `.ico` with sizes up to 256 px: Windows uses it as it is; `tools/AppIcons` renders the macOS `.icns` and the Linux PNGs from it |
+| `XGoodFitIcon` (`branding/XGoodFit.ico`) | The icon, an `.ico` with sizes up to 256 px: Windows uses it as it is; `tools/AppIcons` renders the macOS `.icns` and the Linux PNGs from it |
+| `XGoodFitLargeIcon` (`branding/xgoodfit-1024.png`) | The icon at 1024 px, for the `.icns`'s 512 and 1024 px sizes, which an `.ico` can't hold (optional: without it the `.icns` stops at 256 px) |
 
-**The icon is a placeholder:** RMC-BestFit's own (`BestFit_Icon.ico`), until XGoodFit has one.
+The icon is XGoodFit's own, drawn by `tools/Branding`: see [branding/README.md](../branding/README.md).
+So each OS gets it this way:
+
+| OS | Where the icon comes from |
+|---|---|
+| Windows | `XGoodFit.ico` as it is: the executable's icon (`ApplicationIcon`), which its shortcuts show, and `Setup.exe`'s (`vpk --icon`) |
+| macOS | `app.icns`, which `tools/AppIcons` makes: 16 to 256 px from `XGoodFit.ico`, 512 and 1024 px from `xgoodfit-1024.png`; Velopack puts it in the bundle (`XGoodFit.icns`, `CFBundleIconFile`) |
+| Linux | `tools/AppIcons`' PNGs from `XGoodFit.ico` (16 to 256 px), in the AppImage's and the tarball's `share/icons/hicolor/<size>/apps/io.github.jonklaric.xgoodfit.png`, and the 256 px one as the AppImage's own icon |
+
+The application shows it too (`XGoodFitIcon` is an Avalonia resource of `RMC.BestFit.App` and
+`RMC.BestFit.UI`): as the main window's icon (the project's image, as upstream's) and in the About box.
 
 ## `.bestfit` files
 

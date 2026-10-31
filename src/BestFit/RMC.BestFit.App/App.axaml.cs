@@ -54,8 +54,8 @@ namespace RMC_BestFit
         /// <inheritdoc/>
         /// <remarks>
         /// XGoodFit port: App.xaml's BestFit and USACE pictures are added here, as bitmaps. BestFit is the
-        /// application's icon (XGoodFitIcon in Directory.Build.props, RMC-BestFit's until XGoodFit has
-        /// its own), so the About box shows the application's own.
+        /// application's icon (XGoodFitIcon in Directory.Build.props: XGoodFit's own, not RMC-BestFit's),
+        /// so the About box shows the application's own.
         /// </remarks>
         public override void Initialize()
         {

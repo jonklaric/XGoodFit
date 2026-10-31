@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="XGoodFit.Platform.Tests" />
+    <InternalsVisibleTo Include="Branding" />
   </ItemGroup>
 
 </Project>

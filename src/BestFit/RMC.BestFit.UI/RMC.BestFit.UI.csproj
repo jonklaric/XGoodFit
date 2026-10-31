@@ -41,8 +41,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- The project icon (BestFitProject.ProjectImage). -->
-    <AvaloniaResource Include="$(UpstreamProjectDir)Resources/BestFit_Icon.ico" Link="Resources/BestFit_Icon.ico" />
+    <!--
+      The project icon (BestFitProject.ProjectImage), which is also the main window's icon: the
+      application's icon (XGoodFitIcon), as upstream's is RMC-BestFit's own.
+    -->
+    <AvaloniaResource Include="$(XGoodFitIcon)" Link="Resources/BestFit_Icon.ico" />
   </ItemGroup>
 
 </Project>

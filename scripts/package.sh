@@ -106,17 +106,20 @@ read_properties() {
 }
 
 echo "==> Reading $app"
-read_properties Version AssemblyName XGoodFitProductName XGoodFitAppId XGoodFitIcon Company Copyright VelopackVersion
+read_properties Version AssemblyName XGoodFitProductName XGoodFitAppId XGoodFitIcon XGoodFitLargeIcon Company Copyright VelopackVersion
 version="${version:-$prop_Version}"
 product="$prop_XGoodFitProductName"
 app_id="$prop_XGoodFitAppId"
 assembly_name="$prop_AssemblyName"
 icon="$prop_XGoodFitIcon"
+large_icon="$prop_XGoodFitLargeIcon"
 [ "$host_os" != win ] || icon="$(cygpath -u "$icon")"
+[ "$host_os" != win ] || [ -z "$large_icon" ] || large_icon="$(cygpath -u "$large_icon")"
 for value in "$version" "$product" "$app_id" "$assembly_name" "$icon"; do
   [ -n "$value" ] || die "a branding property is empty: check Directory.Build.props and $app"
 done
 [ -f "$icon" ] || die "no icon at $icon (XGoodFitIcon)"
+[ -z "$large_icon" ] || [ -f "$large_icon" ] || die "no large icon at $large_icon (XGoodFitLargeIcon)"
 case "$product$prop_Copyright$prop_Company" in *[\<\>\&\|\\]*) die "the product name, copyright and company can't contain < > & | or \\" ;; esac
 # MAJOR.MINOR.PATCH, for macOS's bundle versions.
 short_version="$(printf '%s\n' "$version" | sed -n 's/^\([0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\).*$/\1/p')"
@@ -156,12 +159,15 @@ fill_template() {
 }
 
 # The icons macOS and Linux need, rendered from the .ico (tools/AppIcons): app.icns and <size>.png.
+# The large icon, if any, gives the .icns its sizes above the .ico's 256 px (512 and 1024 px).
 icons=""
 render_icons() {
   [ -z "$icons" ] || return 0
   icons="$root/artifacts/package-build/icons"
   rm -rf "$icons"
-  dotnet run --project tools/AppIcons/AppIcons.csproj -c Release -- "$(native_path "$icon")" "$(native_path "$icons")"
+  set -- "$(native_path "$icon")" "$(native_path "$icons")"
+  [ -z "$large_icon" ] || set -- "$@" "$(native_path "$large_icon")"
+  dotnet run --project tools/AppIcons/AppIcons.csproj -c Release -- "$@"
 }
 
 # The newest minimum macOS version among the application's binaries: the bundle's minimum.

@@ -184,7 +184,7 @@
   <ItemGroup>
     <!--
       App.xaml's BestFit and USACE pictures. BestFit is the application's icon (XGoodFitIcon), which the
-      About box shows; upstream's is RMC-BestFit's own, which XGoodFitIcon is until XGoodFit has one.
+      About box shows: XGoodFit's own, where upstream's is RMC-BestFit's.
     -->
     <AvaloniaResource Include="$(XGoodFitIcon)" Link="Resources/BestFit_Icon.ico" />
     <AvaloniaResource Include="$(UpstreamProjectDir)Resources/USACE.png" Link="Resources/USACE.png" />

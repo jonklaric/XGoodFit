@@ -4,28 +4,34 @@ using SkiaSharp;
 
 namespace AppIcons;
 
-// Usage: AppIcons <icon.ico> <output folder>
+// Usage: AppIcons <icon.ico> <output folder> [<large icon.png>]
 //   Writes <folder>/app.icns (macOS) and <folder>/<size>.png for each of IconSet.LinuxSizes (Linux).
 //   Each size comes from the icon's own image of that size where it has one, else it's scaled down
-//   from the next larger. Nothing is scaled up: sizes above the icon's largest image are left out.
+//   from the next larger. An .ico holds up to 256 px: the large icon, a square PNG larger than that,
+//   gives the sizes above (macOS's 512 and 1024 px). Nothing is scaled up: sizes above the largest
+//   image are left out.
 internal static class Program
 {
     public static int Main(string[] args)
     {
-        if (args.Length != 2)
+        if (args.Length is not (2 or 3))
         {
-            Console.Error.WriteLine("Usage: AppIcons <icon.ico> <output folder>");
+            Console.Error.WriteLine("Usage: AppIcons <icon.ico> <output folder> [<large icon.png>]");
             return 2;
         }
 
         try
         {
             using IconSet icon = IconSet.Load(File.ReadAllBytes(args[0]));
+            if (args.Length == 3)
+                icon.AddLarger(File.ReadAllBytes(args[2]));
             Directory.CreateDirectory(args[1]);
-            foreach (int size in IconSet.LinuxSizes.Where(size => size <= icon.LargestSize))
+            int[] pngs = IconSet.LinuxSizes.Where(size => size <= icon.LargestSize).ToArray();
+            foreach (int size in pngs)
                 File.WriteAllBytes(Path.Combine(args[1], $"{size}.png"), icon.ToPng(size));
             File.WriteAllBytes(Path.Combine(args[1], "app.icns"), icon.ToIcns());
-            Console.WriteLine($"{args[1]}: app.icns and PNGs up to {icon.LargestSize} px, from {Path.GetFileName(args[0])} ({string.Join(", ", icon.Sizes)} px)");
+            int icns = IconSet.IcnsEntries.Where(entry => entry.Size <= icon.LargestSize).Max(entry => entry.Size);
+            Console.WriteLine($"{args[1]}: app.icns up to {icns} px and PNGs up to {pngs.Max()} px, from {string.Join(" and ", args.Skip(2).Prepend(args[0]).Select(Path.GetFileName))} ({string.Join(", ", icon.Sizes)} px)");
             return 0;
         }
         catch (Exception e) when (e is InvalidDataException or IOException)
@@ -102,6 +108,23 @@ internal sealed class IconSet : IDisposable
         BinaryPrimitives.WriteUInt32LittleEndian(single.AsSpan(6 + 12), 22);
         data.CopyTo(single, 22);
         return SKBitmap.Decode(single);
+    }
+
+    /// <summary>
+    /// Adds a square PNG image larger than the icon's own, for the sizes above them: an .ico holds
+    /// up to 256 px, macOS's icons go up to 1024 px.
+    /// </summary>
+    public void AddLarger(byte[] png)
+    {
+        SKBitmap image = (png.AsSpan().StartsWith(PngSignature) ? SKBitmap.Decode(png) : null)
+            ?? throw new InvalidDataException("The large icon isn't a PNG image.");
+        if (image.Width != image.Height || image.Width <= LargestSize)
+        {
+            string size = $"{image.Width}x{image.Height}";
+            image.Dispose();
+            throw new InvalidDataException($"The large icon is {size}: it must be square, and larger than the icon's {LargestSize} px.");
+        }
+        _images.Add(image.Width, image);
     }
 
     /// <summary>The image of a size as a PNG file: the icon's own, or scaled down from the next larger.</summary>
