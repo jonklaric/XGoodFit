@@ -32,8 +32,7 @@ namespace RMC.BestFit.App.Tests.GUI;
 /// XGoodFit port of upstream's GUI/PointEstimatorControlContractTests.cs, run against the Avalonia views: controls
 /// are Avalonia's (FindName is FindControl, the Loaded and Unloaded events are Control's), the summary column is
 /// found by position (Avalonia's XAML can't name a grid column), and the selector's item is selected, as a click
-/// does (setting SelectedValue raises SelectionChanged before the two-way binding writes back). The families whose
-/// views aren't ported yet (Mixture, Point Process, Composite, Rating Curve) are left out until they are.
+/// does (setting SelectedValue raises SelectionChanged before the two-way binding writes back).
 /// </para>
 /// </remarks>
 [TestClass]
@@ -52,11 +51,9 @@ public class PointEstimatorControlContractTests
     [STATestMethod]
     [DataRow("Univariate")]
     [DataRow("Nonstationary")]
-    // XGoodFit port: add them back with their views.
     [DataRow("Mixture")]
     [DataRow("PointProcess")]
     [DataRow("SeasonalPointProcess")]
-    //
     [DataRow("Composite")]
     [DataRow("B17C")]
     [DataRow("Bivariate")]

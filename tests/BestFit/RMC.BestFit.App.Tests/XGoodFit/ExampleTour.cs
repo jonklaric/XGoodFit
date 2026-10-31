@@ -23,7 +23,7 @@ namespace RMC.BestFit.App.Tests.XGoodFit
     /// on its node opens its document, with its properties beside it; every tab of both is shown; the window is
     /// captured to artifacts/screenshots/examples/&lt;example&gt;/; and the document is closed again. Looking
     /// changes nothing: no element becomes dirty, gains an undo step or loses its estimate, the Message Window
-    /// gains no errors, and no dialog opens. Views not ported yet (placeholders) are skipped and listed.
+    /// gains no errors, and no dialog opens.
     /// </summary>
     /// <remarks>
     /// The test classes, ExampleTour*Tests (one per group of examples, in category Examples), run with the Tour
@@ -34,17 +34,9 @@ namespace RMC.BestFit.App.Tests.XGoodFit
         /// <summary>The test category of the tour's tests.</summary>
         public const string Category = "Examples";
 
-        /// <summary>The file in artifacts/logs/app-tests/ that lists the elements skipped because they aren't ported yet.</summary>
-        public const string NotPortedFile = "tour-not-ported.txt";
-
-        /// <summary>The text of a view that isn't ported yet (GUI/Support/PortPlaceholder.cs).</summary>
-        private const string PlaceholderText = "isn't ported to XGoodFit yet";
-
         /// <summary>Tours the example project named <paramref name="example"/>.</summary>
-        /// <returns>The elements whose views aren't ported yet, by name.</returns>
-        public static IReadOnlyList<string> Run(string example)
+        public static void Run(string example)
         {
-            var skipped = new List<string>();
             BestFitShell.Start();
             MainWindow window = null;
             try
@@ -54,10 +46,7 @@ namespace RMC.BestFit.App.Tests.XGoodFit
                 var elements = project.ElementCollections.SelectMany(collection => collection.ToList()).ToList();
                 Assert.AreNotEqual(0, elements.Count, example + " has elements");
                 for (int i = 0; i < elements.Count; i++)
-                {
-                    if (!Visit(window, node, elements[i], example, i + 1))
-                        skipped.Add(elements[i].Name);
-                }
+                    Visit(window, node, elements[i], example, i + 1);
                 Assert.IsFalse(project.IsDirty, example + ": touring it changed nothing");
             }
             finally
@@ -66,22 +55,10 @@ namespace RMC.BestFit.App.Tests.XGoodFit
                 // The shell clears the Message Window when it opens a project (MainWindow.OpenProject).
                 Messenger.GetInstance().Clear();
             }
-            if (skipped.Count > 0)
-            {
-                // The test platform shows passing tests' output only on request, so the list goes to a file that
-                // scripts/run-app-tests.sh prints after the tour.
-                string line = $"{example}: not ported yet, skipped: {string.Join(", ", skipped)}";
-                Console.WriteLine(line);
-                string logs = Path.Combine(BestFitShell.RepositoryRoot, "artifacts", "logs", "app-tests");
-                Directory.CreateDirectory(logs);
-                File.AppendAllText(Path.Combine(logs, NotPortedFile), line + Environment.NewLine);
-            }
-            return skipped;
         }
 
         /// <summary>Opens one element's document and properties, shows their tabs, captures them and closes them.</summary>
-        /// <returns>False when its view isn't ported yet.</returns>
-        private static bool Visit(MainWindow window, MainProjectNode node, IElement element, string example, int index)
+        private static void Visit(MainWindow window, MainProjectNode node, IElement element, string example, int index)
         {
             string name = example + ": " + element.Name;
             bool? estimated = Estimated(element);
@@ -105,17 +82,13 @@ namespace RMC.BestFit.App.Tests.XGoodFit
             Assert.IsNotNull(document, name + ": its document opened");
             var view = (Control)document.Content;
 
-            bool ported = !Shows(view, PlaceholderText);
-            if (ported)
-            {
-                ShowEveryTab(view);
-                Control properties = PropertiesPane(window)?.Content as Control;
-                Assert.IsNotNull(properties, name + ": its properties are shown");
-                Assert.AreSame(element, node.GetControlElement(properties), name + ": the properties are its own");
-                ShowEveryTab(properties);
-                Directory.CreateDirectory(Path.Combine(BestFitShell.RepositoryRoot, "artifacts", "screenshots", "examples", example));
-                BestFitShell.Capture(window, $"examples/{example}/{index:00}-{FileName(element.Name)}");
-            }
+            ShowEveryTab(view);
+            Control properties = PropertiesPane(window)?.Content as Control;
+            Assert.IsNotNull(properties, name + ": its properties are shown");
+            Assert.AreSame(element, node.GetControlElement(properties), name + ": the properties are its own");
+            ShowEveryTab(properties);
+            Directory.CreateDirectory(Path.Combine(BestFitShell.RepositoryRoot, "artifacts", "screenshots", "examples", example));
+            BestFitShell.Capture(window, $"examples/{example}/{index:00}-{FileName(element.Name)}");
 
             document.Close();
             BestFitShell.Frame();
@@ -128,7 +101,6 @@ namespace RMC.BestFit.App.Tests.XGoodFit
             Assert.AreEqual(estimated, Estimated(element), name + " is as estimated as it was");
             var errors = messenger.AllMessageItems().Where(m => m.Type == MessageType.Error && !errorsBefore.Contains(m)).ToList();
             Assert.AreEqual(0, errors.Count, name + ": no new errors, but " + string.Join(" | ", errors.Select(m => m.Description)));
-            return ported;
         }
 
         /// <summary>
@@ -154,10 +126,6 @@ namespace RMC.BestFit.App.Tests.XGoodFit
                 tabs.SelectedItem = item;
             BestFitShell.Frame();
         }
-
-        /// <summary>Whether a text block under <paramref name="root"/> shows <paramref name="text"/>.</summary>
-        private static bool Shows(Control root, string text) =>
-            root.GetVisualDescendants().OfType<TextBlock>().Any(block => block.Text?.Contains(text, StringComparison.Ordinal) == true);
 
         /// <summary>An analysis element's IsEstimated, or null for elements without one.</summary>
         private static bool? Estimated(IElement element) =>

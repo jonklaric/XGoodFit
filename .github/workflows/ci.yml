@@ -132,11 +132,12 @@ jobs:
           path: artifacts/logs/
           if-no-files-found: ignore
 
-  # The example tour (XGoodFit/ExampleTour*Tests.cs): every element of each of RMC-BestFit's 32 example
-  # projects opened through the main window, as a user does, changing nothing. A job of its own, so it
-  # runs beside the portable layer. Its screenshots show each OS's rendering of every view.
+  # The end-to-end tests: the example tour (XGoodFit/ExampleTour*Tests.cs, every element of each of
+  # RMC-BestFit's 32 example projects opened through the main window, changing nothing) and the
+  # walkthroughs (XGoodFit/Walkthrough*Tests.cs, each example's walkthrough followed step by step). A job
+  # of its own, so it runs beside the portable layer. Its screenshots show each OS's rendering of every view.
   example-tour:
-    name: Example tour (${{ matrix.name }})
+    name: Examples end to end (${{ matrix.name }})
     runs-on: ${{ matrix.os }}
     timeout-minutes: 90
     strategy:
@@ -165,9 +166,9 @@ jobs:
       - name: Build the application's tests
         run: dotnet build tests/BestFit/RMC.BestFit.App.Tests -c Release
 
-      - name: Example tour
+      - name: Example tour and walkthroughs
         shell: bash
-        run: bash scripts/run-app-tests.sh Release Tour
+        run: bash scripts/run-app-tests.sh Release Tour Walkthroughs
 
       - uses: actions/upload-artifact@v7
         if: always()

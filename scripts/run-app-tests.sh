@@ -7,11 +7,13 @@
 # are left out, as dotnet test leaves them out. Used by CI; dotnet test skips the project when
 # -p:XGoodFitAppTestsInScript=true is passed. Build first. Logs go to artifacts/logs/app-tests/.
 #
-# The example tour (XGoodFit/ExampleTour*Tests.cs: every element of every example project, through the
-# main window) runs only when asked for, with the group Tour or a tour class's name.
+# Two kinds of end-to-end class run only when asked for, with their group's name or the class's: the
+# example tour (Tour: XGoodFit/ExampleTour*Tests.cs, every element of every example project through the
+# main window) and the walkthroughs (Walkthroughs: XGoodFit/Walkthrough*Tests.cs, each example's
+# walkthrough followed step by step). CI runs both in a job of their own.
 #
 # Usage: scripts/run-app-tests.sh [configuration [group...]], where a group is one of those classes,
-# Others or Tour; by default, every group but the tour.
+# Others, Tour or Walkthroughs; by default, every group but Tour and Walkthroughs.
 set -uo pipefail
 
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -35,7 +37,7 @@ failed=0
 ran=0
 retried=""
 
-# Whether a group runs: it's named, or no group is named (the tour runs only when named).
+# Whether a group runs: it's named, or no group is named (the end-to-end groups run only when named).
 wanted() { [[ "$selected" == "  " || "$selected" == *" $1 "* ]]; }
 
 # Runs one group in its own process. A third argument allows that many attempts in all, for a known
@@ -70,6 +72,7 @@ run() {
 # XGoodFit's test classes, one process each. A file is a class of the same name.
 rest="TestCategory!=External"
 tour=""
+walkthroughs=""
 for file in "$project"/XGoodFit/*Tests.cs "$project"/XGoodFit/*Captures.cs; do
   [[ -f "$file" ]] || continue
   class="$(basename "$file" .cs)"
@@ -77,6 +80,10 @@ for file in "$project"/XGoodFit/*Tests.cs "$project"/XGoodFit/*Captures.cs; do
   rest+="&FullyQualifiedName!~.XGoodFit.$class."
   if [[ "$class" == ExampleTour* ]]; then
     tour+=" $class"
+    continue
+  fi
+  if [[ "$class" == Walkthrough* ]]; then
+    walkthroughs+=" $class"
     continue
   fi
   wanted "$class" && run "$class" "FullyQualifiedName~.XGoodFit.$class.&TestCategory!=External"
@@ -100,15 +107,13 @@ done
 # Everything else: upstream's tests (support classes and ported copies), which are light.
 wanted Others && run "Others" "$rest"
 
-# The example tour, when asked for. It lists the elements whose views aren't ported yet.
-rm -f "$logs/tour-not-ported.txt"
+# The end-to-end groups, when asked for.
 for class in $tour; do
   [[ "$selected" == *" Tour "* || "$selected" == *" $class "* ]] && run "$class" "FullyQualifiedName~.XGoodFit.$class."
 done
-if [[ -f "$logs/tour-not-ported.txt" ]]; then
-  echo "The tour skipped these elements, whose views aren't ported yet:"
-  sed 's/^/    /' "$logs/tour-not-ported.txt"
-fi
+for class in $walkthroughs; do
+  [[ "$selected" == *" Walkthroughs "* || "$selected" == *" $class "* ]] && run "$class" "FullyQualifiedName~.XGoodFit.$class.&TestCategory!=External"
+done
 
 [[ -n "$retried" ]] && echo "Passed only on a retry:$retried"
 if [[ $failed -ne 0 ]]; then

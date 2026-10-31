@@ -22,8 +22,6 @@
     - The post-build step that moves the libraries to a libraries folder (for AssemblyResolver) and
       deletes AvalonDock's satellite folders.
 
-    PORT IN PROGRESS: the views of the GUI areas not ported yet are placeholders, marked
-    "XGoodFit port: placeholder".
   -->
   <PropertyGroup>
     <OutputType>WinExe</OutputType>

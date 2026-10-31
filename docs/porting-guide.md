@@ -444,6 +444,18 @@ Watch for others when porting:
 - **Shell test classes:** open each example once per class where you can (see
   `PointProcessMixtureTesting.SharedExample`), and declare the main-window captures first: their theme
   switches restyle whatever earlier shell tests left alive.
+- **Is a figure stale?** A walkthrough figure's `source.runId` and a native export's `sourceSha256` are the
+  SHA-256 of the project file they were made from. When they differ from the shipped file's hash, the figure
+  shows an earlier fit: check that before calling a difference a port bug.
+- **Rating curve and time series figures:** horizontal bands are `xLower`/`xUpper` at each `y`; bars are `x`
+  (the centre), `width` and `y` (the height, OxyPlot's `HistogramItem.Value`); two-point lines are the plot's
+  line annotations (a vertical line's X, a horizontal line's Y, or a sloped line's equation); dates are ISO
+  strings (compare their OLE dates); bands are titled "Prediction Intervals" where the plots say "Credible
+  Intervals". `RatingCurveTimeSeriesTesting.AssertWalkthroughFigure` reads all of this.
+- **Undo and the fit:** a model or prior change clears the fit, and undo restores the model but not its
+  results, so test result-dependent edits first.
+- **Unload and reload:** taking a window's content out and back in unloads and reloads it, as a docked
+  panel's theme change does (`RatingCurveTimeSeriesTesting.Reload`).
 - **Headless time:** input is stamped with the real time, and the dispatcher's timers don't run during the
   tests' job runs. `BestFitShell.DoubleClick` therefore selects an explorer node before double-clicking it
   (a slow first press would outlast the double-click time) and lets the node's slow-click rename timer run

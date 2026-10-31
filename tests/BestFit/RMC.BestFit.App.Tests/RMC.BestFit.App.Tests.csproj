@@ -11,8 +11,8 @@
     - GUI/Support/WpfTestHost.cs is ported: it merges the same resource dictionaries, as Avalonia
       resources, into the headless application.
 
-    PORT IN PROGRESS: each GUI area's upstream tests are added with the area, in the area's item group
-    below (one per area, so that areas ported in parallel merge cleanly).
+    Each GUI area's upstream tests are in the area's item group below (one per area, as the areas were
+    ported in parallel).
   -->
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
