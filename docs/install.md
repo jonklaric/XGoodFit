@@ -5,8 +5,9 @@ release has packages for Windows, macOS (Apple silicon and Intel) and Linux; ins
 themselves from the same page. The packages include everything XGoodFit needs, including .NET.
 
 > [!NOTE]
-> XGoodFit is still being ported: the packages contain the application, but most of its analysis
-> views aren't ported yet, and show a note saying so.
+> Every view of RMC-BestFit is ported, and XGoodFit's tests check it against RMC-BestFit on all three
+> systems. There's no release yet: test packages come from the repository's **Package** workflow (see
+> [hands-on-checks.md](hands-on-checks.md)).
 
 `.bestfit` files are shared with RMC-BestFit. XGoodFit adds itself as another application that can
 open them; where RMC-BestFit is installed, it stays the one that opens them on a double-click.
