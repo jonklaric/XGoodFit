@@ -105,6 +105,62 @@ public sealed class MainWindowTests
     }
 
     [TestMethod]
+    public void ClosingADocument_LetsItsViewGo()
+    {
+        HeadlessSession.Run(() =>
+        {
+            ThemeManager.SetTheme(ThemeColor.Light);
+            Shell.UseTemporaryFolder();
+            var project = ExplorerTests.SampleProject();
+            var (window, controller) = Shell.Open(project);
+            try
+            {
+                // Dock.Avalonia.AvalonDock kept a closed document's view among the docking manager's logical
+                // children, so it stayed in memory for the window's life (MainWindow.ReleaseClosedContent).
+                var dock = window.FindControl<AvalonDock.DockingManager>("MainDock")!;
+                WeakReference view = OpenAndCloseADocument(window, controller, project, dock);
+                controller.ClosedDocuments.Clear();
+                for (int i = 0; i < 5 && view.IsAlive; i++)
+                {
+                    System.Threading.Thread.Sleep(150);
+                    Avalonia.Headless.AvaloniaHeadlessPlatform.ForceRenderTimerTick();
+                    Dispatcher.UIThread.RunJobs();
+                    GC.Collect();
+                    GC.WaitForPendingFinalizers();
+                }
+                Assert.IsFalse(view.IsAlive, "the closed document's view is let go");
+            }
+            finally
+            {
+                Shell.Close(window);
+            }
+        });
+    }
+
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    private static WeakReference OpenAndCloseADocument(MainWindow window, TestController controller, TestProject project, AvalonDock.DockingManager dock)
+    {
+        var series = project.Collection("Time Series Data");
+        window.DoubleClick(ElementNode.FindElementNode(series[0], controller)!.NodeHeader);
+        LayoutDocument document = Documents(window).Single();
+        var view = (TestDocument)document.Content!;
+        CollectionAssert.Contains(DockLogicalChildren(dock), view, "an open document's view is the dock's logical child");
+        document.Close();
+        Dispatcher.UIThread.RunJobs();
+        CollectionAssert.DoesNotContain(DockLogicalChildren(dock), view, "a closed document's view isn't");
+        return new WeakReference(view);
+    }
+
+    private static List<object> DockLogicalChildren(AvalonDock.DockingManager dock)
+    {
+        var children = new List<object>();
+        System.Collections.IEnumerator enumerator = dock.LogicalChildrenPublic;
+        while (enumerator.MoveNext())
+            children.Add(enumerator.Current);
+        return children;
+    }
+
+    [TestMethod]
     public void DoubleClick_OpensTheElementsDocument_ListedInTheWindowMenu()
     {
         HeadlessSession.Run(() =>

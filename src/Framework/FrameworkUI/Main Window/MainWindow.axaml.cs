@@ -1384,12 +1384,37 @@ namespace FrameworkUI
         {
             if (sender == null) return;
             LayoutDocument document = (LayoutDocument)sender;
+            object? content = document.Content;
             document.Content = null!;
+            ReleaseClosedContent(content);
             document.IsActiveChanged -= Document_IsActiveChanged;
             document.IsSelectedChanged -= Document_IsSelectedChanged;
             document.Closing -= Document_Closing;
             document.Closed -= Document_Closed;
         }
+
+        /// <summary>
+        /// XGoodFit port: Dock.Avalonia.AvalonDock keeps a closed document's content among the docking manager's
+        /// logical children, so every closed view (with what it holds) stayed in memory for the window's life. WPF's
+        /// AvalonDock holds them through weak references (its DockingManager.cs, line 805). The package's own removal,
+        /// which it doesn't make public, lets the content go; FrameworkUI.Tests' MainWindowTests checks that it does.
+        /// </summary>
+        /// <param name="content">The closed document's content.</param>
+        private void ReleaseClosedContent(object? content)
+        {
+            if (content == null || MainDock == null || RemoveDockLogicalChild == null) return;
+            bool isChild = false;
+            System.Collections.IEnumerator children = MainDock.LogicalChildrenPublic;
+            while (!isChild && children.MoveNext())
+                isChild = ReferenceEquals(children.Current, content);
+            if (isChild)
+                RemoveDockLogicalChild.Invoke(MainDock, new[] { content });
+        }
+
+        /// <summary>The docking manager's internal InternalRemoveLogicalChild(object), or null if a later package has none.</summary>
+        private static readonly System.Reflection.MethodInfo? RemoveDockLogicalChild = typeof(AvalonDock.DockingManager).GetMethod(
+            "InternalRemoveLogicalChild", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic,
+            null, new[] { typeof(object) }, null);
 
 
         /// <summary>
