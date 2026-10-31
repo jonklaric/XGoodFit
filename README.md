@@ -9,10 +9,12 @@ The goal is the same application, looking and behaving the same, running nativel
 **Windows, macOS and Linux**, and reading and writing the same `.bestfit` project files.
 
 > [!NOTE]
-> XGoodFit is in early development and is not usable yet. The groundwork is in place and the UI port
-> has begun with the VS2013 theme (Light, Blue and Dark) and the plotting library, which writes the
-> same plot settings to project files as RMC-BestFit. The [migration plan](docs/migration-plan.md)
-> describes the approach and roadmap.
+> Every view of RMC-BestFit 2.0.1 is ported, and every upstream test of its application runs against the
+> port. On Windows, macOS and Linux, XGoodFit's tests check the views against RMC-BestFit's own exported
+> plots, open every element of the 32 example projects, follow the examples' walkthroughs, and save
+> projects as RMC-BestFit does. There's no release yet: [docs/hands-on-checks.md](docs/hands-on-checks.md)
+> says where test packages come from and what to try by hand. The
+> [migration plan](docs/migration-plan.md) describes the approach and the progress.
 
 ## Approach
 
@@ -34,8 +36,8 @@ git clone https://github.com/jonklaric/XGoodFit.git
 cd XGoodFit
 dotnet build XGoodFit.slnx
 
-# See the ported theme so far: palettes and controls, with a Light/Blue/Dark switcher.
-dotnet run --project tools/ThemeGallery
+# Run XGoodFit.
+dotnet run --project src/BestFit/RMC.BestFit.App
 ```
 
 Reading DSS files also needs HEC-DSS's native library, which is built from `upstream/hec-dss` with
@@ -57,6 +59,11 @@ scripts/run-upstream-tests.sh
 
 # Check that every example project opens and reads correctly.
 dotnet run --project tools/ProjectProbe/ProjectProbe.csproj -- sample-data/RMC-BestFit/examples
+
+# Run the application's tests, each test class in its own process (after dotnet build -c Release),
+# then the end-to-end tests: every element of every example, and the walkthroughs.
+scripts/run-app-tests.sh Release
+scripts/run-app-tests.sh Release Tour Walkthroughs
 ```
 
 ## Where the source code comes from
