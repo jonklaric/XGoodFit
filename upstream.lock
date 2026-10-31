@@ -17,7 +17,7 @@
 #   Left out: a prebuilt tool and the Visual Studio solution and project files of HEC's old
 #   Windows build, which CMake replaces.
 # - zlib: tag v1.3.1, the version hec-dss 7-JA-7 builds with. Left out: the optional contrib/ extras.
-RMC-BestFit     https://github.com/USACE-RMC/RMC-BestFit.git                      bfce2ddbebb8d75e6cf6e21c4fef8ecfb5058269  src,docs,tools/PlotReferenceExporter  -
+RMC-BestFit     https://github.com/USACE-RMC/RMC-BestFit.git                      bfce2ddbebb8d75e6cf6e21c4fef8ecfb5058269  src,docs,tools/PlotReferenceExporter,verification  -
 WPF-Framework   https://github.com/USACE-RMC/WPF-Framework.git                    7f897e107db4a25cca29127ce9d564898c5fde93  *                                     -
 Numerics        https://github.com/USACE-RMC/Numerics.git                         7e8e8d1c5f26e045a35ec9fc09367de95ed05b02  Numerics,Test_Numerics,docs           AGENTS.md,CLAUDE.md
 hec-dss         https://github.com/HydrologicEngineeringCenter/hec-dss.git        1da59764e509b31fe790133acc757cab8a6b846c  deps,heclib,test                      DssVersion.exe,*.sln,*.vcxproj,*.vcxproj.filters
