@@ -169,4 +169,26 @@
     <!-- GUI/TimeSeriesPointEstimatorControlTests.cs is a ported copy (Avalonia's controls). -->
   </ItemGroup>
 
+  <!--
+    Upstream test files: Cross-area tests, which span the GUI areas. None compile unchanged: run as they are, the
+    source audits would find upstream's own sources under upstream/. They are ported copies:
+    - GUI/Support/Controls/AlternativeControlRefreshTests.cs: Avalonia's views, and worker threads of their own.
+    - GUI/PlotAxisTitleBindingSourceTests.cs, GUI/DataGridSelectableStyleAuditTests.cs,
+      GUI/PropertiesControls/PropertiesControlCloseSafetyTests.cs and
+      GUI/PropertiesControls/InputDataOverlaySelectionWiringTests.cs: they audit the ports (.axaml, .axaml.cs).
+    - GUI/PropertiesControls/AnalysisSourceSelectionLifecycleTests.cs: the panels docked in the port's dock, in
+      the test's own process.
+    - CoreInfrastructure/PublicApiCompatibilityTests.cs: the port's own API baseline (PortPublicApiBaseline.txt),
+      and upstream's baseline with the reviewed differences (PublicApiDifferences.txt).
+  -->
+  <ItemGroup>
+    <EmbeddedResource Include="$(UpstreamProjectDir)CoreInfrastructure/PublicApiBaseline.txt"
+                      Link="upstream/CoreInfrastructure/PublicApiBaseline.txt"
+                      LogicalName="RMC.BestFit.App.Tests.CoreInfrastructure.PublicApiBaseline.txt" />
+    <EmbeddedResource Include="CoreInfrastructure/PortPublicApiBaseline.txt"
+                      LogicalName="RMC.BestFit.App.Tests.CoreInfrastructure.PortPublicApiBaseline.txt" />
+    <EmbeddedResource Include="CoreInfrastructure/PublicApiDifferences.txt"
+                      LogicalName="RMC.BestFit.App.Tests.CoreInfrastructure.PublicApiDifferences.txt" />
+  </ItemGroup>
+
 </Project>

@@ -1,0 +1,44 @@
+# XGoodFit's App API (RMC.BestFit.App, the XGoodFit assembly) against RMC-BestFit's: the reviewed differences.
+#
+# PublicApiCompatibilityTests checks that every line of upstream's API baseline
+# (upstream/RMC-BestFit/src/RMC.BestFit.App.Tests/CoreInfrastructure/PublicApiBaseline.txt) has its counterpart in the
+# port's API, in the same type, after the type maps (MAP) and the rewrites (LINE, RULE) below, unless it is a reviewed
+# difference (DIFF). Each entry must still be needed: one that matches nothing upstream lost fails the test too.
+# PortPublicApiBaseline.txt is the port's own API, which PublicApi_MatchesCapturedBaseline pins.
+#
+# Entries, one per line, fields separated by " | " (a "*" type is any type):
+#   MAP  | <WPF type>                | <the port's type>                    | <reason>
+#   LINE | <type> | <upstream line, mapped> | <the port's line>             | <reason>
+#   RULE | DependencyProperty                                               | <reason>
+#   DIFF | <type> | <upstream line, mapped>                                 | <reason>
+
+# Type maps: WPF's types in upstream's API, and their counterparts in the port's.
+MAP | System.Windows.Application | Avalonia.Application | The application class is an Avalonia application.
+MAP | System.Windows.Controls.UserControl | Avalonia.Controls.UserControl | The views and properties panels are Avalonia user controls.
+MAP | System.Windows.Controls.Control | Avalonia.Controls.Control | Controls are Avalonia's (MainProjectNode's GetDocumentControl and GetPropertiesControl).
+MAP | System.Windows.UIElement | Avalonia.Controls.Control | FrameworkUI's port takes Avalonia controls where WPF-Framework took UIElements (MainProjectNode's GetPropertiesControl, GetControlElement, PropertiesClosed and DocumentClosed overrides).
+MAP | System.Windows.Media.ImageSource | Avalonia.Media.IImage | Images are Avalonia's (BatchRunItemViewModel's ElementImage, the batch run list's element icons).
+MAP | System.Windows.Data.IValueConverter | Avalonia.Data.Converters.IValueConverter | The value converters are Avalonia's (BatchRunStatusToIconConverter).
+MAP | System.Windows.IInputElement | Avalonia.Input.IInputElement | The controls' input element interface is Avalonia's.
+MAP | System.Windows.Markup.IHaveResources | Avalonia.Controls.IResourceHost | A control's or the application's own resources are Avalonia's resource host.
+
+# Rewrites: members whose WPF form has an Avalonia form.
+RULE | DependencyProperty | A dependency property is an Avalonia styled property: upstream's FIELD public System.Windows.DependencyProperty XProperty is FIELD public Avalonia.StyledProperty<T> XProperty, where T is the type of the class's property X (which is unchanged).
+LINE | * | METHOD public sealed-virtual System.Void InitializeComponent() | METHOD public System.Void InitializeComponent(System.Boolean optional=true) | A XAML class's generated InitializeComponent: WPF's implements IComponentConnector; Avalonia's takes an optional loadXaml argument, so calls to InitializeComponent() compile unchanged.
+
+# Differences: upstream's members the port doesn't have.
+DIFF | * | INTERFACE System.Windows.Markup.IQueryAmbient | WPF's FrameworkElement and Application implement it for its XAML parser's ambient properties; Avalonia's types have no counterpart.
+DIFF | * | INTERFACE System.Windows.IFrameworkInputElement | WPF's FrameworkElement interface, an input element with a name; Avalonia's controls are Avalonia.Input.IInputElement (mapped above) and Avalonia.INamed.
+DIFF | * | INTERFACE System.Windows.Markup.IAddChild | WPF's ContentControl interface for XAML content; Avalonia's content controls take XAML content through their Content property.
+DIFF | * | INTERFACE System.Windows.Media.Animation.IAnimatable | WPF's UIElement interface for its animation clocks (BeginAnimation); Avalonia animates through styles and its Animation API.
+DIFF | * | INTERFACE System.Windows.Media.Composition.DUCE+IResource | WPF's internal composition interface of its visuals; Avalonia's rendering has none.
+DIFF | * | INTERFACE System.Windows.Markup.IComponentConnector | WPF's markup compiler implements it on each class with XAML (InitializeComponent and Connect); Avalonia's XAML compiler generates InitializeComponent (rewritten above) without an interface.
+DIFF | * | INTERFACE System.Windows.Markup.IStyleConnector | WPF's markup compiler implements it on classes whose XAML styles or templates attach event handlers; Avalonia's XAML compiler attaches them without an interface.
+DIFF | * | INTERFACE System.Windows.IWindowService | WPF's Window interface; Avalonia's windows have none (BatchRunWindow and DSSPathSelectorWindow are GenericControls' MetroWindow, an Avalonia window).
+DIFF | RMC_BestFit.MainProjectNode | INTERFACE MS.Internal.Controls.IGeneratorHost | WPF's ItemsControl item-container generation interface (the node is a tree view item, through FrameworkUI's FrameworkUIController); Avalonia's ItemsControl has none.
+DIFF | RMC_BestFit.MainProjectNode | INTERFACE System.Windows.Controls.Primitives.IContainItemStorage | WPF's TreeViewItem virtualization interface; Avalonia's TreeViewItem has none.
+DIFF | RMC_BestFit.MainProjectNode | INTERFACE System.Windows.Controls.Primitives.IHierarchicalVirtualizationAndScrollInfo | WPF's TreeViewItem virtualization interface; Avalonia's TreeViewItem has none.
+DIFF | RMC_BestFit.App | METHOD public System.Void InitializeComponent() | WPF's markup compiler generates the application's InitializeComponent (it loads App.xaml); the port's App loads its XAML in Avalonia's Initialize override.
+DIFF | RMC_BestFit.App | METHOD public static System.Void Main() | WPF's markup compiler generates the entry point in the application class; the port's is Program.Main (internal), which starts Velopack and the Avalonia application.
+DIFF | RMC_BestFit.BestFitStyles | TYPE class RMC_BestFit.BestFitStyles | Not ported: Resources/BestFitStyles.xaml is a resource dictionary that nothing merges or uses (upstream dead code; D10, see RMC.BestFit.App.csproj).
+DIFF | XamlGeneratedNamespace.GeneratedInternalTypeHelper | TYPE class XamlGeneratedNamespace.GeneratedInternalTypeHelper | WPF's markup compiler generates it in assemblies whose XAML uses internal types; Avalonia's XAML compiler doesn't.
