@@ -341,6 +341,10 @@ Watch for others when porting:
   GenericControls' `BooleanPropertyControl` takes the state into `IsSelected` first, so upstream's
   handlers read the new value from the element. A plain `CheckBox`'s handlers still run before the
   write-back.
+- **Line breaking differs from WPF's:** WPF breaks a Windows path before its backslashes; Avalonia's line
+  breaking doesn't, only after "C:" and hyphens. A one-line box that wraps (WrapWithOverflow, as
+  TextPropertyControl does by default) then shows "C:" alone: don't wrap paths (the project's File
+  Directory). Spaces and slashes break alike.
 - **Avalonia's two-way binding writes into a source its path has left; WPF's doesn't.** A property-changed
   callback that changes a selector's items (reconciling a properties panel's source lists for a new element)
   writes the cleared selection into the previous element. Take the selector's data context away first (see

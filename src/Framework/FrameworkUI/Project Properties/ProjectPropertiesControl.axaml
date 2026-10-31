@@ -7,6 +7,10 @@
     - The dates format in WPF's binding culture, en-US (WpfCompat's FormattingCulture, plan §5.2).
     - As upstream, the property widths bind to SoftwareVersion's ActualPropertyWidth, so the value
       columns line up.
+    - The File Directory doesn't wrap (upstream's TextPropertyControl wraps with overflow, in a box one
+      line high). WPF breaks a Windows path before its backslashes, so the box shows its first folders
+      ("C:\Users\Jonathan"); Avalonia's line breaking doesn't break there, only after "C:", so the box
+      showed "C:" alone. Unwrapped, it shows the path's start, clipped, and the tool tip the whole path.
 -->
 <UserControl x:Class="FrameworkUI.ProjectPropertiesControl"
              xmlns="https://github.com/avaloniaui"
@@ -61,7 +65,7 @@
                                             Text="{Binding Project.LastModified, UpdateSourceTrigger=PropertyChanged, Mode=OneWay, ConverterCulture={x:Static wpf:FormattingCulture.Current}}"
                                             PropertyWidth="{Binding ElementName=SoftwareVersion, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}"/>
 
-                    <cntrls:TextPropertyControl x:Name="FileDirectory" Margin="0 2" DockPanel.Dock="Top" Title="File Directory" MaxPropertyWidth="200" IsReadOnly="True"
+                    <cntrls:TextPropertyControl x:Name="FileDirectory" Margin="0 2" DockPanel.Dock="Top" Title="File Directory" MaxPropertyWidth="200" IsReadOnly="True" TextWrapping="NoWrap"
                                             Text="{Binding Project.FileDirectory, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}" ToolTip.Tip="{Binding Project.FileDirectory, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}"
                                             PropertyWidth="{Binding ElementName=SoftwareVersion, Path=ActualPropertyWidth, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ActualToLengthConverter}}"/>
 

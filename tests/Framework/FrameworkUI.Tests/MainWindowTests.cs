@@ -84,6 +84,18 @@ public sealed class MainWindowTests
                     };
                     Assert.AreEqual(version.ActualPropertyWidth, width.Value, 0.5, $"{control.Name} lines up with the software version");
                 }
+
+                // The File Directory shows the path's start on one line. Wrapped, as upstream's control does by
+                // default, Avalonia's line breaking left a Windows path's first line at "C:" alone (WPF breaks
+                // before backslashes).
+                var directory = properties.GetVisualDescendants().OfType<TextPropertyControl>().Single(c => c.Name == "FileDirectory");
+                var presenter = directory.GetVisualDescendants().OfType<Avalonia.Controls.Presenters.TextPresenter>().Single();
+                Assert.AreEqual(project.FileDirectory, presenter.Text);
+                Assert.AreEqual(1, presenter.TextLayout.TextLines.Count, "the path isn't wrapped");
+                var wrapped = new Avalonia.Media.TextFormatting.TextLayout(@"C:\Users\Someone\AppData\Local\Temp\project",
+                    new Typeface("Segoe UI"), 12, Brushes.Black, textWrapping: TextWrapping.WrapWithOverflow, maxWidth: 145);
+                Assert.AreEqual(2, wrapped.TextLines[0].FirstTextSourceIndex + wrapped.TextLines[0].Length,
+                    "Avalonia still breaks a wrapped Windows path after its drive (if not, wrapping could come back)");
             }
             finally
             {
