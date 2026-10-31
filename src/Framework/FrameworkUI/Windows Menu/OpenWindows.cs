@@ -218,8 +218,17 @@ namespace FrameworkUI
         /// <summary>
         /// Disable all open windows.
         /// </summary>
+        /// <remarks>
+        /// XGoodFit port: WPF's AvalonDock keeps a disabled document selected, and shows it disabled. Dock's
+        /// AvalonDock adapter moves the selection off disabled content ("Disabling active content selects the
+        /// first enabled sibling or clears selection", its COMPATIBILITY.md), which left the document pane
+        /// empty while an analysis ran and after it. So the documents selected before are selected again, and
+        /// the active one is active again, as upstream's shell has them.
+        /// </remarks>
         public void DisableAllWindows()
         {
+            var selected = Collection.Select(item => item.Document).Where(document => document is { IsSelected: true }).ToList();
+            LayoutDocument? active = Collection.Select(item => item.Document).FirstOrDefault(document => document is { IsActive: true });
             for (int i = 0; i < Collection.Count; i++)
             {
                 var document = Collection[i].Document;
@@ -231,6 +240,14 @@ namespace FrameworkUI
                         control.IsEnabled = false;
                     }
                 }
+            }
+            foreach (LayoutDocument? document in selected)
+            {
+                document!.IsSelected = true;
+            }
+            if (active is { IsActive: false })
+            {
+                active.IsActive = true;
             }
         }
 

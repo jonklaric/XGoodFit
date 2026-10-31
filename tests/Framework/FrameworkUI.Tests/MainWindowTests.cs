@@ -202,6 +202,56 @@ public sealed class MainWindowTests
         });
     }
 
+    /// <summary>
+    /// XGoodFit addition: while an analysis runs, its Estimate button disables the open documents
+    /// (DisableOpenWindows) and enables them when it finishes. As in WPF's AvalonDock, the selected document stays
+    /// selected and shown, disabled, and is shown enabled afterwards: Dock's adapter moves the selection off
+    /// disabled content, which left the document pane empty during the run and after it.
+    /// </summary>
+    [TestMethod]
+    public void DisablingTheOpenWindows_ForARun_KeepsTheSelectedDocumentShown()
+    {
+        HeadlessSession.Run(() =>
+        {
+            ThemeManager.SetTheme(ThemeColor.Light);
+            Shell.UseTemporaryFolder();
+            var project = ExplorerTests.SampleProject();
+            var (window, controller) = Shell.Open(project);
+            try
+            {
+                var series = project.Collection("Time Series Data");
+                window.DoubleClick(ElementNode.FindElementNode(series[1], controller)!.NodeHeader);
+                window.DoubleClick(ElementNode.FindElementNode(series[0], controller)!.NodeHeader);
+                var documents = Documents(window);
+                Assert.AreEqual("Daily Discharge", documents.Single(d => d.IsSelected).Title, "the last opened is selected");
+                var selected = documents.Single(d => d.IsSelected);
+                var content = (Control)selected.Content!;
+
+                ShellPublicVariables.SimulationInProgress = true;
+                window.DisableOpenWindows();
+                TestInput.Frame();
+                Assert.IsTrue(selected.IsSelected, "the selected document stays selected while the analysis runs");
+                Assert.IsFalse(selected.IsEnabled, "and disabled");
+                Assert.IsFalse(content.IsEnabled);
+                Assert.IsNotNull(TopLevel.GetTopLevel(content), "and shown");
+                Assert.IsTrue(documents.All(d => !d.IsEnabled), "every document is disabled");
+
+                ShellPublicVariables.SimulationInProgress = false;
+                window.EnableOpenWindows();
+                TestInput.Frame();
+                Assert.IsTrue(selected.IsSelected, "the document is selected once the analysis ends");
+                Assert.IsTrue(selected.IsEnabled && content.IsEnabled, "and enabled");
+                Assert.IsNotNull(TopLevel.GetTopLevel(content), "and shown");
+                Assert.IsTrue(selected.IsActive, "and active");
+            }
+            finally
+            {
+                ShellPublicVariables.SimulationInProgress = false;
+                Shell.Close(window);
+            }
+        });
+    }
+
     [TestMethod]
     public void WindowsDialog_ListsTheOpenDocuments_AndClosesTheSelectedOnes()
     {
