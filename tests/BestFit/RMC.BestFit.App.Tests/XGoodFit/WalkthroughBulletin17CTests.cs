@@ -129,10 +129,10 @@ namespace RMC.BestFit.App.Tests.XGoodFit
         /// XGoodFit does. Its Estimate button (the saved settings: seed 12345, 1,000 replicates) gives the parent's computed
         /// 13,823.815 cfs but limits of 8,582.358-17,706.822, with 39 fallbacks, 3 evaluation-limit statuses and 10 clips,
         /// while Example #1 - BCB's gives its saved fit exactly: the bootstrap reproduces a saved run, so the walkthrough's
-        /// values come from a run the project doesn't hold. (On macOS and Linux the fits agree to the digits shown, but the
-        /// counters can differ: see AssertBootstrapReport.) While the analysis runs its document stays shown, disabled, and
-        /// it shows the new fit when the run ends (FrameworkUI's OpenWindows.DisableAllWindows keeps the selection, as WPF's
-        /// AvalonDock does). About 15 seconds.
+        /// values come from a run the project doesn't hold. These are Windows' values: on macOS and Linux the computed
+        /// curves agree, but the limits can move a little and the counters differ (see Rerun and AssertBootstrapReport).
+        /// While the analysis runs its document stays shown, disabled, and it shows the new fit when the run ends
+        /// (FrameworkUI's OpenWindows.DisableAllWindows keeps the selection, as WPF's AvalonDock does). About 15 seconds.
         /// </summary>
         [TestMethod]
         public void Example2Bcb_HasNoSavedResult_AndItsEstimateIsntTheWalkthroughs()
@@ -166,7 +166,10 @@ namespace RMC.BestFit.App.Tests.XGoodFit
             Assert.AreSame(view, Example.Shown<B17CAnalysisControl, B17CAnalysisPropertiesControl>(element).View, expected.Name + ": the document's view");
             // "All fourteen parent fits retain iterative GMM, BFGS, ...": an unestimated fit has no GMM until it runs.
             AssertGmmSettings(element);
-            AssertGmmResult(view, properties, expected);
+            // On macOS and Linux a rerun's limits can move a little (see AssertBootstrapReport): on CI, Example #2 - BCB's
+            // were 8,653.997-17,707.016 on Linux and 8,597.18-17,720.442 on macOS, against Windows' 8,582.358-17,706.822,
+            // while Example #1 - BCB's matched. The computed curve (the parent fit) is the same everywhere.
+            AssertGmmResult(view, properties, expected, limitsTolerance: OperatingSystem.IsWindows() ? 0 : 0.02);
             SelectTab(view, "GMM Report");
             AssertBootstrapReport(ReportText(view.GMMReportControl), bootstrap.Fallbacks, bootstrap.Limits, bootstrap.Clips, expected.Name,
                 countersExact: OperatingSystem.IsWindows());
@@ -198,7 +201,8 @@ namespace RMC.BestFit.App.Tests.XGoodFit
         // false), only written out. The counters count replicates whose optimizer took another path (a fallback, the
         // evaluation limit, a clipped pivot), which a difference in the last bit of a result can change, and .NET's maths
         // functions come from each OS's own maths library: a rerun of Example #1 - BCB on CI counted 82 fallbacks on Linux
-        // and 78 on macOS, where Windows, like the saved run, counts 77, while its fit agreed to the digits shown.
+        // and 78 on macOS, where Windows, like the saved run, counts 77, while its fit agreed to the digits shown. Such
+        // replicates can move the limits a little too (see Rerun).
         private static void AssertBootstrapReport(string report, string fallbacks, string limits, string clips, string label, bool countersExact = true)
         {
             Assert.AreEqual("1,000", ReportWord(report, "Replicates Requested:"), label + ": replicates requested");

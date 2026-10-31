@@ -151,6 +151,12 @@ The 24 leads from the ports of the Univariate, Bulletin 17C, Point Process, Mixt
 
 Findings from later work can be added in the same format.
 
+These leads are still to be checked and written up:
+
+| Lead | Where | Why it looks like a bug |
+|---|---|---|
+| HEC's Dss-C test failed once on macOS arm64: two float arrays compared unequal where both values print the same (hec-dss, 7-JA-7) | `test/Dss-C/source/testExpandedTimesIrreg.c` line 100 ("Location 5": a 1,184,437-value irregular series, stored, then read back with hour granularity); the compare is `heclib/heclib_c/src/SemiPublic/zcompareDataSets.c` lines 387-396 | XGoodFit's CI (run 41173927264, 2026-10-31, job "Portable layer (macos-arm64)") logged "Floats do not match at element 1184436; First value: 1184436.000000, second value: 1184436.000000", then "Fail in testExpandedTimesIrreg, Location 5". The same commit's test passed on the run before and on Linux and Windows. Values that print the same but compare unequal suggest the compare read past the retrieved values (element 1184436 is the last), into memory that changed. Compare `hec-dss-quality-flags-vary-between-runs.md`, also memory that varies between runs. Not reproduced yet. |
+
 ## Considered and excluded
 
 | Lead | Target | Why it's not an upstream issue (or not a separate one) |

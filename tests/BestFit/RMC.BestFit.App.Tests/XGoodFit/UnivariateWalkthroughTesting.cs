@@ -416,11 +416,19 @@ namespace RMC.BestFit.App.Tests.XGoodFit
         /// <paramref name="probability"/>): the point estimate's curve, and the interval's lower and upper limits, as the
         /// walkthrough writes them (the table shows three decimals, as <see cref="WalkthroughExample"/> sets).
         /// </summary>
-        internal static void AssertQuantile(DataGrid table, string probability, string point, string lower, string upper, string label)
+        internal static void AssertQuantile(DataGrid table, string probability, string point, string lower, string upper, string label,
+            double limitsTolerance = 0)
         {
             string[] row = Row(table, probability);
             string shown = " (the row shows " + string.Join(" | ", row) + ")";
             Assert.AreEqual(point, row[4], $"{label}: the {table.Columns[4].Header} at {probability}{shown}");
+            if (limitsTolerance > 0)
+            {
+                Assert.AreEqual(Parse(lower), Parse(row[2]), limitsTolerance * Parse(lower), $"{label}: the lower limit ({table.Columns[2].Header}) at {probability}, within {limitsTolerance:P0} of {lower}{shown}");
+                Assert.AreEqual(Parse(upper), Parse(row[1]), limitsTolerance * Parse(upper), $"{label}: the upper limit ({table.Columns[1].Header}) at {probability}, within {limitsTolerance:P0} of {upper}{shown}");
+                Console.WriteLine($"{label}: limits {row[2]} - {row[1]} (Windows: {lower} - {upper})");
+                return;
+            }
             Assert.AreEqual(lower, row[2], $"{label}: the lower limit ({table.Columns[2].Header}) at {probability}{shown}");
             Assert.AreEqual(upper, row[1], $"{label}: the upper limit ({table.Columns[1].Header}) at {probability}{shown}");
         }
@@ -681,12 +689,13 @@ namespace RMC.BestFit.App.Tests.XGoodFit
         /// 1% AEP's computed curve and confidence limits in Tabular Results; the uncertainty method, draws (output length),
         /// optimizer status, confidence level, seed and GMM strategy in the GMM Report; and the options in the properties.
         /// </summary>
-        internal static void AssertGmmResult(B17CAnalysisControl view, B17CAnalysisPropertiesControl panel, GmmResult expected, string width = "90%")
+        internal static void AssertGmmResult(B17CAnalysisControl view, B17CAnalysisPropertiesControl panel, GmmResult expected, string width = "90%",
+            double limitsTolerance = 0)
         {
             string label = expected.Name;
             SelectTab(view, "Tabular Results");
             AssertIntervalWidth(view.FrequencyCurveTable, width, label);
-            AssertQuantile(view.FrequencyCurveTable, "0.01", expected.Point, expected.Lower, expected.Upper, label);
+            AssertQuantile(view.FrequencyCurveTable, "0.01", expected.Point, expected.Lower, expected.Upper, label, limitsTolerance);
             SelectTab(view, "GMM Report");
             string report = ReportText(view.GMMReportControl);
             Assert.AreEqual(GmmMethods[expected.Method], ReportValue(report, "Uncertainty Method:"), label + ": the report's uncertainty method");
