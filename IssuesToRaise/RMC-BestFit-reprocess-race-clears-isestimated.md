@@ -6,6 +6,8 @@
 
 **Verification:** reproduced. A small program against upstream's own `RMC.BestFit.dll` (built from this commit) followed the element's code path 20 times per case. Deleting two XY rows during a reprocess cleared `IsEstimated` in 13 of 20 runs; clearing the grid during a reprocess did so in 12 of 20. The same edit with nothing else touching the ordinates lost nothing (0 of 20). The upstream test failed once on a GitHub Windows runner in XGoodFit's CI. On a 12-core laptop it passed 150 isolated runs and 4 full parallel suite runs, so the test itself needs a loaded machine to lose the race; the program above doesn't.
 
+Related: [Switching a bivariate analysis's point estimator can mark the fit as not estimated](RMC-BestFit-bivariate-point-estimator-race-clears-isestimated.md), the same reprocess losing the same state when the element's validation sorts the marginals' series under it.
+
 ## Summary
 
 When an estimated bivariate analysis's XY ordinates change, `ReprocessIfEstimated` rebuilds the joint-frequency results on a thread-pool thread. That background run reads the live `XYOrdinates` collection and the shared `AnalysisResults` object while the UI thread can still change both. If a row is removed, or the grid cleared, during the run, it throws. Its `catch` then sets `IsEstimated = false`, so a valid MCMC fit is reported as not estimated and the user has to run the analysis again.
