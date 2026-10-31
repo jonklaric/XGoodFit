@@ -96,8 +96,8 @@ namespace RMC.BestFit.App.Tests.XGoodFit
         }
 
         /// <summary>
-        /// Takes a window's content out and puts it back, as a docked panel's theme change does: it unloads and loads
-        /// again.
+        /// Takes a window's content out and puts it back: it unloads and loads again, as a docked panel does when
+        /// WPF's AvalonDock re-templates it for a theme change (XGoodFit's dock theme only swaps resources).
         /// </summary>
         /// <param name="window">A window <see cref="SharedControlsTesting.Show"/> made.</param>
         internal static void Reload(Window window)

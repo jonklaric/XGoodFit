@@ -341,6 +341,12 @@ Watch for others when porting:
   GenericControls' `BooleanPropertyControl` takes the state into `IsSelected` first, so upstream's
   handlers read the new value from the element. A plain `CheckBox`'s handlers still run before the
   write-back.
+- **Avalonia's two-way binding writes into a source its path has left; WPF's doesn't.** A property-changed
+  callback that changes a selector's items (reconciling a properties panel's source lists for a new element)
+  writes the cleared selection into the previous element. Take the selector's data context away first (see
+  `ReconcileWithoutPreviousElement` in the Time Series Analysis, Composite and Coincident Frequency panels).
+  The other panels reconcile in their element callbacks too; the app makes a new panel per element, so they
+  don't meet it.
 - **Undo can replace a model:** the Point Process, Mixture and other elements restore their model from an
   XML snapshot, a new object, and announce it under the model's name (`PointProcess`,
   `MixtureDistribution`). Re-read the element's model after an undo.
@@ -457,8 +463,23 @@ Watch for others when porting:
   `(char)0x202F` before comparing with a literal.
 - **Undo and the fit:** a model or prior change clears the fit, and undo restores the model but not its
   results, so test result-dependent edits first.
-- **Unload and reload:** taking a window's content out and back in unloads and reloads it, as a docked
-  panel's theme change does (`RatingCurveTimeSeriesTesting.Reload`).
+- **Unload and reload:** taking a window's content out and back in unloads and reloads it
+  (`RatingCurveTimeSeriesTesting.Reload`). In WPF a theme change re-templated docked panels, which unloaded
+  them; XGoodFit's dock theme only swaps resources, so a theme change doesn't. To test upstream's "survives
+  the theme's unload", take the panel out of its anchorable and back in (`AnalysisSourceSelectionLifecycleTests`).
+- **Docked panels in tests:** give an anchorable its content only after the `DockingManager` is in a shown
+  window: Dock.Avalonia never attaches earlier content to the logical tree, so it never loads.
+- **Upstream source audits:** port them, never include them unchanged: their root search finds
+  `upstream/RMC-BestFit` and audits upstream's own files. Point them at `src/BestFit/RMC.BestFit.App`
+  (`.axaml`, `.axaml.cs`) and translate the patterns: `Style` to `ControlTheme`, `RowStyle` to `RowTheme`,
+  `DisplayMemberPath` to `DisplayMemberBinding`, `BindingOperations.SetBinding` to `.Bind`/`[!`,
+  `ClearBinding` to disposing the binding expression.
+- **The App's public API is pinned** by `CoreInfrastructure/PortPublicApiBaseline.txt`. For an intended change,
+  update it from the failure's +/- lines, and update `PublicApiDifferences.txt` (maps, rewrites, differences
+  with reasons) when upstream's API is affected.
+- **Settling a WPF question on Windows:** a package-free experiment works: a `net9.0-windows` console project
+  in `%TEMP%` with `RollForward=Major`, a NuGet.config with no sources and `NUGET_PACKAGES` in temp uses the
+  local WPF targeting pack and the 10.0 runtime.
 - **Headless time:** input is stamped with the real time, and the dispatcher's timers don't run during the
   tests' job runs. `BestFitShell.DoubleClick` therefore selects an explorer node before double-clicking it
   (a slow first press would outlast the double-click time) and lets the node's slow-click rename timer run
