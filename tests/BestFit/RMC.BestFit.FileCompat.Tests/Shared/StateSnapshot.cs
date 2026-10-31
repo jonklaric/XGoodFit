@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -90,6 +91,44 @@ public sealed class StateSnapshot
             hashes[group.Key] = (FileDescription.Sha(full.ToString()), FileDescription.Sha(withoutNumbers.ToString()));
         }
         return hashes;
+    }
+
+    /// <summary>Writes every value, one "path\tvalue" line each, as UTF-8 with "\n" line ends.</summary>
+    public void WriteValues(string path)
+    {
+        Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(path))!);
+        File.WriteAllText(path, string.Concat(Values.Select(entry => entry.Key + "\t" + entry.Value + "\n")), new UTF8Encoding(false));
+    }
+
+    /// <summary>Reads the values written by <see cref="WriteValues"/>.</summary>
+    public static SortedDictionary<string, string> ReadValues(string path)
+    {
+        var values = new SortedDictionary<string, string>(StringComparer.Ordinal);
+        foreach (string line in File.ReadAllLines(path, Encoding.UTF8).Where(line => line.Length > 0))
+        {
+            int tab = line.IndexOf('\t');
+            values[line.Substring(0, tab)] = line.Substring(tab + 1);
+        }
+        return values;
+    }
+
+    /// <summary>
+    /// The paths whose values differ between two sets of values (<see cref="Values"/>, or read with
+    /// <see cref="ReadValues"/>): <see cref="DifferenceKind.Numbers"/> when only numbers differ (as in
+    /// <see cref="GroupHashes"/>), <see cref="DifferenceKind.Mismatch"/> otherwise, or when only one has the path.
+    /// </summary>
+    public static List<(string Path, DifferenceKind Kind, string Expected, string Actual)> CompareValues(
+        IReadOnlyDictionary<string, string> expected, IReadOnlyDictionary<string, string> actual)
+    {
+        var differences = new List<(string, DifferenceKind, string, string)>();
+        foreach (string path in expected.Keys.Union(actual.Keys).OrderBy(p => p, StringComparer.Ordinal))
+        {
+            bool inExpected = expected.TryGetValue(path, out string? e), inActual = actual.TryGetValue(path, out string? a);
+            if (inExpected && inActual && e == a) continue;
+            DifferenceKind kind = inExpected && inActual && WithoutNumbers(e!) == WithoutNumbers(a!) ? DifferenceKind.Numbers : DifferenceKind.Mismatch;
+            differences.Add((path, kind, inExpected ? e! : "(none)", inActual ? a! : "(none)"));
+        }
+        return differences;
     }
 
     // "#" for a number, and for each number in a list ("[1.5, 2]"); text and hashes stay as they are.

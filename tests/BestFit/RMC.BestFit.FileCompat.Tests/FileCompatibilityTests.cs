@@ -16,12 +16,12 @@ public class FileCompatibilityTests
     /// <summary>The environment variable that turns missing example projects into a failure (as in CI).</summary>
     private const string RequireVariable = "XGOODFIT_REQUIRE_HECDSS";
 
-    private static readonly string ExamplesFolder = Metadata("BestFitExamplesDir");
+    internal static readonly string ExamplesFolder = Metadata("BestFitExamplesDir");
 
     private static readonly string GoldenFolder = Path.Combine(AppContext.BaseDirectory, "Golden");
 
-    /// <summary>Where the port's descriptions go: artifacts/filecompat/&lt;rid&gt;/ (see <see cref="WriteSummary"/>).</summary>
-    private static readonly string OutputFolder = Path.Combine(Metadata("FileCompatOutputDir"), RuntimeInformation.RuntimeIdentifier);
+    /// <summary>Where the port's descriptions and saved files go: artifacts/filecompat/&lt;rid&gt;/ (see <see cref="WriteSummary"/>).</summary>
+    internal static readonly string OutputFolder = Path.Combine(Metadata("FileCompatOutputDir"), RuntimeInformation.RuntimeIdentifier);
 
     private static readonly ConcurrentDictionary<string, string> Reports = new(StringComparer.Ordinal);
 
@@ -60,7 +60,8 @@ public class FileCompatibilityTests
         FileDescription expected = Examples.Read(Examples.DescriptionPath(GoldenFolder, name));
         var reopenDetails = new List<string>();
         StateSnapshot? openedState = null;
-        FileDescription actual = HeadlessSession.Run(() => SaveAndDescribe(name, example, null, reopenDetails, state => openedState = state));
+        FileDescription actual = HeadlessSession.Run(() => SaveAndDescribe(name, example, null, reopenDetails, state => openedState = state,
+            keepAs: SavedPath(name)));
         Examples.Write(actual, Examples.DescriptionPath(OutputFolder, name));
 
         bool onWindows = OperatingSystem.IsWindows();
@@ -76,9 +77,14 @@ public class FileCompatibilityTests
             .Where(s => s.Kind == DifferenceKind.Mismatch || (s.Kind == DifferenceKind.Numbers && onWindows))
             .Select(s => $"{s.Kind}: {s.Group}")
             .ToList();
+        List<(string Group, DifferenceKind Kind)> reopenedStates = DescriptionComparison.CompareReopenedStates(expected, actual);
+        List<string> reopenedFailures = reopenedStates
+            .Where(s => s.Kind == DifferenceKind.Mismatch || (s.Kind == DifferenceKind.Numbers && onWindows))
+            .Select(s => $"{s.Kind}: {s.Group}")
+            .ToList();
         bool sameReopen = expected.ReopenDifferences.SequenceEqual(actual.ReopenDifferences);
 
-        string report = Report(name, expected, actual, differences, states, reopenDetails);
+        string report = Report(name, expected, actual, differences, states, reopenedStates, reopenDetails);
         Reports[name] = report;
         TestContext.WriteLine(report);
 
@@ -86,8 +92,7 @@ public class FileCompatibilityTests
             DumpCells(name, example, failures);
         if (stateFailures.Count > 0 && openedState != null)
         {
-            string path = Path.Combine(OutputFolder, name + ".state.txt");
-            File.WriteAllLines(path, openedState.Values.Select(entry => entry.Key + "\t" + entry.Value));
+            openedState.WriteValues(Path.Combine(OutputFolder, name + ".state.txt"));
         }
 
         Assert.AreEqual(0, failures.Count, "The port saved something WPF doesn't:\n" + DescriptionComparison.Summarize(failures, 10) +
@@ -95,7 +100,15 @@ public class FileCompatibilityTests
         Assert.AreEqual(0, stateFailures.Count, "The port opened the example to a different in-memory state from WPF's:\n  " +
             string.Join("\n  ", stateFailures) + $"\nThe port's state is in {OutputFolder}; tools/BestFitFileCompat.Wpf's state command writes WPF's.");
         Assert.IsTrue(sameReopen, "Opening the port's save again changed the in-memory state differently from WPF:\n" + report);
+        Assert.AreEqual(0, reopenedFailures.Count, "The port's save opened again to a different in-memory state from WPF's save:\n  " +
+            string.Join("\n  ", reopenedFailures));
     }
+
+    /// <summary>
+    /// Where the port's save of an example is kept: beside its description, under the example's own path,
+    /// so that tools/BestFitFileCompat.Wpf's open-saved command can open it with RMC-BestFit (CI's file matrix).
+    /// </summary>
+    internal static string SavedPath(string name) => Path.Combine(OutputFolder, name);
 
     /// <summary>The test's name in reports: the example's file name.</summary>
     public static string DisplayName(MethodInfo method, object[] data) => $"{method.Name} ({Path.GetFileName((string)data[0])})";
@@ -121,7 +134,7 @@ public class FileCompatibilityTests
     }
 
     private static string Report(string name, FileDescription expected, FileDescription actual, List<Difference> differences,
-        List<(string Group, DifferenceKind Kind)> states, List<string> reopenDetails)
+        List<(string Group, DifferenceKind Kind)> states, List<(string Group, DifferenceKind Kind)> reopenedStates, List<string> reopenDetails)
     {
         var report = new StringBuilder();
         report.Append($"{name}: {actual.Tables.Count} tables, {actual.CellCount} cells, port sha {actual.Fingerprint}, WPF sha {expected.Fingerprint}\n");
@@ -134,15 +147,17 @@ public class FileCompatibilityTests
             report.Append($"    {detail}{(expected.ReopenDifferences.Any(path => detail.StartsWith(path + ": ", StringComparison.Ordinal)) ? "" : " (port only)")}\n");
         foreach (string path in expected.ReopenDifferences.Except(actual.ReopenDifferences))
             report.Append($"    {path} (WPF only)\n");
+        foreach ((string group, DifferenceKind kind) in reopenedStates)
+            report.Append($"    {kind}: reopened state of {group}\n");
         return report.ToString();
     }
 
     /// <summary>Runs <see cref="ProjectRoundTrip.SaveAndDescribe"/> in the suite's culture and work folder. Call it on the UI thread.</summary>
     private static FileDescription SaveAndDescribe(string name, string example, Action<string, byte[]>? store,
-        List<string>? reopenDetails, Action<StateSnapshot>? opened = null)
+        List<string>? reopenDetails, Action<StateSnapshot>? opened = null, string? keepAs = null)
     {
         ProjectRoundTrip.UseCulture();
-        return ProjectRoundTrip.SaveAndDescribe(name, example, WorkRoot, store, reopenDetails, opened);
+        return ProjectRoundTrip.SaveAndDescribe(name, example, WorkRoot, store, reopenDetails, opened, keepAs);
     }
 
     /// <summary>Saves the example again, writing the content of the differing cells to the output folder for review.</summary>

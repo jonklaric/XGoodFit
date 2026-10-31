@@ -26,6 +26,16 @@ public static class Program
         "      Compares two folders of descriptions, cell by cell. Fails on mismatches and reopen differences.\n" +
         "  BestFitFileCompat.Wpf state <examples folder> <output folder> [--only TEXT]\n" +
         "      Writes the in-memory state each example opens to, value by value (what the state hashes hash).\n" +
+        "  BestFitFileCompat.Wpf open-saved <port's saved files> <descriptions folder> <output folder> [--rid RID] [--only TEXT]\n" +
+        "      Opens each file the port saved (artifacts/filecompat/<rid> of its file-compatibility suite) with\n" +
+        "      upstream's WPF RMC.BestFit.UI, saves it and opens it again, and compares each step with what\n" +
+        "      RMC-BestFit does with its own save of the example (the descriptions), or for the files the\n" +
+        "      port changed first (changed/), with the port's own description and state. Files saved on\n" +
+        "      Windows (RID win-*, by default the folder's name) must match exactly; elsewhere the platform\n" +
+        "      differences are accepted and reported. Fails on anything unexpected; writes summary.txt.\n" +
+        "  BestFitFileCompat.Wpf simulate <port's saved files on Windows> <another OS's descriptions> <output folder> [--only TEXT]\n" +
+        "      Rewrites the port's Windows saves as the port saved them on another OS, from that OS's\n" +
+        "      descriptions (a CI run's artifacts/filecompat/<rid>), to try open-saved on them here.\n" +
         "Every command runs in the en-US culture, the examples', unless --culture NAME names another.";
 
     /// <summary>Runs a command (see <see cref="Usage"/>).</summary>
@@ -47,6 +57,8 @@ public static class Program
             "describe" => Describe(args[1], args[2], only, dump),
             "compare" => Compare(args[1], args[2]),
             "state" => State(args[1], args[2], only),
+            "open-saved" when args.Length >= 4 => OpenSaved.Run(args[1], args[2], args[3], Option(args, "--rid"), only),
+            "simulate" when args.Length >= 4 => Simulate.Run(args[1], args[2], args[3], only),
             _ => Fail(Usage),
         };
     }
@@ -151,19 +163,24 @@ public static class Program
             FileDescription expected = Examples.Read(expectedPath), actual = Examples.Read(actualPath);
             List<Difference> differences = DescriptionComparison.Compare(expected, actual);
             List<(string Group, DifferenceKind Kind)> states = DescriptionComparison.CompareStates(expected, actual);
+            List<(string Group, DifferenceKind Kind)> reopened = DescriptionComparison.CompareReopenedStates(expected, actual);
             bool sameReopen = expected.ReopenDifferences.SequenceEqual(actual.ReopenDifferences);
-            if (differences.Count == 0 && states.Count == 0 && sameReopen)
+            if (differences.Count == 0 && states.Count == 0 && reopened.Count == 0 && sameReopen)
             {
                 Console.WriteLine($"{name}: identical");
                 continue;
             }
             different++;
-            if (!sameReopen || differences.Any(d => d.Kind == DifferenceKind.Mismatch) || states.Any(s => s.Kind == DifferenceKind.Mismatch))
+            if (!sameReopen || differences.Any(d => d.Kind == DifferenceKind.Mismatch) ||
+                states.Concat(reopened).Any(s => s.Kind == DifferenceKind.Mismatch))
                 failed++;
-            Console.WriteLine($"{name}: {differences.Count} difference(s) in the file, {states.Count} in the state it opens to");
+            Console.WriteLine($"{name}: {differences.Count} difference(s) in the file, {states.Count} in the state it opens to, " +
+                $"{reopened.Count} in the state its save opens to");
             Console.Write(DescriptionComparison.Summarize(differences));
             foreach ((string group, DifferenceKind kind) in states)
                 Console.WriteLine($"  {kind}: state of {group}");
+            foreach ((string group, DifferenceKind kind) in reopened)
+                Console.WriteLine($"  {kind}: reopened state of {group}");
             if (!sameReopen)
                 Console.WriteLine($"  reopen differences: expected [{string.Join(", ", expected.ReopenDifferences)}], actual [{string.Join(", ", actual.ReopenDifferences)}]");
         }
@@ -183,9 +200,7 @@ public static class Program
                 StateSnapshot state = StateSnapshot.Take(project, Path.GetDirectoryName(copy));
                 ProjectRoundTrip.Close(project);
                 ProjectRoundTrip.DeleteWorkFolder(copy);
-                string output = Path.Combine(outputFolder, name + ".state.txt");
-                Directory.CreateDirectory(Path.GetDirectoryName(output)!);
-                File.WriteAllLines(output, state.Values.Select(entry => entry.Key + "\t" + entry.Value));
+                state.WriteValues(Path.Combine(outputFolder, name + ".state.txt"));
                 Console.WriteLine($"{name}\t{state.Values.Count} values");
             }
         }

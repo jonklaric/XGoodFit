@@ -43,4 +43,8 @@ public static class HeadlessSession
     /// <summary>Runs a function on the Avalonia UI thread and waits for its result.</summary>
     public static T Run<T>(Func<T> function) =>
         _session!.Dispatch(function, CancellationToken.None).GetAwaiter().GetResult();
+
+    /// <summary>Runs an asynchronous function on the Avalonia UI thread, as the application awaits an analysis, and waits for its result.</summary>
+    public static T Await<T>(Func<Task<T>> function) =>
+        _session!.Dispatch(function, CancellationToken.None).GetAwaiter().GetResult();
 }

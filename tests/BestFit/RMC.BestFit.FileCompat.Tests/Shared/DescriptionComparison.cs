@@ -168,20 +168,31 @@ public static class DescriptionComparison
     /// differ, <see cref="DifferenceKind.Numbers"/> when only numbers do, and <see cref="DifferenceKind.Volatile"/>
     /// for groups upstream itself opened differently from run to run.
     /// </summary>
-    public static List<(string Group, DifferenceKind Kind)> CompareStates(FileDescription expected, FileDescription actual)
+    public static List<(string Group, DifferenceKind Kind)> CompareStates(FileDescription expected, FileDescription actual) =>
+        CompareStates(expected.States, actual.States);
+
+    /// <summary>
+    /// The groups whose in-memory state after the saved file was opened again differs
+    /// (<see cref="FileDescription.StatesAfterReopening"/>), as <see cref="CompareStates(FileDescription, FileDescription)"/>.
+    /// </summary>
+    public static List<(string Group, DifferenceKind Kind)> CompareReopenedStates(FileDescription expected, FileDescription actual) =>
+        CompareStates(expected.StatesAfterReopening(), actual.StatesAfterReopening());
+
+    /// <summary>The groups whose hashes differ between two lists of group states (group, hash, hash without numbers).</summary>
+    public static List<(string Group, DifferenceKind Kind)> CompareStates(IEnumerable<string[]> expectedStates, IEnumerable<string[]> actualStates)
     {
         var differences = new List<(string, DifferenceKind)>();
-        var actualStates = actual.States.ToDictionary(s => s[0], StringComparer.Ordinal);
-        foreach (string[] state in expected.States)
+        var actualByGroup = actualStates.ToDictionary(s => s[0], StringComparer.Ordinal);
+        foreach (string[] state in expectedStates)
         {
-            if (!actualStates.Remove(state[0], out string[]? other))
+            if (!actualByGroup.Remove(state[0], out string[]? other))
                 differences.Add((state[0], DifferenceKind.Mismatch));
             else if (state[1] == "~" && state[2] == "~")
                 differences.Add((state[0], DifferenceKind.Volatile));
             else if (state[1] != other[1])
                 differences.Add((state[0], state[2] == other[2] ? DifferenceKind.Numbers : state[2] == "~" ? DifferenceKind.Volatile : DifferenceKind.Mismatch));
         }
-        differences.AddRange(actualStates.Keys.Select(group => (group, DifferenceKind.Mismatch)));
+        differences.AddRange(actualByGroup.Keys.Select(group => (group, DifferenceKind.Mismatch)));
         return differences;
     }
 
@@ -226,7 +237,31 @@ public static class DescriptionComparison
                 state[i] = "~";
             }
         }
+
+        // And for the state the saved file opened to.
+        var reopened = description.StatesAfterReopening().ToDictionary(s => s[0], StringComparer.Ordinal);
+        var otherReopened = other.StatesAfterReopening().ToDictionary(s => s[0], StringComparer.Ordinal);
+        foreach (string group in reopened.Keys.Union(otherReopened.Keys).OrderBy(g => g, StringComparer.Ordinal))
+        {
+            string[] state = reopened.GetValueOrDefault(group) ?? new[] { group, "-", "-" };
+            string[] otherState = otherReopened.GetValueOrDefault(group) ?? new[] { group, "-", "-" };
+            if (Enumerable.Range(1, 2).All(i => state[i] == "~" || state[i] == otherState[i])) continue;
+            string[] marking = description.ReopenedStates.FirstOrDefault(s => s[0] == group) ?? AddReopened(description, state);
+            for (int i = 1; i <= 2; i++)
+            {
+                if (marking[i] == "~" || marking[i] == otherState[i]) continue;
+                marked.Add(new Difference(DifferenceKind.Volatile, "(reopened state)", group, 0, marking[i], otherState[i], i == 1 ? "values" : "values without numbers"));
+                marking[i] = "~";
+            }
+        }
         return marked;
+    }
+
+    private static string[] AddReopened(FileDescription description, string[] state)
+    {
+        string[] copy = (string[])state.Clone();
+        description.ReopenedStates.Add(copy);
+        return copy;
     }
 
     /// <summary>A short summary of differences, grouped by kind (mismatches first) and column.</summary>

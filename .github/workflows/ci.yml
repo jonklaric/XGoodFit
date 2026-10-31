@@ -85,6 +85,17 @@ jobs:
         shell: bash
         run: cat artifacts/filecompat/*/summary.txt 2>/dev/null || echo "No file-compatibility summary was written."
 
+      # The files the suite saved with the port, beside their descriptions: the examples it opened and
+      # saved, and under changed/ the few it changed first. The file-matrix job below opens them with
+      # upstream's own WPF RMC-BestFit. About 380 MB, so they are kept for a week only.
+      - uses: actions/upload-artifact@v7
+        if: ${{ !cancelled() }}
+        with:
+          name: filecompat-saved-${{ matrix.name }}
+          path: artifacts/filecompat/**/*.bestfit
+          retention-days: 7
+          if-no-files-found: ignore
+
       # Windows only: upstream's own WPF RMC-BestFit opens and saves the examples again, and must write
       # exactly the golden data the suite compares the port with (Golden/README.md in its tests).
       - name: WPF reference matches the golden data
@@ -116,7 +127,9 @@ jobs:
         if: always()
         with:
           name: filecompat-${{ matrix.name }}
-          path: artifacts/filecompat/
+          path: |
+            artifacts/filecompat/
+            !artifacts/filecompat/**/*.bestfit
           if-no-files-found: ignore
 
       - uses: actions/upload-artifact@v7
@@ -177,6 +190,72 @@ jobs:
           path: |
             artifacts/screenshots/examples/
             artifacts/logs/app-tests/
+          if-no-files-found: ignore
+
+  # The bidirectional file matrix (docs/migration-plan.md, Phase 9): upstream's own WPF RMC-BestFit opens
+  # the files the port saved on each OS, saves them again and opens that save, and each step must give
+  # what it gives with its own saves of the examples (the golden data) or, for the files the port changed
+  # first, the state the port opens them to. Files from Windows must match exactly; from macOS and Linux
+  # the platform differences are accepted and reported, among them whether RMC-BestFit writes them back.
+  # tools/BestFitFileCompat.Wpf's open-saved command; Golden/README.md in the file-compatibility tests.
+  file-matrix:
+    name: RMC-BestFit opens the port's files from every OS
+    needs: portable
+    # A portable job can fail for reasons of its own (the App tests, say): open the files it did save.
+    if: ${{ !cancelled() }}
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.x'
+
+      # Each OS's saved files, and the descriptions and states the suite wrote beside them.
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: filecompat-*
+          path: artifacts/filecompat-ci
+          merge-multiple: true
+
+      # Only upstream's WPF RMC.BestFit.UI and what it builds on. No sample data (the golden data describes
+      # RMC-BestFit's saves of the examples) and no HEC-DSS natives (opening and saving never read DSS files).
+      - name: Build upstream's WPF RMC-BestFit
+        run: dotnet build tools/BestFitFileCompat.Wpf -c Release
+
+      - name: RMC-BestFit opens, saves and reopens the port's files
+        shell: bash
+        run: |
+          status=0
+          for rid in win-x64 linux-x64 osx-arm64; do
+            if [ ! -d "artifacts/filecompat-ci/$rid" ]; then
+              echo "::error::No files the port saved on $rid: see that OS's Portable layer job."
+              status=1
+              continue
+            fi
+            dotnet run -c Release --no-build --project tools/BestFitFileCompat.Wpf -- open-saved "artifacts/filecompat-ci/$rid" \
+              tests/BestFit/RMC.BestFit.FileCompat.Tests/Golden "artifacts/filecompat-matrix/$rid" || status=1
+          done
+          exit $status
+
+      - name: File matrix summary
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo '### RMC-BestFit opens the files the port saved'
+            echo '```'
+            grep -h '^#' artifacts/filecompat-matrix/*/summary.txt 2>/dev/null || echo "No summary was written."
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      # Named apart from the filecompat-* artifacts, which a re-run of this job downloads again.
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: file-matrix
+          path: artifacts/filecompat-matrix/
           if-no-files-found: ignore
 
   compare-probes:
