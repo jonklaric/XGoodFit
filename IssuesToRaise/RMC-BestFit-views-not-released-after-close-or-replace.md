@@ -6,6 +6,8 @@
 
 **Verification:** verified by reading the source; not measured.
 
+Related: [Properties panels' source lists](RMC-BestFit-properties-panels-source-list-subscriptions.md). Setting `Element = null` in `PropertiesClosed` doesn't release five of the properties panels either, when they were closed before they loaded.
+
 ## Summary
 
 Each document view subscribes to its element's `PropertyChanged` when its `Element` is set, and unsubscribes only when `Element` changes again. When a document is closed, `DocumentClosed` sets `Element = null` for only one of the twelve views it handles, so the other eleven stay subscribed to an element that lives as long as the project. Opening a document creates a new view each time, so every open and close leaves another view, with its grids and plots, in memory and handling the element's events. `ParameterSetsControl` never unsubscribes at all, so even the one view that is cleared leaves its parameter-sets grid behind.
