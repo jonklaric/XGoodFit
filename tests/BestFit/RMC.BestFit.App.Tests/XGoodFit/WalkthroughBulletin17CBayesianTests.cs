@@ -34,13 +34,14 @@ namespace RMC.BestFit.App.Tests.XGoodFit
         [TestMethod]
         public void Inputs_HoldTheWalkthroughsRecords()
         {
-            Example.Run(() => AssertBulletin17CInputs(Example, ""));
+            Example.Run(() => AssertBulletin17CInputs(Example, "", 2));
         }
 
         /// <summary>Checks the seven Bulletin 17C datasets, which the Bayesian and GMM walkthroughs describe alike.</summary>
         /// <param name="example">The example.</param>
         /// <param name="suffix">The inputs' names after "Example #n" (the GMM project's are "Example #n - Data").</param>
-        internal static void AssertBulletin17CInputs(WalkthroughExample example, string suffix)
+        /// <param name="thresholds">The examples whose walkthrough says they retain a low outlier threshold.</param>
+        internal static void AssertBulletin17CInputs(WalkthroughExample example, string suffix, params int[] thresholds)
         {
             foreach (var (number, exact, first, last, intervals, windows, flags) in new[]
             {
@@ -52,7 +53,7 @@ namespace RMC.BestFit.App.Tests.XGoodFit
                 var (view, properties) = example.Open<InputData, InputDataControl, InputDataPropertiesControl>(name);
                 AssertRecords(Records(view), exact, first, last, 0, intervals, windows, flags, name);
                 Assert.AreEqual("Peak Flow (cfs)", Shown(properties.UnitLabel), name + ": the unit label");
-                if (number == 2)
+                if (thresholds.Contains(number))
                     Assert.IsTrue(Parse(Shown(properties.LOThresholdValue)) > 0, name + ": the retained low outlier threshold");
                 if (number == 7)
                 {
@@ -165,6 +166,32 @@ namespace RMC.BestFit.App.Tests.XGoodFit
                     Assert.AreEqual(0, PointCount(b17c.FrequencyPlot, curve), "B17C Example #3 draws no " + curve);
                 SelectTab(view, "GMM Report");
                 Assert.AreEqual("", ReportText(view.GMMReportControl), "no GMM report");
+            });
+        }
+
+        /// <summary>
+        /// Bayes Example #1's saved settings give its saved fit, not the walkthrough's row: its Estimate button (seed 12345)
+        /// gives 4,806.606 cfs, 4,139.069-5,777.893, R-hat 1.0009 and ESS 9,515 again (see <see cref="Results"/>). About 10
+        /// seconds.
+        /// </summary>
+        [TestMethod]
+        public void BayesExample1_EstimateGivesTheSavedFit()
+        {
+            Example.Run(() =>
+            {
+                try
+                {
+                    var element = Example.Element<UnivariateAnalysis>("Bayes Example #1");
+                    var (view, properties) = Example.Open<UnivariateAnalysisControl, UnivariateAnalysisPropertiesControl>(element);
+                    var saved = element.AnalysisResults;
+                    Example.Estimate(view, view.FrequencyCurveTable, properties.EstimateButton, System.TimeSpan.FromMinutes(3));
+                    Assert.AreNotSame(saved, element.AnalysisResults, "a new run");
+                    AssertResult(Parts(view), Parts(properties), Results[0]);
+                }
+                finally
+                {
+                    Example.Reopen();
+                }
             });
         }
 

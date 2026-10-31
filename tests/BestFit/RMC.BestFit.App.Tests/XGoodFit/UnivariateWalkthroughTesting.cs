@@ -61,6 +61,11 @@ namespace RMC.BestFit.App.Tests.XGoodFit
             HeadlessSession.Run(() =>
             {
                 using IDisposable culture = ViewTesting.UseExamplesCulture();
+                // The shell's project is a singleton: a class that follows two examples (Blakely's imperial and metric
+                // projects) has one open at a time.
+                if (_open != null && _open != this)
+                    _open.Close();
+                _open = this;
                 if (Window == null)
                 {
                     BestFitShell.Start();
@@ -81,9 +86,14 @@ namespace RMC.BestFit.App.Tests.XGoodFit
             });
         }
 
+        // The example whose window is open.
+        private static WalkthroughExample _open;
+
         /// <summary>Closes the window and the example, if a test opened them, on the UI thread.</summary>
         internal void Close()
         {
+            if (_open == this)
+                _open = null;
             if (Window == null) return;
             void close()
             {
@@ -134,22 +144,95 @@ namespace RMC.BestFit.App.Tests.XGoodFit
             return ((TView)document.Content, (TProperties)properties);
         }
 
+        /// <summary>The element's open document and properties, as the window shows them now.</summary>
+        internal (TView View, TProperties Properties) Shown<TView, TProperties>(IElement element) where TView : Control where TProperties : Control
+        {
+            BestFitShell.Frame();
+            LayoutDocument document = Documents().SingleOrDefault(d => d.Content is Control c && ReferenceEquals(Node.GetControlElement(c), element));
+            Assert.IsNotNull(document, element.Name + ": its document is open");
+            return ((TView)document.Content, (TProperties)PropertiesPane().Content);
+        }
+
         /// <summary>Opens the document of the project's element of type T named <paramref name="name"/>.</summary>
         internal (TView View, TProperties Properties) Open<T, TView, TProperties>(string name) where T : class, IElement where TView : Control where TProperties : Control =>
             Open<TView, TProperties>(Element<T>(name));
 
-        /// <summary>Closes every open document, as their tabs' close buttons do, and answers no question.</summary>
-        internal void CloseDocuments()
+        /// <summary>
+        /// Opens a fresh copy of the example in the window, as File &gt; Open does, after a test that changed it (an
+        /// Estimate), so that the class's other tests read the saved results again. The changed copy is saved first, as
+        /// <see cref="BestFitShell.Close"/> does, so the shell asks nothing.
+        /// </summary>
+        internal void Reopen()
         {
-            using (BestFitShell.WhenOpened<Window>(dialog => dialog.Close()))
-            {
-                foreach (LayoutDocument document in Documents())
-                    document.Close();
-                BestFitShell.Frame();
-            }
+            CloseDocuments();
+            if (Project.IsDirty)
+                Project.Save();
+            string copy = Path.Combine(BestFitShell.Folder, _example + "-" + (++_copies) + ".bestfit");
+            File.Copy(BestFitShell.Example(_example), copy);
+            Window.OpenProject(copy);
+            BestFitShell.Frame();
+            ViewTesting.Collect();
         }
 
-        private List<LayoutDocument> Documents() =>
+        private int _copies;
+
+        /// <summary>
+        /// Presses an analysis's Estimate button, as a click does, and waits for the run to finish (the button shows again);
+        /// no dialog may open.
+        /// </summary>
+        /// <returns>How long the run took.</returns>
+        internal static TimeSpan Estimate(Button estimate, TimeSpan timeout)
+        {
+            var dialogs = new List<string>();
+            var watch = System.Diagnostics.Stopwatch.StartNew();
+            using (BestFitShell.WhenOpened<Window>(dialog => { dialogs.Add(dialog.Title); dialog.Close(); }))
+            {
+                estimate.RaiseEvent(new Avalonia.Interactivity.RoutedEventArgs(Button.ClickEvent));
+                BestFitShell.Frame();
+                Assert.IsTrue(ShellPublicVariables.SimulationInProgress, "the analysis runs");
+                BestFitShell.WaitUntil(() => estimate.Visibility == Visibility.Visible && !ShellPublicVariables.SimulationInProgress, timeout, "the analysis to finish");
+            }
+            CollectionAssert.AreEqual(Array.Empty<string>(), dialogs, "no message");
+            Console.WriteLine("Estimate took " + watch.Elapsed);
+            return watch.Elapsed;
+        }
+
+        /// <summary>
+        /// Presses an analysis's Estimate button (see <see cref="Estimate(Button, TimeSpan)"/>) and waits for its document's
+        /// frequency table to show the new run (the view gives it new rows), checking that the document stayed shown.
+        /// </summary>
+        internal void Estimate(Control view, DataGrid frequencyTable, Button estimate, TimeSpan timeout)
+        {
+            object before = frequencyTable.ItemsSource;
+            Estimate(estimate, timeout);
+            Assert.IsNotNull(TopLevel.GetTopLevel(view), "the document is still shown after the run");
+            BestFitShell.WaitUntil(() => frequencyTable.ItemsSource != null && !ReferenceEquals(frequencyTable.ItemsSource, before) && UnivariateWalkthroughTesting.Count(frequencyTable) > 0,
+                TimeSpan.FromSeconds(30), "the new frequency curve");
+        }
+
+        /// <summary>Closes every open document, as their tabs' close buttons do, without saving changed elements.</summary>
+        internal void CloseDocuments()
+        {
+            // A document whose element changed (an Estimate) asks whether to save it: Don't Save. Any other window is a
+            // question nobody expects: close it, so it can't wait.
+            using IDisposable answer = Avalonia.Controls.Window.WindowOpenedEvent.AddClassHandler<Avalonia.Controls.Window>((opened, _) =>
+            {
+                if (opened is MainWindow) return;
+                Dispatcher.UIThread.Post(() =>
+                {
+                    if (opened is SaveElementsDialog)
+                        BestFitShell.ClickButton(opened, "Don't Save");
+                    else
+                        opened.Close();
+                }, DispatcherPriority.Background);
+            });
+            foreach (LayoutDocument document in Documents())
+                document.Close();
+            BestFitShell.Frame();
+            Assert.AreEqual(0, Documents().Count, "the documents closed");
+        }
+
+        internal List<LayoutDocument> Documents() =>
             Window.FindControl<DockingManager>("MainDock").Layout.Descendents().OfType<LayoutDocument>().ToList();
 
         private LayoutAnchorable PropertiesPane() =>
@@ -177,6 +260,12 @@ namespace RMC.BestFit.App.Tests.XGoodFit
         string Dic = null, string Chains = null, string Thinning = null, string Draws = null);
 
     /// <summary>
+    /// A row of a walkthrough's table of saved Bulletin 17C (GMM) results, as it writes them: the uncertainty method's
+    /// saved name, the draws, the saved optimizer status, and the 1% AEP's computed value and confidence limits.
+    /// </summary>
+    internal sealed record GmmResult(string Name, string Method, string Draws, string Status, string Point, string Lower, string Upper);
+
+    /// <summary>
     /// XGoodFit addition: reads what the univariate views and properties panels show, for the walkthrough tests
     /// (<see cref="WalkthroughExample"/>), and compares it with the walkthroughs' values in their own rounding.
     /// </summary>
@@ -196,7 +285,14 @@ namespace RMC.BestFit.App.Tests.XGoodFit
         internal static string Text(DataGrid grid, int row, int column)
         {
             DataGridCell cell = ((CopyPasteDataGrid)grid).GetCell(row, column);
-            Assert.IsNotNull(cell, $"{grid.Name}: the cell at row {row}, column {column}");
+            if (cell == null)
+            {
+                // A grid whose rows were just replaced (a new result) lays its rows out on the next layout pass.
+                BestFitShell.Settle();
+                cell = ((CopyPasteDataGrid)grid).GetCell(row, column);
+            }
+            if (cell == null)
+                Assert.Fail($"{grid.Name}: the cell at row {row}, column {column} ({Count(grid)} rows, shown {grid.IsEffectivelyVisible}, attached {TopLevel.GetTopLevel(grid) != null})");
             if (cell.GetVisualDescendants().OfType<CheckBox>().FirstOrDefault() is CheckBox box)
                 return (box.IsChecked == true).ToString();
             return string.Concat(cell.GetVisualDescendants().OfType<TextBlock>().Select(t => t.Text));
@@ -231,10 +327,15 @@ namespace RMC.BestFit.App.Tests.XGoodFit
             return string.Concat(control.GetVisualDescendants().OfType<TextBlock>().Select(t => t.Text));
         }
 
-        /// <summary>Whether a property control's check box is ticked.</summary>
+        /// <summary>
+        /// Whether a property control's check box is ticked; for one in a section the panel hasn't expanded (whose check box
+        /// isn't made yet), the state the control holds.
+        /// </summary>
         internal static bool Ticked(Control control)
         {
             CheckBox box = control as CheckBox ?? control.GetVisualDescendants().OfType<CheckBox>().FirstOrDefault();
+            if (box == null && control is BooleanPropertyControl property)
+                return property.IsSelected;
             Assert.IsNotNull(box, control.Name + " has a check box");
             return box.IsChecked == true;
         }
@@ -377,9 +478,12 @@ namespace RMC.BestFit.App.Tests.XGoodFit
                 uncertain, intervals, windows);
         }
 
-        /// <summary>An index as the data grids show it: a year, or a date and time whose year is taken.</summary>
+        /// <summary>
+        /// An index as the data grids show it: a year, or a date and time whose year is taken (ICU's en-US, on Linux and
+        /// macOS, puts a narrow no-break space before AM and PM).
+        /// </summary>
         internal static int Year(string index) =>
-            int.TryParse(index, NumberStyles.Integer, Us, out int year) ? year : DateTime.Parse(index, Us).Year;
+            int.TryParse(index, NumberStyles.Integer, Us, out int year) ? year : DateTime.Parse(index.Replace((char)0x202F, ' '), Us).Year;
 
         /// <summary>Checks an input's records against a row of a walkthrough's input table.</summary>
         internal static void AssertRecords(InputRecords shown, int exact, int first, int last, int uncertain, int intervals, int windows, int lowFlags, string label)
@@ -557,6 +661,60 @@ namespace RMC.BestFit.App.Tests.XGoodFit
             SelectTab(panel, "General");
         }
 
+        /// <summary>The uncertainty methods as the GMM Report names them, by the walkthroughs' (saved) names.</summary>
+        internal static readonly Dictionary<string, string> GmmMethods = new Dictionary<string, string>
+        {
+            ["MultivariateNormal"] = "Multivariate Normal", ["LinkedMultivariateNormal"] = "Linked Multivariate Normal",
+            ["BiasCorrectedBootstrap"] = "Bias-Corrected Bootstrap",
+        };
+
+        /// <summary>
+        /// Checks a row of a walkthrough's table of saved Bulletin 17C (GMM) results where it tells the user to read it: the
+        /// 1% AEP's computed curve and confidence limits in Tabular Results; the uncertainty method, draws (output length),
+        /// optimizer status, confidence level, seed and GMM strategy in the GMM Report; and the options in the properties.
+        /// </summary>
+        internal static void AssertGmmResult(B17CAnalysisControl view, B17CAnalysisPropertiesControl panel, GmmResult expected, string width = "90%")
+        {
+            string label = expected.Name;
+            SelectTab(view, "Tabular Results");
+            AssertIntervalWidth(view.FrequencyCurveTable, width, label);
+            AssertQuantile(view.FrequencyCurveTable, "0.01", expected.Point, expected.Lower, expected.Upper, label);
+            SelectTab(view, "GMM Report");
+            string report = ReportText(view.GMMReportControl);
+            Assert.AreEqual(GmmMethods[expected.Method], ReportValue(report, "Uncertainty Method:"), label + ": the report's uncertainty method");
+            Assert.AreEqual(Parse(expected.Draws).ToString("N0", Us), ReportValue(report, "Output Length:"), label + ": the report's draws");
+            Assert.AreEqual(expected.Status, ReportValue(report, "Optimizer Status:"), label + ": the optimizer status");
+            // Reports saved by earlier versions keep the legacy label "Credible Interval" (the walkthroughs say so).
+            string interval = report.Contains("Confidence Interval:", StringComparison.Ordinal) ? "Confidence Interval:" : "Credible Interval:";
+            Assert.AreEqual(width, ReportValue(report, interval), label + ": the report's confidence interval");
+            Assert.AreEqual("12345", ReportValue(report, "PRNG Seed:"), label + ": the report's seed");
+            Assert.AreEqual("Iterative", ReportValue(report, "GMM Strategy:"), label + ": the GMM strategy");
+            SelectTab(view, "Distribution Results");
+            SelectTab(panel, "Options");
+            Assert.AreEqual(GmmMethods[expected.Method], Shown(panel.UncertaintyMethod), label + ": the uncertainty method");
+            Assert.AreEqual(expected.Draws, Shown(panel.OutputLength), label + ": the output length");
+            Assert.AreEqual("12345", Shown(panel.PRNGSeed), label + ": the seed");
+            Assert.AreEqual(width, Shown(panel.ConfidenceInterval), label + ": the confidence interval");
+            SelectTab(panel, "General");
+        }
+
+        /// <summary>
+        /// Checks a Bulletin 17C analysis's GMM settings that the walkthroughs list but the app doesn't show (they're read
+        /// from the element's model): the optimizer, the most GMM iterations, the tolerances and convergence within them.
+        /// </summary>
+        internal static void AssertGmmSettings(B17CAnalysis element, string optimizer = "BFGS")
+        {
+            var gmm = element.GMM;
+            Assert.AreEqual(optimizer, gmm.OptimizerMethod.ToString(), element.Name + ": the optimizer");
+            Assert.AreEqual("Iterative", gmm.EstimationStrategy.ToString(), element.Name + ": the GMM strategy");
+            Assert.AreEqual(100, gmm.MaxGMMIterations, element.Name + ": the most GMM iterations");
+            Assert.AreEqual(1E-8, gmm.AbsoluteTolerance, element.Name + ": the absolute tolerance");
+            Assert.AreEqual(1E-8, gmm.RelativeTolerance, element.Name + ": the relative tolerance");
+        }
+
+        /// <summary>The rows of a Bulletin 17C analysis's penalty table (General tab) whose Enabled box is ticked.</summary>
+        internal static List<string[]> EnabledPenalties(DataGrid table) => Rows(table).Where(r => r[0] == "True").ToList();
+
         /// <summary>The rows of a priors control's table (Parameter or Probability, and Distribution), as shown.</summary>
         internal static List<string[]> Priors(Control priors) =>
             Rows(priors.GetVisualDescendants().OfType<DataGrid>().Single(g => g.Name == "PriorDistributionsDataGrid"));
@@ -581,6 +739,34 @@ namespace RMC.BestFit.App.Tests.XGoodFit
             {
                 UnivariateAnalysisTesting.AssertClose(x[i].GetDouble(), points[i].X, $"{label}: {title} {i}.X");
                 UnivariateAnalysisTesting.AssertClose(y[i].GetDouble(), points[i].Y, $"{label}: {title} {i}.Y");
+            }
+        }
+
+        /// <summary>
+        /// Checks a walkthrough figure of bars (a histogram's, a seasonality plot's) against the plot's histogram series of
+        /// the same title: each bar's centre (the figure's x), width and height.
+        /// </summary>
+        /// <param name="plot">The plot, shown.</param>
+        /// <param name="figure">The figure's data.</param>
+        /// <param name="label">What the assertions say.</param>
+        /// <param name="title">The plot's title for the figure's series, where the figure relabels it.</param>
+        internal static void AssertBars(OxyPlot.Wpf.Plot plot, JsonElement figure, string label, string title = null)
+        {
+            ((OxyPlot.IPlotModel)plot.ActualModel).Update(true);
+            foreach (JsonElement expected in figure.GetProperty("series").EnumerateArray())
+            {
+                title ??= expected.GetProperty("name").GetString();
+                var series = plot.Series.OfType<OxyPlot.Wpf.HistogramSeries>().Where(s => s.Title == title).ToList();
+                Assert.AreEqual(1, series.Count, $"{label}: one histogram titled {title}, among " + string.Join(", ", plot.Series.Select(s => s.Title)));
+                var bars = ((System.Collections.IEnumerable)series[0].ItemsSource).Cast<OxyPlot.Series.HistogramItem>().ToList();
+                JsonElement x = expected.GetProperty("x"), y = expected.GetProperty("y"), width = expected.GetProperty("width");
+                Assert.AreEqual(x.GetArrayLength(), bars.Count, $"{label}: {title}'s bars");
+                for (int i = 0; i < bars.Count; i++)
+                {
+                    UnivariateAnalysisTesting.AssertClose(x[i].GetDouble(), (bars[i].RangeStart + bars[i].RangeEnd) / 2, $"{label}: {title} bar {i}'s centre");
+                    UnivariateAnalysisTesting.AssertClose(width[i].GetDouble(), bars[i].RangeEnd - bars[i].RangeStart, $"{label}: {title} bar {i}'s width");
+                    UnivariateAnalysisTesting.AssertClose(y[i].GetDouble(), bars[i].Value, $"{label}: {title} bar {i}");
+                }
             }
         }
 

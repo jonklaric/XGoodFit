@@ -99,6 +99,32 @@ namespace RMC.BestFit.App.Tests.XGoodFit
             });
         }
 
+        /// <summary>
+        /// The cubic fit's saved settings give its saved diagnostics, not the walkthrough's: its Estimate button (seed 12345)
+        /// gives the walkthrough's quantiles and DIC with R-hat 1.0005 and ESS 9,523 again (see <see cref="Results"/>). About 20
+        /// seconds.
+        /// </summary>
+        [TestMethod]
+        public void CubicTrend_EstimateGivesTheSavedDiagnostics()
+        {
+            Example.Run(() =>
+            {
+                try
+                {
+                    var element = Example.Element<UnivariateAnalysis>("NSFFA - Cubic Trend");
+                    var (view, properties) = Example.Open<UnivariateAnalysisControl, UnivariateAnalysisPropertiesControl>(element);
+                    var saved = element.AnalysisResults;
+                    Example.Estimate(view, view.FrequencyCurveTable, properties.EstimateButton, System.TimeSpan.FromMinutes(5));
+                    Assert.AreNotSame(saved, element.AnalysisResults, "a new run");
+                    AssertResult(Parts(view), Parts(properties), Results.Single(r => r.Name == "NSFFA - Cubic Trend"));
+                }
+                finally
+                {
+                    Example.Reopen();
+                }
+            });
+        }
+
         // The walkthrough's trend table, with each fit's input (its StepFunction, the saved name, is the app's Step Function).
         private static readonly (string Name, string Input, string Trend)[] Trends =
         {
