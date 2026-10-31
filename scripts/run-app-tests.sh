@@ -98,7 +98,7 @@ done
 #    22 here (with the thread pool capped at three workers, it still failed once in 10), but on Windows
 #    CI's runner it failed in its own process too (2 of 2). Until the race is fixed it gets three
 #    attempts, and the summary names it when it passed only on a retry.
-#    See IssuesToRaise/README.md, "Pending".
+#    See IssuesToRaise/RMC-BestFit-bivariate-point-estimator-race-clears-isestimated.md.
 for class in PointEstimatorControlContractTests; do
   wanted "$class" && run "$class" "FullyQualifiedName~.$class.&TestCategory!=External" 3
   rest+="&FullyQualifiedName!~.$class."
