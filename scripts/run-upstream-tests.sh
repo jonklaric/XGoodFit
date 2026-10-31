@@ -3,7 +3,21 @@
 # current machine, with the exclusions documented below. Used by CI and for local checks on any OS.
 # Logs go to artifacts/logs/test-<suite>.log. RMC-BestFit builds against the vendored RMC.Numerics
 # source (Directory.Build.rsp).
+#
+# Usage: scripts/run-upstream-tests.sh [--verification [FILTER]]
+#   (default)       the suites CI runs on every push
+#   --verification  only upstream's long verification suite, RMC.BestFit.Verification, which the weekly
+#                   Reproducibility workflow runs (docs/reproducibility.md); FILTER, a test filter such as
+#                   "FullyQualifiedName~RMC.BestFit.Verification.Univariate.", runs part of it
 set -uo pipefail
+
+verification=0
+verification_filter=""
+case "${1:-}" in
+  --verification) verification=1; verification_filter="${2:-}" ;;
+  "") ;;
+  *) sed -n '2,13p' "${BASH_SOURCE[0]}"; exit 2 ;;
+esac
 
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$root"
@@ -30,6 +44,33 @@ run() {
     failed=1
   fi
 }
+
+# Builds an upstream test project in Release and runs its test executable directly, so --filter reaches
+# the test runner.
+run_built() {
+  local name="$1" project="$2"; shift 2
+  if dotnet build "$project/$name.csproj" -c Release > "$logs/build-$name.log" 2>&1; then
+    run "$name" dotnet "$project/bin/Release/net10.0/$name.dll" "$@"
+  else
+    echo "==> $name: build FAILED, see artifacts/logs/build-$name.log"
+    failed=1
+  fi
+}
+
+# RMC.BestFit.Verification: the model library against published results, R and Python packages
+# (the oracle files in upstream/RMC-BestFit/verification/data) and Bulletin 17C's reference data.
+# Upstream runs it apart from its unit tests (it doesn't build it in Release; XGoodFit does, as for the
+# other suites): its 329 tests took 25 minutes on a 16-thread Windows laptop and 23 on a 12-core Linux
+# machine, so the workflow runs it in two parts (the Univariate tests take half the time). Every test
+# runs, on every OS.
+if [[ $verification -eq 1 ]]; then
+  if [[ -n "$verification_filter" ]]; then
+    run_built RMC.BestFit.Verification upstream/RMC-BestFit/src/RMC.BestFit.Verification --filter "$verification_filter"
+  else
+    run_built RMC.BestFit.Verification upstream/RMC-BestFit/src/RMC.BestFit.Verification
+  fi
+  exit $failed
+fi
 
 # RMC.Numerics, the numerical library under the model (vendored at tag v2.2.0). Excluded:
 #  - LiveServiceIntegration: downloads from live web services (USGS, BOM, ...), which fail whenever a
@@ -68,12 +109,11 @@ bestfit_filter="FullyQualifiedName!=RMC.BestFit.Tests.Documentation.TechnicalRef
 bestfit_filter+="&FullyQualifiedName!=RMC.BestFit.Tests.BatchAnalysis.BatchAnalysisRunnerTests.RunAsync_MultipleAnalyses_Parallel"
 bestfit_filter+="&FullyQualifiedName!=RMC.BestFit.Tests.Bivariate.BivariateAnalysisXYOrdinatesReprocessTests.XYOrdinatesChange_EstimatedAnalysis_PreservesMcmcResults"
 bestfit_filter+="&FullyQualifiedName!=RMC.BestFit.Tests.Bivariate.CoincidentFrequencyAnalysisTests.Cancel_DuringParallelLoop_StopsAndReportsCanceled"
-if dotnet build "$bestfit/RMC.BestFit.Tests.csproj" -c Release > "$logs/build-RMC.BestFit.Tests.log" 2>&1; then
-  run RMC.BestFit.Tests dotnet "$bestfit/bin/Release/net10.0/RMC.BestFit.Tests.dll" --filter "$bestfit_filter"
-else
-  echo "==> RMC.BestFit.Tests: build FAILED, see artifacts/logs/build-RMC.BestFit.Tests.log"
-  failed=1
-fi
+run_built RMC.BestFit.Tests "$bestfit" --filter "$bestfit_filter"
+
+# RMC.BestFit.Api.Tests: upstream's REST API and MCP server over the model library, in process
+# (ASP.NET Core's test host; no network): 605 tests in a few seconds. Every test runs.
+run_built RMC.BestFit.Api.Tests upstream/RMC-BestFit/src/RMC.BestFit.Api.Tests
 
 run DatabaseManager.Tests dotnet test upstream/WPF-Framework/src/DatabaseManager.Tests/DatabaseManager.Tests.csproj -c Release
 run ExpressionParser.Tests dotnet test upstream/WPF-Framework/src/ExpressionParser.Tests/ExpressionParser.Tests.csproj -c Release
