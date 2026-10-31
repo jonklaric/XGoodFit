@@ -31,8 +31,29 @@ namespace RMC_BestFit
     /// </remarks>
     public partial class App : Application
     {
+        /// <summary>
+        /// The RMC-BestFit version projects record (BestFitProject.SoftwareVersion), as RMC-BestFit 2.0.1's,
+        /// so that files stay compatible both ways.
+        /// </summary>
+        /// <remarks>
+        /// XGoodFit port: the window title and About box show XGoodFit's own version,
+        /// <see cref="XGoodFitVersion"/>, where upstream's show this one.
+        /// </remarks>
         internal const string ProductVersion = "2.0.1";
         internal const string ProductVersionDate = "October 2026";
+
+        /// <summary>
+        /// XGoodFit addition: XGoodFit's own version (Version in Directory.Build.props, or the release's),
+        /// the one its updates compare, without build metadata: what the window title and About box show.
+        /// </summary>
+        internal static string XGoodFitVersion
+        {
+            get
+            {
+                var version = CreateUpdateOptions().CurrentVersion;
+                return $"{version.Major}.{version.Minor}.{version.Patch}" + (version.IsPreRelease ? "-" + version.PreRelease : "");
+            }
+        }
 
         /// <summary>The files the operating system asks the application to open.</summary>
         private FileOpenRequests _fileOpenRequests;
@@ -147,7 +168,8 @@ namespace RMC_BestFit
             FrameworkUI.ThemeManager.SetTheme(FrameworkUI.ThemeColor.Light);
 
             FrameworkUI.ShellPublicVariables.SoftwareVersionDate = ProductVersionDate;
-            FrameworkUI.ShellPublicVariables.SoftwareVersion = ProductVersion;
+            // XGoodFit port: the window title shows XGoodFit's version; projects record ProductVersion.
+            FrameworkUI.ShellPublicVariables.SoftwareVersion = XGoodFitVersion;
             FrameworkUI.ShellPublicVariables.SoftwareExtension = ".bestfit";
 
             // Create the project model

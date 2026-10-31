@@ -425,17 +425,22 @@ namespace RMC_BestFit
         /// </list>
         /// A separator groups the three online resources above the application-specific items.
         /// All menu items are configured with appropriate icons and event handlers.
+        /// <para>
+        /// XGoodFit port: the first four items are RMC-BestFit's documents and terms, so their headers start
+        /// with "RMC-BestFit" (as "RMC-BestFit User Guide"); the About item is XGoodFit's own.
+        /// </para>
         /// </remarks>
         protected override void DefineHelpMenuItems()
         {
-            _helpMenuItems.Add(CreateOnlineHelpMenuItem("User Guide", OnlineHelpLauncher.UserGuideUrl, showHelpIcon: true));
-            _helpMenuItems.Add(CreateOnlineHelpMenuItem("Technical Reference", OnlineHelpLauncher.TechnicalReferenceUrl));
-            _helpMenuItems.Add(CreateOnlineHelpMenuItem("Example Projects", OnlineHelpLauncher.ExampleProjectsUrl));
+            _helpMenuItems.Add(CreateOnlineHelpMenuItem("RMC-BestFit User Guide", OnlineHelpLauncher.UserGuideUrl, showHelpIcon: true));
+            _helpMenuItems.Add(CreateOnlineHelpMenuItem("RMC-BestFit Technical Reference", OnlineHelpLauncher.TechnicalReferenceUrl));
+            _helpMenuItems.Add(CreateOnlineHelpMenuItem("RMC-BestFit Example Projects", OnlineHelpLauncher.ExampleProjectsUrl));
             _helpMenuItems.Add(CreateHelpMenuSeparator());
 
             // Terms & Conditions for Use
             // XGoodFit port: the application's resources, which the node can't reach yet (see the class remarks).
-            var tcuMenuItem = new MenuItem() { Header = "Terms & Conditions for Use", Icon = Application.Current.TryFindResource("TCUIcon") };
+            // The terms are RMC-BestFit's, which the header says.
+            var tcuMenuItem = new MenuItem() { Header = "RMC-BestFit Terms & Conditions for Use", Icon = Application.Current.TryFindResource("TCUIcon") };
             tcuMenuItem.Click += (s, e) =>
             {
                 var window = new TermsAndConditionsWindow
@@ -476,16 +481,15 @@ namespace RMC_BestFit
         /// </summary>
         /// <returns>The About window, not shown.</returns>
         /// <remarks>
-        /// It shows XGoodFit's own version (the one its updates compare, without build metadata; projects
-        /// keep recording RMC-BestFit's 2.0.1, <see cref="App.ProductVersion"/>), and the credit and
-        /// disclaimer in place of the Risk Management Center's name, address and logo.
+        /// It shows XGoodFit's own version (<see cref="App.XGoodFitVersion"/>; projects keep recording
+        /// RMC-BestFit's 2.0.1, <see cref="App.ProductVersion"/>), and the credit and disclaimer in place of
+        /// the Risk Management Center's name, address and logo.
         /// </remarks>
         internal static AboutWindow CreateAboutWindow()
         {
             var window = new AboutWindow();
             window.SoftwareImage = Application.Current.TryFindResource("BestFit") as IImage;
-            var version = App.CreateUpdateOptions().CurrentVersion;
-            window.SoftwareVersion = $"{version.Major}.{version.Minor}.{version.Patch}" + (version.IsPreRelease ? "-" + version.PreRelease : "");
+            window.SoftwareVersion = App.XGoodFitVersion;
             window.OrganizationName = "Based on RMC-BestFit";
             window.OrganizationDetails = "by the USACE Risk Management Center." + Environment.NewLine
                 + "Not affiliated with or endorsed by USACE." + Environment.NewLine

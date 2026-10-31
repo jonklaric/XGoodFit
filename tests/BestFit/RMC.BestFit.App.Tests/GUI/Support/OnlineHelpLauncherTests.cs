@@ -196,9 +196,9 @@ namespace RMC.BestFit.App.Tests.GUI.Support
         public void DefineHelpMenuItems_UsesOnlineHelpLauncher()
         {
             string source = ReadRepositoryFile("src/BestFit/RMC.BestFit.App/GUI/MainProjectNode.cs");
-            const string userGuideCall = "CreateOnlineHelpMenuItem(\"User Guide\", OnlineHelpLauncher.UserGuideUrl, showHelpIcon: true)";
-            const string technicalReferenceCall = "CreateOnlineHelpMenuItem(\"Technical Reference\", OnlineHelpLauncher.TechnicalReferenceUrl)";
-            const string exampleProjectsCall = "CreateOnlineHelpMenuItem(\"Example Projects\", OnlineHelpLauncher.ExampleProjectsUrl)";
+            const string userGuideCall = "CreateOnlineHelpMenuItem(\"RMC-BestFit User Guide\", OnlineHelpLauncher.UserGuideUrl, showHelpIcon: true)";
+            const string technicalReferenceCall = "CreateOnlineHelpMenuItem(\"RMC-BestFit Technical Reference\", OnlineHelpLauncher.TechnicalReferenceUrl)";
+            const string exampleProjectsCall = "CreateOnlineHelpMenuItem(\"RMC-BestFit Example Projects\", OnlineHelpLauncher.ExampleProjectsUrl)";
             const string separatorCall = "_helpMenuItems.Add(CreateHelpMenuSeparator());";
 
             StringAssert.Contains(source, userGuideCall);

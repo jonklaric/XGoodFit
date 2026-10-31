@@ -61,7 +61,7 @@ public sealed class MainWindowTests
                 var tree = (ProjectExplorerTreeView)anchorables[0].Content!;
                 Assert.AreSame(controller, tree.ProjectNode);
                 Assert.IsTrue(tree.GetVisualDescendants().OfType<NodeHeader>().Count() >= 6, "the explorer shows the project's nodes");
-                Assert.AreEqual($"{ShellPublicVariables.SoftwareName} 1.0.0  -  {project.FullFileName}", window.Title, "the title names the project's file");
+                Assert.AreEqual($"{ShellPublicVariables.SoftwareName} {ShellPublicVariables.SoftwareVersion}  -  {project.FullFileName}", window.Title, "the title names the application's version and the project's file");
                 CollectionAssert.Contains(window.ProjectMenu.Items.OfType<MenuItem>().Select(m => m.Header).ToArray(), "New Test Element...",
                     "the Project menu has the application's items");
 

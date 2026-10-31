@@ -35,7 +35,7 @@
     <Product>$(XGoodFitProductName)</Product>
     <Company>XGoodFit contributors</Company>
     <Copyright>Copyright (c) 2026 Jon Klaric</Copyright>
-    <Version>0.1.0-dev</Version>
+    <Version>0.1.0</Version>
     <!-- The update feed: Velopack reads this repository's GitHub Releases (plan §9.3, decision D7). -->
     <XGoodFitUpdateRepository>https://github.com/jonklaric/XGoodFit</XGoodFitUpdateRepository>
     <!--

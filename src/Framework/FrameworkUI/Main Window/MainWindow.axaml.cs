@@ -537,6 +537,11 @@ namespace FrameworkUI
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The property changed event arguments.</param>
+        /// <remarks>
+        /// XGoodFit port: the title shows the application's version (<see cref="ShellPublicVariables.SoftwareVersion"/>),
+        /// where upstream's shows the project's, which for upstream is the same. XGoodFit's projects keep recording
+        /// RMC-BestFit's version, so files stay compatible, while XGoodFit has its own.
+        /// </remarks>
         private void ProjectPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
             if (ProjectNode == null)
@@ -549,11 +554,11 @@ namespace FrameworkUI
             {
                 if (ProjectNode.Project.FullFileName.Contains(Path.GetTempPath()) == true)
                 {
-                    Title = $"{ShellPublicVariables.SoftwareName} {ProjectNode.Project.SoftwareVersion}  -  {ProjectNode.Project.Name}";
+                    Title = $"{ShellPublicVariables.SoftwareName} {ShellPublicVariables.SoftwareVersion}  -  {ProjectNode.Project.Name}";
                 }
                 else
                 {
-                    Title = $"{ShellPublicVariables.SoftwareName} {ProjectNode.Project.SoftwareVersion}  -  {ProjectNode.Project.FullFileName}";
+                    Title = $"{ShellPublicVariables.SoftwareName} {ShellPublicVariables.SoftwareVersion}  -  {ProjectNode.Project.FullFileName}";
                 }
             }
         }
@@ -1581,7 +1586,7 @@ namespace FrameworkUI
             {
                 if (process.Id != current.Id)
                 {
-                    if (process.MainWindowTitle == ShellPublicVariables.SoftwareName + " " + ProjectNode.Project.SoftwareVersion + "  -  " + fullFileName + "")
+                    if (process.MainWindowTitle == ShellPublicVariables.SoftwareName + " " + ShellPublicVariables.SoftwareVersion + "  -  " + fullFileName + "")
                     {
                         // There is already an instance with this project opened, so send a message or kill the current process.
                         if (killProcessIfAlreadyOpen == true)

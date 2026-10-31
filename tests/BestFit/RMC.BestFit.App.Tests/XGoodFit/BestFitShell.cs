@@ -134,7 +134,7 @@ namespace RMC.BestFit.App.Tests.XGoodFit
         {
             ThemeManager.SetTheme(ThemeColor.Light);
             ShellPublicVariables.SoftwareVersionDate = RMC_BestFit.App.ProductVersionDate;
-            ShellPublicVariables.SoftwareVersion = RMC_BestFit.App.ProductVersion;
+            ShellPublicVariables.SoftwareVersion = RMC_BestFit.App.XGoodFitVersion;
             ShellPublicVariables.SoftwareExtension = ".bestfit";
             var project = BestFitProject.GetInstance();
             project.CreateNewDummyProject();

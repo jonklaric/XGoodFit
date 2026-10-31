@@ -415,7 +415,7 @@ namespace RMC.BestFit.App.Tests.XGoodFit
                     (window, MainProjectNode node, _) = BestFitShell.Open(null);
                     List<MenuItem> items = node.HelpMenuItems.ToList();
                     Assert.AreEqual(6, items.Count);
-                    CollectionAssert.AreEqual(new[] { "User Guide", "Technical Reference", "Example Projects", null, "Terms & Conditions for Use", "About " + ApplicationAttributes.Title },
+                    CollectionAssert.AreEqual(new[] { "RMC-BestFit User Guide", "RMC-BestFit Technical Reference", "RMC-BestFit Example Projects", null, "RMC-BestFit Terms & Conditions for Use", "About " + ApplicationAttributes.Title },
                         items.Select(item => item.Header as string).ToArray());
                     List<object> helpMenu = window.FindControl<MenuItem>("HelpMenu")!.Items.Cast<object>().ToList();
                     CollectionAssert.AreEqual(items, helpMenu.Skip(helpMenu.IndexOf(items[0])).Take(6).ToList(), "the Help menu shows them");

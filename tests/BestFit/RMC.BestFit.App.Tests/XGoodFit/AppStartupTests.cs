@@ -40,7 +40,8 @@ namespace RMC.BestFit.App.Tests.XGoodFit
                 Assert.AreSame(RMC.BestFit.UI.BestFitProject.GetInstance(), window.ProjectNode.Project);
                 Assert.IsNotNull(window.ProjectNode.Theme, "the explorer's root has the tree item theme");
                 Assert.AreEqual(".bestfit", ShellPublicVariables.SoftwareExtension);
-                Assert.AreEqual("2.0.1", ShellPublicVariables.SoftwareVersion, "projects save upstream's version");
+                Assert.AreEqual(RMC_BestFit.App.XGoodFitVersion, ShellPublicVariables.SoftwareVersion, "the title shows XGoodFit's version");
+                Assert.AreEqual("2.0.1", RMC.BestFit.UI.BestFitProject.GetInstance().SoftwareVersion, "projects save upstream's version");
                 Assert.IsTrue(Directory.Exists(ShellPublicVariables.UserSettingsFolderPath), "the settings folder is made, as upstream's startup makes it");
                 window.Close();
             }
